@@ -12,13 +12,13 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.10.5'
+ModuleVersion = '0.0.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
 
 # ID used to uniquely identify this module
-GUID = '524a2b17-37b1-43c2-aa55-6c19692c6450'
+GUID = '4d32f054-da30-4af7-b2cc-af53fb6cb1b6'
 
 # Author of this module
 Author = 'Adam Edwards'
@@ -30,7 +30,7 @@ CompanyName = 'Modulus Group'
 Copyright = '(c) 2018 Adam Edwards.'
 
 # Description of the functionality provided by this module
-Description = 'CLI for Microsoft Graph interaction'
+Description = 'CLI SDK for Microsoft Graph interaction'
 
 # Minimum version of the Windows PowerShell engine required by this module
 # PowerShellVersion = ''
@@ -75,38 +75,27 @@ FunctionsToExport = @()
     CmdletsToExport = @(
         'Connect-Graph',
         'Disconnect-Graph',
-        'Get-Graph',
-        'Get-GraphChildItem',
         'Get-GraphConnectionStatus',
         'Get-GraphError',
         'Get-GraphItem',
-        'Get-GraphLocation',
         'Get-GraphSchema',
         'Get-GraphToken',
-        'Get-GraphUri',
         'Get-GraphVersion',
         'Invoke-GraphRequest',
-        'New-Graph',
         'New-GraphConnection',
-        'Remove-Graph',
         'Set-GraphConnectionStatus',
-        'Set-GraphLocation',
-        'Set-GraphPrompt',
         'Test-Graph',
         'Update-GraphMetadata'
     )
 
 # Variables to export from this module
     VariablesToExport = @(
-        'GraphAutoPromptPreference',
-        'GraphMetadataPreference',
-        'GraphPromptColorPreference',
         'GraphVerboseOutputPreference',
         'LastGraphItems'
     )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('gcd', 'gg', 'gge', 'ggi', 'ggu', 'gls', 'gwd')
+AliasesToExport = @('gge', 'ggi')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -116,8 +105,8 @@ AliasesToExport = @('gcd', 'gg', 'gge', 'ggi', 'ggu', 'gls', 'gwd')
 
 # List of all files packaged with this module
     FileList = @(
-        '.\poshgraph.psd1',
-        '.\poshgraph.psm1',
+        '.\poshgraph-sdk.psd1',
+        '.\poshgraph-sdk.psm1',
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\graph.ps1',
@@ -125,7 +114,7 @@ AliasesToExport = @('gcd', 'gg', 'gge', 'ggi', 'ggu', 'gls', 'gwd')
         '.\src\client\graphapplication.ps1',
         '.\src\client\GraphConnection.ps1',
         '.\src\client\GraphContext.ps1',
-        '.\src\client\graphidentity.ps1',
+        '.\src\client\GraphIdentity.ps1',
         '.\src\client\LogicalGraphManager.ps1',
         '.\src\cmdlets\connect-graph.ps1',
         '.\src\cmdlets\disconnect-graph.ps1',

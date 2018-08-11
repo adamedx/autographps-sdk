@@ -15,7 +15,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Describe "Poshgraph application" {
-    $manifestLocation = Join-Path $here 'poshgraph.psd1'
+    $manifestLocation = Join-Path $here 'poshgraph-sdk.psd1'
 
     function Get-ModuleMetadataFromManifest ( $moduleName, $manifestPath ) {
         # Load the module contents and deserialize it by evaluating
@@ -26,7 +26,7 @@ Describe "Poshgraph application" {
         $moduledata
     }
 
-    $manifest = Get-ModuleMetadataFromManifest 'poshgraph' $manifestlocation
+    $manifest = Get-ModuleMetadataFromManifest 'poshgraph-sdk' $manifestlocation
 
     BeforeAll {
         get-job | remove-job -force
@@ -73,7 +73,7 @@ Describe "Poshgraph application" {
         }
     }
 
-    Context "When invoking the PoshGraph application" {
+    Context "When invoking the PoshGraph-sdk application" {
         BeforeEach {
             get-job | remove-job -force
             remove-module -force 'poshgraph' 2>$null
@@ -82,7 +82,7 @@ Describe "Poshgraph application" {
 
         AfterEach {
             get-job | remove-job -force
-            remove-module -force 'poshgraph' 2>$null
+            remove-module -force 'poshgraph-sdk' 2>$null
         }
 
         It "Should be able to create a connection object" {
