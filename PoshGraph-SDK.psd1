@@ -84,8 +84,7 @@ FunctionsToExport = @()
         'Invoke-GraphRequest',
         'New-GraphConnection',
         'Set-GraphConnectionStatus',
-        'Test-Graph',
-        'Update-GraphMetadata'
+        'Test-Graph'
     )
 
 # Variables to export from this module

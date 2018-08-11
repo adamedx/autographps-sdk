@@ -46,17 +46,8 @@ Describe "Poshgraph application" {
                 'get-grapherror',
                 'connect-graph',
                 'disconnect-graph',
-                'update-graphmetadata',
-                'Get-Graph',
-                'Get-GraphChildItem',
                 'Get-GraphConnectionStatus',
-                'Get-GraphLocation',
-                'New-Graph',
-                'Remove-Graph',
                 'Set-GraphConnectionStatus',
-                'Set-GraphLocation',
-                'Set-GraphPrompt',
-                'get-graphuri',
                 'get-graphtoken')
 
             $manifest.CmdletsToExport.count | Should BeExactly $expectedFunctions.length
