@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.0.0'
+ModuleVersion = '0.0.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -57,7 +57,7 @@ Description = 'CLI SDK for Microsoft Graph interaction'
 # RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @('./src/graph.ps1')
+ScriptsToProcess = @('./src/graph-sdk.ps1')
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -108,7 +108,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\poshgraph-sdk.psm1',
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
-        '.\src\graph.ps1',
+        '.\src\graph-sdk.ps1',
         '.\src\client\Application.ps1',
         '.\src\client\graphapplication.ps1',
         '.\src\client\GraphConnection.ps1',
@@ -117,25 +117,16 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\client\LogicalGraphManager.ps1',
         '.\src\cmdlets\connect-graph.ps1',
         '.\src\cmdlets\disconnect-graph.ps1',
-        '.\src\cmdlets\Get-Graph.ps1',
-        '.\src\cmdlets\Get-GraphChildItem.ps1',
         '.\src\cmdlets\Get-GraphConnectionStatus.ps1',
         '.\src\cmdlets\get-grapherror.ps1',
         '.\src\cmdlets\get-graphitem.ps1',
-        '.\src\cmdlets\Get-GraphLocation.ps1',
         '.\src\cmdlets\Get-GraphSchema.ps1',
         '.\src\cmdlets\Get-GraphToken.ps1',
-        '.\src\cmdlets\Get-GraphUri.ps1',
         '.\src\cmdlets\Get-GraphVersion.ps1',
         '.\src\cmdlets\Invoke-GraphRequest.ps1',
-        '.\src\cmdlets\New-Graph.ps1',
         '.\src\cmdlets\New-GraphConnection.ps1',
-        '.\src\cmdlets\Remove-Graph.ps1',
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1',
-        '.\src\cmdlets\Set-GraphLocation.ps1',
-        '.\src\cmdlets\Set-GraphPrompt.ps1',
         '.\src\cmdlets\Test-Graph.ps1',
-        '.\src\cmdlets\Update-GraphMetadata.ps1',
         '.\src\cmdlets\common\ContextHelper.ps1',
         '.\src\cmdlets\common\ItemResultHelper.ps1',
         '.\src\cmdlets\common\LocationHelper.ps1',
@@ -146,17 +137,6 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\common\PreferenceHelper.ps1',
         '.\src\common\ProgressWriter.ps1',
         '.\src\graphservice\graphendpoint.ps1'
-        '.\src\metadata\metadata.ps1',
-        '.\src\metadata\Entity.ps1',
-        '.\src\metadata\EntityEdge.ps1',
-        '.\src\metadata\EntityGraph.ps1',
-        '.\src\metadata\EntityVertex.ps1',
-        '.\src\metadata\GraphBuilder.ps1',
-        '.\src\metadata\GraphCache.ps1',
-        '.\src\metadata\GraphDataModel.ps1',
-        '.\src\metadata\GraphSegment.ps1',
-        '.\src\metadata\SegmentParser.ps1',
-        '.\src\metadata\UriCache.ps1',
         '.\src\REST\GraphErrorRecorder.ps1',
         '.\src\REST\GraphRequest.ps1',
         '.\src\REST\GraphResponse.ps1',
