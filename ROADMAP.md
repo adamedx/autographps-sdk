@@ -233,6 +233,7 @@
 * Motivation.md
 * Update get-graphitem to give gls authorization warnings.
 * Fix publishmoduletodev to use module publishing rather than nuget
+* Fix token refresh
 
 ### Postponed
 
