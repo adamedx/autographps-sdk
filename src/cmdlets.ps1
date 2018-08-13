@@ -19,11 +19,9 @@
 . (import-script cmdlets\Get-GraphItem)
 . (import-script cmdlets\Get-GraphSchema)
 . (import-script cmdlets\Get-GraphToken)
-. (import-script cmdlets\Get-GraphUri)
 . (import-script cmdlets\Get-GraphVersion)
 . (import-script cmdlets\New-GraphConnection)
 . (import-script cmdlets\Invoke-GraphRequest)
 . (import-script cmdlets\Set-GraphConnectionStatus)
 . (import-script cmdlets\Test-Graph)
-. (import-script cmdlets\Update-GraphMetadata)
 
