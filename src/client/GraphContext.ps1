@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../metadata/GraphCache)
-. (import-script ../metadata/GraphSegment)
-. (import-script ../metadata/UriCache)
 . (import-script ../Client/GraphConnection)
 . (import-script ../Client/LogicalGraphManager)
 
@@ -33,16 +30,19 @@ ScriptClass GraphContext {
         $graphConnection = $this.scriptclass |=> GetConnection $connection $null
         $graphVersion = if ( $apiVersion ) { $apiVersion } else { $this.scriptclass |=> GetDefaultVersion }
 
-        $this.uriCache = new-so UriCache 1000
+        $this.uriCache = $null # new-so UriCache 1000 #refactor
         $this.connection = $graphConnection
         $this.version = $graphVersion
         $this.name = $name
-        $this.location = $::.GraphSegment.RootSegment
+        $this.location = $null # $::.GraphSegment.RootSegment #refactor
     }
 
     function UpdateGraph($metadata = $null, $wait = $false, $force = $false) {
-        $this.scriptclass |=> __GetGraph (GetEndpoint) $this.version $metadata $wait $force $true | out-null
-        $this.uriCache.Clear() # Need to change this to handle async retrieval of new graph
+        $this.scriptclass |=> __GetGraph (GetEndpoint) $this.version $metadata $wait $force $true | out-null # refactor
+        # refactor
+        if ( $this.uriCache ) {
+            $this.uriCache.Clear() # Need to change this to handle async retrieval of new graph
+        }
     }
 
     function GetGraph($metadata = $null, $force = $false) {
@@ -73,7 +73,7 @@ ScriptClass GraphContext {
             $::.LogicalGraphManager |=> __initialize
             $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null (__GetSimpleConnection ([GraphType]::MSGraph)) (GetDefaultVersion) $this.defaultContextName
             $this.current = $currentContext.Name
-            $this.cache = new-so GraphCache
+            $this.cache = $null # new-so GraphCache
 
             # Start an asynchronous load of the metadata unless this is disabled
             # This is only meant for user interactive sessions and should be
@@ -205,6 +205,9 @@ ScriptClass GraphContext {
         }
 
         function __GetGraph($endpoint, $apiVersion, $metadata, $wait = $false, $force = $false, $forceupdate = $false) {
+            if ( ! $this.cache ) { # refactor
+                return
+            }
             $deferBuild = $apiVersion -ne 'v1.0'
             if ( $Force ) {
                 $this.cache |=> CancelPendingGraph $endpoint $apiVersion

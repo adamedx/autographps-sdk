@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.0.1'
+ModuleVersion = '0.0.3'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@ CompanyName = 'Modulus Group'
 Copyright = '(c) 2018 Adam Edwards.'
 
 # Description of the functionality provided by this module
-Description = 'CLI SDK for Microsoft Graph interaction'
+Description = 'PowerShell SDK for Microsoft Graph interaction'
 
 # Minimum version of the Windows PowerShell engine required by this module
 # PowerShellVersion = ''
