@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script GraphContext)
+# Avoid issues with circular dependencies in static constructors
+# . (import-script GraphContext)
 
 ScriptClass LogicalGraphManager {
     $contexts = $null
