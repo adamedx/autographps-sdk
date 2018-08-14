@@ -20,33 +20,37 @@ ScriptClass GraphContext {
     $version = $null
     $name = $null
     $location = $null
-    $uriCache = $null
+    $state = $null
 
     function __initialize($connection, $apiversion, $name) {
         if ( ! $name ) {
             throw "Graph name must be specified"
         }
 
+        $this.state = @{}
+
         $graphConnection = $this.scriptclass |=> GetConnection $connection $null
         $graphVersion = if ( $apiVersion ) { $apiVersion } else { $this.scriptclass |=> GetDefaultVersion }
 
-        $this.uriCache = $null # new-so UriCache 1000 #refactor
         $this.connection = $graphConnection
         $this.version = $graphVersion
         $this.name = $name
-        $this.location = $null # $::.GraphSegment.RootSegment #refactor
+        $this.location = $this.scriptclass |=> GetDefaultLocation
     }
 
-    function UpdateGraph($metadata = $null, $wait = $false, $force = $false) {
-        $this.scriptclass |=> __GetGraph (GetEndpoint) $this.version $metadata $wait $force $true | out-null # refactor
-        # refactor
-        if ( $this.uriCache ) {
-            $this.uriCache.Clear() # Need to change this to handle async retrieval of new graph
+    function GetState($stateKey) {
+        $this.state[$stateKey]
+    }
+
+    function AddState($stateKey, $value) {
+        $this.state.Add($stateKey, $value)
+    }
+
+    function UpdateState($stateKey, $value) {
+        if ( ! $this.state.ContainsKey($stateKey) ) {
+            throw "State '$stateKey' does not exist"
         }
-    }
-
-    function GetGraph($metadata = $null, $force = $false) {
-        $this.scriptclass |=> __GetGraph (GetEndpoint) $this.version $metadata $true $force
+        $this.state[$stateKey] = $value
     }
 
     function GetEndpoint {
@@ -66,24 +70,17 @@ ScriptClass GraphContext {
 
     static {
         $current = $null
-        $cache = $null
         $defaultContextName = 'v1.0'
+        $defaultLocation = $null
 
         function __initialize {
             $::.LogicalGraphManager |=> __initialize
             $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null (__GetSimpleConnection ([GraphType]::MSGraph)) (GetDefaultVersion) $this.defaultContextName
             $this.current = $currentContext.Name
-            $this.cache = $null # new-so GraphCache
+        }
 
-            # Start an asynchronous load of the metadata unless this is disabled
-            # This is only meant for user interactive sessions and should be
-            # disabled if this module is used in background jobs
-            if ( ! (get-variable -scope script -name '__poshgraph_no_auto_metadata' -erroraction silentlycontinue) ) {
-                write-verbose "Asynchronously updating Graph metadata"
-                $currentContext |=> UpdateGraph
-            } else {
-                write-verbose "Found __poshgraph_no_auto_metadata variable, skipping Graph metadata update"
-            }
+        function GetDefaultLocation {
+            $this.defaultLocation
         }
 
         function FindContext($endpoint, $apiVersion) {
@@ -197,33 +194,6 @@ ScriptClass GraphContext {
                 write-verbose "Custom arguments or no current context -- getting a new connection"
                 $newConnection = __GetSimpleConnection ([GraphType]::MSGraph) @namedArguments
                 $newConnection
-            }
-        }
-
-        function GetMetadataStatus($context) {
-            $this.cache |=> GetMetadataStatus $context.connection.GraphEndpoint.Graph $context.version
-        }
-
-        function __GetGraph($endpoint, $apiVersion, $metadata, $wait = $false, $force = $false, $forceupdate = $false) {
-            if ( ! $this.cache ) { # refactor
-                return
-            }
-            $deferBuild = $apiVersion -ne 'v1.0'
-            if ( $Force ) {
-                $this.cache |=> CancelPendingGraph $endpoint $apiVersion
-            }
-
-            if ( $wait -and ! $forceupdate ) {
-                $this.cache |=> GetGraph $endpoint $apiVersion $metadata $deferBuild
-            } else {
-
-                $asyncResult = $this.cache |=> GetGraphAsync $endpoint $apiVersion $metadata $deferBuild
-
-                if ( $wait ) {
-                    $this.cache |=> WaitForGraphAsync $asyncResult
-                } else {
-                    $asyncResult
-                }
             }
         }
     }
