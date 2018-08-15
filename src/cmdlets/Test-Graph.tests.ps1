@@ -15,7 +15,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Describe "The Test-Graph cmdlet" {
-    $manifestLocation   = Join-Path $here '..\..\poshgraph.psd1'
+    $manifestLocation   = Join-Path $here '..\..\poshgraph-sdk.psd1'
     $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\testassets\graphping200.json"
 
     Mock Invoke-WebRequest {
@@ -33,14 +33,14 @@ Describe "The Test-Graph cmdlet" {
     Context "when receiving a successful response from Graph" {
         BeforeAll {
             get-job | remove-job -force
-            remove-module -force 'poshgraph' -erroraction silentlycontinue
+            remove-module -force 'poshgraph-sdk' -erroraction silentlycontinue
             import-module scriptclass -force
             import-module $manifestlocation -force
         }
 
         AfterAll {
             get-job | remove-job -force
-            remove-module -force 'poshgraph' -erroractio silentlycontinue
+            remove-module -force 'poshgraph-sdk' -erroractio silentlycontinue
         }
 
         It "should succeed when given no parameters" {

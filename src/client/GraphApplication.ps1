@@ -22,7 +22,7 @@ enum GraphAppAuthType {
 ScriptClass GraphApplication {
     $AppId = strict-val [Guid]
     $Secret = $null
-    $AuthType = strict-val [GraphAppAuthType] ([GraphAppAuthType]::Delegated)
+    $AuthType = ([GraphAppAuthType]::Delegated)
 
     function __initialize($appId = $null) {
         $this.AppId = if ( $appId -ne $null ) {

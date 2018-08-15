@@ -12,17 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../Client/GraphContext)
-. (import-script ../Client/LogicalGraphManager)
-. (import-script common/ContextHelper)
+. (import-script cmdlets)
+. (import-script aliases)
 
-function Get-Graph {
-    [cmdletbinding()]
-    param($Graph = $null)
+. (import-script common/ProgressWriter)
 
-    $graphContexts = $::.LogicalGraphManager |=> Get |=> GetContext
-    $graphContexts |
-      where { ! $Graph -or $_.name -eq $Graph } | foreach {
-          $::.ContextHelper |=> ToPublicContext $_
-      }
-}

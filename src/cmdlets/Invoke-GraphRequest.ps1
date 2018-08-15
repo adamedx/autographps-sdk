@@ -180,10 +180,17 @@ function Invoke-GraphRequest {
         # We only parse URI's relative to context for MS Graph -- AADGraph
         # context is not tracked, so don't try to construct a context relative
         # AAD Graph path
-        $info = $::.GraphUtilities |=> ParseGraphRelativeLocation $RelativeUri[0]
-        @{
-            GraphRelativeUri = $info.GraphRelativeUri
-            GraphVersion = $info.context.version
+        if ( ($::.GraphContext |=> GetCurrent).location ) {
+            $info = $::.GraphUtilities |=> ParseGraphRelativeLocation $RelativeUri[0]
+            @{
+                GraphRelativeUri = $info.GraphRelativeUri
+                GraphVersion = $info.context.version
+            }
+        } else {
+            @{
+                GraphRelativeUri = $RelativeUri[0]
+                GraphVersion = ($::.GraphContext |=> GetCurrent).version
+            }
         }
     }
 
@@ -229,7 +236,11 @@ function Invoke-GraphRequest {
         $uriInfo.GraphRelativeUri
     }
 
-    $contextUri = $::.GraphUtilities |=> ToGraphRelativeUri $inputUriRelative
+    $contextUri = if ( ($::.GraphContext |=> GetCurrent).location ) {
+        $::.GraphUtilities |=> ToGraphRelativeUri $inputUriRelative
+    } else {
+        $inputUriRelative
+    }
     $graphRelativeUri = $::.GraphUtilities |=> JoinRelativeUri $tenantQualifiedVersionSegment $contextUri
 
     $countError = $false
