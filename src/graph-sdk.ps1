@@ -15,3 +15,5 @@
 . (import-script cmdlets)
 . (import-script aliases)
 
+. (import-script common/ProgressWriter)
+

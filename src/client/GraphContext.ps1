@@ -83,6 +83,10 @@ ScriptClass GraphContext {
             $this.defaultLocation
         }
 
+        function SetDefaultLocation($location) {
+            $this.defaultLocation = $location
+        }
+
         function FindContext($endpoint, $apiVersion) {
             $::.LogicalGraphManager |=> Get |=> FindContext $endpoint $apiVersion
         }

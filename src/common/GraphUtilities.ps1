@@ -14,8 +14,9 @@
 
 ScriptClass GraphUtilities {
     static {
-        function ToGraphRelativeUriPath( $relativeUri, $context = $null ) {
-            $this.__ToGraphRelativeUriPath($relativeUri, $context, $true)
+
+        function ToGraphRelativeUriPathUnqualified( $relativeUri, $context = $null ) {
+            $this.__ToGraphRelativeUriPath($relativeUri, $context)
         }
 
         function __NormalizeBacktrack( $uriAbsoluteString ) {
@@ -50,7 +51,7 @@ ScriptClass GraphUtilities {
              __ToGraphRelativeUriPath $relativeUri $context
         }
 
-        function __ToGraphRelativeUriPath( $relativeUri, $context = $null, $QualifyPath = $false ) {
+        function __ToGraphRelativeUriPath( $relativeUri, $context = $null ) {
             $normalizedUri = ($relativeUri -split '/' | where { $_ -ne '.' }) -join '/'
             $result = if ( $relativeUri.tostring()[0] -eq '/' ) {
                 [Uri] ($this.__NormalizeBacktrack($normalizedUri))
@@ -64,27 +65,14 @@ ScriptClass GraphUtilities {
                 $locationUri = $graphContext.location |=> ToGraphUri
                 $graphUri = $this.JoinGraphUri($locationUri, $normalizedUri)
                 $canonicalGraphUri = __NormalizeBacktrack $graphUri.tostring()
-
-                if ( $QualifyPath ) {
-                    $this.ToQualifiedUri($canonicalGraphUri,$graphContext)
-                } else {
-                    $canonicalGraphUri
-                }
+                $canonicalGraphUri
             }
 
             $result
         }
 
-        function ToQualifiedUri($graphRelativeUriString, $context) {
-            $graph = $context |=> GetGraph
-
-            $relativeVersionedUriString = JoinRelativeUri $graph.ApiVersion $graphRelativeUriString
-
-            JoinAbsoluteUri $graph.Endpoint $relativeVersionedUriString
-        }
-
         function ToLocationUriPath( $context, $relativeUri ) {
-            $graphRelativeUri = $this.ToGraphRelativeUriPath($relativeUri, $context)
+            $graphRelativeUri = $this.ToGraphRelativeUriPathUnqualified($relativeUri, $context)
             "{0}:{1}" -f $context.name, $graphRelativeUri
         }
 
