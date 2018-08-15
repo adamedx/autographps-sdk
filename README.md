@@ -59,7 +59,7 @@ After you've responded to the authentication prompt, you should see output that 
 
 Now you're ready to use any of PoshGraph-SDK's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
 
-### How do I use it?
+### How do I use the cmdlets from the CLI?
 
 If you're familiar with the Microsoft Graph REST API or you've used [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer), you know that Graph is accessed via [URI's that look like the following](https://developer.microsoft.com/en-us/graph/docs/concepts/overview#popular-requests):
 
@@ -82,6 +82,12 @@ These commands retrieve the same data as a `GET` for the full URIs given earlier
 As with any PowerShell cmdlet, you can use PoshGraph-SDK cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects.
 
 For more detailed information on how to use PoshGraph-SDK cmdlets, see the [WALKTHROUGH](https://github.com/adamedx/poshgraph/blob/master/docs/WALKTHROUGH.md) for the separate PoshGraph module, which documents a superset of cmdlets contained in this SDK in additions to those found in that module.
+
+### How do I use it in my PowerShell application?
+
+If your application is packaged as a PowerShell module, simply include it in the `NestedModules` section of your module's [PowerShell module manifest](https://technet.microsoft.com/en-us/library/dd878337%28v=VS.85%29.aspx). This will allow you to publish your module to a repository like PSGallery and ensure that users who install your module from the gallery also get the installation of PoshGraph-SDK needed for your module to function. You should add the line `import-module poshgraph-sdk` to the beginning of the script you use to initialize your module.
+
+If you're using a script module (`.psm1` file) or simply as a plan PowerShell `ps1` script, you should ensure the module has been already been installed on the system using `Install-Module` or a similar deployment mechanism, then add a line `import-module poshgraph-sdk` to the beginning of your script or script module.
 
 ## Command inventory
 
