@@ -2,7 +2,14 @@
 
 ## To-do items -- prioritized
 
-* Refactor into posh-graph core sdk and poshgraph ux
+* Add app creation
+* Add app enumeration
+* Add app updating
+* Release
+
+* Add app-only mode
+* Release
+
 * Clean up parse methods in GraphUtilities
 * Investigate console.writeline background thread
 * Coding standards -- SOLID, casing, method call syntax
@@ -29,18 +36,8 @@
 * fix parent issues in public segment
 
 * Add auto-complete for scopes
-* Add auto-complete for ggu
-* Add auto-complete for gls
 
 * Release
-
-* Add app creation
-* Add app enumeration
-* Add app updating
-
-* Release
-
-* Add app-only mode
 
 * Samples
 * Bugfixes
@@ -234,6 +231,7 @@
 * Update get-graphitem to give gls authorization warnings.
 * Fix publishmoduletodev to use module publishing rather than nuget
 * Fix token refresh
+* Refactor into posh-graph core sdk and poshgraph ux
 
 ### Postponed
 
