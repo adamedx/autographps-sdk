@@ -31,7 +31,12 @@ function New-GraphConnection {
         [GraphCloud] $Cloud = [GraphCloud]::Public,
 
         [parameter(parametersetname='custom')]
+        [parameter(parametersetname='msgraph')]
         [Guid] $AppId,
+
+        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='msgraph')]
+        [Uri] $AppRedirectUri,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='custom')]
@@ -61,7 +66,7 @@ function New-GraphConnection {
             new-so GraphEndpoint ([GraphCloud]::Unknown) ([Graphtype]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri
         }
 
-        $app = new-so GraphApplication $AppId
+        $app = new-so GraphApplication $AppId $AppRedirectUri
         $identity = new-so GraphIdentity $app
         new-so GraphConnection $graphEndpoint $identity $ScopeNames
     }

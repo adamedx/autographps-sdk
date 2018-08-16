@@ -143,7 +143,7 @@ ScriptClass GraphIdentity {
         write-verbose "Attempting to get token for AAD Graph..."
         $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $graphEndpoint.Authentication
         $redirectUri = 'msal9825d80c-5aa0-42ef-bf13-61e12116704c://auth'
-
+ 
         $promptBehaviorValue = ([Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]::Auto)
 
         $promptBehavior = new-object "Microsoft.IdentityModel.Clients.ActiveDirectory.PlatformParameters" -ArgumentList $promptBehaviorValue
