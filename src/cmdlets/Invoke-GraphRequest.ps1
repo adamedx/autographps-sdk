@@ -194,7 +194,7 @@ function Invoke-GraphRequest {
         }
     }
 
-    $apiVersion = if ( $Version -ne $null -or $version.length -ne 0 ) {
+    $apiVersion = if ( $Version -ne $null -and $version.length -ne 0 ) {
         write-verbose "Using version specified by caller: '$Version'"
         $Version
     } elseif ( $uriInfo -and $uriInfo.GraphVersion -and $uriInfo ) {
