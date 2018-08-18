@@ -94,7 +94,7 @@ ScriptClass GraphConnection {
             $endpoint = new-so GraphEndpoint $cloud $graphType
             $app = new-so GraphApplication
             $identity = if ( ! $anonymous ) {
-                new-so GraphIdentity $app
+                new-so GraphIdentity $app $endpoint
             }
 
             new-so GraphConnection $endpoint $identity $ScopeNames

@@ -17,38 +17,51 @@
 . (import-script ../Client/GraphConnection)
 
 function New-GraphConnection {
-    [cmdletbinding(positionalbinding=$false)]
+    [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='msgraph')]
     param(
         [parameter(parametersetname='aadgraph', mandatory=$true)]
-        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='customendpoint')]
         [switch] $AADGraph,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='custom')]
+        [parameter(parametersetname='customsecret')]
+        [parameter(parametersetname='customendpoint')]
         [String[]] $ScopeNames = @('User.Read'),
 
         [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='custom')]
         [GraphCloud] $Cloud = [GraphCloud]::Public,
 
-        [parameter(parametersetname='custom')]
         [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='custom', mandatory=$true)]
+        [parameter(parametersetname='customsecret', mandatory=$true)]
+        [parameter(parametersetname='customendpoint', mandatory=$true)]
         [Guid] $AppId,
 
-        [parameter(parametersetname='custom')]
         [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='customsecret')]
+        [parameter(parametersetname='customendpoint')]
         [Uri] $AppRedirectUri,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='custom')]
+        [parameter(parametersetname='customsecret', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [Guid] $AppIdSecret,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom', mandatory=$true)]
+        [parameter(parametersetname='customendpoint', mandatory=$true)]
         [Uri] $GraphEndpointUri = $null,
 
+        [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [Uri] $AuthenticationEndpointUri = $null,
+
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom', mandatory=$true)]
-        [Uri] $AuthenticationEndpointUri = $null
+        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='customsecret')]
+        [parameter(parametersetname='customendpoint')]
+        [GraphAuthProtocol] $GraphAuthProtocol = [GraphAuthProtocol]::Default
     )
 
     $graphType = if ( $AADGraph.ispresent ) {
@@ -57,17 +70,21 @@ function New-GraphConnection {
         ([GraphType]::MSGraph)
     }
 
-    if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null ) {
+    $specifiedAuthProtocol = if ( $GraphAuthProtocol -ne ([GraphAuthProtocol]::Default) ) {
+        $GraphAuthProtocol
+    }
+
+    if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol) {
         $::.GraphConnection |=> NewSimpleConnection $graphType $Cloud $ScopeNames
     } else {
         $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
-            new-so GraphEndpoint $Cloud $graphType
+            new-so GraphEndpoint $Cloud $graphType $null $null $specifiedAuthProtocol
         } else {
-            new-so GraphEndpoint ([GraphCloud]::Unknown) ([Graphtype]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri
+            new-so GraphEndpoint ([GraphCloud]::Unknown) ([Graphtype]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $specifiedAuthProtocol
         }
 
         $app = new-so GraphApplication $AppId $AppRedirectUri
-        $identity = new-so GraphIdentity $app
+        $identity = new-so GraphIdentity $app $graphEndpoint
         new-so GraphConnection $graphEndpoint $identity $ScopeNames
     }
 }

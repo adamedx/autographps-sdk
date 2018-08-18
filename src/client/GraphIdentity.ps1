@@ -18,6 +18,7 @@
 ScriptClass GraphIdentity {
     $App = strict-val [PSCustomObject]
     $Token = strict-val [PSCustomObject] $null
+    $GraphEndpoint = strict-val [PSCustomObject] $null
 
     static {
         $__AuthLibraryLoaded = $null
@@ -31,8 +32,9 @@ ScriptClass GraphIdentity {
         }
     }
 
-    function __initialize([PSCustomObject] $App) {
+    function __initialize([PSCustomObject] $app, [PSCustomObject] $graphEndpoint) {
         $this.App = $app
+        $this.GraphEndpoint = $graphEndpoint
     }
 
     function Authenticate($graphEndpoint, $scopes = $null) {
@@ -40,26 +42,26 @@ ScriptClass GraphIdentity {
             $tokenTimeLeft = $this.token.expireson - [DateTime]::UtcNow
             write-verbose ("Found existing token with {0} minutes left before expiration" -f $tokenTimeLeft.TotalMinutes)
 
-            if ( $graphEndpoint.Type -ne [GraphType]::MSGraph ) {
+            if ( $graphEndpoint.Type -ne [GraphAuthProtocol]::v1 ) {
                 return
             }
         }
 
-        if ( $graphEndpoint.Type -ne [GraphType]::AADGraph -and ( $scopes -eq $null -or $scopes.length -eq 0 ) ) {
-            throw [ArgumentException]::new('No scopes specified, at least one scope is required')
+        if ( $graphEndpoint.Type -ne [GraphAuthProtocol]::v1 -and ( $scopes -eq $null -or $scopes.length -eq 0 ) ) {
+            throw [ArgumentException]::new('No scopes specified for v1 auth protocol, at least one scope is required')
         }
 
-        $this.scriptclass |=> __LoadAuthLibrary $graphEndpoint.Type
+        $this.scriptclass |=> __LoadAuthLibrary $graphEndpoint.AuthProtocol
 
-        write-verbose ("Getting token for resource {0} for uri: {1}" -f $graphEndpoint.Authentication, $graphEndpoint.Graph)
+        write-verbose ("Getting token for resource {0} for uri: {1} with protocol" -f $graphEndpoint.Authentication, $graphEndpoint.Graph, $graphEndpoint.AuthProtocol)
 
         # Cast it in case this is a deserialized object --
         # workaround for a defect in ScriptClass
-        $this.Token = switch ([GraphType] $graphEndpoint.Type) {
-            ([GraphType]::MSGraph) { getMSGraphToken $graphEndpoint $scopes }
-            ([GraphType]::AADGraph) { getAADGraphToken $graphEndpoint $scopes }
+        $this.Token = switch ([GraphAuthProtocol] $graphEndpoint.AuthProtocol) {
+            ([GraphAuthProtocol]::v2) { getV2ProtocolGraphToken $graphEndpoint $scopes }
+            ([GraphAuthProtocol]::v1) { getV1ProtocolGraphToken $graphEndpoint $scopes }
             default {
-                throw "Unexpected Graph type '$($graphEndpoint.GraphType)'"
+                throw "Unexpected Graph protocol '$($graphEndpoint.GraphAuthProtocol)'"
             }
         }
 
@@ -73,35 +75,36 @@ ScriptClass GraphIdentity {
     }
 
     static {
-        function __LoadAuthLibrary([GraphType] $graphType) {
+        function __LoadAuthLibrary([GraphAuthProtocol] $authProtocol) {
             if ( $this.__AuthLibraryLoaded -eq $null ) {
                 $this.__AuthLibraryLoaded = @{}
             }
 
-            if ( ! $this.__AuthLibraryLoaded[$graphType] ) {
+            if ( ! $this.__AuthLibraryLoaded[$authProtocol] ) {
                 # Cast it in case this is a deserialized object --
                 # workaround for a defect in ScriptClass
-                switch ( [GraphType] $graphType ) {
-                    ([GraphType]::MSGraph) {
+                switch ( [GraphAuthProtocol] $authProtocol ) {
+                    ([GraphAuthProtocol]::v2) {
                         import-assembly ../../lib/Microsoft.Identity.Client.dll
                     }
-                    ([GraphType]::AADGraph) {
+                    ([GraphAuthProtocol]::v1) {
                         import-assembly ../../lib/Microsoft.IdentityModel.Clients.ActiveDirectory.dll
                     }
                     default {
-                        throw "Unexpected graph type '$graphType'"
+                        throw "Unexpected graph type '$authProtocol'"
                     }
                 }
 
-                $this.__AuthLibraryLoaded[$graphType] = $true
+                $this.__AuthLibraryLoaded[$authProtocol] = $true
             } else {
-                write-verbose "Library already loaded for graph type '$graphType'"
+                write-verbose "Library already loaded for graph type '$authProtocol'"
             }
         }
     }
 
-    function getMSGraphToken($graphEndpoint, $scopes) {
-        write-verbose "Attempting to get token for MS Graph..."
+    function getV2ProtocolGraphToken($graphEndpoint, $scopes) {
+        write-verbose "Attempting to get token for '$@(graphEndpoint.Graph)' using V2 protocol..."
+        write-verbose "Using app id '$($this.App.AppId)'"
 
         $this.scriptclass |=> __InitializeTokenCache
         $msalAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $this.App.AppId, $graphEndpoint.Authentication, $this.scriptclass.__TokenCache
@@ -118,10 +121,12 @@ ScriptClass GraphIdentity {
             # Use the silent API since we already have a token that includes a
             # refresh token -- even if our access token has expired, the refresh
             # token can be used to get a new access token without a prompt for ux
+            write-verbose 'Acquiring token from existing token -- no user interaction'
             $msalAuthContext.AcquireTokenSilentAsync($requestedScopes, $this.token.User)
         } else {
             # We have no token, so we cannot use the silent flow and a ux
             # prompt must be shown
+            write-verbose 'Acquiring new -- user interaction will be required'
             $msalAuthContext.AcquireTokenAsync($requestedScopes)
         }
         write-verbose ("`nToken request status: {0}" -f $authResult.Status)
@@ -139,11 +144,13 @@ ScriptClass GraphIdentity {
         $result
     }
 
-    function getAADGraphToken($graphEndpoint, $scopes) {
-        write-verbose "Attempting to get token for AAD Graph..."
+    function getV1ProtocolGraphToken($graphEndpoint, $scopes) {
+        write-verbose "Attempting to get token for '$($graphEndpoint.Graph)' using V2 protocol..."
+        write-verbose "Using app id '$($this.App.AppId)'"
+        write-verbose "Using app id '$($this.app.redirecturi)'"
+
         $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $graphEndpoint.Authentication
-        $redirectUri = 'msal9825d80c-5aa0-42ef-bf13-61e12116704c://auth'
- 
+
         $promptBehaviorValue = ([Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]::Auto)
 
         $promptBehavior = new-object "Microsoft.IdentityModel.Clients.ActiveDirectory.PlatformParameters" -ArgumentList $promptBehaviorValue
@@ -151,7 +158,7 @@ ScriptClass GraphIdentity {
         $authResult = $adalAuthContext.AcquireTokenAsync(
             $graphEndpoint.Graph,
             $this.App.AppId,
-            $redirectUri,
+            $this.App.RedirectUri,
             $promptBehavior)
 
         if ( $authResult.Status -eq 'Faulted' ) {

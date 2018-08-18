@@ -27,11 +27,12 @@ ScriptClass GraphApplication {
 
     function __initialize($appId = $null, $RedirectUri = $null) {
         $this.AppId = if ( $appId -ne $null ) {
+            $appId
+        } else {
             if ( $RedirectUri ) {
                 throw [ArgumentException]::new("Redirect Uri must '$RedirectUri', it must be `$null since no AppId was specified")
             }
-            $appId
-        } else {
+
             $::.Application.AppId
         }
 
@@ -40,8 +41,6 @@ ScriptClass GraphApplication {
         } else {
             __GetDefaultRedirectUri $this.AppId
         }
-
-
     }
 
     function __GetDefaultRedirectUri($appId) {
