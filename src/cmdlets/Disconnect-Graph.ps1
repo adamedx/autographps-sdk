@@ -18,6 +18,5 @@ function Disconnect-Graph {
     [cmdletbinding()]
     param()
     $::.GraphContext |=> DisconnectCurrentConnection
-    __AutoConfigurePrompt ($::.GraphContext |=> GetCurrent)
 }
 

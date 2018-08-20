@@ -19,6 +19,7 @@ ScriptClass GraphIdentity {
     $App = strict-val [PSCustomObject]
     $Token = strict-val [PSCustomObject] $null
     $GraphEndpoint = strict-val [PSCustomObject] $null
+    $V2AuthContext = $null
 
     static {
         $__AuthLibraryLoaded = $null
@@ -42,12 +43,13 @@ ScriptClass GraphIdentity {
             $tokenTimeLeft = $this.token.expireson - [DateTime]::UtcNow
             write-verbose ("Found existing token with {0} minutes left before expiration" -f $tokenTimeLeft.TotalMinutes)
 
-            if ( $graphEndpoint.Type -ne [GraphAuthProtocol]::v1 ) {
+            if ( $graphEndpoint.AuthProtocol -ne [GraphAuthProtocol]::v2 ) {
+                write-verbose "Using existing token -- will not attempt refresh since it is not a v2 token"
                 return
             }
         }
 
-        if ( $graphEndpoint.Type -ne [GraphAuthProtocol]::v1 -and ( $scopes -eq $null -or $scopes.length -eq 0 ) ) {
+        if ( $graphEndpoint.AuthProtocol -ne [GraphAuthProtocol]::v1 -and ( $scopes -eq $null -or $scopes.length -eq 0 ) ) {
             throw [ArgumentException]::new('No scopes specified for v1 auth protocol, at least one scope is required')
         }
 
@@ -71,6 +73,15 @@ ScriptClass GraphIdentity {
     }
 
     function ClearAuthentication {
+        if ( $this.token ) {
+            write-verbose "Clearing token for user '$($this.token.user)'"
+            if ( $this.V2AuthContext ) {
+                write-verbose "Calling Remove on V2 auth context to remove user from token cache"
+                $this.V2AuthContext.Remove($this.token.user)
+                write-verbose "Clearing V2 auth context"
+                $this.V2AuthContext = $null
+            }
+        }
         $this.token = $null
     }
 
@@ -103,7 +114,7 @@ ScriptClass GraphIdentity {
     }
 
     function getV2ProtocolGraphToken($graphEndpoint, $scopes) {
-        write-verbose "Attempting to get token for '$@(graphEndpoint.Graph)' using V2 protocol..."
+        write-verbose "Attempting to get token for '$($graphEndpoint.Graph)' using V2 protocol..."
         write-verbose "Using app id '$($this.App.AppId)'"
 
         $this.scriptclass |=> __InitializeTokenCache
@@ -141,6 +152,8 @@ ScriptClass GraphIdentity {
             write-verbose $authResult.Exception
             throw $authResult.Exception
         }
+
+        $this.V2AuthContext = $msalAuthContext
         $result
     }
 
