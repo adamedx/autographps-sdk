@@ -20,6 +20,7 @@ ScriptClass GraphIdentity {
     $Token = strict-val [PSCustomObject] $null
     $GraphEndpoint = strict-val [PSCustomObject] $null
     $V2AuthContext = $null
+    $TenantName = $null
 
     static {
         $__AuthLibraryLoaded = $null
@@ -33,9 +34,10 @@ ScriptClass GraphIdentity {
         }
     }
 
-    function __initialize([PSCustomObject] $app, [PSCustomObject] $graphEndpoint) {
+    function __initialize([PSCustomObject] $app, [PSCustomObject] $graphEndpoint, [String] $tenantName) {
         $this.App = $app
         $this.GraphEndpoint = $graphEndpoint
+        $this.TenantName = $tenantName
     }
 
     function Authenticate($graphEndpoint, $scopes = $null) {
@@ -55,7 +57,7 @@ ScriptClass GraphIdentity {
 
         $this.scriptclass |=> __LoadAuthLibrary $graphEndpoint.AuthProtocol
 
-        write-verbose ("Getting token for resource {0} for uri: {1} with protocol" -f $graphEndpoint.Authentication, $graphEndpoint.Graph, $graphEndpoint.AuthProtocol)
+        write-verbose ("Getting token for resource {0} from auth endpoint: {1} with protocol {2}" -f $graphEndpoint.Graph, $graphEndpoint.Authentication, $graphEndpoint.AuthProtocol)
 
         # Cast it in case this is a deserialized object --
         # workaround for a defect in ScriptClass
@@ -74,7 +76,12 @@ ScriptClass GraphIdentity {
 
     function ClearAuthentication {
         if ( $this.token ) {
-            write-verbose "Clearing token for user '$($this.token.user)'"
+            $userUpn = if ( $this.V2AuthContext ) {
+                $this.token.user.displayableid
+            } else {
+                $this.token.userinfo.displayableid
+            }
+            write-verbose "Clearing token for user '$userUpn'"
             if ( $this.V2AuthContext ) {
                 write-verbose "Calling Remove on V2 auth context to remove user from token cache"
                 $this.V2AuthContext.Remove($this.token.user)
@@ -118,7 +125,10 @@ ScriptClass GraphIdentity {
         write-verbose "Using app id '$($this.App.AppId)'"
 
         $this.scriptclass |=> __InitializeTokenCache
-        $msalAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $this.App.AppId, $graphEndpoint.Authentication, $this.scriptclass.__TokenCache
+        $authUri = $graphEndpoint |=> GetAuthUri $this.TenantName
+        write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
+
+        $msalAuthContext = New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $this.App.AppId, $authUri, $this.scriptclass.__TokenCache
 
         $requestedScopes = new-object System.Collections.Generic.List[string]
 
@@ -137,7 +147,7 @@ ScriptClass GraphIdentity {
         } else {
             # We have no token, so we cannot use the silent flow and a ux
             # prompt must be shown
-            write-verbose 'Acquiring new -- user interaction will be required'
+            write-verbose 'Acquiring new token -- user interaction will be required'
             $msalAuthContext.AcquireTokenAsync($requestedScopes)
         }
         write-verbose ("`nToken request status: {0}" -f $authResult.Status)
@@ -158,11 +168,14 @@ ScriptClass GraphIdentity {
     }
 
     function getV1ProtocolGraphToken($graphEndpoint, $scopes) {
-        write-verbose "Attempting to get token for '$($graphEndpoint.Graph)' using V2 protocol..."
+        write-verbose "Attempting to get token for '$($graphEndpoint.Graph)' using V1 protocol..."
         write-verbose "Using app id '$($this.App.AppId)'"
-        write-verbose "Using app id '$($this.app.redirecturi)'"
+        write-verbose "Using redirect uri '$($this.app.redirecturi)'"
 
-        $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $graphEndpoint.Authentication
+        $authUri = $graphEndpoint |=> GetAuthUri $this.TenantName
+        write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
+
+        $adalAuthContext = New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $authUri
 
         $promptBehaviorValue = ([Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]::Auto)
 

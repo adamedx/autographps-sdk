@@ -31,7 +31,8 @@ function New-GraphConnection {
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='custom')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
+        [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
+        [string] $Cloud = $null,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='custom', mandatory=$true)]
@@ -61,8 +62,20 @@ function New-GraphConnection {
         [parameter(parametersetname='custom')]
         [parameter(parametersetname='customsecret')]
         [parameter(parametersetname='customendpoint')]
-        [GraphAuthProtocol] $GraphAuthProtocol = [GraphAuthProtocol]::Default
+        [GraphAuthProtocol] $GraphAuthProtocol = [GraphAuthProtocol]::Default,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='customsecret')]
+        [parameter(parametersetname='customendpoint')]
+        [String] $TenantName = $null
     )
+
+    $validatedCloud = if ( $Cloud ) {
+        [GraphCloud] $Cloud
+    } else {
+        ([GraphCloud]::Public)
+    }
 
     $graphType = if ( $AADGraph.ispresent ) {
         ([GraphType]::AADGraph)
@@ -75,16 +88,18 @@ function New-GraphConnection {
     }
 
     if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol) {
-        $::.GraphConnection |=> NewSimpleConnection $graphType $Cloud $ScopeNames
+        $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $ScopeNames
     } else {
+        $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $GraphAuthProtocol $validatedCloud $GraphType
+
         $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
-            new-so GraphEndpoint $Cloud $graphType $null $null $specifiedAuthProtocol
+            new-so GraphEndpoint $validatedCloud $graphType $null $null $computedAuthProtocol
         } else {
-            new-so GraphEndpoint ([GraphCloud]::Unknown) ([Graphtype]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $specifiedAuthProtocol
+            new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol
         }
 
         $app = new-so GraphApplication $AppId $AppRedirectUri
-        $identity = new-so GraphIdentity $app $graphEndpoint
+        $identity = new-so GraphIdentity $app $graphEndpoint $TenantName
         new-so GraphConnection $graphEndpoint $identity $ScopeNames
     }
 }

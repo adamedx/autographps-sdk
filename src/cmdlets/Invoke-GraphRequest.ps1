@@ -210,7 +210,7 @@ function Invoke-GraphRequest {
         }
     }
 
-    $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph ) ) {
+    $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph) ) {
         $graphConnection |=> Connect
         $graphConnection.Identity.Token.TenantId
     } else {

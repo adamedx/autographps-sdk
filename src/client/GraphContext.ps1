@@ -29,10 +29,9 @@ ScriptClass GraphContext {
 
         $this.state = @{}
 
-        $graphConnection = $this.scriptclass |=> GetConnection $connection $null
         $graphVersion = if ( $apiVersion ) { $apiVersion } else { $this.scriptclass |=> GetDefaultVersion }
 
-        $this.connection = $graphConnection
+        $this.connection = $this.scriptclass |=> GetConnection
         $this.version = $graphVersion
         $this.name = $name
         $this.location = $this.scriptclass |=> GetDefaultLocation
@@ -57,11 +56,29 @@ ScriptClass GraphContext {
         $this.connection.GraphEndpoint.Graph
     }
 
-    function Update($identity, $scope) {
-        if ($identity) {
-            $newConnection = new-so GraphConnection $this.Connection.GraphEndpoint $identity $scope
-            $this.connection = $newConnection
+    function UpdateConnection($connection) {
+        $newConnection = if ( $connection ) {
+            write-verbose 'Connection specified to UpdateConnection'
+            $connection
+        } else {
+            write-verbose 'No connection specified to UpdateConnection'
+            $this.scriptclass |=> GetConnection
         }
+
+        if ( $this.connection |=> IsConnected ) {
+            write-verbose 'Disconnecting existing context connection'
+            $this.connection |=> Disconnect
+        } else {
+            write-verbose 'Skipping disconnect as exiting context connection is not connected'
+        }
+
+        write-verbose 'Connecting...'
+
+        $newConnection |=> Connect
+
+        write-verbose 'Connection succeeded.'
+
+        $this.connection = $newConnection
     }
 
     function SetLocation([PSCustomObject] $location) {
@@ -120,7 +137,9 @@ ScriptClass GraphContext {
         function DisconnectCurrentConnection {
             $context = GetCurrent
             if ( $context ) {
-                $context.connection |=> Disconnect
+                if ($context.connection ) {
+                    $context.connection |=> Disconnect
+                }
             } else {
                 throw "Cannot disconnect the current context from Graph because there is no current context."
             }
@@ -159,12 +178,14 @@ ScriptClass GraphContext {
 
         function GetConnection($connection = $null, $context = $null, $cloud = $null, [String[]] $scopenames = $null, $anonymous = $null) {
             $currentContext = GetCurrent
+            $chosenContext = $null
 
             $existingConnection = if ( $connection ) {
                 write-verbose "Using supplied connection"
                 $connection
             } elseif ( $context ) {
                 write-verbose "Using connection from supplied context '$($context.name)'"
+                $chosenContext = $context
                 $context.connection
             } elseif ( $currentContext ) {
                 write-verbose "Found existing connection from current context '$($currentcontext.name)'"
@@ -173,7 +194,8 @@ ScriptClass GraphContext {
                      ! $anonymous
                    ) {
                        write-verbose "Current context is compatible with supplied arguments, will use it"
-                        $currentContext.connection
+                       $chosenContext = $currentContext
+                       $currentContext.connection
                    } else {
                        write-verbose "Current context is not compatible with supplied arguments, new connection required"
                    }
@@ -197,6 +219,12 @@ ScriptClass GraphContext {
 
                 write-verbose "Custom arguments or no current context -- getting a new connection"
                 $newConnection = __GetSimpleConnection ([GraphType]::MSGraph) @namedArguments
+                if ( $chosenContext ) {
+                    write-verbose ("Adding new connection to context '{0}'" -f $chosenContext.name)
+                    $chosenContext.connection = $newConnection
+                } else {
+                    write-verbose 'New connection not associated with a context, not connecting it'
+                }
                 $newConnection
             }
         }
