@@ -163,7 +163,21 @@ PrivateData = @{
         # Prerelease = '-preview'
 
         # ReleaseNotes of this module
-        # ReleaseNotes = ''
+        ReleaseNotes = @"
+# PoshGraph Release Notes
+
+## New features
+
+### Cmdlet features
+
+* Connect-Graph cmdlet: -Reconnect option to reconnect a previously disconnected Graph
+* Connect-Graph cmdlet: -ScopeNames supported with -Reconnect for permission elevation scenarios
+* Connect-Graph is now deterministic -- no longer based on context unless you specify -Reconnect
+* Disconnect-Graph is now deterministic -- it removes cached tokens so that subsequent connection attempts behave as if it's the very first attempt
+* New-GraphConnection cmdlet: -AuthProtocol option configures authentication protocol to overridde defaults if needed
+* New-GraphConnection cmdlet: -RedirectUri option allows the use of custom applications with a particular redirect URI
+* New-GraphConnection cmdlet: -TenantName option allows the use of custom non-converged applications that require the tenant (including 'organizations') to be specified during authentication
+"@
 
     } # End of PSData hashtable
 

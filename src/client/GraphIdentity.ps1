@@ -40,6 +40,30 @@ ScriptClass GraphIdentity {
         $this.TenantName = $tenantName
     }
 
+    function GetUserInformation {
+        $authProtocol = $this.GraphEndPoint.AuthProtocol
+
+        $userId = $null
+        $scopes = $null
+
+        if ( $this.token ) {
+            if ( $authProtocol -eq ([GraphAuthProtocol]::v1) ) {
+                $userId = $this.token.UserInfo.DisplayableId
+                $scopes = $null
+            } elseif ( $authProtocol -eq ([GraphAuthProtocol]::v2) ) {
+                $userId = $this.token.User.DisplayableId
+                $scopes = $this.token.scopes
+            } else {
+                throw ("Unknown auth protocol '{0}'" -f $authProtocol)
+            }
+        }
+
+        @{
+            userId = $userId
+            scopes = $scopes
+        }
+    }
+
     function Authenticate($graphEndpoint, $scopes = $null) {
         if ( $this.token ) {
             $tokenTimeLeft = $this.token.expireson - [DateTime]::UtcNow
