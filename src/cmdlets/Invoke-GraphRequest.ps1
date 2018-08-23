@@ -194,9 +194,13 @@ function Invoke-GraphRequest {
         }
     }
 
-    $apiVersion = if ( $uriInfo -and $uriInfo.GraphVersion ) {
+    $apiVersion = if ( $Version -ne $null -and $version.length -ne 0 ) {
+        write-verbose "Using version specified by caller: '$Version'"
+        $Version
+    } elseif ( $uriInfo -and $uriInfo.GraphVersion -and $uriInfo ) {
+        write-verbose "Using version from implied relative uri: '$($uriInfo.GraphVersion)'"
         $uriInfo.GraphVersion
-    } elseif ( $Version -eq $null -or $version.length -eq 0 ) {
+    } else {
         if ( $currentContext ) {
             write-verbose "Using context Graph version '$($currentContext.Version)'"
             $currentContext.Version
@@ -204,11 +208,9 @@ function Invoke-GraphRequest {
             write-verbose "Using default Graph version '$defaultVersion'"
             $defaultVersion
         }
-    } else {
-        $Version
     }
 
-    $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph ) ) {
+    $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph) ) {
         $graphConnection |=> Connect
         $graphConnection.Identity.Token.TenantId
     } else {

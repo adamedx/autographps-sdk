@@ -21,17 +21,35 @@ function Connect-Graph {
     [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(position=0)]
-        [String[]] $ScopeNames = @('User.Read'),
+        [parameter(parametersetname='simple')]
+        [parameter(parametersetname='reconnect')]
+        [String[]] $ScopeNames = $null,
 
         [parameter(parametersetname='simple')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
+        [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
+        [string] $Cloud = $null,
 
         [parameter(parametersetname='simple')]
         [string] $AppId = $null,
 
         [parameter(parametersetname='custom',mandatory=$true)]
-        [PSCustomObject] $Connection = $null
+        [PSCustomObject] $Connection = $null,
+
+        [parameter(parametersetname='reconnect', mandatory=$true)]
+        [Switch] $Reconnect
     )
+
+    $validatedCloud = if ( $Cloud ) {
+        [GraphCloud] $Cloud
+    } else {
+        ([GraphCloud]::Public)
+    }
+
+    $computedScopes = if ( $scopeNames -ne $null ) {
+        $ScopeNames
+    } else {
+        @('User.Read')
+    }
 
     $context = $::.GraphContext |=> GetCurrent
 
@@ -39,13 +57,13 @@ function Connect-Graph {
         throw "No current session -- unable to connect it to Graph"
     }
 
-    if ( $Connection -ne $null ) {
+    if ( $Connection ) {
         write-verbose "Explicit connection was specified"
 
         $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $Connection
 
         $::.GraphContext |=> SetCurrentByName $newContext.name
-        $context.Connection |=> Connect
+        $newContext |=> UpdateConnection $connection
     } else {
         write-verbose "Connecting context '$($context.name)'"
         $applicationId = if ( $AppId ) {
@@ -54,8 +72,21 @@ function Connect-Graph {
             $::.Application.AppId
         }
 
-        $newConnection = new-graphconnection -graphendpointuri $context.connection.graphendpoint.graph -authenticationendpointuri $context.connection.graphendpoint.Authentication -appid $applicationId
-        $context |=> Update $newConnection.identity $ScopeNames
-        $context.Connection |=> Connect
+        $newConnection = if ( $Reconnect.IsPresent ) {
+            write-verbose 'Reconnecting using the existing connection if it exists'
+            if ( $scopenames -and $context.connection -and $context.connection.identity ) {
+                write-verbose 'Creating connection from existing connection but with new scopes'
+                $identity = new-so GraphIdentity $context.connection.identity.app $context.connection.graphEndpoint $context.connection.identity.tenantname
+                new-so GraphConnection $context.connection.graphEndpoint $identity $computedScopes
+            } else {
+                write-verbose 'Just reconnecting the existing connection'
+                $context.connection
+            }
+        } else {
+            write-verbose 'No reconnect -- creating a new connection for this context'
+            new-graphconnection -cloud $validatedCloud -appid $applicationid -scopenames $computedScopes
+        }
+
+        $context |=> UpdateConnection $newConnection
     }
 }

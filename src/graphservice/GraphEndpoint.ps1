@@ -17,7 +17,7 @@ enum GraphCloud {
     ChinaCloud
     GermanyCloud
     USGovernmentCloud
-    Unknown
+    Custom
 }
 
 enum GraphType {
@@ -25,37 +25,76 @@ enum GraphType {
     AADGraph
 }
 
+enum GraphAuthProtocol {
+    Default
+    v1
+    v2
+}
+
 ScriptClass GraphEndpoint {
     static {
         $MSGraphCloudEndpoints = @{
             [GraphCloud]::Public = @{
-                Authentication='https://login.microsoftonline.com/common'
+                Authentication='https://login.microsoftonline.com'
                 Graph='https://graph.microsoft.com'
+                AuthProtocol=[GraphAuthProtocol]::v2
             }
             [GraphCloud]::ChinaCloud = @{
                 Authentication='https://login.chinacloudapi.cn'
                 Graph='https://microsoftgraph.chinacloudapi.cn'
+                AuthProtocol=[GraphAuthProtocol]::v1
             }
             [GraphCloud]::GermanyCloud = @{
-                Authentication='https://login.microsoftonline.de/common'
+                Authentication='https://login.microsoftonline.de'
                 Graph='https://graph.microsoft.de'
+                AuthProtocol=[GraphAuthProtocol]::v1
             }
             [GraphCloud]::USGovernmentCloud = @{
-                Authentication='https://login.microsoftonline.us/common'
+                Authentication='https://login.microsoftonline.us'
                 Graph='https://graph.microsoft.us'
+                AuthProtocol=[GraphAuthProtocol]::v1
             }
         }
 
         $AADGraphCloudEndpoints = @{
-            Authentication = 'https://login.microsoftonline.com/common'
+            Authentication = 'https://login.microsoftonline.com'
             Graph='https://graph.windows.net'
+            AuthProtocol=[GraphAuthProtocol]::v1
+        }
+
+        function GetCloudEndpoint([GraphCloud] $cloud, [GraphType] $graphType) {
+            if ($graphType -eq [GraphType]::MSGraph) {
+                $this.MSGraphCloudEndpoints[$cloud]
+            } else {
+                $this.AADGraphCloudEndpoints
+            }
+        }
+
+        function GetAuthProtocol($specifiedAuthProtocol, $cloud, $graphType) {
+            if ( $specifiedAuthProtocol -eq $null ) {
+                throw "Invalid auth protocol -- auth protocol must not be null"
+            }
+
+            $authProtocol = if ( $specifiedAuthProtocol -ne ([GraphAuthProtocol]::Default) ) {
+                $specifiedAuthProtocol
+            } else {
+                $cloudEndpoint = GetCloudEndpoint $cloud $graphType
+                if ( $cloudEndpoint ) {
+                    $cloudEndpoint.AuthProtocol
+                } else {
+                    [GraphAuthProtocol]::v2
+                }
+            }
+
+            $authProtocol
         }
     }
 
     $Authentication = $null
     $Graph = $null
     $Type = ([GraphType]::MSGraph)
-    $Cloud = ([GraphCloud]::Unknown)
+    $Cloud = ([GraphCloud]::Custom)
+    $AuthProtocol = $null
 
     function __initialize {
         [cmdletbinding()]
@@ -63,25 +102,39 @@ ScriptClass GraphEndpoint {
             [GraphCloud] $cloud,
             [GraphType] $graphType = [GraphType]::MSGraph,
             [Uri] $GraphEndpoint,
-            [Uri] $AuthenticationEndpoint
+            [Uri] $AuthenticationEndpoint,
+            $authProtocol = $null
         )
 
         $this.Type = $GraphType
         $this.Cloud = $cloud
-        $endpoints = if ($GraphEndpoint -eq $null) {
-            if ($graphType -eq [GraphType]::MSGraph) {
-                $this.scriptclass.MSGraphCloudEndpoints[$cloud]
-            } else {
-                $this.scriptclass.AADGraphCloudEndpoints
-            }
+        $endpointData = if ($GraphEndpoint -eq $null) {
+            $this.scriptclass |=> GetCloudEndpoint $cloud $graphType
         } else {
             @{
                 Graph=$GraphEndpoint
                 Authentication=$AuthenticationEndpoint
+                AuthProtocol=($this.scriptclass |=> GetAuthProtocol $authProtocol $cloud $graphType)
             }
         }
 
-        $this.Authentication = new-object Uri $endpoints.Authentication
-        $this.Graph = new-object Uri $endpoints.Graph
+        $this.Authentication = new-object Uri $endpointData.Authentication
+        $this.Graph = new-object Uri $endpointData.Graph
+        $this.AuthProtocol = $endpointData.authProtocol
+    }
+
+    function GetAuthUri($tenantName) {
+        $tenantSegment = if ( ! $TenantName ) {
+            'common'
+        } else {
+            $tenantName
+        }
+
+        $components = @($this.Authentication.tostring().trimend('/'))
+        if ( $tenantSegment ) {
+            $components += $tenantSegment
+        }
+
+        $components -join '/'
     }
 }

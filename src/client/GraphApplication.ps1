@@ -23,12 +23,27 @@ ScriptClass GraphApplication {
     $AppId = strict-val [Guid]
     $Secret = $null
     $AuthType = ([GraphAppAuthType]::Delegated)
+    $RedirectUri = $null
 
-    function __initialize($appId = $null) {
+    function __initialize($appId = $null, $RedirectUri = $null) {
         $this.AppId = if ( $appId -ne $null ) {
             $appId
         } else {
+            if ( $RedirectUri ) {
+                throw [ArgumentException]::new("Redirect Uri must '$RedirectUri', it must be `$null since no AppId was specified")
+            }
+
             $::.Application.AppId
         }
+
+        $this.RedirectUri = if ( $RedirectUri ) {
+            $RedirectUri
+        } else {
+            __GetDefaultRedirectUri $this.AppId
+        }
+    }
+
+    function __GetDefaultRedirectUri($appId) {
+        'msal{0}://auth' -f $appId
     }
 }

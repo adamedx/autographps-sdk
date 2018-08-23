@@ -78,7 +78,9 @@ ScriptClass GraphConnection {
 
     function Disconnect {
         if ( $this.connected ) {
-            $this.identity |=> ClearAuthentication
+            if ( $this.identity ) {
+                $this.identity |=> ClearAuthentication
+            }
             $this.connected = $false
         } else {
             throw "Cannot disconnect from Graph because connection is already disconnected."
@@ -90,11 +92,11 @@ ScriptClass GraphConnection {
     }
 
     static {
-        function NewSimpleConnection([GraphType] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false) {
+        function NewSimpleConnection([GraphType] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null) {
             $endpoint = new-so GraphEndpoint $cloud $graphType
             $app = new-so GraphApplication
             $identity = if ( ! $anonymous ) {
-                new-so GraphIdentity $app
+                new-so GraphIdentity $app $endpoint $tenantName
             }
 
             new-so GraphConnection $endpoint $identity $ScopeNames
