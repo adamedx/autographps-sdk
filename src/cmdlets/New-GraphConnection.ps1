@@ -40,7 +40,7 @@ function New-GraphConnection {
         [parameter(parametersetname='customcertname', mandatory=$true)]
         [parameter(parametersetname='customcert', mandatory=$true)]
         [parameter(parametersetname='customendpoint', mandatory=$true)]
-        [Guid] $AppId,
+        $AppId = $null,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='custom')]
@@ -114,11 +114,11 @@ function New-GraphConnection {
         $GraphAuthProtocol
     }
 
-    if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol) {
-        $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $ScopeNames
-    } else {
-        $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $GraphAuthProtocol $validatedCloud $GraphType
+    $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $GraphAuthProtocol $validatedCloud $GraphType
 
+    if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
+        $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $ScopeNames $false $tenantName $computedAuthProtocol
+    } else {
         $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
             new-so GraphEndpoint $validatedCloud $graphType $null $null $computedAuthProtocol
         } else {

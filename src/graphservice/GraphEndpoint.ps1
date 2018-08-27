@@ -109,7 +109,11 @@ ScriptClass GraphEndpoint {
         $this.Type = $GraphType
         $this.Cloud = $cloud
         $endpointData = if ($GraphEndpoint -eq $null) {
-            $this.scriptclass |=> GetCloudEndpoint $cloud $graphType
+            $cloudEndpoint = $this.scriptclass |=> GetCloudEndpoint $cloud $graphType
+            if ( $authProtocol ) {
+                $cloudEndpoint.AuthProtocol = $authProtocol
+            }
+            $cloudEndpoint
         } else {
             @{
                 Graph=$GraphEndpoint

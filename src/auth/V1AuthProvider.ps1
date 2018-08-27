@@ -21,11 +21,7 @@ ScriptClass V1AuthProvider {
     }
 
     function GetAuthContext($app, $graphEndpointUri, $authUri) {
-        if ( $app |=> IsConfidential ) {
-            throw [NotImplementedExeception]::new("Confidential v1 auth not yet implemented")
-        } else {
-            New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $authUri
-        }
+        New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $authUri
     }
 
     function GetUserInformation($token) {
@@ -58,7 +54,12 @@ ScriptClass V1AuthProvider {
 
     function AcquireInitialAppToken($authContext, $scopes) {
         write-verbose 'V1 auth provider acquiring initial app token'
-        [NotImplementedException]::new("V1 app authentication not yet implemented")
+
+        $clientCredential = new-object Microsoft.IdentityModel.Clients.ActiveDirectory.ClientCredential -ArgumentList $authContext.App.AppId, $authContext.App.Secret
+
+        $authContext.protocolContext.AcquireTokenAsync(
+            $authContext.GraphEndpointUri,
+            $clientCredential)
     }
 
     function AcquireTokenFromToken($authContext, $scopes, $token) {

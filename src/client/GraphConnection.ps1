@@ -92,8 +92,8 @@ ScriptClass GraphConnection {
     }
 
     static {
-        function NewSimpleConnection([GraphType] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null) {
-            $endpoint = new-so GraphEndpoint $cloud $graphType
+        function NewSimpleConnection([GraphType] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null ) {
+            $endpoint = new-so GraphEndpoint $cloud $graphType $null $null $authProtocol
             $app = new-so GraphApplication
             $identity = if ( ! $anonymous ) {
                 new-so GraphIdentity $app $endpoint $tenantName

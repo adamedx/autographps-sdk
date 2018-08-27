@@ -41,7 +41,6 @@ ScriptClass GraphIdentity {
 
     function GetUserInformation {
         $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
-
         $providerInstace |=> GetUserInformation $token
     }
 
@@ -63,9 +62,13 @@ ScriptClass GraphIdentity {
     function ClearAuthentication {
         if ( $this.token ) {
             $userUpn = if ( $this.V2AuthContext ) {
-                $this.token.user.displayableid
+                if ( $this.token.user ) {
+                    $this.token.user.displayableid
+                }
             } else {
-                $this.token.userinfo.displayableid
+                if ( $this.token.userinfo ) {
+                    $this.token.userinfo.displayableid
+                }
             }
             write-verbose "Clearing token for user '$userUpn'"
             if ( $this.V2AuthContext ) {
