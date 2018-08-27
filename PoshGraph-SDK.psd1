@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.2.0'
+ModuleVersion = '0.3.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -109,6 +109,9 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\graph-sdk.ps1',
+        '.\src\auth\AuthProvider.ps1',
+        '.\src\auth\V1AuthProvider.ps1',
+        '.\src\auth\V2AuthProvider.ps1',
         '.\src\client\Application.ps1',
         '.\src\client\graphapplication.ps1',
         '.\src\client\GraphConnection.ps1',
@@ -164,34 +167,16 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# PoshGraph-SDK 0.2.0 Release Notes
+# PoshGraph-SDK 0.3.0 Release Notes
 
 ## New features
 
 ### Cmdlet features
 
-* ``Connect-Graph`` cmdlet: ``-Reconnect`` option to reconnect a previously disconnected Graph
-* ``Connect-Graph`` cmdlet: ``-ScopeNames`` supported with -Reconnect for permission elevation scenarios
-* ``Connect-Graph`` is now deterministic -- no longer based on context unless you specify ``-Reconnect``
-* ``Disconnect-Graph`` is now deterministic -- it removes cached tokens so that subsequent connection attempts behave as if it's the very first attempt
-* ``New-GraphConnection`` cmdlet: ``-AuthProtocol`` option configures authentication protocol to overridde defaults if needed
-* ``New-GraphConnection`` cmdlet: ``-RedirectUri`` option allows the use of custom applications with a particular redirect URI
-* ``New-GraphConnection`` cmdlet: ``-TenantName`` option allows the use of custom non-converged applications that require the tenant (including 'organizations') to be specified during authentication
-
 ### Library features
-
-* ``GraphIdentity`` now takes a ``TenantName`` argument to support v1 tenant-scoped applications
-* ``GraphIdentity`` exposes a ``GetUserInformation`` method to return data about the authenticated user (if any)
-* ``GraphEndpoint`` exposes a ``GetAuthUri`` method to return the URI for obtaining access tokens
 
 ## Fixed defects
 
-* ``Get-GraphItem``, ``Invoke-GraphRequest`` were ignoring ``-Version`` option -- these commands could only access the Graph ``v1.0`` API version
-* National cloud support through ``-Cloud`` arguments now works in commands like ``Connect-Graph``, ``New-GraphConnection``, etc.
-* Fix ignored scopes when ``-ScopeNames`` was specified with ``Connect-Graph``
-* Fix over-specification of parameters for ``New-GraphConnection`` due to missing default parameterset
-* Fix exception in ``Disconnect-Graph`` cmdlet due to call to removed method
-* 
 "@
 
     } # End of PSData hashtable

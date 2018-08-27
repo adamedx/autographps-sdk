@@ -37,6 +37,8 @@ function New-GraphConnection {
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='custom', mandatory=$true)]
         [parameter(parametersetname='customsecret', mandatory=$true)]
+        [parameter(parametersetname='customcertname', mandatory=$true)]
+        [parameter(parametersetname='customcert', mandatory=$true)]
         [parameter(parametersetname='customendpoint', mandatory=$true)]
         [Guid] $AppId,
 
@@ -50,7 +52,20 @@ function New-GraphConnection {
         [parameter(parametersetname='custom')]
         [parameter(parametersetname='customsecret', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
-        [Guid] $AppIdSecret,
+#        [SecureString] $AppSecret = $null,
+        [String] $AppSecret = $null,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='customcertname', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
+        [string] $AppCertificatePath = $null,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='customcert', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2] $AppCertificate = $null,
 
         [parameter(parametersetname='customendpoint', mandatory=$true)]
         [Uri] $GraphEndpointUri = $null,
@@ -61,15 +76,27 @@ function New-GraphConnection {
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='custom')]
         [parameter(parametersetname='customsecret')]
+        [parameter(parametersetname='customcertname')]
+        [parameter(parametersetname='customcert')]
         [parameter(parametersetname='customendpoint')]
         [GraphAuthProtocol] $GraphAuthProtocol = [GraphAuthProtocol]::Default,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='custom')]
         [parameter(parametersetname='customsecret')]
+        [parameter(parametersetname='customcertname')]
+        [parameter(parametersetname='customcert')]
         [parameter(parametersetname='customendpoint')]
         [String] $TenantName = $null
     )
+
+    if ( $AppCertificate ) {
+        throw [NotImplementedException]::new("The -AppCertificate option is not yet implemented")
+    }
+
+    if ( $AppCertificatePath ) {
+        throw [NotImplementedException]::new("The -AppCertificatePath option is not yet implemented")
+    }
 
     $validatedCloud = if ( $Cloud ) {
         [GraphCloud] $Cloud
@@ -98,7 +125,15 @@ function New-GraphConnection {
             new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol
         }
 
-        $app = new-so GraphApplication $AppId $AppRedirectUri
+        $secret = if ( $AppSecret ) {
+            $AppSecret
+        } elseif ( $AppCertificate ) {
+            $AppCertificate
+        } else {
+            $AppCertificatePath
+        }
+
+        $app = new-so GraphApplication $AppId $AppRedirectUri $secret
         $identity = new-so GraphIdentity $app $graphEndpoint $TenantName
         new-so GraphConnection $graphEndpoint $identity $ScopeNames
     }

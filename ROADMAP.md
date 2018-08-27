@@ -2,12 +2,17 @@
 
 ## To-do items -- prioritized
 
-* Add app creation
-* Add app enumeration
-* Add app updating
+* Customize README
+* Customize WALKTHROUGH
+
+* Add app-only mode -- symmetric
+* Add app-only mode -- asymmetric
 * Release
 
-* Add app-only mode
+* Add app enumeration
+* Add app creation
+* App deletion
+* Add app updating
 * Release
 
 * Clean up parse methods in GraphUtilities

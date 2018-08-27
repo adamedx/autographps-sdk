@@ -25,7 +25,7 @@ ScriptClass GraphApplication {
     $AuthType = ([GraphAppAuthType]::Delegated)
     $RedirectUri = $null
 
-    function __initialize($appId = $null, $RedirectUri = $null) {
+    function __initialize($appId = $null, $RedirectUri = $null, $secret = $null) {
         $this.AppId = if ( $appId -ne $null ) {
             $appId
         } else {
@@ -34,6 +34,14 @@ ScriptClass GraphApplication {
             }
 
             $::.Application.AppId
+        }
+
+        if ( $secret ) {
+            if ( ! $appId -or -! $RedirectUri ) {
+                throw [ArgumentException]::new("A secret was specified, but both an AppId and RedirectUri MUST be specified")
+            }
+            $this.secret = $secret
+            $this.AuthType = ([GraphAppAuthType]::AppOnly)
         }
 
         $this.RedirectUri = if ( $RedirectUri ) {
@@ -45,5 +53,9 @@ ScriptClass GraphApplication {
 
     function __GetDefaultRedirectUri($appId) {
         'msal{0}://auth' -f $appId
+    }
+
+    function IsConfidential {
+        $this.Secret -ne $null
     }
 }
