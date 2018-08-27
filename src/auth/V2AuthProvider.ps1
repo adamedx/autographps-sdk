@@ -31,7 +31,7 @@ ScriptClass V2AuthProvider {
                 $app.RedirectUri,
                 $credential,
                 $null,
-                $null)
+                $this.scriptclass.__AppTokenCache)
         } else {
             New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $App.AppId, $authUri, $this.scriptclass.__UserTokenCache
         }
@@ -62,17 +62,24 @@ ScriptClass V2AuthProvider {
     }
 
     function AcquireInitialAppToken($authContext, $scopes) {
-        if ( $scopes -eq $null -or $scopes.length -eq 0 ) {
-            throw [ArgumentException]::new('No scopes specified for v1 auth protocol, at least one scope is required')
-        }
-
         write-verbose 'V2 auth provider acquiring initial app token'
-        $authContext.protocolContext.AcquireTokenForClientAsync($scopes)
+        $requestedScopes = new-object System.Collections.Generic.List[string]
+        $defaultScope = $authContext.GraphEndpointUri.tostring().trimend(), '.default' -join '/'
+        $requestedScopes.Add($defaultScope)
+
+        $authContext.protocolContext.AcquireTokenForClientAsync($requestedScopes)
     }
 
     function AcquireTokenFromToken($authContext, $scopes, $token) {
         write-verbose 'V2 auth provider acquiring token from existing token'
-        $authContext.protocolContext.AcquireTokenSilentAsync($scopes, $token.user)
+        if ( $authContext.app |=> IsConfidential ) {
+            $requestedScopes = new-object System.Collections.Generic.List[string]
+            $defaultScope = $authContext.GraphEndpointUri.tostring().trimend(), '.default' -join '/'
+            $requestedScopes.Add($defaultScope)
+            $authContext.protocolContext.AcquireTokenForClientAsync($requestedScopes)
+        } else {
+            $authContext.protocolContext.AcquireTokenSilentAsync($scopes, $token.user)
+        }
     }
 
     static {
@@ -88,6 +95,10 @@ ScriptClass V2AuthProvider {
 
             if ( ! $this.__UserTokenCache ) {
                 $this.__UserTokenCache = New-Object Microsoft.Identity.Client.TokenCache
+            }
+
+            if ( ! $this._AppTokenCache ) {
+                $this.__AppTokenCache = New-Object Microsoft.Identity.Client.TokenCache
             }
         }
 

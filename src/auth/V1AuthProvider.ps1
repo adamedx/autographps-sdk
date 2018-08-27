@@ -33,7 +33,7 @@ ScriptClass V1AuthProvider {
             $scopes = $null
         }
 
-        @{
+        [PSCustomObject]@{
             userId = $userId
             scopes = $scopes
         }
@@ -64,7 +64,7 @@ ScriptClass V1AuthProvider {
 
     function AcquireTokenFromToken($authContext, $scopes, $token) {
         write-verbose 'V1 auth provider acquiring token from existing token'
-        @{
+        [PSCustomObject]@{
             Status = 'NoOperation'
             Result = $token
             IsFaulted = $false
