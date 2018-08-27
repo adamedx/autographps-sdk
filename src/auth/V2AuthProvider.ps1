@@ -97,7 +97,7 @@ ScriptClass V2AuthProvider {
                 $this.__UserTokenCache = New-Object Microsoft.Identity.Client.TokenCache
             }
 
-            if ( ! $this._AppTokenCache ) {
+            if ( ! $this.__AppTokenCache ) {
                 $this.__AppTokenCache = New-Object Microsoft.Identity.Client.TokenCache
             }
         }
