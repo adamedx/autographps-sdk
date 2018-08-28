@@ -52,8 +52,7 @@ function New-GraphConnection {
         [parameter(parametersetname='custom')]
         [parameter(parametersetname='customsecret', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
-#        [SecureString] $AppSecret = $null,
-        [String] $AppSecret = $null,
+        [SecureString] $AppSecret = $null,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='custom')]

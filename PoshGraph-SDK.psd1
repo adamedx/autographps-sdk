@@ -136,6 +136,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\common\GraphUtilities.ps1',
         '.\src\common\PreferenceHelper.ps1',
         '.\src\common\ProgressWriter.ps1',
+        '.\src\common\Secret.ps1',
         '.\src\graphservice\graphendpoint.ps1'
         '.\src\REST\GraphErrorRecorder.ps1',
         '.\src\REST\GraphRequest.ps1',

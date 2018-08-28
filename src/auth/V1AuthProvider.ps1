@@ -55,7 +55,12 @@ ScriptClass V1AuthProvider {
     function AcquireInitialAppToken($authContext, $scopes) {
         write-verbose 'V1 auth provider acquiring initial app token'
 
-        $clientCredential = new-object Microsoft.IdentityModel.Clients.ActiveDirectory.ClientCredential -ArgumentList $authContext.App.AppId, $authContext.App.Secret
+        if ( $authContext.app.secret.type -ne ([SecretType]::Password) ) {
+            throw [ArgumentException]::new("Unsupported secret type '{0}' -- only 'Password' secrets are supported" -f $authContext.app.secret.type)
+        }
+
+        $clientSecret = new-object Microsoft.IdentityModel.Clients.ActiveDirectory.SecureClientSecret -ArgumentList $authcontext.app.secret.data
+        $clientCredential = new-object Microsoft.IdentityModel.Clients.ActiveDirectory.ClientCredential -ArgumentList $authContext.App.AppId, $clientSecret
 
         $authContext.protocolContext.AcquireTokenAsync(
             $authContext.GraphEndpointUri,

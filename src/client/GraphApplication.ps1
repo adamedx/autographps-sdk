@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script Application)
+. (import-script ../common/Secret)
 
 enum GraphAppAuthType {
     Delegated
@@ -40,7 +41,7 @@ ScriptClass GraphApplication {
             if ( ! $appId -or -! $RedirectUri ) {
                 throw [ArgumentException]::new("A secret was specified, but both an AppId and RedirectUri MUST be specified")
             }
-            $this.secret = $secret
+            $this.secret = new-so Secret $secret
             $this.AuthType = ([GraphAppAuthType]::AppOnly)
         }
 

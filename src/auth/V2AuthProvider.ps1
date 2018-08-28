@@ -22,8 +22,8 @@ ScriptClass V2AuthProvider {
 
     function GetAuthContext($app, $graphUri, $authUri) {
         if ( $app |=> IsConfidential ) {
-            $base64Secret = $app.secret # __SecretStringToBase64EncodedString $app.secret
-            $credential = New-Object "Microsoft.Identity.Client.ClientCredential" -ArgumentList $base64Secret
+
+            $credential = New-Object Microsoft.Identity.Client.ClientCredential -ArgumentList ($app.secret |=> GetSecretData)
 
             New-Object "Microsoft.Identity.Client.ConfidentialClientApplication" -ArgumentList @(
                 $App.AppId,
