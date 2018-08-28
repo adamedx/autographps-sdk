@@ -89,10 +89,6 @@ function New-GraphConnection {
         [String] $TenantName = $null
     )
 
-    if ( $AppCertificate ) {
-        throw [NotImplementedException]::new("The -AppCertificate option is not yet implemented")
-    }
-
     if ( $AppCertificatePath ) {
         throw [NotImplementedException]::new("The -AppCertificatePath option is not yet implemented")
     }
