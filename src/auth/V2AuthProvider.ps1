@@ -46,7 +46,7 @@ ScriptClass V2AuthProvider {
             $scopes = $this.token.scopes
         }
 
-        @{
+        [PSCustomObject]@{
             userId = $userId
             scopes = $scopes
         }
@@ -64,14 +64,14 @@ ScriptClass V2AuthProvider {
     function AcquireInitialAppToken($authContext, $scopes) {
         write-verbose 'V2 auth provider acquiring initial app token'
         $requestedScopes = new-object System.Collections.Generic.List[string]
-        $defaultScope = $authContext.GraphEndpointUri.tostring().trimend(), '.default' -join '/'
+        $defaultScope = $authContext.GraphEndpointUri.tostring().trimend('/'), '.default' -join '/'
         $requestedScopes.Add($defaultScope)
 
         $authContext.protocolContext.AcquireTokenForClientAsync($requestedScopes)
     }
 
     function AcquireTokenFromToken($authContext, $scopes, $token) {
-        write-verbose 'V2 auth provider acquiring token from existing token'
+        write-verbose 'V2 auth provider refreshing existing token'
         if ( $authContext.app |=> IsConfidential ) {
             $requestedScopes = new-object System.Collections.Generic.List[string]
             $defaultScope = $authContext.GraphEndpointUri.tostring().trimend(), '.default' -join '/'

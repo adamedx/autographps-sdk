@@ -9,6 +9,8 @@
 * Add app-only mode -- asymmetric
 * Release
 
+* Enable token cache for v1 auth
+
 * Add app enumeration
 * Add app creation
 * App deletion

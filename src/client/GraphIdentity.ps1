@@ -40,8 +40,16 @@ ScriptClass GraphIdentity {
     }
 
     function GetUserInformation {
-        $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
-        $providerInstace |=> GetUserInformation $token
+        if ( $this.App.AuthType -eq ([GraphAppAuthType]::Delegated) ) {
+                 $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
+                 $providerInstace |=> GetUserInformation $token
+        } else {
+            [PSCustomObject]@{
+                AppId = $this.App.AppId
+                userId = $null
+                scopes = $null
+            }
+        }
     }
 
     function Authenticate($graphEndpoint, $scopes = $null) {
@@ -83,7 +91,7 @@ ScriptClass GraphIdentity {
 
     function getGraphToken($graphEndpoint, $scopes) {
         write-verbose "Using generic path..."
-        write-verbose "Attempting to get token for '$($graphEndpoint.Graph)' using V2 protocol..."
+        write-verbose "Attempting to get token for '$($graphEndpoint.Graph)' ..."
         write-verbose "Using app id '$($this.App.AppId)'"
 
         write-verbose ("Adding scopes to request: {0}" -f ($scopes -join ';'))
@@ -119,7 +127,7 @@ ScriptClass GraphIdentity {
 
         if ( $authResult.IsFaulted ) {
             write-verbose $authResult.Exception
-            throw $authResult.Exception
+            throw [Exception]::new(("An authentication error occurred: '{0}'. See verbose output for additional details" -f $authResult.Exception.message), $authResult.Exception)
         }
 
         $this.V2AuthContext = if ( $graphendpoint.authprotocol -eq ([GraphAuthProtocol]::v2) ) {

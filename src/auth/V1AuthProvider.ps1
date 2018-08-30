@@ -56,7 +56,7 @@ ScriptClass V1AuthProvider {
         write-verbose 'V1 auth provider acquiring initial app token'
 
         if ( $authContext.app.secret.type -ne ([SecretType]::Password) ) {
-            throw [ArgumentException]::new("Unsupported secret type '{0}' -- only 'Password' secrets are supported" -f $authContext.app.secret.type)
+            throw [ArgumentException]::new("Unsupported secret type '{0}' -- only 'Password' secrets are supported for the v1 auth protocol" -f $authContext.app.secret.type)
         }
 
         $clientSecret = new-object Microsoft.IdentityModel.Clients.ActiveDirectory.SecureClientSecret -ArgumentList $authcontext.app.secret.data
@@ -68,7 +68,7 @@ ScriptClass V1AuthProvider {
     }
 
     function AcquireTokenFromToken($authContext, $scopes, $token) {
-        write-verbose 'V1 auth provider acquiring token from existing token'
+        write-verbose 'V1 auth provider refreshing existing token'
         [PSCustomObject]@{
             Status = 'NoOperation'
             Result = $token
