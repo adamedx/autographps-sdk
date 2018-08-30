@@ -24,84 +24,65 @@ function New-GraphConnection {
         [switch] $AADGraph,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='cloud')]
         [parameter(parametersetname='customendpoint')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='secret')]
         [String[]] $ScopeNames = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customcert')]
-        [parameter(parametersetname='customcertname')]
-        [parameter(parametersetname='customsecret')]
+        [parameter(parametersetname='cloud', mandatory=$true)]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='secret')]
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom', mandatory=$true)]
-        [parameter(parametersetname='customsecret', mandatory=$true)]
-        [parameter(parametersetname='customcertname', mandatory=$true)]
-        [parameter(parametersetname='customcert', mandatory=$true)]
+        [parameter(parametersetname='cloud')]
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='secret', mandatory=$true)]
         [parameter(parametersetname='customendpoint', mandatory=$true)]
         $AppId = $null,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customcert')]
-        [parameter(parametersetname='customcertname')]
-        [parameter(parametersetname='customsecret')]
-        [parameter(parametersetname='customendpoint')]
         [Uri] $AppRedirectUri,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customsecret', mandatory=$true)]
-        [parameter(parametersetname='customendpoint')]
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [Switch] $NoninteractiveAppAuth,
+
+        [parameter(parametersetname='secret', mandatory=$true)]
         [Switch] $Secret,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customsecret', mandatory=$true)]
-        [parameter(parametersetname='customendpoint')]
-        [SecureString] $AppPassword = $null,
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [SecureString] $Password,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customcertname', mandatory=$true)]
-        [parameter(parametersetname='customendpoint')]
-        [string] $AppCertificatePath = $null,
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [string] $CertificatePath = $null,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customcert', mandatory=$true)]
-        [parameter(parametersetname='customendpoint')]
-        [System.Security.Cryptography.X509Certificates.X509Certificate2] $AppCertificate = $null,
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate = $null,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='customcert')]
-        [parameter(parametersetname='customcertname')]
-        [parameter(parametersetname='customsecret')]
         [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
         [Uri] $GraphEndpointUri = $null,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='customcert')]
-        [parameter(parametersetname='customcertname')]
-        [parameter(parametersetname='customsecret')]
         [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
         [Uri] $AuthenticationEndpointUri = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customsecret')]
+        [parameter(parametersetname='secret')]
         [parameter(parametersetname='customendpoint')]
         [GraphAuthProtocol] $GraphAuthProtocol = [GraphAuthProtocol]::Default,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customsecret')]
-        [parameter(parametersetname='customcertname')]
-        [parameter(parametersetname='customcert')]
-        [parameter(parametersetname='customendpoint')]
         [String] $TenantName = $null
     )
 
@@ -118,7 +99,7 @@ function New-GraphConnection {
     }
 
     if ( ($GraphAuthProtocol -eq ([GraphAuthProtocol]::v1)) ) {
-        if ( $AppCertificate -or $AppCertificatePath ) {
+        if ( $Certificate -or $CertificatePath ) {
             throw 'Certificate options may only be specified for the V2 auth protocol, but v1 was specified'
         }
     }
@@ -128,7 +109,7 @@ function New-GraphConnection {
     }
 
     $specifiedScopes = if ( $ScopeNames ) {
-        if ( $Secret.IsPresent -or $AppCertificate -or $AppCertificatePath ) {
+        if ( $Secret.IsPresent -or $Certificate -or $CertificatePath ) {
             throw 'Scopes may not be specified for app authentication'
         }
         $scopeNames
@@ -147,12 +128,12 @@ function New-GraphConnection {
             new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol
         }
 
-        $appSecret = if ( $AppPassword ) {
-            $AppPassword
-        } elseif ( $AppCertificate ) {
-            $AppCertificate
+        $appSecret = if ( $Password ) {
+            $Password
+        } elseif ( $Certificate ) {
+            $Certificate
         } else {
-            $AppCertificatePath
+            $CertificatePath
         }
 
         $app = new-so GraphApplication $AppId $AppRedirectUri $appSecret

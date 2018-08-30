@@ -86,12 +86,12 @@ ScriptClass Secret {
 
         $currentTime = [DateTime]::Now
 
-        if ( $cert.NotAfter.CompareTo($currentTime) -lt 0 ) {
-            throw [ArgumentException]::new(("The specified certificate '$certDescription' is expired -- current time is '{0}' and the certificate expiration time is '{1}'" -f $currentTime, $cert.NotAfter))
+        if ( $certificate.NotAfter.CompareTo($currentTime) -lt 0 ) {
+            throw [ArgumentException]::new(("The specified certificate '$certDescription' is expired -- current time is '{0}' and the certificate expiration time is '{1}'" -f $currentTime, $certificate.NotAfter))
         }
 
-        if ( $cert.NotBefore.CompareTo($currentTime) -gt 0 ) {
-            write-warning ("Certificate '$certDescription': Current time is {0}, specified certificate is not valid before {1}" -f $currentTime, $cert.NotBefore)
+        if ( $certificate.NotBefore.CompareTo($currentTime) -gt 0 ) {
+            write-warning ("Certificate '$certDescription': Current time is {0}, specified certificate is not valid before {1}" -f $currentTime, $certificate.NotBefore)
         }
     }
 }

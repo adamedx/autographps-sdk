@@ -38,9 +38,6 @@ ScriptClass GraphApplication {
         }
 
         if ( $secret ) {
-            if ( ! $appId -or -! $RedirectUri ) {
-                throw [ArgumentException]::new("A secret was specified, but both an AppId and RedirectUri MUST be specified")
-            }
             $this.secret = new-so Secret $secret
             $this.AuthType = ([GraphAppAuthType]::AppOnly)
         }
