@@ -41,8 +41,8 @@ ScriptClass GraphIdentity {
 
     function GetUserInformation {
         if ( $this.App.AuthType -eq ([GraphAppAuthType]::Delegated) ) {
-                 $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
-                 $providerInstace |=> GetUserInformation $token
+                 $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
+                 $providerInstance |=> GetUserInformation $this.token
         } else {
             [PSCustomObject]@{
                 AppId = $this.App.AppId

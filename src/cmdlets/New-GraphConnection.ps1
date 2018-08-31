@@ -26,9 +26,6 @@ function New-GraphConnection {
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud')]
         [parameter(parametersetname='customendpoint')]
-        [parameter(parametersetname='cert')]
-        [parameter(parametersetname='certpath')]
-        [parameter(parametersetname='secret')]
         [String[]] $ScopeNames = $null,
 
         [parameter(parametersetname='msgraph')]

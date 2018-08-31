@@ -28,8 +28,8 @@ ScriptClass V1AuthProvider {
         $userId = $null
         $scopes = $null
 
-        if ( $this.token ) {
-            $userId = $this.token.UserInfo.DisplayableId
+        if ( $token ) {
+            $userId = $token.UserInfo.DisplayableId
             $scopes = $null
         }
 

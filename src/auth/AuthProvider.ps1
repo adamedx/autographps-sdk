@@ -30,7 +30,7 @@ ScriptClass AuthProvider {
     }
 
     function GetUserInformation($token) {
-        $this.serivedProvider |=> GetUserInformation $token
+        $this.derivedProvider |=> GetUserInformation $token
     }
 
     function AcquireInitialUserToken($authContext, $scopes) {

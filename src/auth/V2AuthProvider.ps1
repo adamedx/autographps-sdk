@@ -41,9 +41,9 @@ ScriptClass V2AuthProvider {
         $userId = $null
         $scopes = $null
 
-        if ( $this.token ) {
-            $userId = $this.token.User.DisplayableId
-            $scopes = $this.token.scopes
+        if ( $token ) {
+            $userId = $token.User.DisplayableId
+            $scopes = $token.scopes
         }
 
         [PSCustomObject]@{
