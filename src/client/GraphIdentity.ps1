@@ -24,6 +24,8 @@ ScriptClass GraphIdentity {
     $GraphEndpoint = strict-val [PSCustomObject] $null
     $V2AuthContext = $null
     $TenantName = $null
+    $TenantDisplayId = $null
+    $TenantDisplayName = $null
 
     static {
         function __initialize {
@@ -65,6 +67,8 @@ ScriptClass GraphIdentity {
         if ($this.token -eq $null) {
             throw "Failed to acquire token, no additional error information"
         }
+
+        __UpdateTenantDisplayInfo
     }
 
     function ClearAuthentication {
@@ -130,11 +134,53 @@ ScriptClass GraphIdentity {
             throw [Exception]::new(("An authentication error occurred: '{0}'. See verbose output for additional details" -f $authResult.Exception.message), $authResult.Exception)
         }
 
+        try {
+            if ( ! $this.tenantId -and $result.tenantid ) {
+                $this.tenantid = $result.tenantid
+            }
+        } catch {
+        }
+
         $this.V2AuthContext = if ( $graphendpoint.authprotocol -eq ([GraphAuthProtocol]::v2) ) {
             $authContext.protocolContext
         }
 
         $result
+    }
+
+    function __UpdateTenantDisplayInfo {
+        $tenant = try {
+            (([uri] $this.token.authority).segments | select -last 1).trimend('/')
+        } catch {
+        }
+
+        if ( ! $tenant ) {
+            $tenant = try {
+                (([uri] $this.token.user.identityprovider).segments | select -first 2 | select -last 1).trimend('/')
+            } catch {
+            }
+        }
+
+        $tenantName = $null
+        $tenantId = try {
+            $this.token.tenantId
+        } catch {
+        }
+
+        $parsedTenantId = try {
+            if ( $tenant ) {
+                [guid] $tenant
+            }
+        } catch {
+            $tenantName = $tenant
+        }
+
+        if ( ! $tenantId ) {
+            $tenantId = $parsedTenantId
+        }
+
+        $this.tenantDisplayId = $tenantId
+        $this.tenantDisplayName = $tenantName
     }
 }
 
