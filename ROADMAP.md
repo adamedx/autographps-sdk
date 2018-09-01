@@ -2,6 +2,11 @@
 
 ## To-do items -- prioritized
 
+* Add disconnect method to auth provider
+* Separate app and user auth methods in auth provider?
+* Remove special casing of v2 auth
+* Ensure disconnect occurs in reconnect scenarios
+
 * Customize README
 * Customize WALKTHROUGH
 

@@ -21,7 +21,7 @@ ScriptClass V1AuthProvider {
     }
 
     function GetAuthContext($app, $graphEndpointUri, $authUri) {
-        New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $authUri
+        New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $authUri, $this.scriptclass.__TokenCache
     }
 
     function GetUserInformation($token) {
@@ -55,6 +55,32 @@ ScriptClass V1AuthProvider {
     function AcquireInitialAppToken($authContext, $scopes) {
         write-verbose 'V1 auth provider acquiring initial app token'
 
+        __AcquireAppToken $authContext $scopes
+    }
+
+    function AcquireTokenFromToken($authContext, $scopes, $token) {
+        write-verbose 'V1 auth provider refreshing existing token'
+
+        # The token is irrelevant for v1 auth, since scopes are
+        # static and defined per app in v1. So for app-only auth,
+        # the token cache can just use the app id as a key, and
+        # for user auth, app+user is the key -- if the auth context
+        # has a token cache, that's all you need to look up the
+        # previously used token
+        if ( $authContext.app |=> IsConfidential ) {
+            __AcquireAppToken $authContext $scopes
+        } else {
+            $userId = new-object Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifier -ArgumentList $token.userinfo.uniqueid, ([Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifierType]::UniqueId)
+            $authContext.protocolContext.AcquireTokenSilentAsync(
+                $authContext.GraphEndpointUri,
+                $authContext.App.AppId,
+                $userId)
+        }
+    }
+
+    function __AcquireAppToken($authContext, $scopes) {
+        write-verbose 'V1 auth provider acquiring app token'
+
         if ( $authContext.app.secret.type -ne ([SecretType]::Password) ) {
             throw [ArgumentException]::new("Unsupported secret type '{0}' -- only 'Password' secrets are supported for the v1 auth protocol" -f $authContext.app.secret.type)
         }
@@ -67,24 +93,19 @@ ScriptClass V1AuthProvider {
             $clientCredential)
     }
 
-    function AcquireTokenFromToken($authContext, $scopes, $token) {
-        write-verbose 'V1 auth provider refreshing existing token'
-        [PSCustomObject]@{
-            Status = 'NoOperation'
-            Result = $token
-            IsFaulted = $false
-        }
-    }
 
     static {
         $__AuthLibraryLoaded = $false
-        $__UserTokenCache = $null
-        $__AppTokenCache = $null
+        $__TokenCache = $null
 
         function InitializeProvider {
             if ( ! $this.__AuthLibraryLoaded ) {
                 import-assembly ../../lib/Microsoft.IdentityModel.Clients.ActiveDirectory.dll
                 $this.__AuthLibraryLoaded = $true
+            }
+
+            if ( ! $this.__TokenCache ) {
+                $this.__TokenCache = New-Object Microsoft.IdentityModel.Clients.ActiveDirectory.TokenCache
             }
         }
 
