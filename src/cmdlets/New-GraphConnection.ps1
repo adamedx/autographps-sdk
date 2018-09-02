@@ -80,7 +80,7 @@ function New-GraphConnection {
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
         [parameter(parametersetname='customendpoint')]
-        [GraphAuthProtocol] $GraphAuthProtocol = [GraphAuthProtocol]::Default,
+        [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
 
         [String] $TenantName = $null
     )
@@ -97,8 +97,8 @@ function New-GraphConnection {
         ([GraphType]::MSGraph)
     }
 
-    $specifiedAuthProtocol = if ( $GraphAuthProtocol -ne ([GraphAuthProtocol]::Default) ) {
-        $GraphAuthProtocol
+    $specifiedAuthProtocol = if ( $AuthProtocol -ne ([GraphAuthProtocol]::Default) ) {
+        $AuthProtocol
     }
 
     $specifiedScopes = if ( $ScopeNames ) {
@@ -110,7 +110,7 @@ function New-GraphConnection {
         @('User.Read')
     }
 
-    $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $GraphAuthProtocol $validatedCloud $GraphType
+    $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $AuthProtocol $validatedCloud $GraphType
 
     if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
         write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'

@@ -4,9 +4,6 @@
 
 * Customize README
 * Customize WALKTHROUGH
-
-* Add app-only mode -- symmetric
-* Add app-only mode -- asymmetric
 * Release
 
 * Add app enumeration
@@ -84,7 +81,6 @@
 * Show-GraphRequest
 * Fix bug with graph update not clearing uri cache due to async
 * Enable schemaless execution
-* Auto-refresh token when expired
 * Use BEGIN, PROCESS, END in get-graphuri
 * Add basic help
 * Add uri completion
@@ -242,6 +238,8 @@
 * Add cert auth to v1 auth
 * Enable token cache for v1 auth
 * Fixed corruption / wrong auth protocol being used in connect-graph scenarios where shared static object was modified outside static methods
+* Add app-only mode -- symmetric
+* Add app-only mode -- asymmetric
 
 ### Postponed
 
