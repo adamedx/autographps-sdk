@@ -78,6 +78,24 @@ ScriptClass V1AuthProvider {
         }
     }
 
+    function ClearToken($authContext, $token) {
+        write-verbose 'V1 auth provider clearing existing token'
+        $userUpn = if ($token.userinfo) {
+            $token.userinfo.displayableid
+        }
+        write-verbose "Clearing token for user '$userUpn'"
+
+        $tokenAsCacheItem = $this.scriptclass.__tokencache.ReadItems() | where { $_.accesstoken -eq $token.accesstoken }
+
+        if ( $tokenAsCacheItem ) {
+            write-verbose "Found cached token, clearing..."
+            $this.scriptclass.__TokenCache.DeleteItem($tokenAsCacheItem)
+            write-verbose "Successfully cleared token from the cache"
+        } else {
+            write-verbose "Unable to find cached token, skipping unnecessary removal from cache"
+        }
+    }
+
     function __AcquireAppToken($authContext, $scopes) {
         write-verbose 'V1 auth provider acquiring app token'
 

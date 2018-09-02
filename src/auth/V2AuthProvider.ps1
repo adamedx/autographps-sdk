@@ -82,6 +82,14 @@ ScriptClass V2AuthProvider {
         }
     }
 
+    function ClearToken($authContext, $token) {
+        write-verbose 'V2 auth provider clearing existing token'
+        $user = $token.user
+        $userUpn = $user.displayableid
+        write-verbose "Clearing token for user '$userUpn'"
+        $authContext.protocolContext.Remove($user)
+    }
+
     static {
         $__AuthLibraryLoaded = $false
         $__UserTokenCache = $null

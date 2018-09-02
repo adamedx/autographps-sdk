@@ -45,6 +45,10 @@ ScriptClass AuthProvider {
         $this.derivedProvider |=> AcquireTokenFromToken $authContext $scopes $token
     }
 
+    function ClearToken($authContext, $token) {
+        $this.derivedProvider |=> ClearToken $authContext $token
+    }
+
     static {
         $providers = @{}
 

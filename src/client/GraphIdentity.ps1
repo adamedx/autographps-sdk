@@ -22,7 +22,6 @@ ScriptClass GraphIdentity {
     $App = strict-val [PSCustomObject]
     $Token = strict-val [PSCustomObject] $null
     $GraphEndpoint = strict-val [PSCustomObject] $null
-    $V2AuthContext = $null
     $TenantName = $null
     $TenantDisplayId = $null
     $TenantDisplayName = $null
@@ -73,24 +72,14 @@ ScriptClass GraphIdentity {
 
     function ClearAuthentication {
         if ( $this.token ) {
-            $userUpn = if ( $this.V2AuthContext ) {
-                if ( $this.token.user ) {
-                    $this.token.user.displayableid
-                }
-            } else {
-                if ( $this.token.userinfo ) {
-                    $this.token.userinfo.displayableid
-                }
-            }
-            write-verbose "Clearing token for user '$userUpn'"
-            if ( $this.V2AuthContext ) {
-                write-verbose "Calling Remove on V2 auth context to remove user from token cache"
-                $this.V2AuthContext.Remove($this.token.user)
-                write-verbose "Clearing V2 auth context"
-                $this.V2AuthContext = $null
-            }
+            $authUri = $this.graphEndpoint |=> GetAuthUri $this.TenantName
+
+            $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
+            $authContext = $providerInstance |=> GetAuthContext $this.app $this.graphEndpoint.Graph $authUri
+            $providerInstance |=> ClearToken $authContext $this.token
+
+            $this.token = $null
         }
-        $this.token = $null
     }
 
     function getGraphToken($graphEndpoint, $scopes) {
@@ -139,10 +128,6 @@ ScriptClass GraphIdentity {
                 $this.tenantid = $result.tenantid
             }
         } catch {
-        }
-
-        $this.V2AuthContext = if ( $graphendpoint.authprotocol -eq ([GraphAuthProtocol]::v2) ) {
-            $authContext.protocolContext
         }
 
         $result
