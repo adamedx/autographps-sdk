@@ -77,6 +77,8 @@ function New-GraphConnection {
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
         [parameter(parametersetname='customendpoint')]
         [GraphAuthProtocol] $GraphAuthProtocol = [GraphAuthProtocol]::Default,
 
@@ -93,12 +95,6 @@ function New-GraphConnection {
         ([GraphType]::AADGraph)
     } else {
         ([GraphType]::MSGraph)
-    }
-
-    if ( ($GraphAuthProtocol -eq ([GraphAuthProtocol]::v1)) ) {
-        if ( $Certificate -or $CertificatePath ) {
-            throw 'Certificate options may only be specified for the V2 auth protocol, but v1 was specified'
-        }
     }
 
     $specifiedAuthProtocol = if ( $GraphAuthProtocol -ne ([GraphAuthProtocol]::Default) ) {

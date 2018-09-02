@@ -99,12 +99,21 @@ ScriptClass V1AuthProvider {
     function __AcquireAppToken($authContext) {
         write-verbose 'V1 auth provider acquiring app token'
 
-        if ( $authContext.app.secret.type -ne ([SecretType]::Password) ) {
-            throw [ArgumentException]::new("Unsupported secret type '{0}' -- only 'Password' secrets are supported for the v1 auth protocol" -f $authContext.app.secret.type)
+        $clientCredential = switch ( $authContext.app.secret.type ) {
+            ([SecretType]::Certificate) {
+                write-verbose 'V1 auth provider accessing specified certificate as client credential'
+                $clientCertificate = $authContext.app.secret.GetSecretData()
+                [Microsoft.IdentityModel.Clients.ActiveDirectory.ClientAssertionCertificate]::new($authContext.App.AppId, $clientCertificate)
+            }
+            ([SecretType]::Password) {
+                write-verbose 'V1 auth provider accessing symmetric key secret as client credential'
+                $clientSecret = [Microsoft.IdentityModel.Clients.ActiveDirectory.SecureClientSecret]::new($authcontext.app.secret.data)
+                [Microsoft.IdentityModel.Clients.ActiveDirectory.ClientCredential]::new($authContext.App.AppId, $clientSecret)
+            }
+            default {
+                throw [ArgumentException]::("V1 auth does not support secret type '{0}'" -f $this.tostring())
+            }
         }
-
-        $clientSecret = new-object Microsoft.IdentityModel.Clients.ActiveDirectory.SecureClientSecret -ArgumentList $authcontext.app.secret.data
-        $clientCredential = new-object Microsoft.IdentityModel.Clients.ActiveDirectory.ClientCredential -ArgumentList $authContext.App.AppId, $clientSecret
 
         $authContext.protocolContext.AcquireTokenAsync(
             $authContext.GraphEndpointUri,
