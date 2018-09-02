@@ -33,16 +33,16 @@ ScriptClass AuthProvider {
         $this.derivedProvider |=> GetUserInformation $token
     }
 
-    function AcquireInitialUserToken($authContext, $scopes) {
-        $this.derivedProvider |=> AcquireInitialUserToken $authContext $scopes
+    function AcquireFirstUserToken($authContext, $scopes) {
+        $this.derivedProvider |=> AcquireFirstUserToken $authContext $scopes
     }
 
-    function AcquireInitialAppToken($authContext, $scopes) {
-        $this.derivedProvider |=> AcquireInitialAppToken $authContext $scopes
+    function AcquireFirstAppToken($authContext) {
+        $this.derivedProvider |=> AcquireFirstAppToken $authContext
     }
 
-    function AcquireTokenFromToken($authContext, $scopes, $token) {
-        $this.derivedProvider |=> AcquireTokenFromToken $authContext $scopes $token
+    function AcquireRefreshedToken($authContext, $token) {
+        $this.derivedProvider |=> AcquireRefreshedToken $authContext $token
     }
 
     function ClearToken($authContext, $token) {

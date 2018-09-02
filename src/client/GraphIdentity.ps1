@@ -88,10 +88,6 @@ ScriptClass GraphIdentity {
         write-verbose "Using app id '$($this.App.AppId)'"
 
         write-verbose ("Adding scopes to request: {0}" -f ($scopes -join ';'))
-        $requestedScopes = new-object System.Collections.Generic.List[string]
-        $scopes | foreach {
-            $requestedScopes.Add($_)
-        }
 
         $authUri = $graphEndpoint |=> GetAuthUri $this.TenantName
         write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
@@ -101,12 +97,12 @@ ScriptClass GraphIdentity {
         $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.Graph $authUri
 
         $authResult = if ( $this.token ) {
-            $providerInstance |=> AcquireTokenFromToken $authContext $requestedScopes $this.token
+            $providerInstance |=> AcquireRefreshedToken $authContext $this.token
         } else {
             if ( $this.App.AuthType -eq ([GraphAppAuthType]::Apponly) ) {
-                $providerInstance |=> AcquireInitialAppToken $authContext $requestedScopes
+                $providerInstance |=> AcquireFirstAppToken $authContext
             } else {
-                $providerInstance |=> AcquireInitialUserToken $authContext $requestedScopes
+                $providerInstance |=> AcquireFirstUserToken $authContext $scopes
             }
         }
 

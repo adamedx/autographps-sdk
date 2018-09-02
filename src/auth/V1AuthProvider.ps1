@@ -39,7 +39,7 @@ ScriptClass V1AuthProvider {
         }
     }
 
-    function AcquireInitialUserToken($authContext, $scopes) {
+    function AcquireFirstUserToken($authContext, $scopes) {
         write-verbose 'V1 auth provider acquiring initial user token'
 
         $promptBehaviorValue = ([Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]::Auto)
@@ -52,13 +52,13 @@ ScriptClass V1AuthProvider {
             $promptBehavior)
     }
 
-    function AcquireInitialAppToken($authContext, $scopes) {
+    function AcquireFirstAppToken($authContext) {
         write-verbose 'V1 auth provider acquiring initial app token'
 
-        __AcquireAppToken $authContext $scopes
+        __AcquireAppToken $authContext
     }
 
-    function AcquireTokenFromToken($authContext, $scopes, $token) {
+    function AcquireRefreshedToken($authContext, $token) {
         write-verbose 'V1 auth provider refreshing existing token'
 
         # The token is irrelevant for v1 auth, since scopes are
@@ -68,7 +68,7 @@ ScriptClass V1AuthProvider {
         # has a token cache, that's all you need to look up the
         # previously used token
         if ( $authContext.app.authtype -eq ([GraphAppAuthType]::AppOnly) ) {
-            __AcquireAppToken $authContext $scopes
+            __AcquireAppToken $authContext
         } else {
             $userId = new-object Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifier -ArgumentList $token.userinfo.uniqueid, ([Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifierType]::UniqueId)
             $authContext.protocolContext.AcquireTokenSilentAsync(
@@ -96,7 +96,7 @@ ScriptClass V1AuthProvider {
         }
     }
 
-    function __AcquireAppToken($authContext, $scopes) {
+    function __AcquireAppToken($authContext) {
         write-verbose 'V1 auth provider acquiring app token'
 
         if ( $authContext.app.secret.type -ne ([SecretType]::Password) ) {
