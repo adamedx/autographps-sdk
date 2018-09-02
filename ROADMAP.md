@@ -2,19 +2,12 @@
 
 ## To-do items -- prioritized
 
-* Add disconnect method to auth provider
-* Separate app and user auth methods in auth provider?
-* Remove special casing of v2 auth
-* Ensure disconnect occurs in reconnect scenarios
-
 * Customize README
 * Customize WALKTHROUGH
 
 * Add app-only mode -- symmetric
 * Add app-only mode -- asymmetric
 * Release
-
-* Enable token cache for v1 auth
 
 * Add app enumeration
 * Add app creation
@@ -244,6 +237,11 @@
 * Fix publishmoduletodev to use module publishing rather than nuget
 * Fix token refresh
 * Refactor into posh-graph core sdk and poshgraph ux
+* Add clear token method to auth provider
+* Remove special casing of v2 auth
+* Add cert auth to v1 auth
+* Enable token cache for v1 auth
+* Fixed corruption / wrong auth protocol being used in connect-graph scenarios where shared static object was modified outside static methods
 
 ### Postponed
 

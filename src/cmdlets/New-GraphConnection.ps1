@@ -113,11 +113,15 @@ function New-GraphConnection {
     $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $GraphAuthProtocol $validatedCloud $GraphType
 
     if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
+        write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'
         $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $tenantName $computedAuthProtocol
     } else {
         $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
+            write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
+            write-verbose ("Creating endpoint with cloud '{0}', auth protocol '{1}'" -f $validatedCloud, $computedAuthProtocol)
             new-so GraphEndpoint $validatedCloud $graphType $null $null $computedAuthProtocol
         } else {
+            write-verbose ("Custom endpoint data required and graph endpoint URI was specified, using specified endpoint URI and auth protocol '0}'" -f $computedAuthProtocol)
             new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol
         }
 

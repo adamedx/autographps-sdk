@@ -63,7 +63,6 @@ function Connect-Graph {
         $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $Connection
 
         $::.GraphContext |=> SetCurrentByName $newContext.name
-        $newContext |=> UpdateConnection $connection
     } else {
         write-verbose "Connecting context '$($context.name)'"
         $applicationId = if ( $AppId ) {
