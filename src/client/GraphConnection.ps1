@@ -44,7 +44,7 @@ ScriptClass GraphConnection {
     function Connect {
         if ( ($this.Status -eq [GraphConnectionStatus]::Online) -and (! $this.connected) ) {
             if ($this.Identity) {
-                $this.Identity |=> Authenticate $this.GraphEndpoint $this.Scopes
+                $this.Identity |=> Authenticate $this.Scopes
             }
             $this.connected = $true
         }
@@ -58,7 +58,7 @@ ScriptClass GraphConnection {
         if ( $this.Status -eq [GraphConnectionStatus]::Online ) {
             if ( $this.GraphEndpoint.Type -eq [GraphType]::MSGraph ) {
                 # Trust the library's token cache to get a new token if necessary
-                $this.Identity |=> Authenticate $this.GraphEndpoint $this.Scopes $true
+                $this.Identity |=> Authenticate $this.Scopes $true
                 $this.connected = $true
             } else {
                 Connect

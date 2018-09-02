@@ -53,15 +53,15 @@ ScriptClass GraphIdentity {
         }
     }
 
-    function Authenticate($graphEndpoint, $scopes = $null) {
+    function Authenticate($scopes = $null) {
         if ( $this.token ) {
             $tokenTimeLeft = $this.token.expireson - [DateTime]::UtcNow
             write-verbose ("Found existing token with {0} minutes left before expiration" -f $tokenTimeLeft.TotalMinutes)
         }
 
-        write-verbose ("Getting token for resource {0} from auth endpoint: {1} with protocol {2}" -f $graphEndpoint.Graph, $graphEndpoint.Authentication, $graphEndpoint.AuthProtocol)
+        write-verbose ("Getting token for resource {0} from auth endpoint: {1} with protocol {2}" -f $this.graphEndpoint.Graph, $this.graphEndpoint.Authentication, $this.graphEndpoint.AuthProtocol)
 
-        $this.Token = getGraphToken $graphEndpoint $scopes
+        $this.Token = getGraphToken $this.graphEndpoint $scopes
 
         if ($this.token -eq $null) {
             throw "Failed to acquire token, no additional error information"
