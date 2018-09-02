@@ -67,7 +67,7 @@ ScriptClass V1AuthProvider {
         # for user auth, app+user is the key -- if the auth context
         # has a token cache, that's all you need to look up the
         # previously used token
-        if ( $authContext.app |=> IsConfidential ) {
+        if ( $authContext.app.authtype -eq ([GraphAppAuthType]::AppOnly) ) {
             __AcquireAppToken $authContext $scopes
         } else {
             $userId = new-object Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifier -ArgumentList $token.userinfo.uniqueid, ([Microsoft.IdentityModel.Clients.ActiveDirectory.UserIdentifierType]::UniqueId)

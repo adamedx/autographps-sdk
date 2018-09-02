@@ -21,7 +21,7 @@ ScriptClass V2AuthProvider {
     }
 
     function GetAuthContext($app, $graphUri, $authUri) {
-        if ( $app |=> IsConfidential ) {
+        if ( $app.authtype -eq ([GraphAppAuthType]::AppOnly) ) {
 
             $credential = New-Object Microsoft.Identity.Client.ClientCredential -ArgumentList ($app.secret |=> GetSecretData)
 
@@ -72,7 +72,7 @@ ScriptClass V2AuthProvider {
 
     function AcquireTokenFromToken($authContext, $scopes, $token) {
         write-verbose 'V2 auth provider refreshing existing token'
-        if ( $authContext.app |=> IsConfidential ) {
+        if ( $authContext.app.authtype -eq ([GraphAppAuthType]::AppOnly) ) {
             $requestedScopes = new-object System.Collections.Generic.List[string]
             $defaultScope = $authContext.GraphEndpointUri.tostring().trimend(), '.default' -join '/'
             $requestedScopes.Add($defaultScope)

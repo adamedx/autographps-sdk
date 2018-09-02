@@ -103,7 +103,7 @@ ScriptClass GraphIdentity {
         $authResult = if ( $this.token ) {
             $providerInstance |=> AcquireTokenFromToken $authContext $requestedScopes $this.token
         } else {
-            if ( $this.app |=> IsConfidential ) {
+            if ( $this.App.AuthType -eq ([GraphAppAuthType]::Apponly) ) {
                 $providerInstance |=> AcquireInitialAppToken $authContext $requestedScopes
             } else {
                 $providerInstance |=> AcquireInitialUserToken $authContext $requestedScopes
