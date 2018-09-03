@@ -31,7 +31,7 @@ ScriptClass GraphContext {
 
         $graphVersion = if ( $apiVersion ) { $apiVersion } else { $this.scriptclass |=> GetDefaultVersion }
 
-        $this.connection = $this.scriptclass |=> GetConnection
+        $this.connection = if ( $connection ) { $connection } else { $this.scriptclass |=> GetConnection }
         $this.version = $graphVersion
         $this.name = $name
         $this.location = $this.scriptclass |=> GetDefaultLocation

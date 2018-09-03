@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script Application)
+. (import-script ../common/Secret)
 
 enum GraphAppAuthType {
     Delegated
@@ -25,7 +26,7 @@ ScriptClass GraphApplication {
     $AuthType = ([GraphAppAuthType]::Delegated)
     $RedirectUri = $null
 
-    function __initialize($appId = $null, $RedirectUri = $null) {
+    function __initialize($appId = $null, $RedirectUri = $null, $secret = $null) {
         $this.AppId = if ( $appId -ne $null ) {
             $appId
         } else {
@@ -34,6 +35,11 @@ ScriptClass GraphApplication {
             }
 
             $::.Application.AppId
+        }
+
+        if ( $secret ) {
+            $this.secret = new-so Secret $secret
+            $this.AuthType = ([GraphAppAuthType]::AppOnly)
         }
 
         $this.RedirectUri = if ( $RedirectUri ) {
@@ -45,5 +51,9 @@ ScriptClass GraphApplication {
 
     function __GetDefaultRedirectUri($appId) {
         'msal{0}://auth' -f $appId
+    }
+
+    function IsConfidential {
+        $this.Secret -ne $null
     }
 }

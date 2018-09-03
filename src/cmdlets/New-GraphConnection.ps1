@@ -24,50 +24,64 @@ function New-GraphConnection {
         [switch] $AADGraph,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customsecret')]
+        [parameter(parametersetname='cloud')]
         [parameter(parametersetname='customendpoint')]
-        [String[]] $ScopeNames = @('User.Read'),
+        [String[]] $ScopeNames = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='cloud', mandatory=$true)]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='secret')]
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom', mandatory=$true)]
-        [parameter(parametersetname='customsecret', mandatory=$true)]
+        [parameter(parametersetname='cloud')]
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='secret', mandatory=$true)]
         [parameter(parametersetname='customendpoint', mandatory=$true)]
-        [Guid] $AppId,
+        $AppId = $null,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customsecret')]
-        [parameter(parametersetname='customendpoint')]
         [Uri] $AppRedirectUri,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customsecret', mandatory=$true)]
-        [parameter(parametersetname='customendpoint')]
-        [Guid] $AppIdSecret,
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [Switch] $NoninteractiveAppAuth,
+
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [Switch] $Secret,
+
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [SecureString] $Password,
+
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [string] $CertificatePath = $null,
+
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate = $null,
 
         [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
         [Uri] $GraphEndpointUri = $null,
 
         [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
         [Uri] $AuthenticationEndpointUri = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customsecret')]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
         [parameter(parametersetname='customendpoint')]
-        [GraphAuthProtocol] $GraphAuthProtocol = [GraphAuthProtocol]::Default,
+        [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='customsecret')]
-        [parameter(parametersetname='customendpoint')]
         [String] $TenantName = $null
     )
 
@@ -83,23 +97,44 @@ function New-GraphConnection {
         ([GraphType]::MSGraph)
     }
 
-    $specifiedAuthProtocol = if ( $GraphAuthProtocol -ne ([GraphAuthProtocol]::Default) ) {
-        $GraphAuthProtocol
+    $specifiedAuthProtocol = if ( $AuthProtocol -ne ([GraphAuthProtocol]::Default) ) {
+        $AuthProtocol
     }
 
-    if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol) {
-        $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $ScopeNames
+    $specifiedScopes = if ( $ScopeNames ) {
+        if ( $Secret.IsPresent -or $Certificate -or $CertificatePath ) {
+            throw 'Scopes may not be specified for app authentication'
+        }
+        $scopeNames
     } else {
-        $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $GraphAuthProtocol $validatedCloud $GraphType
+        @('User.Read')
+    }
 
+    $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $AuthProtocol $validatedCloud $GraphType
+
+    if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
+        write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'
+        $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $tenantName $computedAuthProtocol
+    } else {
         $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
+            write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
+            write-verbose ("Creating endpoint with cloud '{0}', auth protocol '{1}'" -f $validatedCloud, $computedAuthProtocol)
             new-so GraphEndpoint $validatedCloud $graphType $null $null $computedAuthProtocol
         } else {
+            write-verbose ("Custom endpoint data required and graph endpoint URI was specified, using specified endpoint URI and auth protocol '0}'" -f $computedAuthProtocol)
             new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol
         }
 
-        $app = new-so GraphApplication $AppId $AppRedirectUri
+        $appSecret = if ( $Password ) {
+            $Password
+        } elseif ( $Certificate ) {
+            $Certificate
+        } else {
+            $CertificatePath
+        }
+
+        $app = new-so GraphApplication $AppId $AppRedirectUri $appSecret
         $identity = new-so GraphIdentity $app $graphEndpoint $TenantName
-        new-so GraphConnection $graphEndpoint $identity $ScopeNames
+        new-so GraphConnection $graphEndpoint $identity $specifiedScopes
     }
 }

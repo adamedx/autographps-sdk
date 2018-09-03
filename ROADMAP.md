@@ -2,12 +2,14 @@
 
 ## To-do items -- prioritized
 
-* Add app creation
-* Add app enumeration
-* Add app updating
+* Customize README
+* Customize WALKTHROUGH
 * Release
 
-* Add app-only mode
+* Add app enumeration
+* Add app creation
+* App deletion
+* Add app updating
 * Release
 
 * Clean up parse methods in GraphUtilities
@@ -79,7 +81,6 @@
 * Show-GraphRequest
 * Fix bug with graph update not clearing uri cache due to async
 * Enable schemaless execution
-* Auto-refresh token when expired
 * Use BEGIN, PROCESS, END in get-graphuri
 * Add basic help
 * Add uri completion
@@ -232,6 +233,13 @@
 * Fix publishmoduletodev to use module publishing rather than nuget
 * Fix token refresh
 * Refactor into posh-graph core sdk and poshgraph ux
+* Add clear token method to auth provider
+* Remove special casing of v2 auth
+* Add cert auth to v1 auth
+* Enable token cache for v1 auth
+* Fixed corruption / wrong auth protocol being used in connect-graph scenarios where shared static object was modified outside static methods
+* Add app-only mode -- symmetric
+* Add app-only mode -- asymmetric
 
 ### Postponed
 

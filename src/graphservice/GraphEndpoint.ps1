@@ -33,6 +33,14 @@ enum GraphAuthProtocol {
 
 ScriptClass GraphEndpoint {
     static {
+        # Note: this hash table, as well as the nested hash tables,
+        # Must be protected -- do *NOT* give references to them outside
+        # the static methods of this class -- that includes preventing
+        # instance methods from having access! If callers need access to,
+        # the hash tables, clone them. Without that, callers can modify
+        # this shared state! This is an issue for any objects that are not
+        # treated by value. Strings and integers for instance are ok, any
+        # object type is not, and must be handled with care.
         $MSGraphCloudEndpoints = @{
             [GraphCloud]::Public = @{
                 Authentication='https://login.microsoftonline.com'
@@ -63,10 +71,12 @@ ScriptClass GraphEndpoint {
         }
 
         function GetCloudEndpoint([GraphCloud] $cloud, [GraphType] $graphType) {
+            # We *MUST* clone these -- otherwise callers have a reference to the
+            # shared instance in the static class, and they can overwrite it!
             if ($graphType -eq [GraphType]::MSGraph) {
-                $this.MSGraphCloudEndpoints[$cloud]
+                $this.MSGraphCloudEndpoints[$cloud].Clone()
             } else {
-                $this.AADGraphCloudEndpoints
+                $this.AADGraphCloudEndpoints.Clone()
             }
         }
 
@@ -109,7 +119,11 @@ ScriptClass GraphEndpoint {
         $this.Type = $GraphType
         $this.Cloud = $cloud
         $endpointData = if ($GraphEndpoint -eq $null) {
-            $this.scriptclass |=> GetCloudEndpoint $cloud $graphType
+            $cloudEndpoint = $this.scriptclass |=> GetCloudEndpoint $cloud $graphType
+            if ( $authProtocol ) {
+                $cloudEndpoint.AuthProtocol = $authProtocol
+            }
+            $cloudEndpoint
         } else {
             @{
                 Graph=$GraphEndpoint
