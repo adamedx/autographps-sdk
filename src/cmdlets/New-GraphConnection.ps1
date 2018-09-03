@@ -15,6 +15,8 @@
 . (import-script ../GraphService/GraphEndpoint)
 . (import-script ../Client/GraphIdentity)
 . (import-script ../Client/GraphConnection)
+. (import-script common/DynamicParamHelper)
+. (import-script ../common/ScopeHelper)
 
 function New-GraphConnection {
     [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='msgraph')]
@@ -23,10 +25,18 @@ function New-GraphConnection {
         [parameter(parametersetname='customendpoint')]
         [switch] $AADGraph,
 
+        <#
+        This is implemented as a DynamicParam -- see below
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud')]
         [parameter(parametersetname='customendpoint')]
         [String[]] $ScopeNames = $null,
+        #>
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='cloud')]
+        [parameter(parametersetname='customendpoint')]
+        [Switch] $SkipScopeValidation,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud', mandatory=$true)]
@@ -85,56 +95,82 @@ function New-GraphConnection {
         [String] $TenantName = $null
     )
 
-    $validatedCloud = if ( $Cloud ) {
-        [GraphCloud] $Cloud
-    } else {
-        ([GraphCloud]::Public)
+    DynamicParam {
+        GetOptionalValidateSetParameter ScopeNames ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
+            @{
+                ParameterSetName = 'msgraph'
+            }
+            @{
+                ParameterSetName = 'cloud'
+            },
+            @{
+                ParameterSetName = 'customendpoint'
+            }
+        )
     }
 
-    $graphType = if ( $AADGraph.ispresent ) {
-        ([GraphType]::AADGraph)
-    } else {
-        ([GraphType]::MSGraph)
+    begin {
+        <# Make a friendly local variable name for the parameter
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='cloud')]
+        [parameter(parametersetname='customendpoint')]
+        [String[]] $ScopeNames = $null,
+        #>
+        $ScopeNames = $PsBoundParameters['ScopeNames']
     }
 
-    $specifiedAuthProtocol = if ( $AuthProtocol -ne ([GraphAuthProtocol]::Default) ) {
-        $AuthProtocol
-    }
-
-    $specifiedScopes = if ( $ScopeNames ) {
-        if ( $Secret.IsPresent -or $Certificate -or $CertificatePath ) {
-            throw 'Scopes may not be specified for app authentication'
-        }
-        $scopeNames
-    } else {
-        @('User.Read')
-    }
-
-    $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $AuthProtocol $validatedCloud $GraphType
-
-    if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
-        write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'
-        $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $tenantName $computedAuthProtocol
-    } else {
-        $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
-            write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
-            write-verbose ("Creating endpoint with cloud '{0}', auth protocol '{1}'" -f $validatedCloud, $computedAuthProtocol)
-            new-so GraphEndpoint $validatedCloud $graphType $null $null $computedAuthProtocol
+    process {
+        $validatedCloud = if ( $Cloud ) {
+            [GraphCloud] $Cloud
         } else {
-            write-verbose ("Custom endpoint data required and graph endpoint URI was specified, using specified endpoint URI and auth protocol '0}'" -f $computedAuthProtocol)
-            new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol
+            ([GraphCloud]::Public)
         }
 
-        $appSecret = if ( $Password ) {
-            $Password
-        } elseif ( $Certificate ) {
-            $Certificate
+        $graphType = if ( $AADGraph.ispresent ) {
+            ([GraphType]::AADGraph)
         } else {
-            $CertificatePath
+            ([GraphType]::MSGraph)
         }
 
-        $app = new-so GraphApplication $AppId $AppRedirectUri $appSecret
-        $identity = new-so GraphIdentity $app $graphEndpoint $TenantName
-        new-so GraphConnection $graphEndpoint $identity $specifiedScopes
+        $specifiedAuthProtocol = if ( $AuthProtocol -ne ([GraphAuthProtocol]::Default) ) {
+            $AuthProtocol
+        }
+
+        $specifiedScopes = if ( $ScopeNames ) {
+            if ( $Secret.IsPresent -or $Certificate -or $CertificatePath ) {
+                throw 'Scopes may not be specified for app authentication'
+            }
+            $scopeNames
+        } else {
+            @('User.Read')
+        }
+
+        $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $AuthProtocol $validatedCloud $GraphType
+
+        if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
+            write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'
+            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $tenantName $computedAuthProtocol
+        } else {
+            $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
+                write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
+                write-verbose ("Creating endpoint with cloud '{0}', auth protocol '{1}'" -f $validatedCloud, $computedAuthProtocol)
+                new-so GraphEndpoint $validatedCloud $graphType $null $null $computedAuthProtocol
+            } else {
+                write-verbose ("Custom endpoint data required and graph endpoint URI was specified, using specified endpoint URI and auth protocol '0}'" -f $computedAuthProtocol)
+                new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol
+            }
+
+            $appSecret = if ( $Password ) {
+                $Password
+            } elseif ( $Certificate ) {
+                $Certificate
+            } else {
+                $CertificatePath
+            }
+
+            $app = new-so GraphApplication $AppId $AppRedirectUri $appSecret
+            $identity = new-so GraphIdentity $app $graphEndpoint $TenantName
+            new-so GraphConnection $graphEndpoint $identity $specifiedScopes
+        }
     }
 }
