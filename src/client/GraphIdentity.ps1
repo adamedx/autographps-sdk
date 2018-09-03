@@ -38,6 +38,8 @@ ScriptClass GraphIdentity {
         $this.App = $app
         $this.GraphEndpoint = $graphEndpoint
         $this.TenantName = $tenantName
+
+        __UpdateTenantDisplayInfo
     }
 
     function GetUserInformation {
@@ -131,7 +133,9 @@ ScriptClass GraphIdentity {
 
     function __UpdateTenantDisplayInfo {
         $tenant = try {
-            (([uri] $this.token.authority).segments | select -last 1).trimend('/')
+            if ( $this.token ) {
+                (([uri] $this.token.authority).segments | select -last 1).trimend('/')
+            }
         } catch {
         }
 
@@ -144,7 +148,9 @@ ScriptClass GraphIdentity {
 
         $tenantName = $null
         $tenantId = try {
-            $this.token.tenantId
+            if ( $this.token ) {
+                $this.token.tenantId
+            }
         } catch {
         }
 
@@ -154,6 +160,10 @@ ScriptClass GraphIdentity {
             }
         } catch {
             $tenantName = $tenant
+        }
+
+        if ( ! $tenantName ) {
+            $tenantName = $this.tenantName
         }
 
         if ( ! $tenantId ) {
