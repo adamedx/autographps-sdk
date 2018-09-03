@@ -131,11 +131,13 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1',
         '.\src\cmdlets\Test-Graph.ps1',
         '.\src\cmdlets\common\ItemResultHelper.ps1',
+        '.\src\cmdlets\common\DynamicParamHelper.ps1',
         '.\src\cmdlets\common\QueryHelper.ps1',
         '.\src\common\GraphAccessDeniedException.ps1',
         '.\src\common\GraphUtilities.ps1',
         '.\src\common\PreferenceHelper.ps1',
         '.\src\common\ProgressWriter.ps1',
+        '.\src\common\ScopeHelper.ps1',
         '.\src\common\Secret.ps1',
         '.\src\graphservice\graphendpoint.ps1'
         '.\src\REST\GraphErrorRecorder.ps1',
