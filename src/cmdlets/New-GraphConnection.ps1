@@ -96,7 +96,7 @@ function New-GraphConnection {
     )
 
     DynamicParam {
-        GetOptionalValidateSetParameter ScopeNames ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
+        Get-DynamicValidateSetParameter ScopeNames ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
             @{
                 ParameterSetName = 'msgraph'
             }

@@ -49,7 +49,7 @@ function Connect-Graph {
     )
 
     DynamicParam {
-        GetOptionalValidateSetParameter ScopeNames ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
+        Get-DynamicValidateSetParameter ScopeNames ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
             @{
                 Position = 0
             }
