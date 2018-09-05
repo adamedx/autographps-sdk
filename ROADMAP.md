@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Add $search support
+
 * Customize README
 * Customize WALKTHROUGH
 * Release
