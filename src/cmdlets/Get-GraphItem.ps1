@@ -26,6 +26,8 @@ function Get-GraphItem {
 
         [String] $ODataFilter = $null,
 
+        [String] $Search = $null,
+
         [String[]] $Select = $null,
 
         [String[]] $Expand = $null,
@@ -62,6 +64,7 @@ function Get-GraphItem {
         RelativeUri=$ItemRelativeUri
         Query = $Query
         ODataFilter = $ODataFilter
+        Search = $Search
         Select = $Select
         Expand = $Expand
         OrderBy = $OrderBy

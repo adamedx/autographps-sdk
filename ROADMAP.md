@@ -240,6 +240,7 @@
 * Fixed corruption / wrong auth protocol being used in connect-graph scenarios where shared static object was modified outside static methods
 * Add app-only mode -- symmetric
 * Add app-only mode -- asymmetric
+* Add $search support
 
 ### Postponed
 

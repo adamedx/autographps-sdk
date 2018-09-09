@@ -35,6 +35,8 @@ function Invoke-GraphRequest {
 
         [String] $ODataFilter = $null,
 
+        [String] $Search = $null,
+
         [String[]] $Select = $null,
 
         [String[]] $Expand = $null,
@@ -68,8 +70,8 @@ function Invoke-GraphRequest {
     $::.GraphErrorRecorder |=> StartRecording
 
     if ( $Query ) {
-        if ( $ODataFilter -or $Select -or $OrderBy ) {
-            throw [ArgumentException]::new("'ODataFilter' and 'Select' options may not specified with 'Query'")
+        if ( $Search -or $ODataFilter -or $Select -or $OrderBy ) {
+            throw [ArgumentException]::new("'-ODataFilter', '-Search', '-OrderBy',  and '-Select' options may not specified with 'Query'")
         }
     }
 
@@ -126,6 +128,10 @@ function Invoke-GraphRequest {
 
         if ( $ODataFilter ) {
             $queryParameters += @('$filter={0}' -f $ODataFilter)
+        }
+
+        if ( $Search ) {
+            $queryParameters += @('$search={0}' -f $Search)
         }
 
         if ( $orderQuery ) {
