@@ -166,7 +166,7 @@ PrivateData = @{
 
         # Adds pre-release to the patch version according to the conventions of https://semver.org/spec/v1.0.0.html
         # Requires PowerShellGet 1.6.0 or greater
-        Prerelease = '-preview'
+        # Prerelease = '-preview'
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
@@ -187,7 +187,7 @@ This release adds support for app authentication and cmdlet argument completion.
 * Argument completion for ``ScopeNames`` parameter of ``Connect-Graph`` and ``New-GraphConnection`` cmdlets
   * Associated ``-SkipScopeValidation`` option to allow scope names not validated / completed by the cmdlet
 * Parameter ``-GraphAuthProtocol`` has been changed to ``-AuthProtocol`` for the ``New-GraphConnection`` cmdlet
-* ``-Search`` option added to ``Get-GraphItem``, ``Get-GraphChildItem`` cmdlets to enable full-text search on Graph REST calls that support the OData ```$search`` query parameter
+* ``-Search`` option added to ``Get-GraphItem`` and ``Invoke-GraphRequests`` cmdlets to enable full-text search on Graph REST calls that support the OData ```$search`` query parameter
 
 #### Feature notes
 * For app-only auth: If ``-Secret`` is specified but ``-Password`` is not specified, you will receive a secure input prompt to allow you to implement the symmetric key password from the console.
