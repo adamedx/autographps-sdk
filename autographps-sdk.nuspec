@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>poshgraph-sdk</id>
+    <id>autographps-sdk</id>
     <version>0.0.0</version>
     <authors>adamedx</authors>
     <owners>adamedx</owners>
     <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
-    <projectUrl>https://github.com/adamedx/poshgraph-sdk</projectUrl>
+    <projectUrl>https://github.com/adamedx/authgraphps-sdk</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Command line SDK for the Microsoft Graph API</description>
     <releaseNotes>Initial development</releaseNotes>
@@ -19,9 +19,9 @@
   <files>
     <file src="LICENSE.md" target="." />
     <file src="README.md" target="." />
-    <file src="poshgraph-sdk.psd1" target="." />
-    <file src="poshgraph-sdk.psm1" target="." />
-    <file src="poshgraph-sdk.tests.ps1" target="." />
+    <file src="autographps-sdk.psd1" target="." />
+    <file src="autographps-sdk.psm1" target="." />
+    <file src="autographps-sdk.tests.ps1" target="." />
     <file src="src\**\*.ps1" target="src/" />
     <file src="build\**\*.ps1" target="build/" />
     <file src="lib\Microsoft.Identity.Client.1.1.4-preview0002\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.1.1.4-preview0002\lib\net45" />
