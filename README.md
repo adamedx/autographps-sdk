@@ -1,4 +1,4 @@
-PoshGraph-SDK
+AutoGraphPS-SDK
 =============
 
 <img src="https://raw.githubusercontent.com/adamedx/poshgraph-sdk/master/assets/PoshGraphIcon.png" width="100">
@@ -16,7 +16,7 @@ PoshGraph-SDK
 
 ## Overview
 
-**PoshGraph-SDK** is the PowerShell SDK for the [Microsoft Graph API](https://graph.microsoft.io/). PoshGraph-SDK enables the development of PowerShell-based applications and automation of the Microsoft Graph REST API gateway; the PowerShell Graph exploration UX [PoshGraph](https://github.com/adamedx/poshgraph) is one such application based on the SDK. The Graph exposes a growing list of services such as
+**AutoGraphPS-SDK** automates the [Microsoft Graph API](https://graph.microsoft.io/) through PowerShell. AutoGraphPS-SDK enables the development of PowerShell-based applications and automation of the Microsoft Graph REST API gateway; the PowerShell Graph exploration UX [AutoGraphPS](https://github.com/adamedx/poshgraph) is one such application based on the SDK. The Graph exposes a growing list of services such as
 
 * Azure Active Directory (AAD)
 * OneDrive
@@ -28,17 +28,17 @@ The project is in the earliest stages of development and almost but not quite ye
 
 ### System requirements
 
-PoshGraph-SDK requires Windows 10 and PowerShell 5.0.
+AutoGraphPS-SDK requires Windows 10 and PowerShell 5.0.
 
 ## Installation
-PoshGraph-SDK is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/poshgraph-sdk); run the following command to install the latest stable release of PoshGraph-SDK into your user profile:
+AutoGraphPS-SDK is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/poshgraph-sdk); run the following command to install the latest stable release of AutoGraphPSGraph-SDK into your user profile:
 
 ```powershell
 Install-Module PoshGraph-SDK -scope currentuser
 ```
 
-## Using PoshGraph-SDK
-Once you've installed, you can use a PoshGraph-SDK cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
+## Using AutoGraphPS-SDK
+Once you've installed, you can use an AutoGraphPS-SDK cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
 
 ```powershell
 PS> get-graphitem me
@@ -57,7 +57,7 @@ After you've responded to the authentication prompt, you should see output that 
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
-Now you're ready to use any of PoshGraph-SDK's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
+Now you're ready to use any of AutoGraphPS-SDK's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
 
 ### How do I use the cmdlets from the CLI?
 
@@ -69,7 +69,7 @@ https://graph.microsoft.com/v1.0/me/people
 https://graph.microsoft.com/v1.0/users
 ```
 
-With the PoshGraph-SDK cmdlets, you can invoke REST methods from PowerShell and omit the common `https://graph.microsoft.com/v1.0` of the URI as follows:
+With the AutoGraphPS-SDK cmdlets, you can invoke REST methods from PowerShell and omit the common `https://graph.microsoft.com/v1.0` of the URI as follows:
 
 ```powershell
 Get-GraphItem me/calendars
@@ -79,13 +79,13 @@ Get-GraphItem users
 
 These commands retrieve the same data as a `GET` for the full URIs given earlier. Of course, `Get-GraphItem` supports a `-AbsoluteUri` option to allow you to specify that full Uri if you so desire.
 
-As with any PowerShell cmdlet, you can use PoshGraph-SDK cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects.
+As with any PowerShell cmdlet, you can use AutoGraphPS-SDK cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects.
 
-For more detailed information on how to use PoshGraph-SDK cmdlets, see the [WALKTHROUGH](https://github.com/adamedx/poshgraph/blob/master/docs/WALKTHROUGH.md) for the separate PoshGraph module, which documents a superset of cmdlets contained in this SDK in additions to those found in that module.
+For more detailed information on how to use AutoGraphPS-SDK cmdlets, see the [WALKTHROUGH](https://github.com/adamedx/poshgraph/blob/master/docs/WALKTHROUGH.md) for the separate AutoGraphPS module, which documents a superset of cmdlets contained in this SDK in additions to those found in that module.
 
 ### How do I use it in my PowerShell application?
 
-If your application is packaged as a PowerShell module, simply include it in the `NestedModules` section of your module's [PowerShell module manifest](https://technet.microsoft.com/en-us/library/dd878337%28v=VS.85%29.aspx). This will allow you to publish your module to a repository like PSGallery and ensure that users who install your module from the gallery also get the installation of PoshGraph-SDK needed for your module to function. You should add the line `import-module poshgraph-sdk` to the beginning of the script you use to initialize your module.
+If your application is packaged as a PowerShell module, simply include it in the `NestedModules` section of your module's [PowerShell module manifest](https://technet.microsoft.com/en-us/library/dd878337%28v=VS.85%29.aspx). This will allow you to publish your module to a repository like PSGallery and ensure that users who install your module from the gallery also get the installation of AutoGraphPS-SDK needed for your module to function. You should add the line `import-module poshgraph-sdk` to the beginning of the script you use to initialize your module.
 
 If you're using a script module (`.psm1` file) or simply as a plan PowerShell `ps1` script, you should ensure the module has been already been installed on the system using `Install-Module` or a similar deployment mechanism, then add a line `import-module poshgraph-sdk` to the beginning of your script or script module.
 
@@ -110,22 +110,22 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 
 ### Limited support for Azure Active Directory (AAD) Graph
 
-Some PoshGraph-SDK cmdlets also work with [Azure Active Directory Graph](https://msdn.microsoft.com/Library/Azure/Ad/Graph/howto/azure-ad-graph-api-operations-overview), simply by specifying the `-aadgraph` switch as in the following:
+Some AutoGraphPS-SDK cmdlets also work with [Azure Active Directory Graph](https://msdn.microsoft.com/Library/Azure/Ad/Graph/howto/azure-ad-graph-api-operations-overview), simply by specifying the `-aadgraph` switch as in the following:
 
 ```powershell
 Get-GraphItem me -aadgraph
 ```
 
-Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of PoshGraph-SDK.
+Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of AutoGraphPS-SDK.
 
 ### More about how it works
 
-If you'd like a behind the scenes look at the implementation of PoshGraph-SDK, take a look at the following article:
+If you'd like a behind the scenes look at the implementation of AutoGraphPS-SDK, take a look at the following article:
 
 * [Microsoft Graph via PowerShell](https://adamedx.github.io/softwarengineering/2018/08/09/Microsoft-Graph-via-PowerShell.html)
 
 ## Developer installation from source
-For developers contributing to PoshGraph-SDK or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
+For developers contributing to AutoGraphPS-SDK or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
 
 ```powershell
 git clone https://github.com/adamedx/poshgraph-sdk
@@ -137,10 +137,10 @@ cd poshgraph-sdk
 
 Read about our contribution process in [CONTRIBUTING.md](CONTRIBUTING.md). The project is not quite ready to handle source contributions; suggestions on features or other advice are welcome while we establish a baseline.
 
-See the [Build README](build/README.md) for instructions on building and testing changes to PoshGraph-SDK.
+See the [Build README](build/README.md) for instructions on building and testing changes to AutoGraphPS-SDK.
 
 ## Quickstart
-The Quickstart is a way to try out PoshGraph-SDK without installing the PoshGraph-SDK module. In the future it will feature an interactive tutorial. Additionally, it is useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **PoshGraph-SDK**:
+The Quickstart is a way to try out AutoGraphPS-SDK without installing the AutoGraphPS-SDK module. In the future it will feature an interactive tutorial. Additionally, it is useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **AutoGraphPS-SDK**:
 
 * [Download](https://github.com/adamedx/poshgraph/archive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
 
@@ -151,7 +151,7 @@ The Quickstart is a way to try out PoshGraph-SDK without installing the PoshGrap
 
   `.\build\quickstart.ps1`
 
-This will download dependencies, build the PoshGraph-SDK module, and launch a new PowerShell console with the module imported. You can execute a PoshGraph-SDK cmdlet like the following in the console -- try it:
+This will download dependencies, build the AutoGraphPS-SDK module, and launch a new PowerShell console with the module imported. You can execute a AutoGraphPS-SDK cmdlet like the following in the console -- try it:
 
   `Test-Graph`
 
@@ -172,7 +172,7 @@ If you need to launch another console with Posh Graph, you can run the faster co
 
     .\build\import-devmodule.ps1
 
-These commmands can also be used when testing modifications you make to PoshGraph-SDK, and also give you an isolated environment in which to test and develop applications and tools that depend on PoshGraph-SDK.
+These commmands can also be used when testing modifications you make to AutoGraphPS-SDK, and also give you an isolated environment in which to test and develop applications and tools that depend on AutoGraphPS-SDK.
 
 License and authors
 -------------------

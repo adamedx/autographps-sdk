@@ -1,6 +1,8 @@
-# ROADMAP for PoshGraph
+# ROADMAP for PoshGraph-SDK (AutoGraphPS-SDK)
 
 ## To-do items -- prioritized
+
+* Rename to AutoGraphPS-SDK
 
 * Customize README
 * Customize WALKTHROUGH
