@@ -14,6 +14,9 @@
 * Add app updating
 * Release
 
+* Fix invoke-graphrequest parameter names (-verb should be -method, -payload should be -body)
+* Add Remove-GraphItem
+
 * Clean up parse methods in GraphUtilities
 * Investigate console.writeline background thread
 * Coding standards -- SOLID, casing, method call syntax
