@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.3.1'
+ModuleVersion = '0.3.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -170,39 +170,24 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# PoshGraph-SDK 0.3.0 Release Notes
+# PoshGraph-SDK 0.3.2 Release Notes
 
-This release adds support for app authentication and cmdlet argument completion.
+PoshGraph-SDK has been renamed AutoGraphPS-SDK!!!
 
-## New features
+This package is now DEPRECATED in favor of **AutoGraphPS-SDK**. All cmdlets from
+PoshGraph-SDK are available in **AutoGraphPS-SDK**. Please install AutoGraphPS-SDK:
 
-### Cmdlet features
-* V1 auth protocol token caching introduced -- no need to re-authenticate every hour for V1 auth
-* App-only auth through ``New-GraphConnection`` for v1 and v2 auth protocols via symmetric key or certificate
-  * Use ``-NonInteractiveAppAuth`` of ``New-GraphConnection`` for app only auth and specify one of the following options
-    * ``-Secret`` to specify a symmetric key through the ``-Password`` parameter
-    * ``-CertificatePath`` to specify a path to a ceritificate in the local certificate store PowerShell drive ``cert:``.
-    * ``-Certificate`` to specify an ``X509Certificate2`` describing an ``X509`` certificate with a private key such as one that can be obtained by reading a certificate from the local certificate store or from any number of serialized certificate file formats such as ``.pfx``, ``.cer``, etc.
-  * The connection returned by ``New-GraphConnection`` can be supplied to the ``-Connection`` parameter of the ``Connect-Graph`` cmdlet or other cmdlets that accept the ``-Connection`` parameter obtain and use an app-only access token
-* Argument completion for ``ScopeNames`` parameter of ``Connect-Graph`` and ``New-GraphConnection`` cmdlets
-  * Associated ``-SkipScopeValidation`` option to allow scope names not validated / completed by the cmdlet
-* Parameter ``-GraphAuthProtocol`` has been changed to ``-AuthProtocol`` for the ``New-GraphConnection`` cmdlet
-* ``-Search`` option added to ``Get-GraphItem`` and ``Invoke-GraphRequests`` cmdlets to enable full-text search on Graph REST calls that support the OData ```$search`` query parameter
+Visit the AutoGraphPS-SDK package in PowerShell Gallery:
 
-#### Feature notes
-* For app-only auth: If ``-Secret`` is specified but ``-Password`` is not specified, you will receive a secure input prompt to allow you to implement the symmetric key password from the console.
-* For the ``-CertificatePath`` parameter, if the specified path to the certificate in the PowerShell ``cert:`` drive is not an absolute path starting with ``cert:/``, the path is assumed to be relative to the user's certificate story, i.e. ``cert://currentuser/my``.
+       https://www.powershellgallery.com/packages/autographps-sdk
 
-### Library features
+Install AutoGraphPS-SDK via
 
-* Expose tenant display information from the ``GraphIdentity`` class.
-* Refactor of authentication related code
+       Install-Module -Name autographps-sdk -Scope CurrentUser
 
-## Fixed defects
-
-* Fix incorrect auth protocol used due to shared reference corruption issue in data structure
-* Fix token cache not being cleared when connection was disconnected
-* Fix confusing parameter sets for ``New-GraphConnection`` and ``Connect-Graph`` with simpler permutations
+The PoshGraph-SDK package *will no longer be updated* -- to receive the latest features
+use AutoGraphPS-SDK where ongoing development of the cmdlets from PoshGraph-SDK continues
+at full speed!
 "@
 
     } # End of PSData hashtable
