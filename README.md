@@ -1,7 +1,7 @@
 PoshGraph-SDK
 =============
 
-<img src="https://raw.githubusercontent.com/adamedx/poshgraph-sdk/master/assets/PoshGraphIcon.png" width="100">
+<img src="https://raw.githubusercontent.com/adamedx/autograph-sdk/master/assets/PoshGraphIcon.png" width="100">
 
 ----
 
@@ -13,6 +13,11 @@ PoshGraph-SDK
 * [Contributing and development](#contributing-and-development)
 * [Quickstart](#quickstart)
 * [License and authors](#license-and-authors)
+
+## This module has been renamed!
+This branch is a snapshot of **PoshGraph-SDK** source just before the project was renamed to [AutoGraphPS-SDK](https://github.com/adamedx/autographps-sdk). Please visit [AutoGraphPS-SDK](https://github.com/adamedx/autographps-sdk) for the latest instructions on using and develping **AutoGraphPS-SDK** which carries forward all of the cmdlets and features of **PoshGraph-SDK**.
+
+Note that this repository was originally named **PoshGraph-SDK** and is now **AutoGraphPS-SDK** available at [https://github.com/adamedx/autographps-sdk](https://github.com/adamedx/autographps-sdk). There is no further development on this branch, which exists only as a record of the rename and reference point for old project outputs and external documentation that refers to the original name.
 
 ## Overview
 

@@ -45,6 +45,9 @@ ScriptClass RESTRequest {
     function Invoke {
         [cmdletbinding(SupportsShouldProcess=$true)]
         param()
+
+        __ShowPoshGraphDeprecation
+
         if ($pscmdlet.shouldprocess($this.uri, $this.method)) {
             # Disable progress display
             $progresspreference = 'SilentlyContinue'
