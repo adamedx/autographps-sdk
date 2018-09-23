@@ -1,22 +1,24 @@
 AutoGraphPS-SDK
 =============
 
-<img src="https://raw.githubusercontent.com/adamedx/poshgraph-sdk/master/assets/PoshGraphIcon.png" width="100">
+<img src="https://raw.githubusercontent.com/adamedx/autographps-sdk/master/assets/PoshGraphIcon.png" width="100">
 
 ----
 
 * [Overview](#Overview)
 * [Installation](#Installation)
-* [Using PoshGraph-SDK](#using-poshgraph)
+* [Using AutoGraphPS-SDK](#using-autographps-sdk)
 * [Command inventory](#command-inventory)
 * [Developer installation from source](#developer-installation-from-source)
 * [Contributing and development](#contributing-and-development)
 * [Quickstart](#quickstart)
 * [License and authors](#license-and-authors)
 
+*This project was recently renamed from **PoshGraph-SDK** -- if you're looking for **PoshGraph-SDK**, you're in the right place!*
+
 ## Overview
 
-**AutoGraphPS-SDK** automates the [Microsoft Graph API](https://graph.microsoft.io/) through PowerShell. AutoGraphPS-SDK enables the development of PowerShell-based applications and automation of the Microsoft Graph REST API gateway; the PowerShell Graph exploration UX [AutoGraphPS](https://github.com/adamedx/poshgraph) is one such application based on the SDK. The Graph exposes a growing list of services such as
+**AutoGraphPS-SDK** automates the [Microsoft Graph API](https://graph.microsoft.io/) through PowerShell. AutoGraphPS-SDK enables the development of PowerShell-based applications and automation of the Microsoft Graph REST API gateway; the PowerShell Graph exploration UX [AutoGraphPS](https://github.com/adamedx/autographps) is one such application based on the SDK. The Graph exposes a growing list of services such as
 
 * Azure Active Directory (AAD)
 * OneDrive
@@ -31,10 +33,10 @@ The project is in the earliest stages of development and almost but not quite ye
 AutoGraphPS-SDK requires Windows 10 and PowerShell 5.0.
 
 ## Installation
-AutoGraphPS-SDK is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/poshgraph-sdk); run the following command to install the latest stable release of AutoGraphPSGraph-SDK into your user profile:
+AutoGraphPS-SDK is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/autographps-sdk); run the following command to install the latest stable release of AutoGraphPSGraph-SDK into your user profile:
 
 ```powershell
-Install-Module PoshGraph-SDK -scope currentuser
+Install-Module AutoPSGraph-SDK -scope currentuser
 ```
 
 ## Using AutoGraphPS-SDK
@@ -81,13 +83,13 @@ These commands retrieve the same data as a `GET` for the full URIs given earlier
 
 As with any PowerShell cmdlet, you can use AutoGraphPS-SDK cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects.
 
-For more detailed information on how to use AutoGraphPS-SDK cmdlets, see the [WALKTHROUGH](https://github.com/adamedx/poshgraph/blob/master/docs/WALKTHROUGH.md) for the separate AutoGraphPS module, which documents a superset of cmdlets contained in this SDK in additions to those found in that module.
+For more detailed information on how to use AutoGraphPS-SDK cmdlets, see the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md) for the separate AutoGraphPS module, which documents a superset of cmdlets contained in this SDK in additions to those found in that module.
 
 ### How do I use it in my PowerShell application?
 
-If your application is packaged as a PowerShell module, simply include it in the `NestedModules` section of your module's [PowerShell module manifest](https://technet.microsoft.com/en-us/library/dd878337%28v=VS.85%29.aspx). This will allow you to publish your module to a repository like PSGallery and ensure that users who install your module from the gallery also get the installation of AutoGraphPS-SDK needed for your module to function. You should add the line `import-module poshgraph-sdk` to the beginning of the script you use to initialize your module.
+If your application is packaged as a PowerShell module, simply include it in the `NestedModules` section of your module's [PowerShell module manifest](https://technet.microsoft.com/en-us/library/dd878337%28v=VS.85%29.aspx). This will allow you to publish your module to a repository like PSGallery and ensure that users who install your module from the gallery also get the installation of AutoGraphPS-SDK needed for your module to function. You should add the line `import-module autographps-sdk` to the beginning of the script you use to initialize your module.
 
-If you're using a script module (`.psm1` file) or simply as a plan PowerShell `ps1` script, you should ensure the module has been already been installed on the system using `Install-Module` or a similar deployment mechanism, then add a line `import-module poshgraph-sdk` to the beginning of your script or script module.
+If you're using a script module (`.psm1` file) or simply as a plan PowerShell `ps1` script, you should ensure the module has been already been installed on the system using `Install-Module` or a similar deployment mechanism, then add a line `import-module autographps-sdk` to the beginning of your script or script module.
 
 ## Command inventory
 
@@ -128,8 +130,8 @@ If you'd like a behind the scenes look at the implementation of AutoGraphPS-SDK,
 For developers contributing to AutoGraphPS-SDK or those who wish to test out pre-release features that have not yet been published to PowerShell Gallery, run the following PowerShell commands to clone the repository and then build and install the module on your local system:
 
 ```powershell
-git clone https://github.com/adamedx/poshgraph-sdk
-cd poshgraph-sdk
+git clone https://github.com/adamedx/autographps-sdk
+cd autographps-sdk
 .\build\install-fromsource.ps1
 ```
 
@@ -142,9 +144,9 @@ See the [Build README](build/README.md) for instructions on building and testing
 ## Quickstart
 The Quickstart is a way to try out AutoGraphPS-SDK without installing the AutoGraphPS-SDK module. In the future it will feature an interactive tutorial. Additionally, it is useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **AutoGraphPS-SDK**:
 
-* [Download](https://github.com/adamedx/poshgraph/archive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
+* [Download](https://github.com/adamedx/autographps-sdkarchive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
 
-  `git clone https://github.com/adamedx/poshgraph-sdk`
+  `git clone https://github.com/adamedx/autographps-sdk`
 
 * Within a **PowerShell** terminal, `cd` to the extracted or cloned directory
 * Execute the command for **QuickStart**:
@@ -168,7 +170,7 @@ This should return something like the following:
     TimeLocal  : 2/6/2018 6:05:09 AM
     TimeUtc    : 2/6/2018 6:05:09 AM
 
-If you need to launch another console with Posh Graph, you can run the faster command below which skips the build step since QuickStart already did that for you (though it's ok to run QuickStart again):
+If you need to launch another console with AutoGraphPS, you can run the faster command below which skips the build step since QuickStart already did that for you (though it's ok to run QuickStart again):
 
     .\build\import-devmodule.ps1
 

@@ -13,11 +13,11 @@ This document describes how to build AutoGraphPS-SDK and provides additional inf
 * [Git command-line tools](https://git-for-windows.github.io/) to clone this repository locally:
 
 ```powershell
-git clone https://github.com/adamedx/poshgraph-sdk
-cd poshgraph-sdk
+git clone https://github.com/adamedx/autographps-sdk
+cd autographps-sdk
 ```
 
-**Note:** PowerShellGet version 1.6.6 is incompatible with PoshGraph due to a code defect. Versions other than 1.0.0.1 and 1.6.0 have not been tested; use 1.0.0.1 (default) or [install 1.6.0](https://www.powershellgallery.com/packages/PowerShellGet/1.6.0) in order to build this module.
+**Note:** PowerShellGet version 1.6.6 is incompatible with AutoGraphPS-SDK due to a code defect. Versions other than 1.0.0.1 and 1.6.0 have not been tested; use 1.0.0.1 (default) or [install 1.6.0](https://www.powershellgallery.com/packages/PowerShellGet/1.6.0) in order to build this module.
 
 ### Simple building and debugging
 The most common case is to build the module and then execute it in a new shell.
