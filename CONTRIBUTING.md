@@ -4,7 +4,7 @@ Thank you for your interest in **AutoGraphPS-SDK**. This document describes the 
 
 ## What may I contribute?
 
-Contributions to AutoGraphPS-SDK may come in the form of source code, i.e. features and defect fixes, as well as [bug reports and feature requests](https://github.com/adamedx/poshgraph/issues/new/choose).
+Contributions to AutoGraphPS-SDK may come in the form of source code, i.e. features and defect fixes, as well as [bug reports and feature requests](https://github.com/adamedx/autographps-sdk/issues/new/choose).
 
 Note that all source contributions **MUST** conform to the project's [LICENSE](LICENSE.md) -- any submission in violation of the LICENSE will not be accepted.
 
@@ -92,7 +92,7 @@ AutoGraphPS-SDK is implemented using the PowerShell scripting language, and uses
 * **Use `import-script` to re-use code in other files**: The `import-script` cmdlet from [ScriptClass](https://github.com/adamedx/scriptclass) is similar conceptually to the `#include` directive in *C/C++*, the `require` statement , *Ruby*, and the `import` statement in *Python*. Use that at the top of a source file
 * **Components should be packaged as `ScriptClass` classes**: The [ScriptClass](https://github.com/adamedx/scriptclass) library allows you to use the object-oriented formalism of a *class* that defines a set of software elements based on their shared defintion of state and the operations on that state. Where in object-oriented languages like *C++*, *Java*, *C#*, *Ruby*, or *Python* you'd use the keyword `class` to declare such a set or type, in this project you'd use the keyword `ScriptClass`. As in those languages, each class should be defined in its own source files -- no source file should define more than one class or cmdlet.
 * **Cmdlets must be defined in their own source file**: An exception to the rule of packaging all functionality within a *class* type is the case of cmdlets -- any PowerShell cmdlet should be defined in its own source file. By definition, cmdlets cannot be *ScriptClass* types, but their implementation can and should make use of *ScriptClass* types defined in other files.
-* **Brace indentation - OTBS**: Use the [One True Brace Style](https://en.wikipedia.org/wiki/Indentation_style). This is what the project currently uses. It's true though that the PowerShell community [does not yet seem to have consensus](https://github.com/PoshCode/PowerShellPracticeAndStyle/issues/81) on this important issue.
+* **Brace indentation - OTBS**: Use the [One True Brace Style](https://en.wikipedia.org/wiki/Indentation_style). This is what the project currently uses. It's true though that the PowerShell community [does not yet seem to have consensus](https://github.com/Poshode/PowerShellPracticeAndStyle/issues/81) on this important issue.
 * **Follow even unwritten conventions**: As you familiarize yourself with more of the code, you may become aware of common patterns. By default, please follow them, unless you have a specific reason not to, and call out the deviation in your pull request. We can then decide whether to document the convention as-is, or modify / remove it in favor of your newer approach.
 
 
