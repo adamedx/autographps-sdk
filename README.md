@@ -14,7 +14,7 @@ AutoGraphPS-SDK
 * [Quickstart](#quickstart)
 * [License and authors](#license-and-authors)
 
-*This project was recently renamed from **PoshGraph-SDK** -- if you're looking for **PoshGraph-SDK**, you're in the right place!*
+*This repository / project was recently renamed from **PoshGraph-SDK** -- if you're looking for **PoshGraph-SDK**, you're in the right place!*
 
 ## Overview
 
