@@ -17,7 +17,7 @@ param($packagePath = $null, $targetFeedUri = $null)
 set-strictmode -version 2
 $erroractionpreference = 'stop'
 
-$packageName = 'adamedx.poshgraph-sdk'
+$packageName = 'adamedx.autograph-sdk'
 
 $basepath = (get-item (split-path -parent $psscriptroot)).fullname
 
