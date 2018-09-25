@@ -112,13 +112,22 @@ ScriptClass GraphUtilities {
             if ( $UriPath ) {
                 $UriString = $UriPath.tostring()
                 $contextEnd = $UriString.IndexOf(':')
+                $isAbsolute = $UriString[0] -eq '/'
                 $graphRelativeUri = if ( $contextEnd -eq -1 ) {
                     $isAbsolute = $UriString[0] -eq '/'
                     $UriString
                 } else {
-                    $isAbsolute = $true
-                    $context = $UriString.substring(0, $contextEnd)
-                    $UriString.substring($contextEnd + 1, $UriString.length - $contextEnd - 1)
+                    if ( $isAbsolute ) {
+                        $contextComponents = $UriString.substring(0, $contextEnd) -split '/'
+                        if ( $contextComponents.length -eq 2 ) {
+                            $context = $contextComponents[1]
+                            $UriString.substring($contextEnd + 1, $UriString.length - $contextEnd - 1)
+                        } else {
+                            $UriString
+                        }
+                    } else {
+                        $UriString
+                    }
                 }
             }
 
@@ -211,16 +220,11 @@ ScriptClass GraphUtilities {
                 $context = if ( $components.length -eq 1 ) {
                     $::.GraphContext |=> GetCurrent
                 } else {
-                    $graphName = $components[0]
+                    $graphName = $components[0].trimstart('/')
                     $relativeUri = ''
 
                     for ( $component = 1; $component -lt $components.length; $component++ ) {
-                        $normalized = if ( $component -eq 1 ) {
-                            $components[$component].trimstart('/1')
-                        } else {
-                            $components[$component]
-                        }
-                        $relativeUri += $normalized
+                        $relativeUri += $components[$component]
                     }
                     $::.logicalgraphmanager.Get().contexts[$graphName].context
                 }

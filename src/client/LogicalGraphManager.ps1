@@ -24,7 +24,7 @@ ScriptClass LogicalGraphManager {
         $this.contexts = @{}
     }
 
-    function NewContext($parentContext = $null, $connection, $apiversion, $name = $null) {
+    function NewContext($parentContext = $null, $connection, $apiversion, $name = $null, $verifyVersion = $false) {
         if ( ! $apiVersion -and ! $parentContext) {
             throw "An api version or parent context must be specified"
         }
@@ -43,6 +43,37 @@ ScriptClass LogicalGraphManager {
             $connection
         } else {
             $parentContext.connection
+        }
+
+        $graphEndpoint = $graphConnection.GraphEndpoint.Graph.tostring().trimend('/')
+
+        if ( $verifyVersion ) {
+            write-verbose "Verify option was specified, will verify existence of API version '$version' on endpoint '$graphEndpoint'"
+            $metadataStream = $null
+            try {
+                $graphUri = $graphEndpoint, $version, '$metadata' -join '/'
+                write-verbose "Attempting to access '$graphUri'"
+                $webClient = [System.Net.WebClient]::new()
+                $metadataStream = $webClient.OpenRead($graphUri)
+                $reader = [System.IO.StreamReader]::new($metadataStream)
+                $reader.Read() | out-null
+            } catch {
+                write-verbose "Version verification failed: '$($_.exception.message)'"
+                throw "Endpoint '$graphEndpoint' does not support an API version '$version'"
+            } finally {
+                if ( $metadataStream ) {
+                    $metadataStream.Close()
+                }
+            }
+            write-verbose "Successfully verified existence of API version '$version' on endpoint '$graphEndpoint'"
+        } else {
+            write-verbose "Verify option not specified, skipping verification of API version '$version' on endpoint '$graphEndpoint'"
+        }
+
+        $uniqueName = if ( $name -and $name -ne '' ) {
+            $name
+        } else {
+            $version
         }
 
         $uniqueName = if ( $name -and $name -ne '' ) {
