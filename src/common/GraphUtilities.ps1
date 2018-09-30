@@ -73,7 +73,7 @@ ScriptClass GraphUtilities {
 
         function ToLocationUriPath( $context, $relativeUri ) {
             $graphRelativeUri = $this.ToGraphRelativeUriPathUnqualified($relativeUri, $context)
-            "{0}:{1}" -f $context.name, $graphRelativeUri
+            "/{0}:{1}" -f $context.name, $graphRelativeUri
         }
 
         function JoinAbsoluteUri([Uri] $absoluteUri, [string] $relativeUri) {
@@ -112,13 +112,22 @@ ScriptClass GraphUtilities {
             if ( $UriPath ) {
                 $UriString = $UriPath.tostring()
                 $contextEnd = $UriString.IndexOf(':')
+                $isAbsolute = $UriString[0] -eq '/'
                 $graphRelativeUri = if ( $contextEnd -eq -1 ) {
                     $isAbsolute = $UriString[0] -eq '/'
                     $UriString
                 } else {
-                    $isAbsolute = $true
-                    $context = $UriString.substring(0, $contextEnd)
-                    $UriString.substring($contextEnd + 1, $UriString.length - $contextEnd - 1)
+                    if ( $isAbsolute ) {
+                        $contextComponents = $UriString.substring(0, $contextEnd) -split '/'
+                        if ( $contextComponents.length -eq 2 ) {
+                            $context = $contextComponents[1]
+                            $UriString.substring($contextEnd + 1, $UriString.length - $contextEnd - 1)
+                        } else {
+                            $UriString
+                        }
+                    } else {
+                        $UriString
+                    }
                 }
             }
 
@@ -196,10 +205,6 @@ ScriptClass GraphUtilities {
         function ParseGraphRelativeLocation($locationUri) {
             $components = $locationUri -split ':'
 
-            if ( $components.length -gt 2) {
-                throw "'$locationUri' is not a valid graph location uri"
-            }
-
             # Handle absolute web uri's, e.g. https://mygraph.microsoft.com/v1.0/singleton/etc
             $locationUriAsWebUri = [Uri] $locationUri
 
@@ -215,8 +220,12 @@ ScriptClass GraphUtilities {
                 $context = if ( $components.length -eq 1 ) {
                     $::.GraphContext |=> GetCurrent
                 } else {
-                    $relativeUri = $components[1]
-                    $graphName = $components[0]
+                    $graphName = $components[0].trimstart('/')
+                    $relativeUri = ''
+
+                    for ( $component = 1; $component -lt $components.length; $component++ ) {
+                        $relativeUri += $components[$component]
+                    }
                     $::.logicalgraphmanager.Get().contexts[$graphName].context
                 }
 
