@@ -34,7 +34,7 @@ ScriptClass RESTRequest {
             $body | convertfrom-json | out-null
             $body
         } else {
-            $body | convertto-json
+            $body | convertto-json -depth 20
         }
 
         $this.userAgent = if ( $userAgent -ne $null ) {

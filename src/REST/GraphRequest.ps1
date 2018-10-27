@@ -90,7 +90,7 @@ ScriptClass GraphRequest {
         $this.body = if ($body -is [string] ) {
             $body
         } else {
-            $body | convertto-json
+            $body | convertto-json -depth 20
         }
     }
 
