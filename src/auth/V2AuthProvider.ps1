@@ -41,7 +41,7 @@ ScriptClass V2AuthProvider {
         $userId = $null
         $scopes = $null
 
-        if ( $token ) {
+        if ( $token -and $token.User ) {
             $userId = $token.User.DisplayableId
             $scopes = $token.scopes
         }
