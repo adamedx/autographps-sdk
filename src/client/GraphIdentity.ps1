@@ -73,15 +73,15 @@ ScriptClass GraphIdentity {
     }
 
     function ClearAuthentication {
-        if ( $this.token ) {
+        if ( $this.token -and $this.app.AuthType -eq ([GraphAppAuthType]::Delegated) ) {
             $authUri = $this.graphEndpoint |=> GetAuthUri $this.TenantName
 
             $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
             $authContext = $providerInstance |=> GetAuthContext $this.app $this.graphEndpoint.Graph $authUri
             $providerInstance |=> ClearToken $authContext $this.token
-
-            $this.token = $null
         }
+
+        $this.token = $null
     }
 
     function getGraphToken($graphEndpoint, $scopes) {

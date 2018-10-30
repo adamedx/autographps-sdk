@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.5.0'
+ModuleVersion = '0.5.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -170,16 +170,16 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.5.0 Release Notes
+# AutoGraphPS-SDK 0.5.1 Release Notes
 
 ## New features
 
-* Mounting of API versions in ``LogicalGraphManager`` now supports an optional boolean ```$verify`` parameter that verifies that the requested API version actually exists in the Graph endpoint (it makes a `GET` request on that URI). This verification is skipped by default.
+None.
 
 ## Fixed defects
 
-* Allow usage of ':' character in URIs
-* Enforce starting absolute graph paths with path separator to support use of ':' in URIs. Without this, there's no way to distinguish between the name of a Graph in a grpah absolute path since it is succeeded by a ':', e.g. '/beta:/me/contacts', and a ':' that is just part of a path, e.g. 'me/drive/root:'.
+* Connect-Graph / Disconnect-Graph fail if the current connection is app-only
+* Request body corrupted for Invoke-GraphRequest due to insufficent json serialization depth of 2 causing failed requests
 "@
 
     } # End of PSData hashtable

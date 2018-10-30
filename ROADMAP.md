@@ -2,7 +2,21 @@
 
 ## To-do items -- prioritized
 
-* Rename to AutoGraphPS-SDK
+* Add app creation, enumeration, update
+  * New-GraphApplication
+  * Get-GraphApplication
+  * New-GraphApplicationCertificate
+  * Get-GraphApplicationCertificate
+  * Set-GraphApplicationCertificate
+  * Get-GraphApplicationLocalCertificate
+  * Remove-GraphApplicationLocalCertificate
+  * Import-GraphApplicationLocalCertificate
+  * Remove-GraphApplication
+  * Set-GraphApplication
+  * Set-GraphApplicationPermissions
+  * Remove-GraphApplicationConsent
+
+* Extend Get-GraphToken to support all scenarios, better formats
 
 * Customize README
 * Customize WALKTHROUGH
@@ -246,6 +260,9 @@
 * Add app-only mode -- symmetric
 * Add app-only mode -- asymmetric
 * Add $search support
+* Rename to AutoGraphPS-SDK
+* Customize README
+* Customize WALKTHROUGH
 
 ### Postponed
 
