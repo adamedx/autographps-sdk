@@ -26,7 +26,10 @@ function Get-GraphError {
         $headerOutput = @{}
         $errorValue = $_.ErrorRecord
         $responseStream = $_.ResponseStream
-        $headers = $errorValue.exception.response.headers
+        $headers = try {
+            $errorValue.exception.response.headers
+        } catch {
+        }
 
         if ( $headers -ne $null ) {
             $headers.keys | foreach {
