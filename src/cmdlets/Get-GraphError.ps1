@@ -32,8 +32,14 @@ function Get-GraphError {
         }
 
         if ( $headers -ne $null ) {
-            $headers.keys | foreach {
-                $headerOutput[$_] = $headers[$_]
+            if ( $headers | gm keys ) {
+                $headers.keys | foreach {
+                    $headerOutput[$_] = $headers[$_]
+                }
+            } else {
+                $headers | foreach {
+                    $headerOutput[$_] = $_
+                }
             }
         }
 
