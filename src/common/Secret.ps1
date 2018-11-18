@@ -36,10 +36,10 @@ ScriptClass Secret {
                 $secret
             } elseif ( $secret -is [string] ) {
                 $certPath = if ( split-path -isabsolute $secret ) {
-                    if ( (split-path -qualifier $secret ) -eq 'cert:' ) {
+                    if ( (split-path -qualifier ':' ) -eq 'cert:' ) {
                         $secret
                     }
-                    throw [ArgumentException]::new("Path '{0}' was not a valid absolute or relative path in the PowerShell cert: drive")
+                    throw [ArgumentException]::new("Path '{0}' was not a valid absolute or relative path in the PowerShell cert: drive" -f $secret)
                 } else {
                     join-path 'cert:\currentuser\my' $secret
                 }
