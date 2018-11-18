@@ -31,6 +31,11 @@ function Get-GraphError {
         } catch {
         }
 
+        # Headers at times are a dictionary, and in other
+        # cases an array. In the latter case, each element
+        # seems to be simply the name of the header and
+        # not its value, which is regrettable from a diagnostic
+        # standpoint.
         if ( $headers -ne $null ) {
             if ( $headers | gm keys ) {
                 $headers.keys | foreach {
