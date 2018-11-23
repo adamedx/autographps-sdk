@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.5.1'
+ModuleVersion = '0.6.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -170,7 +170,7 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.5.1 Release Notes
+# AutoGraphPS-SDK 0.6.0 Release Notes
 
 ## New features
 
@@ -178,8 +178,8 @@ None.
 
 ## Fixed defects
 
-* Connect-Graph / Disconnect-Graph fail if the current connection is app-only
-* Request body corrupted for Invoke-GraphRequest due to insufficent json serialization depth of 2 causing failed requests
+* Get-GraphError threw exceptions trying to access not-always-present ``headers`` field
+* Certificate paths specified to ``New-GraphConnection`` failed to parse when fully qualified
 "@
 
     } # End of PSData hashtable
