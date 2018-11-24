@@ -12,14 +12,15 @@
 * Add app creation, enumeration, update
   * New-GraphApplication
   * Get-GraphApplication
+  * Remove-GraphApplication
+  * Set-GraphApplication
   * New-GraphApplicationCertificate
   * Get-GraphApplicationCertificate
+  * Remove-GraphApplicationCertificate
   * Set-GraphApplicationCertificate
   * Get-GraphApplicationLocalCertificate
   * Remove-GraphApplicationLocalCertificate
   * Import-GraphApplicationLocalCertificate
-  * Remove-GraphApplication
-  * Set-GraphApplication
   * Set-GraphApplicationPermissions
   * Remove-GraphApplicationConsent
 

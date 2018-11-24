@@ -75,6 +75,7 @@ FunctionsToExport = @('Get-DynamicValidateSetParameter')
     CmdletsToExport = @(
         'Connect-Graph',
         'Disconnect-Graph',
+        'Get-GraphApplication',
         'Get-GraphConnectionStatus',
         'Get-GraphError',
         'Get-GraphItem',
@@ -119,11 +120,12 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\client\GraphContext.ps1',
         '.\src\client\GraphIdentity.ps1',
         '.\src\client\LogicalGraphManager.ps1',
-        '.\src\cmdlets\connect-graph.ps1',
-        '.\src\cmdlets\disconnect-graph.ps1',
+        '.\src\cmdlets\Connect-Graph.ps1',
+        '.\src\cmdlets\Disconnect-Graph.ps1',
+        '.\src\cmdlets\Get-GraphApplication.ps1',
         '.\src\cmdlets\Get-GraphConnectionStatus.ps1',
-        '.\src\cmdlets\get-grapherror.ps1',
-        '.\src\cmdlets\get-graphitem.ps1',
+        '.\src\cmdlets\Get-Grapherror.ps1',
+        '.\src\cmdlets\Get-Graphitem.ps1',
         '.\src\cmdlets\Get-GraphSchema.ps1',
         '.\src\cmdlets\Get-GraphToken.ps1',
         '.\src\cmdlets\Get-GraphVersion.ps1',
@@ -176,6 +178,7 @@ PrivateData = @{
 
 ## New features
 
+* Get-GraphApplication: this new cmdlet retrieves specified applications from the tenant
 * Remove-GraphItem: this new cmdlet makes ``DELETE`` requests and supports the object pipeline -- the output of Get-GraphItem can be piped to it to delete the items for instance.
 * The ``Verb`` option of ``Invoke-GraphRequest`` has been renamed to ``Method`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
 * The ``Payload`` option of ``Invoke-GraphRequest`` has been renamed to ``Body`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.

@@ -39,6 +39,7 @@ Describe "Poshgraph application" {
             $expectedFunctions = @(
                 'new-graphconnection',
                 'Remove-GraphItem',
+                'Get-GraphApplication',
                 'get-graphitem',
                 'test-graph',
                 'invoke-graphrequest',
