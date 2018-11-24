@@ -30,7 +30,7 @@ function New-GraphConnection {
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud')]
         [parameter(parametersetname='customendpoint')]
-        [String[]] $ScopeNames = $null,
+        [String[]] $Scopes = $null,
         #>
 
         [parameter(parametersetname='msgraph')]
@@ -96,7 +96,7 @@ function New-GraphConnection {
     )
 
     DynamicParam {
-        Get-DynamicValidateSetParameter ScopeNames ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
+        Get-DynamicValidateSetParameter Scopes ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
             @{
                 ParameterSetName = 'msgraph'
             }
@@ -114,9 +114,9 @@ function New-GraphConnection {
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud')]
         [parameter(parametersetname='customendpoint')]
-        [String[]] $ScopeNames = $null,
+        [String[]] $Scopes = $null,
         #>
-        $ScopeNames = $PsBoundParameters['ScopeNames']
+        $Scopes = $PsBoundParameters['Scopes']
     }
 
     process {
@@ -136,11 +136,11 @@ function New-GraphConnection {
             $AuthProtocol
         }
 
-        $specifiedScopes = if ( $ScopeNames ) {
+        $specifiedScopes = if ( $Scopes ) {
             if ( $Secret.IsPresent -or $Certificate -or $CertificatePath ) {
                 throw 'Scopes may not be specified for app authentication'
             }
-            $scopeNames
+            $scopes
         } else {
             @('User.Read')
         }

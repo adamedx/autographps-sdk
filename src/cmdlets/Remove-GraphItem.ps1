@@ -89,7 +89,7 @@ function Remove-GraphItem {
             ODataFilter = $ODataFilter
             Version = $Version
             Headers = $Headers
-            ScopeNames = $Scopes
+            Scopes = $Scopes
         }
 
         if ( $Connection ) {

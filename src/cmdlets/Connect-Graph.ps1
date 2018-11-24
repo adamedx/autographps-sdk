@@ -27,7 +27,7 @@ function Connect-Graph {
         [parameter(position=0)]
         [parameter(parametersetname='simple')]
         [parameter(parametersetname='reconnect')]
-        [String[]] $ScopeNames = $null,
+        [String[]] $Scopes = $null,
         #>
 
         [parameter(parametersetname='simple')]
@@ -49,7 +49,7 @@ function Connect-Graph {
     )
 
     DynamicParam {
-        Get-DynamicValidateSetParameter ScopeNames ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
+        Get-DynamicValidateSetParameter Scopes ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
             @{
                 Position = 0
             }
@@ -67,9 +67,9 @@ function Connect-Graph {
         [parameter(position=0)]
         [parameter(parametersetname='simple')]
         [parameter(parametersetname='reconnect')]
-        [String[]] $ScopeNames = $null,
+        [String[]] $Scopes = $null,
         #>
-        $ScopeNames = $PsBoundParameters['ScopeNames']
+        $Scopes = $PsBoundParameters['Scopes']
     }
 
     process {
@@ -79,8 +79,8 @@ function Connect-Graph {
             ([GraphCloud]::Public)
         }
 
-        $computedScopes = if ( $scopeNames -ne $null ) {
-            $ScopeNames
+        $computedScopes = if ( $scopes -ne $null ) {
+            $Scopes
         } else {
             @('User.Read')
         }
@@ -107,7 +107,7 @@ function Connect-Graph {
 
             $newConnection = if ( $Reconnect.IsPresent ) {
                 write-verbose 'Reconnecting using the existing connection if it exists'
-                if ( $scopenames -and $context.connection -and $context.connection.identity ) {
+                if ( $scopes -and $context.connection -and $context.connection.identity ) {
                     write-verbose 'Creating connection from existing connection but with new scopes'
                     $identity = new-so GraphIdentity $context.connection.identity.app $context.connection.graphEndpoint $context.connection.identity.tenantname
                     new-so GraphConnection $context.connection.graphEndpoint $identity $computedScopes
@@ -117,7 +117,7 @@ function Connect-Graph {
                 }
             } else {
                 write-verbose 'No reconnect -- creating a new connection for this context'
-                new-graphconnection -cloud $validatedCloud -appid $applicationid -scopenames $computedScopes
+                new-graphconnection -cloud $validatedCloud -appid $applicationid -scopes $computedScopes
             }
 
             $context |=> UpdateConnection $newConnection

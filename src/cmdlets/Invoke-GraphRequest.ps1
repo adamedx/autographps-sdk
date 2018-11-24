@@ -47,7 +47,7 @@ function Invoke-GraphRequest {
         [Switch] $Descending,
 
         [parameter(parametersetname='MSGraphNewConnection')]
-        [String[]] $ScopeNames = $null,
+        [String[]] $Scopes = $null,
 
         [String] $Version = $null,
 
@@ -104,11 +104,11 @@ function Invoke-GraphRequest {
         ([GraphType]::MSGraph)
     }
 
-    $MSGraphScopeNames = if ( $ScopeNames -ne $null ) {
+    $MSGraphScopes = if ( $Scopes -ne $null ) {
         if ( $Connection -ne $null ) {
-            throw "Scopes may not be specified via -ScopeNames if an existing connection is supplied with -Connection"
+            throw "Scopes may not be specified via -Scopes if an existing connection is supplied with -Connection"
         }
-        $ScopeNames
+        $Scopes
     } else {
         @('User.Read')
     }
@@ -162,9 +162,9 @@ function Invoke-GraphRequest {
 
     $graphConnection = if ( $Connection -eq $null ) {
         if ( $graphType -eq ([GraphType]::AADGraph) ) {
-            $::.GraphConnection |=> NewSimpleConnection ([GraphType]::AADGraph) $cloud $MSGraphScopeNames
+            $::.GraphConnection |=> NewSimpleConnection ([GraphType]::AADGraph) $cloud $MSGraphScopes
         } else {
-            'GraphContext' |::> GetConnection $null $null $cloud $ScopeNames
+            'GraphContext' |::> GetConnection $null $null $cloud $Scopes
         }
     } else {
         $Connection

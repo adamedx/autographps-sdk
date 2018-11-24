@@ -38,7 +38,7 @@ function Get-GraphItem {
         [Switch] $Descending,
 
         [parameter(parametersetname='MSGraphNewConnection')]
-        [String[]] $ScopeNames = $null,
+        [String[]] $Scopes = $null,
 
         [String] $Version = $null,
 
@@ -80,8 +80,8 @@ function Get-GraphItem {
 
     if ( $AADGraph.ispresent ) {
         $requestArguments['AADGraph'] = $AADGraph
-    } elseif ($ScopeNames -ne $null) {
-        $requestArguments['ScopeNames'] = $ScopeNames
+    } elseif ($Scopes -ne $null) {
+        $requestArguments['Scopes'] = $Scopes
     }
 
     if ( $Connection -ne $null ) {
