@@ -38,6 +38,7 @@ Describe "Poshgraph application" {
         It "should export the exact same set of functions as are in the set of expected functions" {
             $expectedFunctions = @(
                 'new-graphconnection',
+                'Remove-GraphItem',
                 'get-graphitem',
                 'test-graph',
                 'invoke-graphrequest',

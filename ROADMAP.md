@@ -2,6 +2,10 @@
 
 ## To-do items -- prioritized
 
+* Possibly remove query support from Remove-GraphItem if queries on DELETE method are not supported
+* Dynamically obtain scopes
+* Change scopenames arguments to scopes
+* Make Uri argument a non-array
 * Allow connect-graph to specify -tenantid to support single tenant app
 * Fix context parsing, e.g. 'ggi me/drive/root:/something' shouldnt result in context error
   * It fails before even authenticating!
@@ -31,9 +35,6 @@
 * App deletion
 * Add app updating
 * Release
-
-* Fix invoke-graphrequest parameter names (-verb should be -method, -payload should be -body)
-* Add Remove-GraphItem
 
 * Clean up parse methods in GraphUtilities
 * Investigate console.writeline background thread
@@ -267,6 +268,9 @@
 * Rename to AutoGraphPS-SDK
 * Customize README
 * Customize WALKTHROUGH
+* Fix invoke-graphrequest parameter names (-verb should be -method, -payload should be -body)
+* Add Remove-GraphItem
+
 
 ### Postponed
 

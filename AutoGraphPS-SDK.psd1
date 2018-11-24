@@ -83,6 +83,7 @@ FunctionsToExport = @('Get-DynamicValidateSetParameter')
         'Get-GraphVersion',
         'Invoke-GraphRequest',
         'New-GraphConnection',
+        'Remove-GraphItem',
         'Set-GraphConnectionStatus',
         'Test-Graph'
     )
@@ -128,6 +129,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Get-GraphVersion.ps1',
         '.\src\cmdlets\Invoke-GraphRequest.ps1',
         '.\src\cmdlets\New-GraphConnection.ps1',
+        '.\src\cmdlets\Remove-GraphItem.ps1',
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1',
         '.\src\cmdlets\Test-Graph.ps1',
         '.\src\cmdlets\common\ItemResultHelper.ps1',
@@ -174,7 +176,9 @@ PrivateData = @{
 
 ## New features
 
-None.
+* Remove-GraphItem: this new cmdlet makes ``DELETE`` requests and supports the object pipeline -- the output of Get-GraphItem can be piped to it to delete the items for instance.
+* The ``Verb`` option of ``Invoke-GraphRequest`` has been renamed to ``Method`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
+* The ``Payload`` option of ``Invoke-GraphRequest`` has been renamed to ``Body`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
 
 ## Fixed defects
 

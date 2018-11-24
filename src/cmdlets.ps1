@@ -22,6 +22,7 @@
 . (import-script cmdlets\Get-GraphVersion)
 . (import-script cmdlets\New-GraphConnection)
 . (import-script cmdlets\Invoke-GraphRequest)
+. (import-script cmdlets\Remove-GraphItem)
 . (import-script cmdlets\Set-GraphConnectionStatus)
 . (import-script cmdlets\Test-Graph)
 

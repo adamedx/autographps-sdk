@@ -26,10 +26,10 @@ function Invoke-GraphRequest {
         [Uri[]] $RelativeUri,
 
         [parameter(position=1)]
-        [String] $Verb = 'GET',
+        [String] $Method = 'GET',
 
         [parameter(position=2)]
-        $Payload = $null,
+        $Body = $null,
 
         [String] $Query = $null,
 
@@ -260,8 +260,8 @@ function Invoke-GraphRequest {
         }
 
         $graphResponse = if ( $graphConnection.status -ne ([GraphConnectionStatus]::Offline) ) {
-            $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $Headers $requestQuery
-            $request |=> SetBody $Payload
+            $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $requestQuery
+            $request |=> SetBody $Body
             try {
                 $request |=> Invoke $skipCount
             } catch [System.Net.WebException] {
