@@ -29,12 +29,6 @@ ScriptClass GraphApplication {
     function __initialize($appId = $null, $RedirectUri = $null, $secret = $null) {
         $this.AppId = if ( $appId -ne $null ) {
             $appId
-        } else {
-            if ( $RedirectUri ) {
-                throw [ArgumentException]::new("Redirect Uri must '$RedirectUri', it must be `$null since no AppId was specified")
-            }
-
-            $::.Application.AppId
         }
 
         if ( $secret ) {

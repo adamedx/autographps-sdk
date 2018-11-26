@@ -21,6 +21,7 @@
 . (import-script cmdlets\Get-GraphSchema)
 . (import-script cmdlets\Get-GraphToken)
 . (import-script cmdlets\Get-GraphVersion)
+. (import-script cmdlets\New-GraphApplication)
 . (import-script cmdlets\New-GraphConnection)
 . (import-script cmdlets\Invoke-GraphRequest)
 . (import-script cmdlets\Remove-GraphItem)

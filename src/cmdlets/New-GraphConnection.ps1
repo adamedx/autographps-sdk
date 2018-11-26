@@ -168,7 +168,13 @@ function New-GraphConnection {
                 $CertificatePath
             }
 
-            $app = new-so GraphApplication $AppId $AppRedirectUri $appSecret
+            $newAppId = if ( $appId ) {
+                $appId
+            } else {
+                $::.Application.AppId
+            }
+
+            $app = new-so GraphApplication $newAppId $AppRedirectUri $appSecret
             $identity = new-so GraphIdentity $app $graphEndpoint $TenantName
             new-so GraphConnection $graphEndpoint $identity $specifiedScopes
         }

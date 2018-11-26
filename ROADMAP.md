@@ -14,6 +14,8 @@
   * Get-GraphApplication
   * Remove-GraphApplication
   * Set-GraphApplication
+  * Get-GraphApplicationServicePrincipal
+  * Register-GraphApplication
   * New-GraphApplicationCertificate
   * Get-GraphApplicationCertificate
   * Remove-GraphApplicationCertificate

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../graphservice/GraphApplicationRegistration)
+
 function Get-GraphApplication {
     [cmdletbinding(defaultparametersetname='appid', positionalbinding=$false)]
     param (
@@ -53,12 +55,10 @@ function Get-GraphApplication {
         [PSCustomObject] $Connection = $null
     )
 
-    $DefaultApplicationApiVersion = 'beta'
-
     $apiVersion = if ( $Version ) {
         $Version
     } else {
-        $DefaultApplicationApiVersion
+        $::.GraphApplicationRegistration.DefaultApplicationApiVersion
     }
 
     $uri = '/Applications'

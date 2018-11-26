@@ -12,8 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script DefaultScopeData)
+. (import-script ../REST/GraphRequest)
+
 ScriptClass ScopeHelper {
     static {
+        const GraphApplicationId 00000003-0000-0000-c000-000000000000
+        $graphSP = $null
+        $permissionsByNames = $null
+        $permissionsByIds = $null
+
+        function __AddConnectionScopeData($graphSP, $permissionsByNames, $permissionsByIds) {
+            if ( $this.graphSP ) {
+                throw "Scope data for already exists"
+            }
+
+            $this.graphSP = $graphSP
+            $this.permissionsByNames = $permissionsByNames
+            $this.permissionsByIds = $permissionsByIds
+        }
+
         const __graphAuthScopes @(
             'Application.ReadWrite.All',
 			'Application.ReadWrite.OwnedBy',
@@ -160,6 +178,102 @@ ScriptClass ScopeHelper {
 
         function GetKnownScopes {
             $this.__graphAuthScopes
+        }
+
+        function GetAppOnlyResourceAccessPermissions($scopes) {
+            if ( $scopes ) {
+                GetPermissionsByName $scopes Role $connection
+            } else {
+                @(
+                    @{
+                        id = 'df021288-bdef-4463-88db-98f22de89214'
+                        type = 'Role'
+                    }
+                )
+            }
+        }
+
+        function GetDelegatedResourceAccessPermissions($scopes) {
+            if ( $scopes ) {
+                GetPermissionsByName $scopes scope
+            } else {
+                @{
+                    id = 'e1fe6dd8-ba31-4d61-89e7-88639da4683d'
+                    type = 'Scope'
+                }
+            }
+        }
+
+        function GetPermissionsByName {
+            param(
+                [parameter(mandatory=$true)]
+                [string[]] $scopeNames,
+
+                [validateset('scope', 'role')]
+                [parameter(mandatory=$true)]
+                $permissionType
+            )
+
+            $scopeNames | foreach {
+                $permissionId = GraphPermissionNameToId $_ $permissionType
+
+                @{
+                    id = $permissionId
+                    type = $permissionType
+                }
+            }
+        }
+
+        function GraphPermissionNameToId($name, $type) {
+            InitializeGraphScopes $connection
+
+            $scopeData = __GetConnectionScopeData
+
+            $permission = $scopeData.permissionsByNames[$name]
+
+            if ( ! $permission ) {
+                throw "Specified permission '$name' could not be mapped to a permission Id"
+            }
+
+            if ( $type -and ! (__IsPermissionType $scopeData $permission.id $type) ) {
+                throw "Specified permission '$name' was not of specified type '$type'"
+            }
+
+            $permission.id
+        }
+
+        function __IsPermissionType($permissionId, $type) {
+            $collection = if ( $type -eq 'role' ) {
+                $this.graphSP.appRoles
+            } else {
+                $this.graphSP.publishedPermissionScopes
+            }
+
+            ($collection | where id -eq $permissionId) -ne $null
+        }
+
+        function __InitializeGraphScopes($connection) {
+            if ( ! $this.graphSP ) {
+                $graphSPRequest = new-so GraphRequest $connection "/beta/servicePrincipals" GET $null "`$filter=appId='$($this.GraphApplicationId)'"
+                $graphSPResponse = $graphSPRequest |=> Invoke
+
+                $graphSP = $graphSPResponse.Content
+
+                $permissionsByNames = @{}
+                $permissionsByIds = @{}
+
+                $graphSP.publishedPermissionScopes | foreach {
+                    $permissionsByNames[$_.value] = $_
+                    $permissionsByIds[$_.id] = $_
+                }
+
+                $graphSP.appRoles | foreach {
+                    $permissionsByNames[$_.value] = $_
+                    $permissionsByIds[$_.id] = $_
+                }
+
+                __AddConnectionScopeData $graphSP $permissionsByNames $permissionsByIds
+            }
         }
     }
 }
