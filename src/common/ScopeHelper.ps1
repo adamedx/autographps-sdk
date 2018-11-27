@@ -180,7 +180,7 @@ ScriptClass ScopeHelper {
             $this.__graphAuthScopes
         }
 
-        function GetAppOnlyResourceAccessPermissions($scopes) {
+        function GetAppOnlyResourceAccessPermissions($scopes, $connection) {
             if ( $scopes ) {
                 GetPermissionsByName $scopes Role $connection
             } else {
@@ -193,9 +193,9 @@ ScriptClass ScopeHelper {
             }
         }
 
-        function GetDelegatedResourceAccessPermissions($scopes) {
+        function GetDelegatedResourceAccessPermissions($scopes, $connection) {
             if ( $scopes ) {
-                GetPermissionsByName $scopes scope
+                GetPermissionsByName $scopes scope $connection
             } else {
                 @{
                     id = 'e1fe6dd8-ba31-4d61-89e7-88639da4683d'
@@ -211,11 +211,13 @@ ScriptClass ScopeHelper {
 
                 [validateset('scope', 'role')]
                 [parameter(mandatory=$true)]
-                $permissionType
+                $permissionType,
+
+                $connection
             )
 
             $scopeNames | foreach {
-                $permissionId = GraphPermissionNameToId $_ $permissionType
+                $permissionId = GraphPermissionNameToId $_ $permissionType $connection
 
                 @{
                     id = $permissionId
@@ -224,18 +226,23 @@ ScriptClass ScopeHelper {
             }
         }
 
-        function GraphPermissionNameToId($name, $type) {
-            InitializeGraphScopes $connection
+        function GraphPermissionNameToId($name, $type, $connection) {
 
-            $scopeData = __GetConnectionScopeData
+            $graphConnection = if ( $connection ) {
+                $connection
+            } else {
+                'GraphContext' |::> GetConnection
+            }
 
-            $permission = $scopeData.permissionsByNames[$name]
+            __InitializeGraphScopes $graphConnection
+
+            $permission = $this.permissionsByNames[$name]
 
             if ( ! $permission ) {
                 throw "Specified permission '$name' could not be mapped to a permission Id"
             }
 
-            if ( $type -and ! (__IsPermissionType $scopeData $permission.id $type) ) {
+            if ( $type -and ! (__IsPermissionType $permission.id $type) ) {
                 throw "Specified permission '$name' was not of specified type '$type'"
             }
 
@@ -253,11 +260,22 @@ ScriptClass ScopeHelper {
         }
 
         function __InitializeGraphScopes($connection) {
-            if ( ! $this.graphSP ) {
-                $graphSPRequest = new-so GraphRequest $connection "/beta/servicePrincipals" GET $null "`$filter=appId='$($this.GraphApplicationId)'"
-                $graphSPResponse = $graphSPRequest |=> Invoke
+            if ( ! $this.GraphSP ) {
+                $graphSP = if ( $connection ) {
+                    $graphSPResponse = try {
+                        $graphSPRequest = new-so GraphRequest $connection "/beta/servicePrincipals" GET $null "`$filter=appId eq '$($this.GraphApplicationId)'"
+                        $graphSPRequest |=> Invoke
+                    } catch {
+                    }
 
-                $graphSP = $graphSPResponse.Content
+                    if ( $graphSPResponse ) {
+                        $graphSPResponse |=> Content | convertfrom-json | select -expandproperty value
+                    }
+                }
+
+                if ( ! $graphSP ) {
+                    $graphSP = $__DefaultScopeData
+                }
 
                 $permissionsByNames = @{}
                 $permissionsByIds = @{}

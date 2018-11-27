@@ -79,25 +79,19 @@ function New-GraphApplication {
     $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $Scopes}
     $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $Scopes}
 
-    $appOnlyPermissions | out-host
-
     $newAppRegistration = new-so GraphApplicationRegistration $Name $InfoUrl $Tags $Tenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent, $RedirectUris
-#    $newApp = __NewAppRegistration $Name $InfoUrl $Tags $Tenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions
 
     $newApp = $newAppRegistration |=> RegisterNewApp
-#    $createdApp = $newApp |=> CreateApp $newApp
 
-    try {
-        if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
+    if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
+        try {
             $certificate = new-so GraphApplicationCertificate $newApp.appId $certStoreLocation
             $certificate |=> Create
             $::.GraphApplicationRegistration |=> AddKeyCredentials $newApp $certificate
+        } catch {
+            Remove-GraphItem -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion "/applications/$($newApp.Id)" -erroraction silentlycontinue -confirm:$false
+            throw
         }
-    } catch {
-        $myerr = get-grapherror
-        $myerr | out-host
-        Remove-GraphItem -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion "/applications/$($newApp.Id)" -erroraction silentlycontinue -confirm:$false
-        throw
     }
 
     $newApp

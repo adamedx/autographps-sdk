@@ -45,8 +45,6 @@ ScriptClass GraphApplicationRegistration {
                 }
             ) | convertto-json -depth 20
 
-            $appPatch | out-host
-
             Invoke-GraphRequest "applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.DefaultApplicationApiVersion | out-null
         }
     }
@@ -130,8 +128,6 @@ ScriptClass GraphApplicationRegistration {
 
         if ( $infoUrl ) { $app.Add('infoUrl', $infoUrl) }
         if ( $tags ) { $app.Add('tags', $tags) }
-
-        $app | convertto-json -depth 10 | out-host
 
         $app
     }
