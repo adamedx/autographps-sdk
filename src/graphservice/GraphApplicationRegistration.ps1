@@ -79,13 +79,17 @@ ScriptClass GraphApplicationRegistration {
     }
 
     function __SetPublicApp($app, $redirectUris) {
-        if ( $redirectUris ) {
-            $publicClient = [PSCustomObject] @{
-                redirectUris = $redirectUris
-            }
-
-            $app.Add('publicClient', $publicClient)
+        $publicClientRedirectUris = if ( $redirectUris -ne $null ) {
+            $redirectUris
+        } else {
+            , @('urn:ietf:wg:oauth:2.0:oob')
         }
+
+        $publicClient = [PSCustomObject] @{
+            redirectUris = $publicClientRedirectUris
+        }
+
+        $app.Add('publicClient', $publicClient)
     }
 
     function __SetConfidentialApp($app, $redirectUris) {

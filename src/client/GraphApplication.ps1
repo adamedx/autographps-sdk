@@ -44,7 +44,7 @@ ScriptClass GraphApplication {
     }
 
     function __GetDefaultRedirectUri($appId) {
-        'msal{0}://auth' -f $appId
+        'urn:ietf:wg:oauth:2.0:oob'
     }
 
     function IsConfidential {

@@ -26,7 +26,7 @@ function New-GraphApplication {
         [parameter(parametersetname='apponlynocert', position=1)]
         [parameter(parametersetname='apponlyexistingcert', position=1)]
 
-        [string[]] $RedirectUris,
+        [string[]] $RedirectUris = $null,
 
         [parameter(parametersetname='delegated')]
         [parameter(parametersetname='apponlynewcert')]
@@ -79,7 +79,7 @@ function New-GraphApplication {
     $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $Scopes}
     $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $Scopes}
 
-    $newAppRegistration = new-so GraphApplicationRegistration $Name $InfoUrl $Tags $Tenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent, $RedirectUris
+    $newAppRegistration = new-so GraphApplicationRegistration $Name $InfoUrl $Tags $Tenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent $RedirectUris
 
     $newApp = $newAppRegistration |=> RegisterNewApp
 
