@@ -25,7 +25,7 @@ ScriptClass RESTResponse {
     $contentTypeData = strict-val [HashTable] $null
     $RequiredContentType = $null
 
-    function __initialize ( $webResponse, [string] $requiredContentType  = $null ) {
+    function __initialize ( $webResponse, [string] $requiredContentType = $null ) {
         $this.statusCode = $webResponse.statusCode
         $this.statusDescription = $webResponse.statusDescription
         $this.rawContent = $webResponse.rawContent

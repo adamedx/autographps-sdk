@@ -63,8 +63,16 @@ function Remove-GraphItem {
 
             # We check to see if this is an item that supports the __ItemContext interface -- we'll use that
             # if it's there to extract an absolute URI
-            if ( ($targetItem | gm Content -erroraction silentlycontinue) -and ($targetItem.Content | gm __ItemContext -erroraction silentlycontinue) ) {
-                $fullyQualifiedUri = $targetItem.content.__ItemContext
+            $content = $targetItem
+            $itemContext = if ( $targetItem | gm __ItemContext -erroraction silentlycontinue ) {
+                $targetItem.__ItemContext()
+            } elseif ( ($targetItem | gm Content -erroraction silentlycontinue) -and ($targetItem.Content | gm __ItemContext -erroraction silentlycontinue) ) {
+                $content = $targetItem.content
+                $targetItem.Content.__ItemContext()
+            }
+
+            if ( $itemContext ) {
+                $fullyQualifiedUri = $itemContext.RequestUri, $content.id -join '/'
                 $useFullyQualifiedUri = $true
             } else {
                 $relativeId = $targetItem.id
