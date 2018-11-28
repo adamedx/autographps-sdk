@@ -249,6 +249,28 @@ ScriptClass ScopeHelper {
             $permission.id
         }
 
+        function GraphPermissionIdToName($permissionId, $type, $connection) {
+            $graphConnection = if ( $connection ) {
+                $connection
+            } else {
+                'GraphContext' |::> GetConnection
+            }
+
+            __InitializeGraphScopes $graphConnection
+
+            $permission = $this.permissionsByIds[$permissionId]
+
+            if ( ! $permission ) {
+                throw "Specified permission '$permissionId' could not be mapped to a permission name"
+            }
+
+            if ( $type -and ! (__IsPermissionType $permission.id $type) ) {
+                throw "Specified permission '$permissionId' was not of specified type '$type'"
+            }
+
+            $permission.value
+        }
+
         function __IsPermissionType($permissionId, $type) {
             $collection = if ( $type -eq 'role' ) {
                 $this.graphSP.appRoles

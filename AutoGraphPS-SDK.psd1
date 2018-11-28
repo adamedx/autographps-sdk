@@ -76,6 +76,8 @@ FunctionsToExport = @('Get-DynamicValidateSetParameter')
         'Connect-Graph',
         'Disconnect-Graph',
         'Get-GraphApplication',
+        'Get-GraphApplicationCertificate',
+        'Get-GraphApplicationConsent',
         'Get-GraphConnectionStatus',
         'Get-GraphError',
         'Get-GraphItem',
@@ -85,7 +87,9 @@ FunctionsToExport = @('Get-DynamicValidateSetParameter')
         'Invoke-GraphRequest',
         'New-GraphApplication',
         'New-GraphConnection',
+        'Remove-GraphApplicationConsent',
         'Remove-GraphItem',
+        'Set-GraphApplicationConsent',
         'Set-GraphConnectionStatus',
         'Test-Graph'
     )
@@ -124,6 +128,8 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Connect-Graph.ps1',
         '.\src\cmdlets\Disconnect-Graph.ps1',
         '.\src\cmdlets\Get-GraphApplication.ps1',
+        '.\src\cmdlets\Get-GraphApplicationCertificate.ps1',
+        '.\src\cmdlets\Get-GraphApplicationConsent.ps1',
         '.\src\cmdlets\Get-GraphConnectionStatus.ps1',
         '.\src\cmdlets\Get-Grapherror.ps1',
         '.\src\cmdlets\Get-Graphitem.ps1',
@@ -133,7 +139,9 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Invoke-GraphRequest.ps1',
         '.\src\cmdlets\New-GraphApplication.ps1',
         '.\src\cmdlets\New-GraphConnection.ps1',
+        '.\src\cmdlets\Remove-GraphApplicationConsent.ps1',
         '.\src\cmdlets\Remove-GraphItem.ps1',
+        '.\src\cmdlets\Set-GraphApplicationConsent.ps1',
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1',
         '.\src\cmdlets\Test-Graph.ps1',
         '.\src\cmdlets\common\ItemResultHelper.ps1',
@@ -183,7 +191,12 @@ PrivateData = @{
 
 ## New features
 
+* New-GraphApplication: new cmdlet that creates a new Graph application!
 * Get-GraphApplication: this new cmdlet retrieves specified applications from the tenant
+* Get-GraphApplicationCertificate: new cmdlet that enumerates certificates in the local cert store used for app-only authenticate with Graph
+* Get-GraphApplicationConsent: new cmdlet that lists consent grants for a Graph application
+* Remove-GraphApplicationConsent: new cmdlet that removes consent grants for a Graph application
+* Set-GraphApplicationConsent: new cmdlet that updates consent grants for a Graph application
 * Remove-GraphItem: this new cmdlet makes ``DELETE`` requests and supports the object pipeline -- the output of Get-GraphItem can be piped to it to delete the items for instance.
 * The ``Verb`` option of ``Invoke-GraphRequest`` has been renamed to ``Method`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
 * The ``Payload`` option of ``Invoke-GraphRequest`` has been renamed to ``Body`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.

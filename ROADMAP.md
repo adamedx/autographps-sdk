@@ -6,8 +6,7 @@
 * Dynamically obtain scopes
 * Make Uri argument a non-array
 * Allow connect-graph to specify -tenantid to support single tenant app
-* Fix context parsing, e.g. 'ggi me/drive/root:/something' shouldnt result in context error
-  * It fails before even authenticating!
+* Automatically find cert for apponly
 
 * Add app creation, enumeration, update
   * New-GraphApplication

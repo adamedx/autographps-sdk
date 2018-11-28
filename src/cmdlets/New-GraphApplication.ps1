@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../cmdlets/Invoke-GraphRequest)
 . (import-script ../graphservice/GraphApplicationRegistration)
 . (import-script ../common/GraphApplicationCertificate)
 
@@ -55,6 +56,8 @@ function New-GraphApplication {
         [parameter(parametersetname='delegated')]
         [switch] $AADAccountsOnly,
 
+        [switch] $SkipTenantRegistration,
+
         [parameter(parametersetname='apponlynewcert', mandatory=$true)]
         [parameter(parametersetname='apponlynocert', mandatory=$true)]
         [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
@@ -81,7 +84,7 @@ function New-GraphApplication {
 
     $newAppRegistration = new-so GraphApplicationRegistration $Name $InfoUrl $Tags $Tenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent $RedirectUris
 
-    $newApp = $newAppRegistration |=> RegisterNewApp
+    $newApp = $newAppRegistration |=> CreateNewApp
 
     if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
         try {
@@ -89,9 +92,14 @@ function New-GraphApplication {
             $certificate |=> Create
             $::.GraphApplicationRegistration |=> AddKeyCredentials $newApp $certificate
         } catch {
+            $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | rm -erroraction silentlycontinue
             Remove-GraphItem -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion "/applications/$($newApp.Id)" -erroraction silentlycontinue -confirm:$false
             throw
         }
+    }
+
+    if ( ! $SkipTenantRegistration.IsPresent ) {
+        $newAppRegistration |=> Register | out-null
     }
 
     $newApp

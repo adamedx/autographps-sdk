@@ -40,15 +40,18 @@ ScriptClass V2AuthProvider {
     function GetUserInformation($token) {
         $userId = $null
         $scopes = $null
+        $userObjectId = $null
 
         if ( $token -and $token.User ) {
             $userId = $token.User.DisplayableId
             $scopes = $token.scopes
+            $userObjectId = $token.uniqueid
         }
 
         [PSCustomObject]@{
             userId = $userId
             scopes = $scopes
+            userObjectId = $userObjectId
         }
     }
 

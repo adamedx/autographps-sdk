@@ -1,3 +1,4 @@
+
 # Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,6 +42,8 @@ Describe "Poshgraph application" {
                 'new-graphconnection',
                 'Remove-GraphItem',
                 'Get-GraphApplication',
+                'Get-GraphApplicationCertificate',
+                'Get-GraphApplicationConsent',
                 'get-graphitem',
                 'test-graph',
                 'invoke-graphrequest',
@@ -49,6 +52,8 @@ Describe "Poshgraph application" {
                 'get-grapherror',
                 'connect-graph',
                 'disconnect-graph',
+                'Remove-GraphApplicationConsent',
+                'Set-GraphApplicationConsent',
                 'Get-GraphConnectionStatus',
                 'Set-GraphConnectionStatus',
                 'get-graphtoken')

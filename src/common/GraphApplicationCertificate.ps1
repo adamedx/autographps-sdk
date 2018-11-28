@@ -19,22 +19,31 @@ ScriptClass GraphApplicationCertificate {
     $X509Certificate = $null
 
     static {
-        function GetAppCertificateSubjectParent {
-            'CN=AutoGraphPS, CN=MicrosoftGraph'
+        const __AppCertificateSubjectParent 'CN=AutoGraphPS, CN=MicrosoftGraph'
+
+        function FindAppCertificate(
+            $AppId,
+            $CertStoreLocation = 'cert:/currentuser/my'
+        ) {
+            $certs = ls $CertStoreLocation
+
+            if ( $AppId ) {
+                $subject = __GetAppCertificateSubject $appId
+                $certs | where subject -eq $subject
+            } else {
+                $subjectSuffix = $this.__AppCertificateSubjectParent
+                $certs | where { $_.subject.endswith($subjectSuffix) }
+            }
+        }
+
+        function __GetAppCertificateSubject($appId) {
+            "CN={0}, $($this.__AppCertificateSubjectParent)" -f $appId
         }
     }
 
     function __initialize($appId, $certStoreLocation = 'cert:/currentuser/my') {
         $this.AppId = $appId
         $this.CertLocation = $certStoreLocation
-    }
-
-    function GetAppCertificateSubject {
-        "CN={0}, $($this.scriptclass |=> GetAppCertificateSubjectParent)" -f $this.AppId
-    }
-
-    function __GetAppCertificateSubjectParent {
-        'CN=AutoGraphPS, CN=MicrosoftGraph'
     }
 
     function Create {
@@ -45,7 +54,7 @@ ScriptClass GraphApplicationCertificate {
         $certStoreDestination = $this.CertLocation
 
         $description = "Credential for Microsoft Graph Azure Active Directory application id=$($this.appId)"
-        $subject = GetAppCertificateSubject $this.AppId
+        $subject = $this.scriptclass |=> __GetAppCertificateSubject $this.AppId
 
         write-verbose "Creating certificate with subject '$subject'"
         $this.X509Certificate = New-SelfSignedCertificate -Subject $subject -friendlyname $description -provider 'Microsoft Enhanced RSA and AES Cryptographic Provider' -CertStoreLocation $certStoreDestination -NotBefore ([datetime]::UtcNow - [TimeSpan]::FromDays(1)) -notafter ([DateTime]::UtcNow + [TimeSpan]::fromdays(365))

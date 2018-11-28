@@ -27,15 +27,18 @@ ScriptClass V1AuthProvider {
     function GetUserInformation($token) {
         $userId = $null
         $scopes = $null
+        $userObjectId = $null
 
         if ( $token -and $token.UserInfo ) {
             $userId = $token.UserInfo.DisplayableId
             $scopes = $null
+            $userObjectId = $token.UserInfo.UniqueId
         }
 
         [PSCustomObject]@{
             userId = $userId
             scopes = $scopes
+            userObjectId = $userObjectId
         }
     }
 

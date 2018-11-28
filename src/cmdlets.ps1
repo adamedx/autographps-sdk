@@ -15,6 +15,8 @@
 . (import-script cmdlets\Connect-Graph)
 . (import-script cmdlets\Disconnect-Graph)
 . (import-script cmdlets\Get-GraphApplication)
+. (import-script cmdlets\Get-GraphApplicationCertificate)
+. (import-script cmdlets\Get-GraphApplicationConsent)
 . (import-script cmdlets\Get-GraphConnectionStatus)
 . (import-script cmdlets\Get-GraphError)
 . (import-script cmdlets\Get-GraphItem)
@@ -24,7 +26,9 @@
 . (import-script cmdlets\New-GraphApplication)
 . (import-script cmdlets\New-GraphConnection)
 . (import-script cmdlets\Invoke-GraphRequest)
+. (import-script cmdlets\Remove-GraphApplicationConsent)
 . (import-script cmdlets\Remove-GraphItem)
+. (import-script cmdlets\Set-GraphApplicationConsent)
 . (import-script cmdlets\Set-GraphConnectionStatus)
 . (import-script cmdlets\Test-Graph)
 
