@@ -6,7 +6,6 @@
 * Dynamically obtain scopes
 * Make Uri argument a non-array
 * Allow connect-graph to specify -tenantid to support single tenant app
-* Automatically find cert for apponly
 * Rename get-graphapplicationcertificate to get-graphapplicationlocalcertificate
 * Add default graph connection
 * Add named graph connections
@@ -14,6 +13,8 @@
 * Change -scopes to -permissions
 * Add formatting to get-graphapplication, get-graphapplicationconsent
 * Add retry to service principal creation
+* Add consent user to set-graphconsent
+* Change -tenantname to -tenantid
 
 * Add app creation, enumeration, update
   * Remove-GraphApplication
@@ -281,6 +282,7 @@
 * Remove-GraphApplicationConsent
 * Get-GraphApplicationConsent
 * Set-GraphApplicationConsent
+* Automatically find cert for apponly
 
 ### Postponed
 

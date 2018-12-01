@@ -139,12 +139,11 @@ ScriptClass GraphApplicationRegistration {
 
                 $graphResourceAccess.resourceAccess | foreach {
                     $permissionId = $_.id
-                    $permissionName = GraphPermissionIdToName $permissionId
+                    $permissionName = $::.ScopeHelper |=> GraphPermissionIdToName $permissionId
                     $permissions += $permissionName
                 }
                 $permissions
             }
-
             __NewOauth2Grant $app.appId ($targetPermissions -join ' ') $consentUser
         }
 
@@ -213,7 +212,7 @@ ScriptClass GraphApplicationRegistration {
             $scopes = $null
         }
 
-        $this.scriptclass |=> SetConsent $app $scopes $roles ! $skipRequiredResourcePermissions $tenantConsent $userConsentRequired $null
+        $this.scriptclass |=> SetConsent $app $scopes $roles (! $skipRequiredResourcePermissions) $tenantConsent $userConsentRequired $null
 
         $app
     }

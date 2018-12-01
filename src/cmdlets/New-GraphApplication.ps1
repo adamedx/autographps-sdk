@@ -109,7 +109,7 @@ function New-GraphApplication {
     }
 
     if ( ! $SkipTenantRegistration.IsPresent ) {
-        $newAppRegistration |=> Register | out-null
+        $newAppRegistration |=> Register $false $NonInteractiveAppOnlyAuth.IsPresent| out-null
     }
 
     $newApp
