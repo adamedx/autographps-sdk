@@ -20,7 +20,7 @@
 . (import-script ../common/ScopeHelper)
 
 function Connect-Graph {
-    [cmdletbinding(positionalbinding=$false)]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='simple')]
     param(
         <#
         This is implemented as a DynamicParam -- see below
@@ -31,10 +31,12 @@ function Connect-Graph {
         #>
 
         [parameter(parametersetname='simple')]
+        [parameter(parametersetname='apponly')]
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
         [parameter(parametersetname='simple')]
+        [parameter(parametersetname='apponly', mandatory=$true)]
         [string] $AppId = $null,
 
         [parameter(parametersetname='custom',mandatory=$true)]
@@ -45,7 +47,18 @@ function Connect-Graph {
 
         [parameter(parametersetname='simple')]
         [parameter(parametersetname='reconnect')]
-        [Switch] $SkipScopeValidation
+        [Switch] $SkipScopeValidation,
+
+        [parameter(parametersetname='apponly', mandatory=$true)]
+        [Switch] $NoninteractiveAppAuth,
+
+        [parameter(parametersetname='apponly')]
+        [string] $CertificatePath,
+
+        [parameter(parametersetname='apponly', mandatory=$true)]
+        [parameter(parametersetname='simple')]
+        [parameter(parametersetname='custom')]
+        [string] $TenantName
     )
 
     DynamicParam {
@@ -117,7 +130,21 @@ function Connect-Graph {
                 }
             } else {
                 write-verbose 'No reconnect -- creating a new connection for this context'
-                new-graphconnection -cloud $validatedCloud -appid $applicationid -scopes $computedScopes
+                $appOnlyArguments = @{}
+                $scopesArgument = @{}
+
+                if ( $NonInteractiveAppAuth.IsPresent ) {
+                    $appOnlyArguments['NoninteractiveAppAuth'] = $NonInteractiveAppAuth
+                    $appOnlyArguments['TenantName'] = $TenantName
+                } else {
+                    $scopesArgument['Scopes'] = $computedScopes
+                }
+
+                try {
+                    new-graphconnection -cloud $validatedCloud -appid $applicationid @scopesArgument @appOnlyArguments -erroraction stop
+                } catch {
+                    throw
+                }
             }
 
             $context |=> UpdateConnection $newConnection

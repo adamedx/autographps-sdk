@@ -15,11 +15,16 @@
 . (import-script ../common/GraphApplicationCertificate)
 
 function Get-GraphApplicationCertificate {
-    [cmdletbinding()]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='appid')]
     param(
+        [parameter(position=0, parametersetname='appid')]
         $AppId,
+
+        [parameter(parametersetname='byname', mandatory=$true)]
+        $Name,
+
         $CertStoreLocation = 'cert:/currentuser/my'
     )
 
-    $::.GraphApplicationCertificate |=> FindAppCertificate $AppId $CertStoreLocation
+    $::.GraphApplicationCertificate |=> FindAppCertificate $AppId $CertStoreLocation $Name
 }

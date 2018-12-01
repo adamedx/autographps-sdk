@@ -14,6 +14,7 @@
 
 . (import-script ../cmdlets/Invoke-GraphRequest)
 . (import-script ../graphservice/GraphApplicationRegistration)
+. (import-script ./common/ApplicationHelper)
 
 function Get-GraphApplication {
     [cmdletbinding(defaultparametersetname='appid', positionalbinding=$false)]
@@ -86,7 +87,13 @@ function Get-GraphApplication {
 
     $result = Invoke-GraphRequest -Method GET $uri @requestArguments -version $apiVersion
 
-    if ( $result -and ( $RawContent.IsPresent -or ( $result | gm id ) ) ) {
-        $result
+    if ( $result ) {
+        if ( $RawContent.IsPresent ) {
+            $result
+        } elseif ( $result | gm id ) {
+            $result | sort displayname | foreach {
+                $::.ApplicationHelper |=> ToDisplayableObject $_
+            }
+        }
     }
 }

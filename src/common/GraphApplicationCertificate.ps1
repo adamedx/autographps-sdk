@@ -15,6 +15,7 @@
 ScriptClass GraphApplicationCertificate {
 
     $AppId = $null
+    $DisplayName = $null
     $CertLocation = $null
     $X509Certificate = $null
 
@@ -23,8 +24,13 @@ ScriptClass GraphApplicationCertificate {
 
         function FindAppCertificate(
             $AppId,
-            $CertStoreLocation = 'cert:/currentuser/my'
+            $CertStoreLocation = 'cert:/currentuser/my',
+            $Name
         ) {
+            if ( $AppId -and $Name ) {
+                throw "Only one of appid or name may be specified to search for certificates"
+            }
+
             $certs = ls $CertStoreLocation
 
             if ( $AppId ) {
@@ -32,18 +38,32 @@ ScriptClass GraphApplicationCertificate {
                 $certs | where subject -eq $subject
             } else {
                 $subjectSuffix = $this.__AppCertificateSubjectParent
-                $certs | where { $_.subject.endswith($subjectSuffix) }
+                $targetDisplayNameComponent = __GetAppCertificateDisplayNameComponent $Name
+                $certs | where {
+                    $_.subject.endswith($subjectSuffix) -and
+                    ( ! $Name -or ( $_.FriendlyName.endswith($targetDisplayNameComponent ) ) )
+                }
             }
         }
 
         function __GetAppCertificateSubject($appId) {
             "CN={0}, $($this.__AppCertificateSubjectParent)" -f $appId
         }
+
+        function __GetAppCertificateDisplayNameComponent($name) {
+            "name='$name'"
+        }
+
+        function __GetAppCertificateFriendlyName($appId, $name) {
+            $nameComponent = __GetAppCertificateDisplayNameComponent $name
+            "Credential for Microsoft Graph Azure Active Directory application id=$appId, $nameComponent"
+        }
     }
 
-    function __initialize($appId, $certStoreLocation = 'cert:/currentuser/my') {
+    function __initialize($appId, $displayName, $certStoreLocation = 'cert:/currentuser/my') {
         $this.AppId = $appId
         $this.CertLocation = $certStoreLocation
+        $this.DisplayName = $displayName
     }
 
     function Create {
@@ -53,7 +73,7 @@ ScriptClass GraphApplicationCertificate {
 
         $certStoreDestination = $this.CertLocation
 
-        $description = "Credential for Microsoft Graph Azure Active Directory application id=$($this.appId)"
+        $description = $this.scriptclass |=> __GetAppCertificateFriendlyName $this.AppId $this.DisplayName
         $subject = $this.scriptclass |=> __GetAppCertificateSubject $this.AppId
 
         write-verbose "Creating certificate with subject '$subject'"

@@ -43,6 +43,7 @@ function New-GraphConnection {
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
         [parameter(parametersetname='secret')]
+        [parameter(parametersetname='autocert')]
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
@@ -52,6 +53,7 @@ function New-GraphConnection {
         [parameter(parametersetname='certpath', mandatory=$true)]
         [parameter(parametersetname='secret', mandatory=$true)]
         [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='autocert', mandatory=$true)]
         $AppId = $null,
 
         [Uri] $AppRedirectUri,
@@ -59,6 +61,7 @@ function New-GraphConnection {
         [parameter(parametersetname='secret', mandatory=$true)]
         [parameter(parametersetname='cert', mandatory=$true)]
         [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='autocert', mandatory=$true)]
         [Switch] $NoninteractiveAppAuth,
 
         [parameter(parametersetname='secret', mandatory=$true)]
@@ -92,6 +95,13 @@ function New-GraphConnection {
         [parameter(parametersetname='customendpoint')]
         [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
 
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='autocert', mandatory=$true)]
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='cloud')]
+        [parameter(parametersetname='customendpoint')]
         [String] $TenantName = $null
     )
 
@@ -160,12 +170,22 @@ function New-GraphConnection {
                 new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol
             }
 
-            $appSecret = if ( $Password ) {
-                $Password
-            } elseif ( $Certificate ) {
-                $Certificate
-            } else {
-                $CertificatePath
+            $appSecret = if ( $NonInteractiveAppAuth.IsPresent ) {
+                if ( $Password ) {
+                    $Password
+                } elseif ( $Certificate ) {
+                    $Certificate
+                } elseif ( $CertificatePath ) {
+                    $CertificatePath
+                } else {
+                    $appCertificate = $::.GraphApplicationCertificate |=> FindAppCertificate $AppId
+                    if ( ! $appCertificate ) {
+                        throw "NonInteractiveAppAuth was specified, but no password or certificate was specified, and no certificate with the appId '$AppId' in the subject name could be found in the default certificate store location. Specify an explicit certificate or password and retry."
+                    } elseif ( ($appCertificate | gm length -erroraction silentlycontinue) -and $appCertificate.length -gt 1 ) {
+                        throw "NonInteractiveAppAuth was specified, and more than one certificate with the appId '$AppId' in the subject name could be found in the default certificate store location. Specify an explicity certificate or password and retry."
+                    }
+                    $appCertificate
+                }
             }
 
             $newAppId = if ( $appId ) {

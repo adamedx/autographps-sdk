@@ -45,7 +45,7 @@ function New-GraphApplication {
         [parameter(parametersetname='apponlynewcert')]
         [parameter(parametersetname='apponlynocert')]
         [parameter(parametersetname='apponlyexistingcert')]
-        [AppTenancy] $Tenancy = ([AppTenancy]::AnyTenant),
+        [AppTenancy] $Tenancy = ([AppTenancy]::Auto),
 
         [parameter(parametersetname='delegated')]
         [parameter(parametersetname='apponlynewcert')]
@@ -82,13 +82,23 @@ function New-GraphApplication {
     $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $Scopes}
     $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $Scopes}
 
-    $newAppRegistration = new-so GraphApplicationRegistration $Name $InfoUrl $Tags $Tenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent $RedirectUris
+    $computedTenancy = if ( $Tenancy -ne ([AppTenancy]::Auto) ) {
+        $Tenancy
+    } else {
+        if( $NoninteractiveAppOnlyAuth.IsPresent ) {
+            [AppTenancy]::SingleTenant
+        } else {
+            [AppTenancy]::AnyTenant
+        }
+    }
+
+    $newAppRegistration = new-so GraphApplicationRegistration $Name $InfoUrl $Tags $computedTenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent $RedirectUris
 
     $newApp = $newAppRegistration |=> CreateNewApp
 
     if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
         try {
-            $certificate = new-so GraphApplicationCertificate $newApp.appId $certStoreLocation
+            $certificate = new-so GraphApplicationCertificate $newApp.appId $Name $certStoreLocation
             $certificate |=> Create
             $::.GraphApplicationRegistration |=> AddKeyCredentials $newApp $certificate
         } catch {

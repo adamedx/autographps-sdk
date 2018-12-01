@@ -226,6 +226,11 @@ ScriptClass ScopeHelper {
             }
         }
 
+        function GetGraphServicePrincipalId {
+            __InitializeGraphScopes
+            $this.graphSP.Id
+        }
+
         function GraphPermissionNameToId($name, $type, $connection) {
 
             $graphConnection = if ( $connection ) {

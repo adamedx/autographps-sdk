@@ -14,8 +14,10 @@
 
 . (import-script ../cmdlets/Invoke-GraphRequest)
 . (import-script ../common/GraphApplicationCertificate)
+. (import-script ../common/ScopeHelper)
 
 enum AppTenancy {
+    Auto
     SingleTenant
     AnyTenant
 }
@@ -142,7 +144,31 @@ ScriptClass GraphApplicationRegistration {
                 $permissions
             }
 
-            NewOauth2Grant $app.appId ($targetPermissions -join ' ') $consentUser
+            __NewOauth2Grant $app.appId ($targetPermissions -join ' ') $consentUser
+        }
+
+        function __NewOauth2Grant($appId, [string] $permissionName, $consentUserId) {
+            $appSP = GetAppServicePrincipal $appId
+
+            if ( ! $appSP ) {
+                throw "Application '$AppId' was not found"
+            }
+
+            $consentType = if ( $consentUserId ) {
+                'Principal'
+            } else {
+                'AllPrincipals'
+            }
+
+            @{
+                clientId = $appSP.id
+                consentType = $consentType
+                resourceId = $::.ScopeHelper |=> GetGraphServicePrincipalId
+                principalId = $consentUserId
+                scope = $permissionName
+                startTime = (([DateTime]::UtcNow) - ([TimeSpan]::FromDays(1))).tostring('s')
+                expiryTime = (([DateTime]::UtcNow) + ([TimeSpan]::FromDays(365))).tostring('s')
+            }
         }
     }
 

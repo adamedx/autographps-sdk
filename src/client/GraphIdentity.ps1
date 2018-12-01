@@ -96,7 +96,7 @@ ScriptClass GraphIdentity {
 
         $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
 
-        $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.Graph $authUri
+        $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.Graph $authUri $this.tenantname
 
         $authResult = if ( $this.token ) {
             $providerInstance |=> AcquireRefreshedToken $authContext $this.token

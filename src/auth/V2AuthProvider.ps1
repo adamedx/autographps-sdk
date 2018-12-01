@@ -22,9 +22,7 @@ ScriptClass V2AuthProvider {
 
     function GetAuthContext($app, $graphUri, $authUri) {
         if ( $app.authtype -eq ([GraphAppAuthType]::AppOnly) ) {
-
             $credential = New-Object Microsoft.Identity.Client.ClientCredential -ArgumentList ($app.secret |=> GetSecretData)
-
             New-Object "Microsoft.Identity.Client.ConfidentialClientApplication" -ArgumentList @(
                 $App.AppId,
                 $authUri,
@@ -70,13 +68,14 @@ ScriptClass V2AuthProvider {
     function AcquireFirstAppToken($authContext) {
         write-verbose 'V2 auth provider acquiring initial app token'
         $defaultScopeList = $this.__GetDefaultScopeList.InvokeReturnAsIs(@($authContext))
+
         $authContext.protocolContext.AcquireTokenForClientAsync($defaultScopeList)
     }
 
     function AcquireRefreshedToken($authContext, $token) {
         write-verbose 'V2 auth provider refreshing existing token'
         if ( $authContext.app.authtype -eq ([GraphAppAuthType]::AppOnly) ) {
-            $defaultScopeList = $this.__GetDefaultScopeList.InvokeReturnAsIs(@($authContext))
+            $defaultScopeList = $this.__GetDefaultScopeList.InvokeReturnAsIs(@($authContext, @()))
             $authContext.protocolContext.AcquireTokenForClientAsync($defaultScopeList)
         } else {
             # See comment on __ScopesAsScopeList member to understand strange call syntax here
@@ -98,7 +97,7 @@ ScriptClass V2AuthProvider {
         # See comments for $__ScopesAsScopeList as to why this is a script block instead
         # of a function and has a strange return value
         $scopes = new-object System.Collections.Generic.List[string]
-        $defaultScope = $authContext.GraphEndpointUri.tostring().trimend(), '.default' -join '/'
+        $defaultScope = $authContext.GraphEndpointUri.tostring().trimend('/'), '.default' -join '/'
         $scopes.Add($defaultScope)
 
         # This is not a typo -- see $__ScopesAsScopeList member block comments

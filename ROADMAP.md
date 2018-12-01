@@ -7,23 +7,26 @@
 * Make Uri argument a non-array
 * Allow connect-graph to specify -tenantid to support single tenant app
 * Automatically find cert for apponly
+* Rename get-graphapplicationcertificate to get-graphapplicationlocalcertificate
+* Add default graph connection
+* Add named graph connections
+* Add connection enumeration
+* Change -scopes to -permissions
+* Add formatting to get-graphapplication, get-graphapplicationconsent
+* Add retry to service principal creation
 
 * Add app creation, enumeration, update
-  * New-GraphApplication
-  * Get-GraphApplication
   * Remove-GraphApplication
   * Set-GraphApplication
-  * Get-GraphApplicationServicePrincipal
-  * Register-GraphApplication
+  * Get-GraphApplicationServicePrincipal ?
+  * Register-GraphApplication ?
   * New-GraphApplicationCertificate
-  * Get-GraphApplicationCertificate
-  * Remove-GraphApplicationCertificate
+  * Remove-GraphApplicationCertificate ?
   * Set-GraphApplicationCertificate
-  * Get-GraphApplicationLocalCertificate
+  * Get-GraphApplicationCertificate
   * Remove-GraphApplicationLocalCertificate
   * Import-GraphApplicationLocalCertificate
-  * Set-GraphApplicationPermissions
-  * Remove-GraphApplicationConsent
+  * Set-GraphApplicationPermissions ?
 
 * Extend Get-GraphToken to support all scenarios, better formats
 
@@ -272,6 +275,12 @@
 * Fix invoke-graphrequest parameter names (-verb should be -method, -payload should be -body)
 * Add Remove-GraphItem
 * Change scopenames arguments to scopes
+* New-GraphApplication
+* Get-GraphApplication
+* Get-GraphApplicationLocalCertificate (wrong name thought)
+* Remove-GraphApplicationConsent
+* Get-GraphApplicationConsent
+* Set-GraphApplicationConsent
 
 ### Postponed
 
