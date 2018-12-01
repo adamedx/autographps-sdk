@@ -58,7 +58,7 @@ function Connect-Graph {
         [parameter(parametersetname='apponly', mandatory=$true)]
         [parameter(parametersetname='simple')]
         [parameter(parametersetname='custom')]
-        [string] $TenantName
+        [string] $TenantId
     )
 
     DynamicParam {
@@ -141,7 +141,7 @@ function Connect-Graph {
 
                 if ( $NonInteractiveAppAuth.IsPresent ) {
                     $appOnlyArguments['NoninteractiveAppAuth'] = $NonInteractiveAppAuth
-                    $appOnlyArguments['TenantName'] = $TenantName
+                    $appOnlyArguments['TenantId'] = $TenantId
                 } else {
                     $scopesArgument['Scopes'] = $computedScopes
                 }

@@ -3,18 +3,15 @@
 ## To-do items -- prioritized
 
 * Possibly remove query support from Remove-GraphItem if queries on DELETE method are not supported
-* Dynamically obtain scopes
 * Make Uri argument a non-array
-* Allow connect-graph to specify -tenantid to support single tenant app
 * Rename get-graphapplicationcertificate to get-graphapplicationlocalcertificate
 * Add default graph connection
 * Add named graph connections
 * Add connection enumeration
 * Change -scopes to -permissions
-* Add formatting to get-graphapplication, get-graphapplicationconsent
+* Add formatting to get-graphapplicationconsent
 * Add retry to service principal creation
 * Add consent user to set-graphconsent
-* Change -tenantname to -tenantid
 * Add user consent, tenant consent options to set-graphconsent and new-graphapplication
 * Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
 
@@ -280,6 +277,10 @@
 * Add app enumeration
 * Add app creation
 * App deletion
+* Change -tenantname to -tenantid
+* Allow connect-graph to specify -tenantid to support single tenant app
+* Dynamically obtain scopes
+* Add formatting to get-graphapplication
 
 ### Postponed
 

@@ -102,7 +102,7 @@ function New-GraphConnection {
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud')]
         [parameter(parametersetname='customendpoint')]
-        [String] $TenantName = $null
+        [String] $TenantId = $null
     )
 
     DynamicParam {
@@ -153,7 +153,7 @@ function New-GraphConnection {
 
         if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
             write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'
-            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $tenantName $computedAuthProtocol
+            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $computedAuthProtocol
         } else {
             $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
                 write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
@@ -189,7 +189,7 @@ function New-GraphConnection {
             }
 
             $app = new-so GraphApplication $newAppId $AppRedirectUri $appSecret
-            $identity = new-so GraphIdentity $app $graphEndpoint $TenantName
+            $identity = new-so GraphIdentity $app $graphEndpoint $TenantId
             new-so GraphConnection $graphEndpoint $identity $specifiedScopes
         }
     }

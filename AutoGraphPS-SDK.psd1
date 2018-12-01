@@ -192,6 +192,7 @@ PrivateData = @{
 
 ## New features
 
+* Ability to dynamically obtain when possible values for permission scope names used by cmdlet auto-completion, fallback to hard-coded data
 * New-GraphApplication: new cmdlet that creates a new Graph application!
 * Get-GraphApplication: this new cmdlet retrieves specified applications from the tenant
 * Get-GraphApplicationCertificate: new cmdlet that enumerates certificates in the local cert store used for app-only authenticate with Graph
