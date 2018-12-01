@@ -65,7 +65,8 @@ ScriptClass GraphApplicationRegistration {
                 throw "Application is already registered with service principal id = '$($appSP.id)'"
             }
 
-            NewAppServicePrincipal $appId
+            NewAppServicePrincipal $appId | out-null
+            $app
         }
 
         function NewAppServicePrincipal($appId) {
@@ -201,10 +202,18 @@ ScriptClass GraphApplicationRegistration {
         $appObject
     }
 
-    function Register($skipRequiredResourcePermissions, $tenantConsent, $userConsentRequired) {
+    function Register($skipRequiredResourcePermissions, $tenantConsent, $userConsentRequired, $permissions) {
         $app = $this.scriptclass |=> RegisterApplication $this.AppId
 
-        $this.scriptclass |=> SetConsent $app $null $null ! $skipRequiredResourcePermissions $tenantConsent $userConsentRequired $null
+        $scopes = $permissions
+        $roles = $null
+
+        if ( ! $userConsentRequired ) {
+            $roles = $permissions
+            $scopes = $null
+        }
+
+        $this.scriptclass |=> SetConsent $app $scopes $roles ! $skipRequiredResourcePermissions $tenantConsent $userConsentRequired $null
 
         $app
     }
