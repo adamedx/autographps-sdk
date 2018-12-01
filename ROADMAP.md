@@ -15,6 +15,8 @@
 * Add retry to service principal creation
 * Add consent user to set-graphconsent
 * Change -tenantname to -tenantid
+* Add user consent, tenant consent options to set-graphconsent and new-graphapplication
+* Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
 
 * Add app creation, enumeration, update
   * Remove-GraphApplication
@@ -35,9 +37,6 @@
 * Customize WALKTHROUGH
 * Release
 
-* Add app enumeration
-* Add app creation
-* App deletion
 * Add app updating
 * Release
 
@@ -52,11 +51,6 @@
 
 * Clean up utilities, special-case, duplicate code in get-graphuri, invoke-graphrequest, get-graphitem, get-graphchilditem
 * Make gcd work without hanging for new graphs
-
-* Investigate metadata perf optimization -- perform:
-  * Discover roots only
-  * Just-in-time discovery of types
-  * Just-in-time resolution of navigation properties
 
 * change $graphverbosepreference to $graphverboselevelpreference
 
@@ -283,6 +277,9 @@
 * Get-GraphApplicationConsent
 * Set-GraphApplicationConsent
 * Automatically find cert for apponly
+* Add app enumeration
+* Add app creation
+* App deletion
 
 ### Postponed
 

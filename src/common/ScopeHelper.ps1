@@ -21,10 +21,12 @@ ScriptClass ScopeHelper {
         $graphSP = $null
         $permissionsByNames = $null
         $permissionsByIds = $null
+        $retrievedScopesFromGraphService = $false
+        $__graphAuthScopes = $null
 
         function __AddConnectionScopeData($graphSP, $permissionsByNames, $permissionsByIds) {
-            if ( $this.graphSP ) {
-                throw "Scope data for already exists"
+            if ( $this.graphSP -and $this.retrievedScopesFromGraphService ) {
+                throw "Scope data already dynamically retrieved from Graph service"
             }
 
             $this.graphSP = $graphSP
@@ -32,152 +34,27 @@ ScriptClass ScopeHelper {
             $this.permissionsByIds = $permissionsByIds
         }
 
-        const __graphAuthScopes @(
-            'Application.ReadWrite.All',
-			'Application.ReadWrite.OwnedBy',
-			'Bookings.Read.All',
-			'Bookings.ReadWrite.Appointments',
-			'Bookings.ReadWrite.All',
-			'Bookings.Manage',
-			'Calendars.Read',
-			'Calendars.Read.Shared',
-			'Calendars.ReadWrite',
-			'Calendars.ReadWrite.Shared',
-			'Calendars.Read',
-			'Calendars.ReadWrite',
-			'Contacts.Read',
-			'Contacts.Read.Shared',
-			'Contacts.ReadWrite',
-			'Contacts.ReadWrite.Shared',
-			'Contacts.Read',
-			'Contacts.ReadWrite',
-			'Device.Read',
-			'Device.Command',
-			'Device.ReadWrite.All',
-			'Directory.Read.All',
-			'Directory.ReadWrite.All',
-			'Directory.AccessAsUser.All',
-			'Directory.Read.All',
-			'Directory.ReadWrite.All',
-			'Files.Read',
-			'Files.Read.All',
-			'Files.ReadWrite',
-			'Files.ReadWrite.All',
-			'Files.ReadWrite.AppFolder',
-			'Files.Read.Selected',
-			'Files.ReadWrite.Selected',
-			'Files.Read.All',
-			'Files.ReadWrite.All',
-			'Group.Read.All',
-			'Group.ReadWrite.All',
-			'Group.Read.All',
-			'Group.ReadWrite.All',
-			'IdentityRiskEvent.Read.All',
-			'IdentityRiskEvent.Read.All',
-			'IdentityProvider.Read.All',
-			'IdentityProvider.ReadWrite.All',
-			'DeviceManagementApps.Read.All',
-			'DeviceManagementApps.ReadWrite.All',
-			'DeviceManagementConfiguration.Read.All',
-			'DeviceManagementConfiguration.ReadWrite.All',
-			'DeviceManagementManagedDevices.PrivilegedOperations.All',
-			'DeviceManagementManagedDevices.Read.All',
-			'DeviceManagementManagedDevices.ReadWrite.All',
-			'DeviceManagementRBAC.Read.All',
-			'DeviceManagementRBAC.ReadWrite.All',
-			'DeviceManagementServiceConfig.Read.All',
-			'DeviceManagementServiceConfig.ReadWrite.All',
-			'Mail.Read',
-			'Mail.ReadWrite',
-			'Mail.Read.Shared',
-			'Mail.ReadWrite.Shared',
-			'Mail.Send',
-			'Mail.Send.Shared',
-			'MailboxSettings.Read',
-			'MailboxSettings.ReadWrite',
-			'Mail.Read',
-			'Mail.ReadWrite',
-			'Mail.Send',
-			'MailboxSettings.Read',
-			'MailboxSettings.ReadWrite',
-			'Member.Read.Hidden',
-			'Member.Read.Hidden',
-			'Notes.Read',
-			'Notes.Create',
-			'Notes.ReadWrite',
-			'Notes.Read.All',
-			'Notes.ReadWrite.All',
-			'Notes.ReadWrite.CreatedByApp',
-			'Notes.Read.All',
-			'Notes.ReadWrite.All',
-			'email',
-			'offline_access',
-			'openid',
-			'profile',
-			'People.Read',
-			'People.Read.All',
-			'People.Read.All',
-			'Reports.Read.All',
-			'Reports.Read.All',
-			'SecurityEvents.Read.All',
-			'SecurityEvents.ReadWrite.All',
-			'SecurityEvents.Read.All',
-			'SecurityEvents.ReadWrite.All',
-			'Sites.Read.All',
-			'Sites.ReadWrite.All',
-			'Sites.Manage.All',
-			'Sites.FullControl.All',
-			'Sites.Read.All',
-			'Sites.ReadWrite.All',
-			'Sites.Manage.All',
-			'Sites.FullControl.All',
-			'Tasks.Read',
-			'Tasks.Read.Shared',
-			'Tasks.ReadWrite',
-			'Tasks.ReadWrite.Shared',
-			'Agreement.Read.All',
-			'Agreement.ReadWrite.All',
-			'AgreementAcceptance.Read',
-			'AgreementAcceptance.Read.All',
-			'User.Read',
-			'User.ReadWrite',
-			'User.ReadBasic.All',
-			'User.Read.All',
-			'User.ReadWrite.All',
-			'User.Invite.All',
-			'User.Export.All',
-			'User.Read.All',
-			'User.ReadWrite.All',
-			'User.Invite.All',
-			'User.Export.All',
-			'User.ReadBasic.All',
-			'User.Read',
-			'User.Read.All',
-			'User.Read',
-			'Files.Read',
-			'Mail.Read',
-			'Calendars.Read',
-			'User.Read',
-			'Files.Read',
-			'Sites.Read.All',
-			'User.ReadWrite',
-			'User.ReadWrite.All',
-			'User.ReadWrite',
-			'Files.ReadWrite',
-			'Mail.ReadWrite',
-			'Calendars.ReadWrite',
-			'User.Export.All',
-			'Group.Read.All',
-			'Group.Read.All',
-			'Group.ReadWrite.All',
-			'Sites.ReadWrite.All',
-			'Group.ReadWrite.All',
-			'Group.ReadWrite.All',
-			'UserActivity.ReadWrite.CreatedByApp'
-        )
+        function GetKnownScopes($connection) {
+            $activeConnection = if ( $connection -and ( $connection |=> IsConnected ) ) {
+                $connection
+            }
 
-        function GetKnownScopes {
+            __InitializeGraphScopes $activeConnection
+            $scopeNames = if ( $this.permissionsByNames ) {
+                $this.permissionsByNames.Keys
+            } else {
+                # At least return something if this fails
+                @('User.Read', 'Directory.AccessAsUser.All')
+            }
+
+            $this.__graphAuthScopes = @()
+            $this.__graphAuthScopes += $scopeNames
             $this.__graphAuthScopes
+        }
+
+        function GetDynamicScopeCmdletParameter([boolean] $skipValidation, [HashTable[]] $parameterSets) {
+            $scopes = $this |=> GetKnownScopes ($::.GraphContext |=> GetCurrentConnection)
+            Get-DynamicValidateSetParameter Scopes $scopes -ParameterType ([String[]]) -SkipValidation:$skipValidation -ParameterSets $parameterSets
         }
 
         function GetAppOnlyResourceAccessPermissions($scopes, $connection) {
@@ -287,23 +164,34 @@ ScriptClass ScopeHelper {
         }
 
         function __InitializeGraphScopes($connection) {
-            if ( ! $this.GraphSP ) {
-                $graphSP = if ( $connection ) {
-                    $graphSPResponse = try {
-                        $graphSPRequest = new-so GraphRequest $connection "/beta/servicePrincipals" GET $null "`$filter=appId eq '$($this.GraphApplicationId)'"
-                        $graphSPRequest |=> Invoke
-                    } catch {
-                    }
+            if ( $this.graphSP -and $this.retrievedScopesFromGraphService ) {
+                return
+            }
 
-                    if ( $graphSPResponse ) {
-                        $graphSPResponse |=> Content | convertfrom-json | select -expandproperty value
-                    }
+            $retrievedFromService = $false
+            $graphSP = if ( $connection ) {
+                $graphSPResponse = try {
+                    # ScriptClass has an apparent problem with string interpolation using $this
+                    # in string interpolation in the context of PowerShell argument completion
+                    # via dynamic parameters, so get $this.GraphApplicationId into a local
+                    # variable as a workaround.
+                    $graphAppId = $this.GraphApplicationId
+                    $graphSPRequest = new-so GraphRequest $connection "/beta/servicePrincipals" GET $null "`$filter=appId eq '$graphAppId'"
+                    $graphSPRequest |=> Invoke
+                } catch {
                 }
 
-                if ( ! $graphSP ) {
-                    $graphSP = $__DefaultScopeData
+                if ( $graphSPResponse ) {
+                    $retrievedFromService = $true
+                    $graphSPResponse |=> Content | convertfrom-json | select -expandproperty value
                 }
+            }
 
+            if ( ! $graphSP ) {
+                $graphSP = $__DefaultScopeData
+            }
+
+            if ( $graphSP ) {
                 $permissionsByNames = @{}
                 $permissionsByIds = @{}
 
@@ -318,6 +206,10 @@ ScriptClass ScopeHelper {
                 }
 
                 __AddConnectionScopeData $graphSP $permissionsByNames $permissionsByIds
+
+                if ( $retrievedFromService ) {
+                    $this.retrievedScopesFromGraphService = $true
+                }
             }
         }
     }

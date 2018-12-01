@@ -62,15 +62,21 @@ function Connect-Graph {
     )
 
     DynamicParam {
-        Get-DynamicValidateSetParameter Scopes ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
+        $::.ScopeHelper |=> GetDynamicScopeCmdletParameter $SkipScopeValidation.IsPresent @(
             @{
                 Position = 0
             }
             @{
                 ParameterSetName = 'simple'
-            },
+            }
             @{
                 ParameterSetName = 'reconnect'
+            }
+            @{
+                ParameterSetName = 'custom'
+            }
+            @{
+                ParameterSetName = 'apponly'
             }
         )
     }
@@ -151,3 +157,4 @@ function Connect-Graph {
         }
     }
 }
+

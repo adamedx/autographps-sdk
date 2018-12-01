@@ -106,17 +106,11 @@ function New-GraphConnection {
     )
 
     DynamicParam {
-        Get-DynamicValidateSetParameter Scopes ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
-            @{
-                ParameterSetName = 'msgraph'
-            }
-            @{
-                ParameterSetName = 'cloud'
-            },
-            @{
-                ParameterSetName = 'customendpoint'
-            }
-        )
+        $parameterSetNames = @('msgraph', 'cloud', 'customendpoint', 'cert', 'certpath', 'autocert', 'secret')
+        $parameterSets = $parameterSetNames | foreach {
+            @{ ParameterSetName = $_ }
+        }
+        $::.ScopeHelper |=> GetDynamicScopeCmdletParameter $SkipScopeValidation.IsPresent $parameterSets
     }
 
     begin {

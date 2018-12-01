@@ -14,7 +14,7 @@
 
 . (import-script ../cmdlets/Invoke-GraphRequest)
 . (import-script ../graphservice/GraphApplicationRegistration)
-. (import-script ./common/ApplicationHelper)
+. (import-script common/ApplicationHelper)
 
 function Get-GraphApplication {
     [cmdletbinding(defaultparametersetname='appid', positionalbinding=$false)]
