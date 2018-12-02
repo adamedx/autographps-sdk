@@ -30,7 +30,7 @@ function New-GraphConnection {
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud')]
         [parameter(parametersetname='customendpoint')]
-        [String[]] $Scopes = $null,
+        [String[]] $Permissions = $null,
         #>
 
         [parameter(parametersetname='msgraph')]
@@ -110,7 +110,7 @@ function New-GraphConnection {
         $parameterSets = $parameterSetNames | foreach {
             @{ ParameterSetName = $_ }
         }
-        $::.ScopeHelper |=> GetDynamicScopeCmdletParameter $SkipScopeValidation.IsPresent $parameterSets
+        $::.ScopeHelper |=> GetDynamicScopeCmdletParameter Permissions $SkipScopeValidation.IsPresent $parameterSets
     }
 
     begin {
@@ -118,9 +118,9 @@ function New-GraphConnection {
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud')]
         [parameter(parametersetname='customendpoint')]
-        [String[]] $Scopes = $null,
+        [String[]] $Permissions = $null,
         #>
-        $Scopes = $PsBoundParameters['Scopes']
+        $Permissions = $PsBoundParameters['Permissions']
     }
 
     process {
@@ -140,11 +140,11 @@ function New-GraphConnection {
             $AuthProtocol
         }
 
-        $specifiedScopes = if ( $Scopes ) {
+        $specifiedScopes = if ( $Permissions ) {
             if ( $Secret.IsPresent -or $Certificate -or $CertificatePath ) {
-                throw 'Scopes may not be specified for app authentication'
+                throw 'Permissions may not be specified for app authentication'
             }
-            $scopes
+            $Permissions
         } else {
             @('User.Read')
         }

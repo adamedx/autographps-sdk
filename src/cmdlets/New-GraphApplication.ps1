@@ -51,7 +51,7 @@ function New-GraphApplication {
         [parameter(parametersetname='apponlynewcert')]
         [parameter(parametersetname='apponlynocert')]
         [parameter(parametersetname='apponlyexistingcert')]
-        $Scopes,
+        $Permissions,
 
         [parameter(parametersetname='delegated')]
         [switch] $AADAccountsOnly,
@@ -79,8 +79,8 @@ function New-GraphApplication {
         [string] $Manifest
     )
 
-    $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $Scopes}
-    $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $Scopes}
+    $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $Permissions}
+    $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $Permissions}
 
     $computedTenancy = if ( $Tenancy -ne ([AppTenancy]::Auto) ) {
         $Tenancy

@@ -13,6 +13,7 @@
 * Add consent user to set-graphconsent
 * Add user consent, tenant consent options to set-graphconsent and new-graphapplication
 * Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
+* Add scope parameter completion to get-graphitem, invoke-graphitem, get-graphapplication, any others
 
 * Add app creation, enumeration, update
   * Remove-GraphApplication

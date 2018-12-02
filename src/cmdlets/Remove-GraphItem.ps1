@@ -30,7 +30,7 @@ function Remove-GraphItem {
 
         [parameter(parametersetname='FromUri')]
         [parameter(parametersetname='FromObjects')]
-        [String[]] $Scopes = $null,
+        [String[]] $Permissions = $null,
 
         [parameter(parametersetname='FromUri')]
         [parameter(parametersetname='FromObjects')]
@@ -97,7 +97,7 @@ function Remove-GraphItem {
             ODataFilter = $ODataFilter
             Version = $Version
             Headers = $Headers
-            Scopes = $Scopes
+            Permissions = $Permissions
         }
 
         if ( $Connection ) {

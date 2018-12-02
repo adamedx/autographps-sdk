@@ -40,7 +40,7 @@ function Get-GraphApplication {
         [parameter(parametersetname='NewConnectionObjectId')]
         [parameter(parametersetname='NewConnectionODataFilter')]
         [parameter(parametersetname='NewConnectionName')]
-        [String[]] $Scopes = $null,
+        [String[]] $Permissions = $null,
 
         [parameter(parametersetname='NewConnection')]
         [parameter(parametersetname='NewConnectionAppId')]
@@ -78,7 +78,7 @@ function Get-GraphApplication {
     $requestArguments = @{
         RawContent = $RawContent
         ODataFilter = $filter
-        Scopes = $Scopes
+        Permissions = $Permissions
     }
 
     if ( $Connection ) {

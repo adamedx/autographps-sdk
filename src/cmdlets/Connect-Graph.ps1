@@ -27,7 +27,7 @@ function Connect-Graph {
         [parameter(position=0)]
         [parameter(parametersetname='simple')]
         [parameter(parametersetname='reconnect')]
-        [String[]] $Scopes = $null,
+        [String[]] $Permissions = $null,
         #>
 
         [parameter(parametersetname='simple')]
@@ -62,7 +62,7 @@ function Connect-Graph {
     )
 
     DynamicParam {
-        $::.ScopeHelper |=> GetDynamicScopeCmdletParameter $SkipScopeValidation.IsPresent @(
+        $::.ScopeHelper |=> GetDynamicScopeCmdletParameter Permissions $SkipScopeValidation.IsPresent @(
             @{
                 Position = 0
             }
@@ -86,9 +86,9 @@ function Connect-Graph {
         [parameter(position=0)]
         [parameter(parametersetname='simple')]
         [parameter(parametersetname='reconnect')]
-        [String[]] $Scopes = $null,
+        [String[]] $Permissions = $null,
         #>
-        $Scopes = $PsBoundParameters['Scopes']
+        $Permissions = $PsBoundParameters['Permissions']
     }
 
     process {
@@ -98,8 +98,8 @@ function Connect-Graph {
             ([GraphCloud]::Public)
         }
 
-        $computedScopes = if ( $scopes -ne $null ) {
-            $Scopes
+        $computedScopes = if ( $Permissions -ne $null ) {
+            $Permissions
         } else {
             @('User.Read')
         }
@@ -126,8 +126,8 @@ function Connect-Graph {
 
             $newConnection = if ( $Reconnect.IsPresent ) {
                 write-verbose 'Reconnecting using the existing connection if it exists'
-                if ( $scopes -and $context.connection -and $context.connection.identity ) {
-                    write-verbose 'Creating connection from existing connection but with new scopes'
+                if ( $Permissions -and $context.connection -and $context.connection.identity ) {
+                    write-verbose 'Creating connection from existing connection but with new permissions'
                     $identity = new-so GraphIdentity $context.connection.identity.app $context.connection.graphEndpoint $context.connection.identity.tenantname
                     new-so GraphConnection $context.connection.graphEndpoint $identity $computedScopes
                 } else {
@@ -137,17 +137,17 @@ function Connect-Graph {
             } else {
                 write-verbose 'No reconnect -- creating a new connection for this context'
                 $appOnlyArguments = @{}
-                $scopesArgument = @{}
+                $permissionsArgument = @{}
 
                 if ( $NonInteractiveAppAuth.IsPresent ) {
                     $appOnlyArguments['NoninteractiveAppAuth'] = $NonInteractiveAppAuth
                     $appOnlyArguments['TenantId'] = $TenantId
                 } else {
-                    $scopesArgument['Scopes'] = $computedScopes
+                    $permissionsArgument['Permissions'] = $computedScopes
                 }
 
                 try {
-                    new-graphconnection -cloud $validatedCloud -appid $applicationid @scopesArgument @appOnlyArguments -erroraction stop
+                    new-graphconnection -cloud $validatedCloud -appid $applicationid @permissionsArgument @appOnlyArguments -erroraction stop
                 } catch {
                     throw
                 }

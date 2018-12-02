@@ -52,9 +52,9 @@ ScriptClass ScopeHelper {
             $this.__graphAuthScopes
         }
 
-        function GetDynamicScopeCmdletParameter([boolean] $skipValidation, [HashTable[]] $parameterSets) {
+        function GetDynamicScopeCmdletParameter($parameterName, [boolean] $skipValidation, [HashTable[]] $parameterSets) {
             $scopes = $this |=> GetKnownScopes ($::.GraphContext |=> GetCurrentConnection)
-            Get-DynamicValidateSetParameter Scopes $scopes -ParameterType ([String[]]) -SkipValidation:$skipValidation -ParameterSets $parameterSets
+            Get-DynamicValidateSetParameter $parameterName $scopes -ParameterType ([String[]]) -SkipValidation:$skipValidation -ParameterSets $parameterSets
         }
 
         function GetAppOnlyResourceAccessPermissions($scopes, $connection) {
