@@ -102,20 +102,23 @@ ScriptClass GraphApplicationRegistration {
             $userConsentRequired,
             $userIdToConsent
         ) {
-            if ( ! $consentForTenant ) {
-                return
-            }
-
             $consentUser = if ( $userIdToConsent ) {
+                write-verbose "User '$userIdToConsent' specified for consent"
                 $userIdToConsent
             } elseif ( ! $consentForTenant ) {
+                write-verbose "No user was specified for consent, and consent for the entire tenant was not specified, so consent will be made for the user making this Graph API call"
                 $userObjectId = ('GraphContext' |::> GetConnection).Identity.GetUserInformation().userObjectId
                 if ( ! $userObjectId -and $userConsentRequired ) {
                     throw "User consent required but no user was specified and user id of current user could not be obtained"
                 }
+                write-verbose "Attempting to grant consent to app '$($appObject.appId)' for current user '$userObjectId'"
+                $userObjectId
+            } else {
+                write-verbose "User consent was not specified, and tenant consent was specified, will attempt to consent all app permissions for the tenant"
             }
 
             if ( $userConsentRequired -and ! $consentUser ) {
+                write-verbose "No user was specified for consent, and user consent was required, so skipping consent completely"
                 return
             }
 
@@ -201,7 +204,7 @@ ScriptClass GraphApplicationRegistration {
         $appObject
     }
 
-    function Register($skipRequiredResourcePermissions, $tenantConsent, $userConsentRequired, $permissions) {
+    function Register($skipRequiredResourcePermissions, $tenantConsent, $userConsentRequired, $userIdToConsent, $permissions) {
         $app = $this.scriptclass |=> RegisterApplication $this.AppId
 
         $scopes = $permissions
@@ -212,7 +215,7 @@ ScriptClass GraphApplicationRegistration {
             $scopes = $null
         }
 
-        $this.scriptclass |=> SetConsent $app $scopes $roles (! $skipRequiredResourcePermissions) $tenantConsent $userConsentRequired $null
+        $this.scriptclass |=> SetConsent $app $scopes $roles (! $skipRequiredResourcePermissions) $tenantConsent $userConsentRequired $userIdToConsent
 
         $app
     }
@@ -255,6 +258,7 @@ ScriptClass GraphApplicationRegistration {
         }
 
         $resourceAccess = @()
+
         if ( $appOnlyPermissions ) { $appOnlyPermissions | foreach { $resourceAccess += $_ } }
         if ( $delegatedPermissions ) { $delegatedPermissions | foreach { $resourceAccess += $_ } }
 

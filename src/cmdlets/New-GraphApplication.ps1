@@ -75,9 +75,20 @@ function New-GraphApplication {
         [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
         $Certificate,
 
+        [switch] $ConsentForTenant,
+
+        [parameter(parametersetname='delegated')]
+        [string] $UserIdToConsent,
+
         [parameter(parametersetname='manifest', mandatory=$true)]
         [string] $Manifest
     )
+
+    if ( $SkipTenantRegistration.IsPresent ) {
+        if ( $UserIdToConsent -or $ConsentForTenant.IsPresent ) {
+            throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'UserIdToConsent' or 'ConsentForTenant' is specified")
+        }
+    }
 
     $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $Permissions}
     $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $Permissions}
@@ -109,7 +120,10 @@ function New-GraphApplication {
     }
 
     if ( ! $SkipTenantRegistration.IsPresent ) {
-        $newAppRegistration |=> Register $false $NonInteractiveAppOnlyAuth.IsPresent| out-null
+        $newAppRegistration |=> Register $ConsentForTenant.IsPresent $NonInteractiveAppOnlyAuth.IsPresent ($UserIdToConsent -ne $null) $UserIdToConsent $Permissions | out-null
+        if ( $Permissions -and $NoninteractiveAppOnlyAuth.IsPresent ) {
+            write-warning "The application was successfully created, but consent for the application in the tenant could not be granted because the consent API is not yet fully implemented. Please visit the Azure Portal at`n`n    https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredAppsPreview`n`nto manually configure consent for the application. Choose the application '$($newApp.displayname)' with application id '$($newApp.AppId)' and then access API Permissions to grant consent to the application in the tenant."
+        }
     }
 
     $newApp

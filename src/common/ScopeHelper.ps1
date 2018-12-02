@@ -72,7 +72,7 @@ ScriptClass ScopeHelper {
 
         function GetDelegatedResourceAccessPermissions($scopes, $connection) {
             if ( $scopes ) {
-                GetPermissionsByName $scopes scope $connection
+                GetPermissionsByName $scopes Scope $connection
             } else {
                 @{
                     id = 'e1fe6dd8-ba31-4d61-89e7-88639da4683d'
@@ -86,12 +86,20 @@ ScriptClass ScopeHelper {
                 [parameter(mandatory=$true)]
                 [string[]] $scopeNames,
 
-                [validateset('scope', 'role')]
+                [validateset('Scope', 'Role')]
                 [parameter(mandatory=$true)]
                 $permissionType,
 
                 $connection
             )
+
+            # Case matters for the permission type when passed to the protocol, so
+            # enforce case and raise an exception if the case is invalid
+            $validValues = @('Scope', 'Role')
+            if ( $validValues -cnotcontains $permissionType ) {
+                $validValueOutput = $validValues -join ', '
+                throw [ArgumentException]::new("Specified type '$permissionType' has incorrect casing, case must match the exact case of the values in '$validValueOutput'")
+            }
 
             $scopeNames | foreach {
                 $permissionId = GraphPermissionNameToId $_ $permissionType $connection

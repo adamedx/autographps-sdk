@@ -34,15 +34,37 @@ ScriptClass DisplayTypeFormatter {
     }
 
     function ToDisplayableObject($object) {
-        [PSCustomObject] (__ToHashtable $object)
+        # This method creates shallow object copies -- it assumes that these objects
+        # were originally deserialized from the Graph service by this module, and
+        # thus that the object's members include only noteproperty and scriptmethod
+        # members. Only these member types will be copied.
+
+        # Copy the noteproperty members by transforming to a hash table
+        # and then typecasting
+        $resultObject = [PSCustomObject] (__ToHashtable $object)
+
+        # Now copy over all the scriptmethods -- this module adds some
+        # script script methods to objects deserialized from Graph, and those
+        # must be preserved in order to retain module functionality that
+        # relies on them (e.g. '__ItemContext' method)
+        $object | gm -membertype ScriptMethod | foreach {
+            $method = $object.psobject.methods | where name -eq $_.name | select -ExpandProperty value
+            if ( $method ) {
+                $resultObject | add-member -name $method.name -membertype ScriptMethod -value $method.script
+            }
+        }
+
+        $resultObject
     }
 
     function __ToHashtable($object) {
         $result = @{}
+
         $object | gm -membertype noteproperty | foreach {
             $value = $object | select -expandproperty $_.name
             $result.add($_.name, $value)
         }
+
         $result['PSTypeName'] = $this.displayTypeName
         $result
     }

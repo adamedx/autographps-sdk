@@ -34,10 +34,7 @@ function Set-GraphApplicationConsent {
 
         $UserIdToConsent
     )
-
     $app = $::.GraphApplicationRegistration |=> GetApplicationByAppId $AppId
 
-    $grant = $::.GraphApplicationRegistration |=> GetConsentGrantForApp $app $UserIdToConsent $DelegatedPermissions $AppOnlyPermissions $AllPermissions.IsPresent
-
-    Invoke-GraphRequest /oauth2PermissionGrants -method POST -body $grant -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion | out-null
+    $::.GraphApplicationRegistration |=> SetConsent $app $DelegatedPermissions $AppOnlyPermissions $AllPermissions.IsPresent $ConsentForTenant.IsPresent ($UserIdToConsent -ne $null) $UserIdToConsent
 }
