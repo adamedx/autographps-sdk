@@ -4,7 +4,6 @@
 
 * Possibly remove query support from Remove-GraphItem if queries on DELETE method are not supported
 * Make Uri argument a non-array
-* Rename get-graphapplicationcertificate to get-graphapplicationlocalcertificate
 * Add default graph connection
 * Add named graph connections
 * Add connection enumeration
@@ -21,10 +20,10 @@
   * Get-GraphApplicationServicePrincipal ?
   * Register-GraphApplication ?
   * New-GraphApplicationCertificate
-  * Remove-GraphApplicationCertificate ?
+  * Remove-GraphApplicationCertificate
   * Set-GraphApplicationCertificate
   * Get-GraphApplicationCertificate
-  * Remove-GraphApplicationLocalCertificate
+  * Remove-GraphApplicationLocalCertificate ?
   * Import-GraphApplicationLocalCertificate
   * Set-GraphApplicationPermissions ?
 
@@ -281,6 +280,7 @@
 * Allow connect-graph to specify -tenantid to support single tenant app
 * Dynamically obtain scopes
 * Add formatting to get-graphapplication
+* Rename get-graphapplicationcertificate to get-graphlocalcertificate
 
 ### Postponed
 

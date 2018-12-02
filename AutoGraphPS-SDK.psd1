@@ -76,11 +76,11 @@ FunctionsToExport = @('Get-DynamicValidateSetParameter')
         'Connect-Graph',
         'Disconnect-Graph',
         'Get-GraphApplication',
-        'Get-GraphApplicationCertificate',
         'Get-GraphApplicationConsent',
         'Get-GraphConnectionStatus',
         'Get-GraphError',
         'Get-GraphItem',
+        'Get-GraphLocalCertificate',
         'Get-GraphSchema',
         'Get-GraphToken',
         'Get-GraphVersion',
@@ -128,11 +128,11 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Connect-Graph.ps1',
         '.\src\cmdlets\Disconnect-Graph.ps1',
         '.\src\cmdlets\Get-GraphApplication.ps1',
-        '.\src\cmdlets\Get-GraphApplicationCertificate.ps1',
         '.\src\cmdlets\Get-GraphApplicationConsent.ps1',
         '.\src\cmdlets\Get-GraphConnectionStatus.ps1',
         '.\src\cmdlets\Get-Grapherror.ps1',
         '.\src\cmdlets\Get-Graphitem.ps1',
+        '.\src\cmdlets\Get-GraphLocalCertificate.ps1',
         '.\src\cmdlets\Get-GraphSchema.ps1',
         '.\src\cmdlets\Get-GraphToken.ps1',
         '.\src\cmdlets\Get-GraphVersion.ps1',
@@ -195,7 +195,7 @@ PrivateData = @{
 * Ability to dynamically obtain when possible values for permission scope names used by cmdlet auto-completion, fallback to hard-coded data
 * New-GraphApplication: new cmdlet that creates a new Graph application!
 * Get-GraphApplication: this new cmdlet retrieves specified applications from the tenant
-* Get-GraphApplicationCertificate: new cmdlet that enumerates certificates in the local cert store used for app-only authenticate with Graph
+* Get-GraphLocalCertificate: new cmdlet that enumerates certificates in the local cert store used for app-only authenticate with Graph
 * Get-GraphApplicationConsent: new cmdlet that lists consent grants for a Graph application
 * Remove-GraphApplicationConsent: new cmdlet that removes consent grants for a Graph application
 * Set-GraphApplicationConsent: new cmdlet that updates consent grants for a Graph application
