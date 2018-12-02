@@ -14,12 +14,12 @@
 
 . (import-script DisplayTypeFormatter)
 
-ScriptClass ApplicationHelper {
+ScriptClass ConsentHelper {
     static {
         $formatter = $null
 
         function __initialize {
-            $this.formatter = new-so DisplayTypeFormatter GraphApplicationDisplayType 'AppId', 'DisplayName', 'CreatedDateTime', 'Id'
+            $this.formatter = new-so DisplayTypeFormatter GraphConsentDisplayType 'ClientId', 'PrincipalId', 'StartTime', 'Scope'
         }
 
         function ToDisplayableObject($object) {
@@ -28,4 +28,4 @@ ScriptClass ApplicationHelper {
     }
 }
 
-$::.ApplicationHelper |=> __initialize
+$::.ConsentHelper |=> __initialize

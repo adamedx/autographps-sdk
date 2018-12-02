@@ -7,13 +7,12 @@
 * Add default graph connection
 * Add named graph connections
 * Add connection enumeration
-* Change -scopes to -permissions
-* Add formatting to get-graphapplicationconsent
 * Add retry to service principal creation
 * Add consent user to set-graphconsent
 * Add user consent, tenant consent options to set-graphconsent and new-graphapplication
 * Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
 * Add scope parameter completion to get-graphitem, invoke-graphitem, get-graphapplication, any others
+* Rename Get-GraphApplicationConsent to Get-GraphConsent
 
 * Add app creation, enumeration, update
   * Remove-GraphApplication
@@ -282,6 +281,8 @@
 * Dynamically obtain scopes
 * Add formatting to get-graphapplication
 * Rename get-graphapplicationcertificate to get-graphlocalcertificate
+* Change -scopes to -permissions
+* Add formatting to get-graphapplicationconsent
 
 ### Postponed
 

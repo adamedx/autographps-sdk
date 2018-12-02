@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../cmdlets/Invoke-GraphRequest)
+. (import-script Invoke-GraphRequest)
 . (import-script ../graphservice/GraphApplicationRegistration)
+. (import-script common/ConsentHelper)
 
 function Get-GraphApplicationConsent {
     param(
@@ -22,6 +23,8 @@ function Get-GraphApplicationConsent {
 
         [parameter(parametersetname='entiretenant')]
         [switch] $Tenant,
+
+        [switch] $RawContent,
 
         [parameter(parametersetname='specificprincipal', mandatory=$true)]
         $Principal
@@ -58,9 +61,19 @@ function Get-GraphApplicationConsent {
 
     $filterArgument = @{ ODataFilter = $filter }
 
-    $response = Invoke-GraphRequest /oauth2PermissionGrants -method GET -ODataFilter $filter -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion
+    $RawContentArgument = @{ RawContent = $RawContent }
 
-    if ( $response | gm id -erroraction silentlycontinue ) {
-        $response
+    $response = Invoke-GraphRequest /oauth2PermissionGrants -method GET -ODataFilter $filter -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion @RawContentArgument
+
+    if ( $response ) {
+        if ( ! $RawContent.IsPresent ) {
+            if ( $response | gm id -erroraction silentlycontinue ) {
+                $response | foreach {
+                    $::.ConsentHelper |=> ToDisplayableObject $_
+                }
+            }
+        } else {
+            $response
+        }
     }
 }

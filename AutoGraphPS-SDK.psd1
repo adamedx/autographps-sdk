@@ -145,6 +145,8 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1',
         '.\src\cmdlets\Test-Graph.ps1',
         '.\src\cmdlets\common\ApplicationHelper.ps1',
+        '.\src\cmdlets\common\ConsentHelper.ps1',
+        '.\src\cmdlets\common\DisplayTypeFormatter.ps1',
         '.\src\cmdlets\common\DynamicParamHelper.ps1',
         '.\src\cmdlets\common\ItemResultHelper.ps1',
         '.\src\cmdlets\common\QueryHelper.ps1',
