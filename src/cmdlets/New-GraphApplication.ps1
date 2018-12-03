@@ -15,6 +15,7 @@
 . (import-script ../cmdlets/Invoke-GraphRequest)
 . (import-script ../graphservice/GraphApplicationRegistration)
 . (import-script ../common/GraphApplicationCertificate)
+. (import-script common/PermissionParameterCompleter)
 
 function New-GraphApplication {
     [cmdletbinding(defaultparametersetname='delegated', positionalbinding=$false)]
@@ -128,3 +129,5 @@ function New-GraphApplication {
 
     $newApp
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication Permissions ([PermissionCompletionType]::AnyPermission)

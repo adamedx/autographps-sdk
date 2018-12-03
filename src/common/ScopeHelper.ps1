@@ -34,18 +34,19 @@ ScriptClass ScopeHelper {
             $this.permissionsByIds = $permissionsByIds
         }
 
-        function GetKnownScopes($connection) {
+        function GetKnownScopesSorted($connection) {
             $activeConnection = if ( $connection -and ( $connection |=> IsConnected ) ) {
                 $connection
             }
 
             __InitializeGraphScopes $activeConnection
             $scopeNames = if ( $this.permissionsByNames ) {
-                $this.permissionsByNames.Keys
+                $this.permissionsByNames.Keys | sort
             } else {
                 # At least return something if this fails
-                @('User.Read', 'Directory.AccessAsUser.All')
+                @('Directory.AccessAsUser.All', 'User.Read')
             }
+
 
             $this.__graphAuthScopes = @()
             $this.__graphAuthScopes += $scopeNames
@@ -53,7 +54,7 @@ ScriptClass ScopeHelper {
         }
 
         function GetDynamicScopeCmdletParameter($parameterName, [boolean] $skipValidation, [HashTable[]] $parameterSets) {
-            $scopes = $this |=> GetKnownScopes ($::.GraphContext |=> GetCurrentConnection)
+            $scopes = $this |=> GetKnownScopesSorted ($::.GraphContext |=> GetCurrentConnection)
             Get-DynamicValidateSetParameter $parameterName $scopes -ParameterType ([String[]]) -SkipValidation:$skipValidation -ParameterSets $parameterSets
         }
 

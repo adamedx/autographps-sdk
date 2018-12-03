@@ -149,6 +149,8 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\common\DisplayTypeFormatter.ps1',
         '.\src\cmdlets\common\DynamicParamHelper.ps1',
         '.\src\cmdlets\common\ItemResultHelper.ps1',
+        '.\src\cmdlets\common\ParameterCompleter.ps1',
+        '.\src\cmdlets\common\PermissionParameterCompleter.ps1',
         '.\src\cmdlets\common\QueryHelper.ps1',
         '.\src\common\DefaultScopeData.ps1',
         '.\src\common\GraphAccessDeniedException.ps1',

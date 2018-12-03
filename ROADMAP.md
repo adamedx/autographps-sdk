@@ -8,12 +8,13 @@
 * Add named graph connections
 * Add connection enumeration
 * Add retry to service principal creation
-* Add consent user to set-graphconsent
-* Add user consent, tenant consent options to set-graphconsent and new-graphapplication
-* Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
+** Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
 * Add scope parameter completion to get-graphitem, invoke-graphitem, get-graphapplication, any others
-* Add scope parameter completion to new-graphapplication
 * Rename Get-GraphApplicationConsent to Get-GraphConsent
+* Eliminate need for skipscopecheck by moving to autocompleted dynamicparams
+* Add ScriptProperty computed fields to displayformatter?
+* Add return types to cmdlets
+* Change autographps to use dynamic scope implementation
 
 * Add app creation, enumeration, update
   * Remove-GraphApplication
@@ -153,7 +154,8 @@
   * Graph resource
 * Graphlets -- modules built on this that expose specific parts of the graph
 * Handle 403's in get-graphchilditem
-
+ Add user consent, tenant consent options to set-graphconsent and new-graphapplication
+ 
 ### Done
 
 * get-graphschema
@@ -284,6 +286,8 @@
 * Rename get-graphapplicationcertificate to get-graphlocalcertificate
 * Change -scopes to -permissions
 * Add formatting to get-graphapplicationconsent
+* Add scope parameter completion to new-graphapplication
+* Add consent user to set-graphconsent
 
 ### Postponed
 

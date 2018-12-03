@@ -23,7 +23,7 @@ ScriptClass ApplicationHelper {
         }
 
         function ToDisplayableObject($object) {
-            $this.formatter |=> ToDisplayableObject $object
+            $this.formatter |=> DeserializedGraphObjectToDisplayableObject $object
         }
     }
 }

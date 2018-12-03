@@ -33,7 +33,7 @@ ScriptClass DisplayTypeFormatter {
         $this.scriptclass |=> __RegisterDisplayType $displayTypeName $displayProperties
     }
 
-    function ToDisplayableObject($object) {
+    function DeserializedGraphObjectToDisplayableObject($object) {
         # This method creates shallow object copies -- it assumes that these objects
         # were originally deserialized from the Graph service by this module, and
         # thus that the object's members include only noteproperty and scriptmethod
