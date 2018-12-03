@@ -130,4 +130,4 @@ function New-GraphApplication {
     $newApp
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication Permissions ([PermissionCompletionType]::AnyPermission)
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

@@ -8,13 +8,15 @@
 * Add named graph connections
 * Add connection enumeration
 * Add retry to service principal creation
-** Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
+* Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
 * Add scope parameter completion to get-graphitem, invoke-graphitem, get-graphapplication, any others
 * Rename Get-GraphApplicationConsent to Get-GraphConsent
 * Eliminate need for skipscopecheck by moving to autocompleted dynamicparams
 * Add ScriptProperty computed fields to displayformatter?
 * Add return types to cmdlets
 * Change autographps to use dynamic scope implementation
+* Separate permissions args -- apparently apponly and delegated permissions have duplicate names, but probably different id's
+* Add logging implementation and cmdlets
 
 * Add app creation, enumeration, update
   * Remove-GraphApplication

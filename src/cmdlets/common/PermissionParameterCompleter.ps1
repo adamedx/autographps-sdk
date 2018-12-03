@@ -17,36 +17,35 @@
 
 enum PermissionCompletionType {
     AnyPermission
+    DelegatedPermission
+    AppOnlyPermission
 }
 
 ScriptClass PermissionParameterCompleter {
-    static {
-        $base = $::.ParameterCompleter
+    $authType = $null
 
-        function __initialize() {
-            $this.base |=> __RegisterArgumentCompleterScriptBlock $this.AnyPermissionArgumentCompleter ([PermissionCompletionType]::AnyPermission)
-        }
-
-        $AnyPermissionArgumentCompleter = {
-            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-            $::.PermissionParameterCompleter |=> __PermissionArgumentCompleter $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameter $true $true
-        }
-
-        function __PermissionArgumentCompleter($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter, $nonlocatable, $includeVirtual) {
-            __GetPermissionCompletions $wordToComplete
-        }
-
-        function __GetPermissionCompletions([string] $targetPermission) {
-            $candidates = $::.ScopeHelper |=> GetKnownScopesSorted
-
-            $lowerTarget = $targetPermission.ToLower()
-            $completions = if ( $candidates ) {
-                $this.base |=> FindMatchesStartingWith $targetPermission $candidates
+    function __initialize([PermissionCompletionType] $completionType) {
+        $this.authType = if ( $completionType -ne ([PermissionCompletionType]::AnyPermission) ) {
+            if ( $completionType -eq ([PermissionCompletionType]::AppOnlyPermission) ) {
+                ([GraphAppAuthType]::AppOnly)
+            } else {
+                ([GraphAppAuthType]::Delegated)
             }
-
-            $completions
         }
+    }
+
+    function GetCommandCompletionScriptBlock {
+        # Note that the script block being returned below can't reference any instance methods,
+        # though class methods accessed via the class name will work fine.
+        $scriptString = @'
+            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+            $allPossiblePermissions = $::.ScopeHelper |=> GetKnownScopesSorted $null {0}
+
+            if ( $allPossiblePermissions ) {{
+                $::.ParameterCompleter |=> FindMatchesStartingWith $wordToComplete $allPossiblePermissions
+            }}
+'@ -f $this.AuthType
+        [ScriptBlock]::Create($scriptString)
     }
 }
 
-$::.PermissionParameterCompleter |=> __initialize

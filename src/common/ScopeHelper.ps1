@@ -21,10 +21,14 @@ ScriptClass ScopeHelper {
         $graphSP = $null
         $permissionsByNames = $null
         $permissionsByIds = $null
+        $appOnlyPermissionsByName = $null
+        $delegatedPermissionsByName = $null
         $retrievedScopesFromGraphService = $false
-        $__graphAuthScopes = $null
+        $sortedGraphPermissions = $null
+        $sortedGraphDelegatedPermissions = $null
+        $sortedGraphAppOnlyPermissions = $null
 
-        function __AddConnectionScopeData($graphSP, $permissionsByNames, $permissionsByIds) {
+        function __AddConnectionScopeData($graphSP, $permissionsByNames, $permissionsByIds, $sortedPermissionsList, $sortedScopeList, $sortedRoleList) {
             if ( $this.graphSP -and $this.retrievedScopesFromGraphService ) {
                 throw "Scope data already dynamically retrieved from Graph service"
             }
@@ -32,25 +36,35 @@ ScriptClass ScopeHelper {
             $this.graphSP = $graphSP
             $this.permissionsByNames = $permissionsByNames
             $this.permissionsByIds = $permissionsByIds
+
+            $this.delegatedPermissionsByName = $sortedScopeList
+            $this.appOnlyPermissionsByName = $sortedRoleList
+
+            $this.sortedGraphPermissions = @() + $sortedPermissionsList.keys
+            $this.sortedGraphDelegatedPermissions = @() + $sortedScopeList.keys
+            $this.sortedGraphAppOnlyPermissions = @() + $sortedRoleList.keys
         }
 
-        function GetKnownScopesSorted($connection) {
+        function GetKnownScopesSorted($connection, $graphAppAuthType) {
             $activeConnection = if ( $connection -and ( $connection |=> IsConnected ) ) {
                 $connection
             }
 
             __InitializeGraphScopes $activeConnection
-            $scopeNames = if ( $this.permissionsByNames ) {
-                $this.permissionsByNames.Keys | sort
+            if ( $this.sortedGraphPermissions ) {
+                if ( ! $graphAppAuthType ) {
+                    $this.sortedGraphPermissions
+                } elseif ( $graphAppAuthType -eq ([GraphAppAuthType]::Delegated) ) {
+                    $this.sortedGraphDelegatedPermissions
+                } elseif ( $graphAppAuthType -eq ([GraphAppAuthType]::AppOnly) ) {
+                    $this.sortedGraphAppOnlyPermissions
+                } else {
+                    throw [ArgumentException]::new("Permissions list requested for permission auth type '$graphAppAuthType'")
+                }
             } else {
                 # At least return something if this fails
                 @('Directory.AccessAsUser.All', 'User.Read')
             }
-
-
-            $this.__graphAuthScopes = @()
-            $this.__graphAuthScopes += $scopeNames
-            $this.__graphAuthScopes
         }
 
         function GetDynamicScopeCmdletParameter($parameterName, [boolean] $skipValidation, [HashTable[]] $parameterSets) {
@@ -204,17 +218,28 @@ ScriptClass ScopeHelper {
                 $permissionsByNames = @{}
                 $permissionsByIds = @{}
 
+                $sortedPermissionsList = [System.Collections.Generic.SortedList[string, string]]::new()
+                $sortedScopeList = [System.Collections.Generic.SortedList[string, string]]::new()
+                $sortedRoleList = [System.Collections.Generic.SortedList[string, string]]::new()
+
                 $graphSP.publishedPermissionScopes | foreach {
-                    $permissionsByNames[$_.value] = $_
+                    $sortedPermissionsList.Add($_.value, $_.id)
+                    $permissionsByNames[$_.value] = $_.value
                     $permissionsByIds[$_.id] = $_
+                    $sortedScopeList.Add($_.value, $_.id)
                 }
 
                 $graphSP.appRoles | foreach {
-                    $permissionsByNames[$_.value] = $_
+                    try {
+                        $sortedPermissionsList.Add($_.value, $_.id)
+                        $permissionsByNames[$_.value] = $_
+                    } catch {
+                    }
+                    $sortedRoleList.Add($_.value, $_.id)
                     $permissionsByIds[$_.id] = $_
                 }
 
-                __AddConnectionScopeData $graphSP $permissionsByNames $permissionsByIds
+                __AddConnectionScopeData $graphSP $permissionsByNames $permissionsByIds $sortedPermissionsList $sortedScopeList $sortedRoleList
 
                 if ( $retrievedFromService ) {
                     $this.retrievedScopesFromGraphService = $true

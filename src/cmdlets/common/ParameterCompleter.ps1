@@ -14,24 +14,18 @@
 
 ScriptClass ParameterCompleter {
     static {
-        $__ArgumentCompleters = @{}
-
-        function __RegisterArgumentCompleterScriptBlock([ScriptBlock] $argumentCompleter, $completionType) {
-            $this.__ArgumentCompleters.Add($completionType, $argumentCompleter)
-        }
-
-        function __GetCompleter($completionType) {
-            $completerBlock = $this.__ArgumentCompleters[$completionType]
+        function __GetCompleter($completerObject) {
+            $completerBlock = $completerObject |=> GetCommandCompletionScriptBlock
 
             if ( ! $completerBlock ) {
-                throw [ArgumentException]::new("Unknown ParameterCompletionType '{0}'" -f $completionType)
+                throw "No command completion block returned by completer object"
             }
 
             $completerBlock
         }
 
-        function RegisterParameterCompleter([string] $command, [string[]] $parameterNames, $completionType) {
-            $completerBlock = __GetCompleter $completionType
+        function RegisterParameterCompleter([string] $command, [string[]] $parameterNames, $completerObject) {
+            $completerBlock = __GetCompleter $completerObject
             $parameterNames | foreach {
                 Register-ArgumentCompleter -commandname $command -ParameterName $_ -ScriptBlock $completerBlock
             }
