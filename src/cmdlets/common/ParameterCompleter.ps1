@@ -83,8 +83,8 @@ ScriptClass ParameterCompleter {
 
             if ( $lastMatch -ne $null ) {
                 for ( $startsWithCandidate = $lastMatch; $startsWithCandidate -lt $sortedItemsCollection.Count; $startsWithCandidate++ ) {
-                    $candidate = $sortedItemsCollection[$startsWithCandidate].tolower()
-                    if ( ! $candidate.StartsWith($targetNormal) ) {
+                    $candidate = $sortedItemsCollection[$startsWithCandidate]
+                    if ( ! $candidate.tolower().StartsWith($targetNormal) ) {
                         break
                     }
 

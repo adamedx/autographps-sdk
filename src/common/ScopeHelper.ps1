@@ -19,7 +19,6 @@ ScriptClass ScopeHelper {
     static {
         const GraphApplicationId 00000003-0000-0000-c000-000000000000
         $graphSP = $null
-        $permissionsByNames = $null
         $permissionsByIds = $null
         $appOnlyPermissionsByName = $null
         $delegatedPermissionsByName = $null
@@ -28,13 +27,13 @@ ScriptClass ScopeHelper {
         $sortedGraphDelegatedPermissions = $null
         $sortedGraphAppOnlyPermissions = $null
 
-        function __AddConnectionScopeData($graphSP, $permissionsByNames, $permissionsByIds, $sortedPermissionsList, $sortedScopeList, $sortedRoleList) {
+        function __AddConnectionScopeData($graphSP, $permissionsByIds, $sortedPermissionsList, $sortedScopeList, $sortedRoleList) {
             if ( $this.graphSP -and $this.retrievedScopesFromGraphService ) {
                 throw "Scope data already dynamically retrieved from Graph service"
             }
 
             $this.graphSP = $graphSP
-            $this.permissionsByNames = $permissionsByNames
+
             $this.permissionsByIds = $permissionsByIds
 
             $this.delegatedPermissionsByName = $sortedScopeList
@@ -240,16 +239,17 @@ ScriptClass ScopeHelper {
             }
 
             if ( $graphSP ) {
-                $permissionsByNames = @{}
                 $permissionsByIds = @{}
 
-                $sortedPermissionsList = [System.Collections.Generic.SortedList[string, string]]::new([System.StringComparer]::CurrentCultureIgnoreCase)
-                $sortedScopeList = [System.Collections.Generic.SortedList[string, string]]::new([System.StringComparer]::CurrentCultureIgnoreCase)
-                $sortedRoleList = [System.Collections.Generic.SortedList[string, string]]::new([System.StringComparer]::CurrentCultureIgnoreCase)
+                $sortedPermissionsList = [System.Collections.Generic.SortedList[string, string]]::new(
+                    [System.StringComparer]::CurrentCultureIgnoreCase)
+                $sortedScopeList = [System.Collections.Generic.SortedList[string, string]]::new(
+                    [System.StringComparer]::CurrentCultureIgnoreCase)
+                $sortedRoleList = [System.Collections.Generic.SortedList[string, string]]::new(
+                    [System.StringComparer]::CurrentCultureIgnoreCase)
 
                 $graphSP.publishedPermissionScopes | foreach {
                     $sortedPermissionsList.Add($_.value, $_.id)
-                    $permissionsByNames[$_.value] = $_
                     $permissionsByIds[$_.id] = $_
                     $sortedScopeList.Add($_.value, $_.id)
                 }
@@ -257,14 +257,13 @@ ScriptClass ScopeHelper {
                 $graphSP.appRoles | foreach {
                     try {
                         $sortedPermissionsList.Add($_.value, $_.id)
-                        $permissionsByNames[$_.value] = $_
                     } catch {
                     }
                     $sortedRoleList.Add($_.value, $_.id)
                     $permissionsByIds[$_.id] = $_
                 }
 
-                __AddConnectionScopeData $graphSP $permissionsByNames $permissionsByIds $sortedPermissionsList $sortedScopeList $sortedRoleList
+                __AddConnectionScopeData $graphSP $permissionsByIds $sortedPermissionsList $sortedScopeList $sortedRoleList
 
                 if ( $retrievedFromService ) {
                     $this.retrievedScopesFromGraphService = $true
