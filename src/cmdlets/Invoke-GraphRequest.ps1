@@ -18,6 +18,7 @@
 . (import-script common/QueryHelper)
 . (import-script ../REST/GraphRequest)
 . (import-script ../REST/GraphErrorRecorder)
+. (import-script common/PermissionParameterCompleter)
 
 function Invoke-GraphRequest {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
@@ -347,3 +348,5 @@ function Invoke-GraphRequest {
         $results
     }
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphRequest Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

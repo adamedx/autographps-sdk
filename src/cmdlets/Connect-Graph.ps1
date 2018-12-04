@@ -18,17 +18,17 @@
 . (import-script New-GraphConnection)
 . (import-script common/DynamicParamHelper)
 . (import-script ../common/ScopeHelper)
+. (import-script common/PermissionParameterCompleter)
 
 function Connect-Graph {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='simple')]
     param(
-        <#
-        This is implemented as a DynamicParam -- see below
         [parameter(position=0)]
         [parameter(parametersetname='simple')]
         [parameter(parametersetname='reconnect')]
+        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='apponly')]
         [String[]] $Permissions = $null,
-        #>
 
         [parameter(parametersetname='simple')]
         [parameter(parametersetname='apponly')]
@@ -45,10 +45,6 @@ function Connect-Graph {
         [parameter(parametersetname='reconnect', mandatory=$true)]
         [Switch] $Reconnect,
 
-        [parameter(parametersetname='simple')]
-        [parameter(parametersetname='reconnect')]
-        [Switch] $SkipScopeValidation,
-
         [parameter(parametersetname='apponly', mandatory=$true)]
         [Switch] $NoninteractiveAppAuth,
 
@@ -61,34 +57,7 @@ function Connect-Graph {
         [string] $TenantId
     )
 
-    DynamicParam {
-        $::.ScopeHelper |=> GetDynamicScopeCmdletParameter Permissions $SkipScopeValidation.IsPresent @(
-            @{
-                Position = 0
-            }
-            @{
-                ParameterSetName = 'simple'
-            }
-            @{
-                ParameterSetName = 'reconnect'
-            }
-            @{
-                ParameterSetName = 'custom'
-            }
-            @{
-                ParameterSetName = 'apponly'
-            }
-        )
-    }
-
     begin {
-        <# Make a friendly local variable name for the parameter
-        [parameter(position=0)]
-        [parameter(parametersetname='simple')]
-        [parameter(parametersetname='reconnect')]
-        [String[]] $Permissions = $null,
-        #>
-        $Permissions = $PsBoundParameters['Permissions']
     }
 
     process {
@@ -158,3 +127,4 @@ function Connect-Graph {
     }
 }
 
+$::.ParameterCompleter |=> RegisterParameterCompleter Connect-Graph Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

@@ -17,6 +17,7 @@
 . (import-script ../Client/GraphConnection)
 . (import-script common/DynamicParamHelper)
 . (import-script ../common/ScopeHelper)
+. (import-script common/PermissionParameterCompleter)
 
 function New-GraphConnection {
     [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='msgraph')]
@@ -25,18 +26,14 @@ function New-GraphConnection {
         [parameter(parametersetname='customendpoint')]
         [switch] $AADGraph,
 
-        <#
-        This is implemented as a DynamicParam -- see below
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud')]
         [parameter(parametersetname='customendpoint')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='autocert')]
+        [parameter(parametersetname='secret')]
         [String[]] $Permissions = $null,
-        #>
-
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='cloud')]
-        [parameter(parametersetname='customendpoint')]
-        [Switch] $SkipScopeValidation,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud', mandatory=$true)]
@@ -105,22 +102,7 @@ function New-GraphConnection {
         [String] $TenantId = $null
     )
 
-    DynamicParam {
-        $parameterSetNames = @('msgraph', 'cloud', 'customendpoint', 'cert', 'certpath', 'autocert', 'secret')
-        $parameterSets = $parameterSetNames | foreach {
-            @{ ParameterSetName = $_ }
-        }
-        $::.ScopeHelper |=> GetDynamicScopeCmdletParameter Permissions $SkipScopeValidation.IsPresent $parameterSets
-    }
-
     begin {
-        <# Make a friendly local variable name for the parameter
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='cloud')]
-        [parameter(parametersetname='customendpoint')]
-        [String[]] $Permissions = $null,
-        #>
-        $Permissions = $PsBoundParameters['Permissions']
     }
 
     process {
@@ -194,3 +176,5 @@ function New-GraphConnection {
         }
     }
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphConnection Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

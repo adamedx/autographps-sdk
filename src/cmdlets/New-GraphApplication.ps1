@@ -59,6 +59,8 @@ function New-GraphApplication {
 
         [switch] $SkipTenantRegistration,
 
+        [switch] $SkipPermissionNameCheck,
+
         [parameter(parametersetname='apponlynewcert', mandatory=$true)]
         [parameter(parametersetname='apponlynocert', mandatory=$true)]
         [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
@@ -90,6 +92,8 @@ function New-GraphApplication {
             throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'UserIdToConsent' or 'ConsentForTenant' is specified")
         }
     }
+
+    $::.ScopeHelper |=> ValidatePermissions $Permissions $NoninteractiveAppOnlyAuth.IsPresent $SkipPermissionNameCheck.IsPresent
 
     $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $Permissions}
     $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $Permissions}

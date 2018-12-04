@@ -17,13 +17,25 @@
 function Get-GraphToken {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(parametersetname='aadgraph', mandatory=$true)][parameter(parametersetname='custom')][switch] $AADGraph,
-        [parameter(parametersetname='msgraph')][String[]] $Scopes = @('User.Read'),
-        [parameter(parametersetname='msgraph')] [GraphCloud] $Cloud = [GraphCloud]::Public,
-        [parameter(parametersetname='msgraph')][parameter(parametersetname='custom',mandatory=$true)][Guid] $AppId,
-        [parameter(parametersetname='msgraph')][parameter(parametersetname='custom')][Guid] $AppIdSecret,
-        [parameter(parametersetname='custom', mandatory=$true)][Uri] $GraphEndpointUri = $null,
-        [parameter(parametersetname='custom', mandatory=$true)][Uri] $AuthenticationEndpointUri = $null
+        [parameter(parametersetname='aadgraph', mandatory=$true)]
+        [parameter(parametersetname='custom')]
+        [switch] $AADGraph,
+
+        [parameter(parametersetname='msgraph')]
+        [String[]] $Permissions = @('User.Read'),
+
+        [parameter(parametersetname='msgraph')]
+        [GraphCloud] $Cloud = [GraphCloud]::Public,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='custom',mandatory=$true)]
+        [Guid] $AppId,
+
+        [parameter(parametersetname='custom', mandatory=$true)]
+        [Uri] $GraphEndpointUri = $null,
+
+        [parameter(parametersetname='custom', mandatory=$true)]
+        [Uri] $AuthenticationEndpointUri = $null
     )
     $connectionArguments = @{}
     $psboundparameters.keys | foreach {
@@ -35,3 +47,5 @@ function Get-GraphToken {
 
     $connection.Identity.Token.AccessToken
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphToken Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

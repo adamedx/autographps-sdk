@@ -14,6 +14,7 @@
 
 . (import-script Invoke-GraphRequest)
 . (import-script common/ItemResultHelper)
+. (import-script common/PermissionParameterCompleter)
 
 function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
@@ -96,3 +97,4 @@ function Get-GraphItem {
     $targetResultVariable.value = $localResult
 }
 
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

@@ -45,7 +45,14 @@ ScriptClass ScopeHelper {
             $this.sortedGraphAppOnlyPermissions = @() + $sortedRoleList.keys
         }
 
-        function GetKnownScopesSorted($connection, $graphAppAuthType) {
+        function ValidatePermissions([string[]] $permissions, [boolean] $isNoninteractive = $false, [boolean] $allowPermissionIdGuid = $false) {
+            $type = if ( $isNoninteractive ) { 'Role' } else { 'Scope' }
+            $permissions | foreach {
+                GraphPermissionNameToId $_ $type $null $allowPermissionIdGuid | out-null
+            }
+        }
+
+        function GetKnownPermissionsSorted($connection, $graphAppAuthType) {
             $activeConnection = if ( $connection -and ( $connection |=> IsConnected ) ) {
                 $connection
             }
@@ -68,7 +75,7 @@ ScriptClass ScopeHelper {
         }
 
         function GetDynamicScopeCmdletParameter($parameterName, [boolean] $skipValidation, [HashTable[]] $parameterSets) {
-            $scopes = $this |=> GetKnownScopesSorted ($::.GraphContext |=> GetCurrentConnection)
+            $scopes = $this |=> GetKnownPermissionsSorted ($::.GraphContext |=> GetCurrentConnection)
             Get-DynamicValidateSetParameter $parameterName $scopes -ParameterType ([String[]]) -SkipValidation:$skipValidation -ParameterSets $parameterSets
         }
 
@@ -131,8 +138,7 @@ ScriptClass ScopeHelper {
             $this.graphSP.Id
         }
 
-        function GraphPermissionNameToId($name, $type, $connection) {
-
+        function GraphPermissionNameToId($name, [ValidateSet('Scope', 'Role')] $type, $connection, $allowPermissionIdGuid = $false) {
             $graphConnection = if ( $connection ) {
                 $connection
             } else {
@@ -141,17 +147,36 @@ ScriptClass ScopeHelper {
 
             __InitializeGraphScopes $graphConnection
 
-            $permission = $this.permissionsByNames[$name]
+            $authDescription = $null
+            $otherCollection = $null
+            $collection = if ( $type -eq 'Scope' ) {
+                $authDescription = 'Delegated'
+                $otherCollection = $this.appOnlyPermissionsByName
+                $this.delegatedPermissionsByName
+            } else {
+                $authDescription = 'Noninteractive App-only'
+                $otherCollection = $this.delegatedPermissionsByName
+                $this.appOnlyPermissionsByName
+            }
+
+            $permission = $collection[$name]
+            $permissionOfOtherType = $otherCollection[$name]
 
             if ( ! $permission ) {
-                throw "Specified permission '$name' could not be mapped to a permission Id"
+                if ( $permissionOfOtherType ) {
+                    throw "Specified permission '$name' was not of specified type '$type' required for requested '$authDescription' authentication"
+                }
+                if ( ! $allowPermissionIdGuid ) {
+                    throw "Specified permission '$name' could not be mapped to a permission Id"
+                }
+                $permission = try {
+                    ([Guid] $Name)
+                } catch {
+                    throw "Specified permission '$name' could not be mapped to a permission Id or interpreted as a permission Id Guid"
+                }
             }
 
-            if ( $type -and ! (__IsPermissionType $permission.id $type) ) {
-                throw "Specified permission '$name' was not of specified type '$type'"
-            }
-
-            $permission.id
+            $permission
         }
 
         function GraphPermissionIdToName($permissionId, $type, $connection) {
@@ -218,13 +243,13 @@ ScriptClass ScopeHelper {
                 $permissionsByNames = @{}
                 $permissionsByIds = @{}
 
-                $sortedPermissionsList = [System.Collections.Generic.SortedList[string, string]]::new()
-                $sortedScopeList = [System.Collections.Generic.SortedList[string, string]]::new()
-                $sortedRoleList = [System.Collections.Generic.SortedList[string, string]]::new()
+                $sortedPermissionsList = [System.Collections.Generic.SortedList[string, string]]::new([System.StringComparer]::CurrentCultureIgnoreCase)
+                $sortedScopeList = [System.Collections.Generic.SortedList[string, string]]::new([System.StringComparer]::CurrentCultureIgnoreCase)
+                $sortedRoleList = [System.Collections.Generic.SortedList[string, string]]::new([System.StringComparer]::CurrentCultureIgnoreCase)
 
                 $graphSP.publishedPermissionScopes | foreach {
                     $sortedPermissionsList.Add($_.value, $_.id)
-                    $permissionsByNames[$_.value] = $_.value
+                    $permissionsByNames[$_.value] = $_
                     $permissionsByIds[$_.id] = $_
                     $sortedScopeList.Add($_.value, $_.id)
                 }
