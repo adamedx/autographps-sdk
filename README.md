@@ -16,6 +16,10 @@ AutoGraphPS-SDK
 
 *This repository / project was recently renamed from **PoshGraph-SDK** -- if you're looking for **PoshGraph-SDK**, you're in the right place!*
 
+## Documentation
+
+*Full documentation is not yet implemented, please visit the **[AutographPS WALKTHROUGH](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md)** for the best detail currently available.*
+
 ## Overview
 
 **AutoGraphPS-SDK** automates the [Microsoft Graph API](https://graph.microsoft.io/) through PowerShell. AutoGraphPS-SDK enables the development of PowerShell-based applications and automation of the Microsoft Graph REST API gateway; the PowerShell Graph exploration UX [AutoGraphPS](https://github.com/adamedx/autographps) is one such application based on the SDK. The Graph exposes a growing list of services such as
@@ -59,7 +63,7 @@ After you've responded to the authentication prompt, you should see output that 
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
-Now you're ready to use any of AutoGraphPS-SDK's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
+Now you're ready to use any of AutoGraphPS-SDK's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
 
 ### How do I use the cmdlets from the CLI?
 
