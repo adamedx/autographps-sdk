@@ -14,19 +14,23 @@
 
 ScriptClass ParameterCompleter {
     static {
-        function __GetCompleter($completerObject) {
-            $completerBlock = $completerObject |=> GetCommandCompletionScriptBlock
+        const ParameterCompletionMethod CompleteCommandParameter
+        const ParameterCompletionScriptFormat @"
+            param(`$commandName, `$parameterName, `$wordToComplete, `$commandAst, `$fakeBoundParameter)
+            `$::.ParameterCompleter.__CompleteCommandParameter(
+                '{0}',
+                `$commandName,
+                `$parameterName,
+                `$wordToComplete,
+                `$commandAst,
+                `$fakeBoundParameter)
+"@
 
-            if ( ! $completerBlock ) {
-                throw "No command completion block returned by completer object"
-            }
-
-            $completerBlock
-        }
+        $completersByParameter = @{}
 
         function RegisterParameterCompleter([string] $command, [string[]] $parameterNames, $completerObject) {
-            $completerBlock = __GetCompleter $completerObject
             $parameterNames | foreach {
+                $completerBlock = __RegisterCompleter $command $_ $completerObject
                 Register-ArgumentCompleter -commandname $command -ParameterName $_ -ScriptBlock $completerBlock
             }
         }
@@ -89,6 +93,79 @@ ScriptClass ParameterCompleter {
             }
 
             $matchingItems
+        }
+
+        function __CompleteCommandParameter {
+            param($parameterId, $commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+            $this.completersByParameter[$parameterId].CompleterObject.$($this.ParameterCompletionMethod)(
+                $commandName,
+                $parameterName,
+                $wordToComplete,
+                $commandAst,
+                $fakeBoundParameter)
+        }
+
+        function __GetCompleterHash($commandName, $parameterName) {
+            "{0}/{1}" -f $commandName, $parameterName
+        }
+
+        function __FindCompleter($commandName, $parameterName) {
+            $hash = __GetCompleterHash $commandName $parameterName
+            $this.completersByParameter[$hash]
+        }
+
+        function __NewCompleter($commandName, $parameterName, $completerObject) {
+            $hash = __GetCompleterHash $commandName $parameterName
+            $completerScriptBlock = __NewCompleterScriptBlock $hash $completerObject
+            @{
+                Id = $hash
+                CompleterObject = $completerObject
+                ParameterName = $parameterName
+                CommandName = $commandName
+                ScriptBlock = $completerScriptBlock
+            }
+        }
+
+        function __NewCompleterScriptBlock($hash, $completerObject) {
+            [ScriptBlock]::Create($this.ParameterCompletionScriptFormat -f $hash)
+        }
+
+        function __UpdateCompleter($completer, $completerObject) {
+            $existingObject = $this.completersByParameter[$completer.CompleterObject.GetHashCode()]
+            $newObjectId = $completerObject.GetHashCode()
+
+            if ( ! $existingObject -or ($existingObject.Id -ne $newObjectId) ) {
+                $completer.CompleterObject = $completerObject
+            }
+        }
+
+        function __RegisterCompleter($commandName, $parameterName, $completerObject) {
+            $existingCompleter = __FindCompleter $commandName $parameterName
+
+            $completer = if ( $existingCompleter ) {
+                __UpdateCompleter $existingCompleter $completerObject
+                $existingCompleter
+            } else {
+                $newCompleter = __NewCompleter $commandName $parameterName $completerObject
+                __AddCompleter $newCompleter
+                $newCompleter
+            }
+
+            $completer.ScriptBlock
+        }
+
+        function __AddCompleter($completer) {
+            $this.completersByParameter.Add($completer.Id, $completer)
+        }
+
+        function __GetCompleterScriptBlock($completerObject) {
+            $completerBlock = $completerObject |=> GetCommandCompletionScriptBlock
+
+            if ( ! $completerBlock ) {
+                throw "No command completion block returned by completer object"
+            }
+
+            $completerBlock
         }
     }
 }

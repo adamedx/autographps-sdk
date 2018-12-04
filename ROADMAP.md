@@ -17,6 +17,7 @@
 * Change autographps to use dynamic scope implementation
 * Separate permissions args -- apparently apponly and delegated permissions have duplicate names, but probably different id's
 * Add logging implementation and cmdlets
+* Reference walkthrough at top of README -- nobody's reading!
 
 * Add app creation, enumeration, update
   * Remove-GraphApplication

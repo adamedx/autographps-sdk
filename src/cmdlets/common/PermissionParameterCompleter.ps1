@@ -34,18 +34,13 @@ ScriptClass PermissionParameterCompleter {
         }
     }
 
-    function GetCommandCompletionScriptBlock {
-        # Note that the script block being returned below can't reference any instance methods,
-        # though class methods accessed via the class name will work fine.
-        $scriptString = @'
-            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-            $allPossiblePermissions = $::.ScopeHelper |=> GetKnownScopesSorted $null {0}
+    function CompleteCommandParameter {
+        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+        $allPossiblePermissions = $::.ScopeHelper |=> GetKnownScopesSorted $null $this.authType
 
-            if ( $allPossiblePermissions ) {{
-                $::.ParameterCompleter |=> FindMatchesStartingWith $wordToComplete $allPossiblePermissions
-            }}
-'@ -f $this.AuthType
-        [ScriptBlock]::Create($scriptString)
+        if ( $allPossiblePermissions ) {
+            $::.ParameterCompleter |=> FindMatchesStartingWith $wordToComplete $allPossiblePermissions
+        }
     }
 }
 
