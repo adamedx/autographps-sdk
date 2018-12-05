@@ -113,6 +113,9 @@ function Connect-Graph {
                     $appOnlyArguments['TenantId'] = $TenantId
                 } else {
                     $permissionsArgument['Permissions'] = $computedScopes
+                    if ( $TenantId ) {
+                        $permissionsArgument['TenantId'] = $TenantId
+                    }
                 }
 
                 try {
