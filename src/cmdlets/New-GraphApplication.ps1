@@ -114,7 +114,7 @@ function New-GraphApplication {
 
     if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
         try {
-            $certificate = new-so GraphApplicationCertificate $newApp.appId $Name $certStoreLocation
+            $certificate = new-so GraphApplicationCertificate $newApp.appId $newApp.Id $Name $certStoreLocation
             $certificate |=> Create
             $::.GraphApplicationRegistration |=> AddKeyCredentials $newApp $certificate
         } catch {

@@ -15,6 +15,7 @@
 ScriptClass GraphApplicationCertificate {
 
     $AppId = $null
+    $ObjectID = $null
     $DisplayName = $null
     $CertLocation = $null
     $X509Certificate = $null
@@ -25,9 +26,14 @@ ScriptClass GraphApplicationCertificate {
         function FindAppCertificate(
             $AppId,
             $CertStoreLocation = 'cert:/currentuser/my',
-            $Name
+            $Name,
+            $ObjectId
         ) {
-            if ( $AppId -and $Name ) {
+            $argCount = if ( $AppId ) { 1 } else { 0 }
+            $argCount += if ( $ObjectId ) { 1 } else { 0 }
+            $argCount += if ( $Name ) { 1 } else { 0 }
+
+            if ( $argCount -gt 1 ) {
                 throw "Only one of appid or name may be specified to search for certificates"
             }
 
@@ -37,11 +43,16 @@ ScriptClass GraphApplicationCertificate {
                 $subject = __GetAppCertificateSubject $appId
                 $certs | where subject -eq $subject
             } else {
+                $searchTarget = if ( $ObjectId )  {
+                    __GetAppCertificateObjectIdComponent $ObjectId
+                } elseif ( $Name ) {
+                    __GetAppCertificateDisplayNameComponent $Name
+                }
+
                 $subjectSuffix = $this.__AppCertificateSubjectParent
-                $targetDisplayNameComponent = __GetAppCertificateDisplayNameComponent $Name
                 $certs | where {
                     $_.subject.endswith($subjectSuffix) -and
-                    ( ! $Name -or ( $_.FriendlyName.endswith($targetDisplayNameComponent ) ) )
+                    ( ! $searchTarget -or ( $_.FriendlyName.tolower().contains($searchTarget.tolower()) ) )
                 }
             }
         }
@@ -54,13 +65,19 @@ ScriptClass GraphApplicationCertificate {
             "name='$name'"
         }
 
-        function __GetAppCertificateFriendlyName($appId, $name) {
+        function __GetAppCertificateObjectIdComponent($objectId) {
+            "objectId=$objectId"
+        }
+
+        function __GetAppCertificateFriendlyName($appId, $name, $objectId) {
             $nameComponent = __GetAppCertificateDisplayNameComponent $name
-            "Credential for Microsoft Graph Azure Active Directory application id=$appId, $nameComponent"
+            $objectIdComponent = __GetAppCertificateObjectIdComponent $objectId
+            "Credential for Microsoft Graph Azure Active Directory application $nameComponent, appId=$appId, $objectIdComponent"
         }
     }
 
-    function __initialize($appId, $displayName, $certStoreLocation = 'cert:/currentuser/my') {
+    function __initialize($appId, $objectId, $displayName, $certStoreLocation = 'cert:/currentuser/my') {
+        $this.ObjectId = $objectId
         $this.AppId = $appId
         $this.CertLocation = $certStoreLocation
         $this.DisplayName = $displayName
@@ -73,7 +90,7 @@ ScriptClass GraphApplicationCertificate {
 
         $certStoreDestination = $this.CertLocation
 
-        $description = $this.scriptclass |=> __GetAppCertificateFriendlyName $this.AppId $this.DisplayName
+        $description = $this.scriptclass |=> __GetAppCertificateFriendlyName $this.AppId $this.DisplayName $this.ObjectId
         $subject = $this.scriptclass |=> __GetAppCertificateSubject $this.AppId
 
         write-verbose "Creating certificate with subject '$subject'"
