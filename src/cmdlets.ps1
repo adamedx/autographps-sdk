@@ -26,6 +26,7 @@
 . (import-script cmdlets\New-GraphApplication)
 . (import-script cmdlets\New-GraphConnection)
 . (import-script cmdlets\Invoke-GraphRequest)
+. (import-script cmdlets\Remove-GraphApplication)
 . (import-script cmdlets\Remove-GraphApplicationConsent)
 . (import-script cmdlets\Remove-GraphItem)
 . (import-script cmdlets\Set-GraphApplicationConsent)

@@ -52,6 +52,7 @@ Describe "Poshgraph application" {
                 'get-grapherror',
                 'connect-graph',
                 'disconnect-graph',
+                'Remove-GraphApplication',
                 'Remove-GraphApplicationConsent',
                 'Set-GraphApplicationConsent',
                 'Get-GraphConnectionStatus',

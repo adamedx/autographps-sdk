@@ -87,6 +87,7 @@ FunctionsToExport = @('Get-DynamicValidateSetParameter')
         'Invoke-GraphRequest',
         'New-GraphApplication',
         'New-GraphConnection',
+        'Remove-GraphApplication',
         'Remove-GraphApplicationConsent',
         'Remove-GraphItem',
         'Set-GraphApplicationConsent',
@@ -139,6 +140,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Invoke-GraphRequest.ps1',
         '.\src\cmdlets\New-GraphApplication.ps1',
         '.\src\cmdlets\New-GraphConnection.ps1',
+        '.\src\cmdlets\Remove-GraphApplication.ps1',
         '.\src\cmdlets\Remove-GraphApplicationConsent.ps1',
         '.\src\cmdlets\Remove-GraphItem.ps1',
         '.\src\cmdlets\Set-GraphApplicationConsent.ps1',
@@ -201,6 +203,7 @@ PrivateData = @{
 * Get-GraphApplication: this new cmdlet retrieves specified applications from the tenant
 * Get-GraphLocalCertificate: new cmdlet that enumerates certificates in the local cert store used for app-only authenticate with Graph
 * Get-GraphApplicationConsent: new cmdlet that lists consent grants for a Graph application
+* Remove-GraphApplication: new cmdlet that deletes applications
 * Remove-GraphApplicationConsent: new cmdlet that removes consent grants for a Graph application
 * Set-GraphApplicationConsent: new cmdlet that updates consent grants for a Graph application
 * Remove-GraphItem: this new cmdlet makes ``DELETE`` requests and supports the object pipeline -- the output of Get-GraphItem can be piped to it to delete the items for instance.

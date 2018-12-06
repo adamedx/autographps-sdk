@@ -12,9 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#
+# This is actually a snapshot of the MS Graph service principal. Some data
+# are tenant-specific, but others, such as the guids for role and scope id's,
+# are the same in all tenants -- this means this snapshot can be used to
+# access API's that require the role and scope id's.
+#
+
 $__DefaultScopeData = @'
 {
-    "id":  "a4b9d70c-d80b-4788-8f41-44569d619d10",
+    "id":  "88428b77-6e8e-492d-810b-31d48c81ee66",
     "deletedDateTime":  null,
     "accountEnabled":  true,
     "appDisplayName":  "Microsoft Graph",

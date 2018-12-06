@@ -98,6 +98,7 @@ function Remove-GraphItem {
             Version = $Version
             Headers = $Headers
             Permissions = $Permissions
+            Cloud = $Cloud
         }
 
         if ( $Connection ) {

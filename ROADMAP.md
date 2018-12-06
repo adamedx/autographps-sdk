@@ -17,6 +17,7 @@
 * Reference walkthrough at top of README -- nobody's reading!
 * Make new-graphconnection position 0 argument be appid
 * Add show-scope command
+* Emit header object in get-graphchilditem
 
 * Add app creation, enumeration, update
   * Remove-GraphApplication

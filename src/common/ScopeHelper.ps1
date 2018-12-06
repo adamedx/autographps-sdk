@@ -34,6 +34,10 @@ ScriptClass ScopeHelper {
 
             $this.graphSP = $graphSP
 
+            # Note that the ids referenced here are universal across tenants, so the
+            # first time we retrieve them will be the only time we need to do so,
+            # and it doesn't matter what tenant they come from as they are always
+            # the same no matter the tenant.
             $this.permissionsByIds = $permissionsByIds
 
             $this.delegatedPermissionsByName = $sortedScopeList
