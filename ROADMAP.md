@@ -7,6 +7,7 @@
 * Add default graph connection
 * Add named graph connections
 * Add connection enumeration
+* Add Get-GraphConnection
 * Add retry to service principal creation
 * Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
 * Rename Get-GraphApplicationConsent to Get-GraphConsent
@@ -14,13 +15,10 @@
 * Add return types to cmdlets
 * Change autographps to use dynamic scope implementation
 * Add logging implementation and cmdlets
-* Reference walkthrough at top of README -- nobody's reading!
-* Make new-graphconnection position 0 argument be appid
 * Add show-scope command
 * Emit header object in get-graphchilditem
 
 * Add app creation, enumeration, update
-  * Remove-GraphApplication
   * Set-GraphApplication
   * Get-GraphApplicationServicePrincipal ?
   * Register-GraphApplication ?
@@ -296,6 +294,9 @@
 * Separate permissions args -- apparently apponly and delegated permissions have duplicate names, but different id's
 * Preserve case on parameter completion
 * Eliminate need for skipscopecheck by moving to autocompleted dynamicparams
+* Make new-graphconnection position 0 argument be permissions
+* Reference walkthrough at top of README -- nobody's reading!
+* Remove-GraphApplication
 
 ### Postponed
 

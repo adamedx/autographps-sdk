@@ -22,18 +22,18 @@
 function New-GraphConnection {
     [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='msgraph')]
     param(
+        [parameter(parametersetname='msgraph', position=0)]
+        [parameter(parametersetname='cloud', position=0)]
+        [parameter(parametersetname='customendpoint', position=0)]
+        [parameter(parametersetname='cert', position=0)]
+        [parameter(parametersetname='certpath', position=0)]
+        [parameter(parametersetname='autocert', position=0)]
+        [parameter(parametersetname='secret', position=0)]
+        [String[]] $Permissions = $null,
+
         [parameter(parametersetname='aadgraph', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
         [switch] $AADGraph,
-
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='cloud')]
-        [parameter(parametersetname='customendpoint')]
-        [parameter(parametersetname='cert')]
-        [parameter(parametersetname='certpath')]
-        [parameter(parametersetname='autocert')]
-        [parameter(parametersetname='secret')]
-        [String[]] $Permissions = $null,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud', mandatory=$true)]

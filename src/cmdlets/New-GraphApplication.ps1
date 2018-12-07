@@ -25,48 +25,51 @@ function New-GraphApplication {
 
         [parameter(parametersetname='delegated', position=1)]
         [parameter(parametersetname='apponlynewcert', position=1)]
-        [parameter(parametersetname='apponlynocert', position=1)]
+        [parameter(parametersetname='apponlynocred', position=1)]
         [parameter(parametersetname='apponlyexistingcert', position=1)]
 
         [string[]] $RedirectUris = $null,
 
         [parameter(parametersetname='delegated')]
         [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='apponlynocert')]
+        [parameter(parametersetname='apponlynocred')]
         [parameter(parametersetname='apponlyexistingcert')]
         [Uri] $InfoUrl,
 
         [parameter(parametersetname='delegated')]
         [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='apponlynocert')]
+        [parameter(parametersetname='apponlynocred')]
         [parameter(parametersetname='apponlyexistingcert')]
         [string[]] $Tags,
 
         [parameter(parametersetname='delegated')]
         [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='apponlynocert')]
+        [parameter(parametersetname='apponlynocred')]
         [parameter(parametersetname='apponlyexistingcert')]
         [AppTenancy] $Tenancy = ([AppTenancy]::Auto),
 
         [parameter(parametersetname='delegated')]
         [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='apponlynocert')]
+        [parameter(parametersetname='apponlynocred')]
         [parameter(parametersetname='apponlyexistingcert')]
         $Permissions,
 
         [parameter(parametersetname='delegated')]
         [switch] $AADAccountsOnly,
 
+        [parameter(parametersetname='apponlynocred', mandatory=$true)]
+        [switch] $NoCredential,
+
         [switch] $SkipTenantRegistration,
 
         [switch] $SkipPermissionNameCheck,
 
         [parameter(parametersetname='apponlynewcert', mandatory=$true)]
-        [parameter(parametersetname='apponlynocert', mandatory=$true)]
+        [parameter(parametersetname='apponlynocred', mandatory=$true)]
         [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
         [switch] $NoninteractiveAppOnlyAuth,
 
-        [parameter(parametersetname='apponlynocert', mandatory=$true)]
+        [parameter(parametersetname='apponlynocred', mandatory=$true)]
         [switch] $NoCredential,
 
         [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
@@ -112,7 +115,7 @@ function New-GraphApplication {
 
     $newApp = $newAppRegistration |=> CreateNewApp
 
-    if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
+    if ( $NoninteractiveAppOnlyAuth.IsPresent -and ! $NoCredential.IsPresent ) {
         try {
             $certificate = new-so GraphApplicationCertificate $newApp.appId $newApp.Id $Name $certStoreLocation
             $certificate |=> Create
