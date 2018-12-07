@@ -19,9 +19,13 @@
 * Emit header object in get-graphchilditem
 
 * Add app creation, enumeration, update
+  * Support confidential client for user auth?
+  * Support expiration time in certificate
   * Set-GraphApplication
   * Get-GraphApplicationServicePrincipal ?
   * Register-GraphApplication ?
+  * Get-GraphApplicationRegistration ?
+  * Unregister-GraphApplication ?
   * New-GraphApplicationCertificate
   * Remove-GraphApplicationCertificate
   * Set-GraphApplicationCertificate
@@ -31,6 +35,7 @@
   * Set-GraphApplicationPermissions ?
 
 * Extend Get-GraphToken to support all scenarios, better formats
+* Extend Get-GraphToken to support auth code
 
 * Customize README
 * Customize WALKTHROUGH

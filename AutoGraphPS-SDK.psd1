@@ -140,6 +140,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Invoke-GraphRequest.ps1',
         '.\src\cmdlets\New-GraphApplication.ps1',
         '.\src\cmdlets\New-GraphConnection.ps1',
+        '.\src\cmdlets\New-GraphLocalCertificate.ps1',
         '.\src\cmdlets\Remove-GraphApplication.ps1',
         '.\src\cmdlets\Remove-GraphApplicationConsent.ps1',
         '.\src\cmdlets\Remove-GraphItem.ps1',
@@ -201,6 +202,7 @@ PrivateData = @{
 * Ability to dynamically obtain when possible values for permission scope names used by cmdlet auto-completion, fallback to hard-coded data
 * New-GraphApplication: new cmdlet that creates a new Graph application!
 * Get-GraphApplication: this new cmdlet retrieves specified applications from the tenant
+* New-GraphLocalCertificate: new cmdlet that creates a certificate that can be used to authenticate Microsoft Graph applications
 * Get-GraphLocalCertificate: new cmdlet that enumerates certificates in the local cert store used for app-only authenticate with Graph
 * Get-GraphApplicationConsent: new cmdlet that lists consent grants for a Graph application
 * Remove-GraphApplication: new cmdlet that deletes applications

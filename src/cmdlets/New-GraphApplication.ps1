@@ -27,7 +27,6 @@ function New-GraphApplication {
         [parameter(parametersetname='apponlynewcert', position=1)]
         [parameter(parametersetname='apponlynocred', position=1)]
         [parameter(parametersetname='apponlyexistingcert', position=1)]
-
         [string[]] $RedirectUris = $null,
 
         [parameter(parametersetname='delegated')]
@@ -68,9 +67,6 @@ function New-GraphApplication {
         [parameter(parametersetname='apponlynocred', mandatory=$true)]
         [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
         [switch] $NoninteractiveAppOnlyAuth,
-
-        [parameter(parametersetname='apponlynocred', mandatory=$true)]
-        [switch] $NoCredential,
 
         [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
         $ExistingCertStorePath,

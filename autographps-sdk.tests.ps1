@@ -45,6 +45,7 @@ Describe "Poshgraph application" {
                 'Get-GraphApplicationConsent',
                 'get-graphitem',
                 'Get-GraphLocalCertificate',
+                'New-GraphLocalCertificate',
                 'test-graph',
                 'invoke-graphrequest',
                 'get-graphversion',
