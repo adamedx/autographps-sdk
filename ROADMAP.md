@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Make new-graphapplication explicitly use confidential / public
+* Add times to new-graphapplication and new-localgraphcertificate
 * Possibly remove query support from Remove-GraphItem if queries on DELETE method are not supported
 * Make Uri argument a non-array
 * Add default graph connection
@@ -29,7 +31,6 @@
   * New-GraphApplicationCertificate
   * Remove-GraphApplicationCertificate
   * Set-GraphApplicationCertificate
-  * Get-GraphApplicationCertificate
   * Remove-GraphApplicationLocalCertificate ?
   * Import-GraphApplicationLocalCertificate
   * Set-GraphApplicationPermissions ?
@@ -302,6 +303,7 @@
 * Make new-graphconnection position 0 argument be permissions
 * Reference walkthrough at top of README -- nobody's reading!
 * Remove-GraphApplication
+* Get-GraphApplicationCertificate
 
 ### Postponed
 

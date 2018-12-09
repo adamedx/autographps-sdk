@@ -13,18 +13,74 @@
 # limitations under the License.
 
 . (import-script DisplayTypeFormatter)
+. (import-script ../Invoke-GraphRequest)
 
 ScriptClass ApplicationHelper {
     static {
-        $formatter = $null
+        $appFormatter = $null
+        $keyFormatter = $null
 
         function __initialize {
-            $this.formatter = new-so DisplayTypeFormatter GraphApplicationDisplayType 'AppId', 'DisplayName', 'CreatedDateTime', 'Id'
+            $this.appFormatter = new-so DisplayTypeFormatter GraphApplicationDisplayType 'AppId', 'DisplayName', 'CreatedDateTime', 'Id'
+            $this.keyFormatter = new-so DisplayTypeFormatter GraphAppCertDisplayType 'Thumbprint', 'NotAfter', 'KeyId', 'FriendlyName'
         }
 
         function ToDisplayableObject($object) {
-            $this.formatter |=> DeserializedGraphObjectToDisplayableObject $object
+            $this.appFormatter |=> DeserializedGraphObjectToDisplayableObject $object
         }
+
+        function KeyCredentialToDisplayableObject($object) {
+            $remappedObject = try {
+                $notAfter = try { [DateTime]::Parse($object.endDateTime) } catch { $object.endDateTime }
+                $notBefore = try { [DateTime]::Parse($object.startDateTime) } catch { $object.startDateTime }
+                [PSCustomObject] @{
+                    Thumbprint = $object.customKeyIdentifier
+                    NotAfter = $notAfter
+                    NotBefore = $notBefore
+                    FriendlyName = $object.displayName
+                    KeyId = $object.KeyId
+                    Content = $object
+                }
+            } catch {
+                [PSCustomObject] @{Content=$object}
+            }
+
+            $this.keyFormatter |=> DeserializedGraphObjectToDisplayableObject $remappedObject
+        }
+
+        function QueryApplications($appId, $objectId, $odataFilter, $name, [switch] $rawContent, $version, $permissions, $cloud, $connection, $select = '*') {
+            $apiVersion = if ( $Version ) {
+                $Version
+            } else {
+                $::.GraphApplicationRegistration.DefaultApplicationApiVersion
+            }
+
+            $uri = '/Applications'
+
+            $filter = if ( $ODataFilter ) {
+                $ODataFilter
+            } elseif ( $AppId ) {
+                "appId eq '$AppId'"
+            } elseif ( $Name ) {
+                "displayName eq '$Name'"
+            } elseif ( $ObjectId ) {
+                $uri += "/$ObjectId"
+            }
+
+            $requestArguments = @{
+                RawContent = $rawContent
+                ODataFilter = $filter
+                Permissions = $permissions
+                Select = $select
+            }
+
+            if ( $connection ) {
+                $requestArguments['Connection'] = $connection
+            }
+
+            Invoke-GraphRequest -Method GET $uri @requestArguments -version $apiVersion
+        }
+
     }
 }
 

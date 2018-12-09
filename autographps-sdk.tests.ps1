@@ -38,27 +38,28 @@ Describe "Poshgraph application" {
     Context "When loading the manifest" {
         It "should export the exact same set of functions as are in the set of expected functions" {
             $expectedFunctions = @(
-                'New-GraphApplication',
-                'new-graphconnection',
-                'Remove-GraphItem',
+                'Connect-Graph',
+                'Disconnect-Graph',
                 'Get-GraphApplication',
+                'Get-GraphApplicationCertificate',
                 'Get-GraphApplicationConsent',
-                'get-graphitem',
+                'Get-GraphConnectionStatus',
+                'Get-GraphError',
+                'Get-GraphItem',
                 'Get-GraphLocalCertificate',
+                'Get-GraphSchema',
+                'Get-GraphToken',
+                'Get-GraphVersion',
+                'Invoke-GraphRequest',
+                'New-GraphApplication',
+                'New-GraphConnection',
                 'New-GraphLocalCertificate',
-                'test-graph',
-                'invoke-graphrequest',
-                'get-graphversion',
-                'get-graphschema',
-                'get-grapherror',
-                'connect-graph',
-                'disconnect-graph',
                 'Remove-GraphApplication',
                 'Remove-GraphApplicationConsent',
+                'Remove-GraphItem',
                 'Set-GraphApplicationConsent',
-                'Get-GraphConnectionStatus',
                 'Set-GraphConnectionStatus',
-                'get-graphtoken')
+                'Test-Graph')
 
             $manifest.CmdletsToExport.count | Should BeExactly $expectedFunctions.length
 

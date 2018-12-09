@@ -56,36 +56,7 @@ function Get-GraphApplication {
         [parameter(parametersetname='ExistingConnectionName')]
         [PSCustomObject] $Connection = $null
     )
-
-    $apiVersion = if ( $Version ) {
-        $Version
-    } else {
-        $::.GraphApplicationRegistration.DefaultApplicationApiVersion
-    }
-
-    $uri = '/Applications'
-
-    $filter = if ( $ODataFilter ) {
-        $ODataFilter
-    } elseif ( $AppId ) {
-        "appId eq '$AppId'"
-    } elseif ( $Name ) {
-        "displayName eq '$Name'"
-    } elseif ( $ObjectId ) {
-        $uri += "/$ObjectId"
-    }
-
-    $requestArguments = @{
-        RawContent = $RawContent
-        ODataFilter = $filter
-        Permissions = $Permissions
-    }
-
-    if ( $Connection ) {
-        $commonRequestArguments['Connection'] = $Connection
-    }
-
-    $result = Invoke-GraphRequest -Method GET $uri @requestArguments -version $apiVersion
+    $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $OdataFilter $Name $RawContent $Version $Permissions $cloud $connection
 
     if ( $result ) {
         if ( $RawContent.IsPresent ) {
