@@ -50,8 +50,8 @@ function Remove-GraphApplication {
         [switch] $Force
     )
 
-    # Note that PowerShell requires us to sue the begin / process / end structure here
-    # in order to process more than one element of the pipeline via $TargetItem
+    # Note that PowerShell requires us to use the begin / process / end structure here
+    # in order to process more than one element of the pipeline via $App
 
     begin {}
 

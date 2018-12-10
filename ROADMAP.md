@@ -19,6 +19,15 @@
 * Add logging implementation and cmdlets
 * Add show-scope command
 * Emit header object in get-graphchilditem
+* Rename DisplayFormatter to OutputFormatter
+* Change relativeuri parameter to 'uri' to match invoke-webrequest and invoke-restmethod
+* Remove -force from remove- cmdlets
+* Use begin, and maybe end blocks in app cmdlets, also
+* Fix issue where switch parameters don't work in scriptclass methods because they don't get bound unless set explicitly -- maybe just prohibit them
+* Add thumbprint option to get-graphapplicationcertificate
+* Make AppAPI version
+* Reuse keycredentials in addkeycredentials
+* Make common request arguments
 
 * Add app creation, enumeration, update
   * Support confidential client for user auth?

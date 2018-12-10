@@ -115,7 +115,7 @@ function New-GraphApplication {
         try {
             $certificate = new-so GraphApplicationCertificate $newApp.appId $newApp.Id $Name $certStoreLocation
             $certificate |=> Create
-            $::.GraphApplicationRegistration |=> AddKeyCredentials $newApp $certificate
+            $::.GraphApplicationRegistration |=> AddKeyCredentials $newApp $certificate | out-null
         } catch {
             $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | rm -erroraction silentlycontinue
             Remove-GraphItem -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion "/applications/$($newApp.Id)" -erroraction silentlycontinue -confirm:$false

@@ -22,23 +22,24 @@ ScriptClass ApplicationHelper {
 
         function __initialize {
             $this.appFormatter = new-so DisplayTypeFormatter GraphApplicationDisplayType 'AppId', 'DisplayName', 'CreatedDateTime', 'Id'
-            $this.keyFormatter = new-so DisplayTypeFormatter GraphAppCertDisplayType 'Thumbprint', 'NotAfter', 'KeyId', 'FriendlyName'
+            $this.keyFormatter = new-so DisplayTypeFormatter GraphAppCertDisplayType 'Thumbprint', 'NotAfter', 'KeyId', 'AppId'
         }
 
         function ToDisplayableObject($object) {
             $this.appFormatter |=> DeserializedGraphObjectToDisplayableObject $object
         }
 
-        function KeyCredentialToDisplayableObject($object) {
+        function KeyCredentialToDisplayableObject($object, $appId) {
             $remappedObject = try {
                 $notAfter = try { [DateTime]::Parse($object.endDateTime) } catch { $object.endDateTime }
                 $notBefore = try { [DateTime]::Parse($object.startDateTime) } catch { $object.startDateTime }
                 [PSCustomObject] @{
+                    AppId = $appId
+                    KeyId = $object.KeyId
                     Thumbprint = $object.customKeyIdentifier
                     NotAfter = $notAfter
                     NotBefore = $notBefore
                     FriendlyName = $object.displayName
-                    KeyId = $object.KeyId
                     Content = $object
                 }
             } catch {
@@ -48,7 +49,7 @@ ScriptClass ApplicationHelper {
             $this.keyFormatter |=> DeserializedGraphObjectToDisplayableObject $remappedObject
         }
 
-        function QueryApplications($appId, $objectId, $odataFilter, $name, [switch] $rawContent, $version, $permissions, $cloud, $connection, $select = '*') {
+        function QueryApplications($appId, $objectId, $odataFilter, $name, [object] $rawContent, $version, $permissions, $cloud, $connection, $select = '*', $queryMethod = 'GET') {
             $apiVersion = if ( $Version ) {
                 $Version
             } else {
@@ -78,7 +79,7 @@ ScriptClass ApplicationHelper {
                 $requestArguments['Connection'] = $connection
             }
 
-            Invoke-GraphRequest -Method GET $uri @requestArguments -version $apiVersion
+            Invoke-GraphRequest -Method $queryMethod -RelativeUri $uri @requestArguments -version $apiVersion
         }
 
     }

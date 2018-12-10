@@ -27,11 +27,9 @@ ScriptClass GraphApplicationRegistration {
         const DefaultApplicationApiVersion beta
 
         function AddKeyCredentials($appObject, $appCertificate) {
-            $keyCredentials = if ( ($appObject | gm keyCredentials) -and $appObject.keyCredentials ) {
-                $appObject.keyCredentials
-            } else {
-                (, @())
-            }
+            # This should be additive, but methods to add to the collection
+            # don't seem to work
+            $keyCredentials = @()
 
             $encodedCertificate = $appCertificate |=> GetEncodedPublicCertificate
 
@@ -47,7 +45,15 @@ ScriptClass GraphApplicationRegistration {
                 }
             ) | convertto-json -depth 20
 
-            Invoke-GraphRequest "applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.DefaultApplicationApiVersion | out-null
+            Invoke-GraphRequest "applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.DefaultApplicationApiVersion
+        }
+
+        function SetKeyCredentials($appId, $keyCredentials) {
+            $keyCredentialPatch = [PSCustomObject] @{
+                keyCredentials = $keyCredentials
+            }
+
+            Invoke-GraphRequest "applications/$appId" -method PATCH -Body $keyCredentialPatch -version $this.DefaultApplicationApiVersion | out-null
         }
 
         function RegisterApplication($appId, $isExternal) {
@@ -79,6 +85,10 @@ ScriptClass GraphApplicationRegistration {
 
         function GetApplicationByAppId($appId, $errorAction = 'stop') {
             invoke-graphrequest /Applications -method GET -ODataFilter "appId eq '$appId'" -Version $this.DefaultApplicationApiVersion -erroraction $errorAction
+        }
+
+        function GetApplicationByObjectId($objectId, $errorAction = 'stop') {
+            invoke-graphrequest "/Applications/$objectId" -method GET -Version $this.DefaultApplicationApiVersion -erroraction $errorAction
         }
 
         function GetReducedPermissionsString($permissionsString, $permissionsToRemove) {
