@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../cmdlets/Invoke-GraphRequest)
+. (import-script ../graphservice/ApplicationAPI)
 . (import-script ../graphservice/GraphApplicationRegistration)
 . (import-script ../common/GraphApplicationCertificate)
 . (import-script common/PermissionParameterCompleter)
+. (import-script common/CommandContext)
 
 function New-GraphApplication {
     [cmdletbinding(defaultparametersetname='delegated', positionalbinding=$false)]
@@ -51,7 +52,9 @@ function New-GraphApplication {
         [parameter(parametersetname='apponlynewcert')]
         [parameter(parametersetname='apponlynocred')]
         [parameter(parametersetname='apponlyexistingcert')]
-        $Permissions,
+        [String[]] $GrantedPermissions,
+
+        [String[]] $Permissions,
 
         [parameter(parametersetname='delegated')]
         [switch] $AADAccountsOnly,
@@ -83,7 +86,15 @@ function New-GraphApplication {
         [string] $UserIdToConsent,
 
         [parameter(parametersetname='manifest', mandatory=$true)]
-        [string] $Manifest
+        [string] $Manifest,
+
+        [String] $Version = $null,
+
+        [parameter(parametersetname='MSGraphNewConnection')]
+        [GraphCloud] $Cloud = [GraphCloud]::Public,
+
+        [parameter(parametersetname='ExistingConnection', mandatory=$true)]
+        [PSCustomObject] $Connection = $null
     )
 
     if ( $SkipTenantRegistration.IsPresent ) {
@@ -92,10 +103,12 @@ function New-GraphApplication {
         }
     }
 
-    $::.ScopeHelper |=> ValidatePermissions $Permissions $NoninteractiveAppOnlyAuth.IsPresent $SkipPermissionNameCheck.IsPresent
+    $commandContext = new-so CommandContext $Connection $Version $GrantedPermissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
 
-    $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $Permissions}
-    $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $Permissions}
+    $::.ScopeHelper |=> ValidatePermissions $GrantedPermissions $NoninteractiveAppOnlyAuth.IsPresent $SkipPermissionNameCheck.IsPresent
+
+    $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $GrantedPermissions}
+    $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $GrantedPermissions}
 
     $computedTenancy = if ( $Tenancy -ne ([AppTenancy]::Auto) ) {
         $Tenancy
@@ -107,7 +120,9 @@ function New-GraphApplication {
         }
     }
 
-    $newAppRegistration = new-so GraphApplicationRegistration $Name $InfoUrl $Tags $computedTenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent $RedirectUris
+    $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
+
+    $newAppRegistration = new-so GraphApplicationRegistration $appAPI $Name $InfoUrl $Tags $computedTenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent $RedirectUris
 
     $newApp = $newAppRegistration |=> CreateNewApp
 
@@ -115,17 +130,17 @@ function New-GraphApplication {
         try {
             $certificate = new-so GraphApplicationCertificate $newApp.appId $newApp.Id $Name $certStoreLocation
             $certificate |=> Create
-            $::.GraphApplicationRegistration |=> AddKeyCredentials $newApp $certificate | out-null
+            $appAPI |=> AddKeyCredentials $newApp $certificate | out-null
         } catch {
             $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | rm -erroraction silentlycontinue
-            Remove-GraphItem -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion "/applications/$($newApp.Id)" -erroraction silentlycontinue -confirm:$false
+            $appAPI |=> RemoveApplicationByObjectId $newApp.Id silentlycontinue
             throw
         }
     }
 
     if ( ! $SkipTenantRegistration.IsPresent ) {
-        $newAppRegistration |=> Register $ConsentForTenant.IsPresent $NonInteractiveAppOnlyAuth.IsPresent ($UserIdToConsent -ne $null) $UserIdToConsent $Permissions | out-null
-        if ( $Permissions -and $NoninteractiveAppOnlyAuth.IsPresent ) {
+        $newAppRegistration |=> Register $ConsentForTenant.IsPresent $NonInteractiveAppOnlyAuth.IsPresent ($UserIdToConsent -ne $null) $UserIdToConsent $GrantedPermissions | out-null
+        if ( $GrantedPermissions -and $NoninteractiveAppOnlyAuth.IsPresent ) {
             write-warning "The application was successfully created, but consent for the application in the tenant could not be granted because the consent API is not yet fully implemented. Please visit the Azure Portal at`n`n    https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredAppsPreview`n`nto manually configure consent for the application. Choose the application '$($newApp.displayname)' with application id '$($newApp.AppId)' and then access API Permissions to grant consent to the application in the tenant."
         }
     }
@@ -133,4 +148,4 @@ function New-GraphApplication {
     $newApp
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication GrantedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

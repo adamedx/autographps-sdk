@@ -12,188 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../cmdlets/Invoke-GraphRequest)
 . (import-script ../common/GraphApplicationCertificate)
 . (import-script ../common/ScopeHelper)
-
-enum AppTenancy {
-    Auto
-    SingleTenant
-    AnyTenant
-}
+. (import-script ../graphservice/ApplicationAPI)
 
 ScriptClass GraphApplicationRegistration {
-    static {
-        const DefaultApplicationApiVersion beta
-
-        function AddKeyCredentials($appObject, $appCertificate) {
-            # This should be additive, but methods to add to the collection
-            # don't seem to work
-            $keyCredentials = @()
-
-            $encodedCertificate = $appCertificate |=> GetEncodedPublicCertificate
-
-            $keyCredentials += [PSCustomObject] @{
-                type = 'AsymmetricX509Cert'
-                usage = 'Verify'
-                key = $encodedCertificate
-            }
-
-            $appPatch = (
-                [PSCustomObject] @{
-                    keyCredentials = $keyCredentials
-                }
-            ) | convertto-json -depth 20
-
-            Invoke-GraphRequest "applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.DefaultApplicationApiVersion
-        }
-
-        function SetKeyCredentials($appId, $keyCredentials) {
-            $keyCredentialPatch = [PSCustomObject] @{
-                keyCredentials = $keyCredentials
-            }
-
-            Invoke-GraphRequest "applications/$appId" -method PATCH -Body $keyCredentialPatch -version $this.DefaultApplicationApiVersion | out-null
-        }
-
-        function RegisterApplication($appId, $isExternal) {
-            if ( ! $isExternal ) {
-                $app = invoke-graphrequest /applications -method GET -odatafilter "appId eq '$appId'" -version $this.DefaultApplicationApiVersion -erroraction stop
-
-                if ( ! $App ) {
-                    throw "An application with AppId '$AppId' could not be found in this tenant."
-                }
-            }
-
-            $appSP = GetAppServicePrincipal $appId
-
-            if ( $appSP -and $appSP | gm id ) {
-                throw "Application is already registered with service principal id = '$($appSP.id)'"
-            }
-
-            NewAppServicePrincipal $appId | out-null
-            $app
-        }
-
-        function NewAppServicePrincipal($appId) {
-            invoke-graphrequest /servicePrincipals -method POST -body @{appId=$appId} -Version $this.DefaultApplicationApiVersion -erroraction stop
-        }
-
-        function GetAppServicePrincipal($appId, $errorAction = 'stop') {
-            invoke-graphrequest /servicePrincipals -method GET -ODataFilter "appId eq '$appId'" -Version $this.DefaultApplicationApiVersion -erroraction $errorAction
-        }
-
-        function GetApplicationByAppId($appId, $errorAction = 'stop') {
-            invoke-graphrequest /Applications -method GET -ODataFilter "appId eq '$appId'" -Version $this.DefaultApplicationApiVersion -erroraction $errorAction
-        }
-
-        function GetApplicationByObjectId($objectId, $errorAction = 'stop') {
-            invoke-graphrequest "/Applications/$objectId" -method GET -Version $this.DefaultApplicationApiVersion -erroraction $errorAction
-        }
-
-        function GetReducedPermissionsString($permissionsString, $permissionsToRemove) {
-            $permissions = $permissionsString -split ' '
-
-            $newPermissions = $permissions | where { $permissionsToRemove -notcontains $_ }
-
-            $reducedPermissionsString = $newPermissions -join ' '
-
-            if ( $permissionsString -ne $reducedPermissionsString ) {
-                $reducedPermissionsString
-            }
-        }
-
-        function SetConsent (
-            $appObject,
-            [string[]] $delegatedPermissions,
-            [string[]] $appOnlyPermissions,
-            $allPermissions,
-            $consentForTenant,
-            $userConsentRequired,
-            $userIdToConsent
-        ) {
-            $consentUser = if ( $userIdToConsent ) {
-                write-verbose "User '$userIdToConsent' specified for consent"
-                $userIdToConsent
-            } elseif ( ! $consentForTenant ) {
-                write-verbose "No user was specified for consent, and consent for the entire tenant was not specified, so consent will be made for the user making this Graph API call"
-                $userObjectId = ('GraphContext' |::> GetConnection).Identity.GetUserInformation().userObjectId
-                if ( ! $userObjectId -and $userConsentRequired ) {
-                    throw "User consent required but no user was specified and user id of current user could not be obtained"
-                }
-                write-verbose "Attempting to grant consent to app '$($appObject.appId)' for current user '$userObjectId'"
-                $userObjectId
-            } else {
-                write-verbose "User consent was not specified, and tenant consent was specified, will attempt to consent all app permissions for the tenant"
-            }
-
-            if ( $userConsentRequired -and ! $consentUser ) {
-                write-verbose "No user was specified for consent, and user consent was required, so skipping consent completely"
-                return
-            }
-
-            $grant = GetConsentGrantForApp $appObject $consentUser $DelegatedPermissions $AppOnlyPermissions $allPermissions
-
-            Invoke-GraphRequest /oauth2PermissionGrants -method POST -body $grant -version $this.DefaultApplicationApiVersion | out-null
-        }
-
-        function GetConsentGrantForApp(
-            $app,
-            $consentUser,
-            $scopes = @(),
-            $roles = @(),
-            $ConsentRequiredPermissions
-        ) {
-            $targetPermissions = if ( ! $ConsentRequiredPermissions ) {
-                $scopes + $roles
-            } else {
-                $permissions = @()
-                $graphResourceAccess = $app.requiredResourceAccess | where resourceAppid -eq 00000003-0000-0000-c000-000000000000
-
-                $graphResourceAccess.resourceAccess | foreach {
-                    $permissionId = $_.id
-                    $permissionName = $::.ScopeHelper |=> GraphPermissionIdToName $permissionId
-                    $permissions += $permissionName
-                }
-                $permissions
-            }
-            __NewOauth2Grant $app.appId ($targetPermissions -join ' ') $consentUser
-        }
-
-        function __NewOauth2Grant($appId, [string] $permissionName, $consentUserId) {
-            $appSP = GetAppServicePrincipal $appId
-
-            if ( ! $appSP ) {
-                throw "Application '$AppId' was not found"
-            }
-
-            $consentType = if ( $consentUserId ) {
-                'Principal'
-            } else {
-                'AllPrincipals'
-            }
-
-            @{
-                clientId = $appSP.id
-                consentType = $consentType
-                resourceId = $::.ScopeHelper |=> GetGraphServicePrincipalId
-                principalId = $consentUserId
-                scope = $permissionName
-                startTime = (([DateTime]::UtcNow) - ([TimeSpan]::FromDays(1))).tostring('s')
-                expiryTime = (([DateTime]::UtcNow) + ([TimeSpan]::FromDays(365))).tostring('s')
-            }
-        }
-    }
-
     $applicationObject = $null
     $ObjectId = $null
     $AppId = $null
+    $AppAPI = $null
 
-    function __initialize($displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isAppOnly, $redirectUris) {
-        $newApp = __NewApp @psboundparameters
+    function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isAppOnly, $redirectUris) {
+        $this.AppAPI = $appAPI
+
+        $appParameters = @{
+            displayName = $displayName
+            infoUrl = $infoUrl
+            tags = $tags
+            tenancy =$tenancy
+            aadAccountsOnly = $aadAccountsOnly
+            appOnlyPermissions = $appOnlyPermissions
+            delegatedPermissions = $delegatedPermissions
+        }
+
+        $newApp = __NewApp @appParameters
 
         if ( ! $isAppOnly ) {
-            __SetPublicApp $newApp $redirectUris
+#            __SetPublicApp $newApp $redirectUris
         } else {
             __SetConfidentialApp $newApp $redirectUris
         }
@@ -206,16 +51,17 @@ ScriptClass GraphApplicationRegistration {
             Throw "Application '$($this.Application.displayName)' is already registered with appId '$($this.AppId)' and objectId '$($this.ObjectId)'"
         }
 
-        $appBody = [PSCustomObject] $this.ApplicationObject
-        $appObject = Invoke-GraphRequest applications -method POST -body $appBody -version $this.scriptclass.DefaultApplicationApiVersion
-        $this.ObjectId = $appObject.id
-        $this.AppId = $appObject.appId
+        $appObject = [PSCustomObject] $this.ApplicationObject
+        $newApp = $this.AppAPI |=> CreateApp $appObject
 
-        $appObject
+        $this.ObjectId = $newApp.id
+        $this.AppId = $newApp.appId
+
+        $newApp
     }
 
     function Register($skipRequiredResourcePermissions, $tenantConsent, $userConsentRequired, $userIdToConsent, $permissions) {
-        $app = $this.scriptclass |=> RegisterApplication $this.AppId
+        $app = $this.AppAPI |=> RegisterApplication $this.AppId
 
         $scopes = $permissions
         $roles = $null
@@ -225,7 +71,7 @@ ScriptClass GraphApplicationRegistration {
             $scopes = $null
         }
 
-        $this.scriptclass |=> SetConsent $app $scopes $roles (! $skipRequiredResourcePermissions) $tenantConsent $userConsentRequired $userIdToConsent
+        $this.AppAPI |=> SetConsent $app $scopes $roles (! $skipRequiredResourcePermissions) $tenantConsent $userConsentRequired $userIdToConsent
 
         $app
     }

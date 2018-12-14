@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../graphservice/GraphApplicationRegistration)
+. (import-script ../graphservice/ApplicationAPI)
 . (import-script ../common/GraphApplicationCertificate)
 . (import-script common/PermissionParameterCompleter)
+. (import-script common/CommandContext)
 
 function New-GraphApplicationCertificate {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='high', positionalbinding=$false)]
@@ -60,12 +61,16 @@ function New-GraphApplicationCertificate {
     $targetApp = $Application
     $targetObjectId = $ObjectId
 
+    $commandContext = new-so CommandContext $connection $version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
+
+    $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
+
     $targetApp = if ( $Application ) {
         $Application
     } elseif( $AppId ) {
-        $::.GraphApplicationRegistration |=> GetApplicationByAppId $AppId
+        $appAPI |=> GetApplicationByAppId $AppId
     } elseif ( $ObjectId) {
-        $::.GraphApplicationRegistration |=> GetApplicationByObjectId $ObjectId
+        $appAPI |=> GetApplicationByObjectId $ObjectId
     }
 
     if ( ! $pscmdlet.shouldprocess("Application id=$($targetApp.AppId)", 'DESTRUCTIVE overwrite of existing certificates due to current defects in the Graph API') ) {
@@ -76,7 +81,7 @@ function New-GraphApplicationCertificate {
     $certificate |=> Create
 
     try {
-        $::.GraphApplicationRegistration |=> AddKeyCredentials $targetApp $certificate | out-null
+        $appAPI |=> AddKeyCredentials $targetApp $certificate | out-null
     } catch {
         $certificate.X509Certificate | rm
         throw

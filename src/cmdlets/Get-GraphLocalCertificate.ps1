@@ -17,7 +17,7 @@
 function Get-GraphLocalCertificate {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='appid')]
     param(
-        [parameter(position=0, parametersetname='appid')]
+        [parameter(position=0, parametersetname='appid', valuefrompipelinebypropertyname=$true)]
         [Guid] $AppId,
 
         [parameter(parametersetname='byname', mandatory=$true)]
@@ -29,5 +29,11 @@ function Get-GraphLocalCertificate {
         $CertStoreLocation = 'cert:/currentuser/my'
     )
 
-    $::.GraphApplicationCertificate |=> FindAppCertificate $AppId $CertStoreLocation $Name $ObjectId
+    begin {}
+
+    process {
+        $::.GraphApplicationCertificate |=> FindAppCertificate $AppId $CertStoreLocation $Name $ObjectId
+    }
+
+    end {}
 }

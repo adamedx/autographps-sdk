@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../graphservice/GraphApplicationRegistration)
-. (import-script Invoke-GraphRequest)
+. (import-script ../graphservice/ApplicationAPI)
+. (import-script common/CommandContext)
 
 function Remove-GraphApplicationCertificate {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='High', positionalbinding=$false)]
@@ -54,15 +54,8 @@ function Remove-GraphApplicationCertificate {
     begin {
         throw [NotImplementedException]::new("This method is not yet implemented due to missing functionality in the Graph application API")
 
-        $commonRequestArguments = @{
-            Version = $::.GraphApplicationRegistration.DefaultApplicationApiVersion
-            Permissions = $Permissions
-            Cloud = $Cloud
-        }
-
-        if ( $connection ) {
-            $commonRequestArguments['Connection'] = $Connection
-        }
+        $commandContext = new-so CommandContext $connection $version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
+        $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
     }
 
     process {
@@ -76,7 +69,7 @@ function Remove-GraphApplicationCertificate {
             throw [ArgumentException]::new("An AppId with Thumbprint or KeyId was not specified or AllCertificates was not specified")
         }
 
-        $keyCredentials = $::.ApplicationHelper |=> QueryApplications $AppId $null $null $null $null $version $permissions $Cloud $connection keyCredentials |
+        $keyCredentials = $::.ApplicationHelper |=> QueryApplications $AppId $null $null $null $null $commandContext.version $null null $commandContext.connection keyCredentials |
           select -expandproperty keyCredentials
 
         $keyToRemove = if ( ! $keyCredentials -and ! ($keyCredentials | gm id -erroraction silentlycontinue ) ) {
@@ -92,7 +85,7 @@ function Remove-GraphApplicationCertificate {
 
         $remainingCredentials = $keyCredentials | where KeyId -ne $keyToRemove.keyId
 
-        $::.GraphApplicationRegistration |=> SetKeyCredentials $AppId $remainingCredentials
+        $appAPI |=> SetKeyCredentials $AppId $remainingCredentials
     }
 
     end {}

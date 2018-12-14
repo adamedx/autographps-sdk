@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../cmdlets/Invoke-GraphRequest)
-. (import-script ../graphservice/GraphApplicationRegistration)
 . (import-script common/ApplicationHelper)
 
 function Get-GraphApplication {

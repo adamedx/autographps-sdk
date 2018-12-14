@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../cmdlets/Invoke-GraphRequest)
-. (import-script ../graphservice/GraphApplicationRegistration)
 . (import-script common/ApplicationHelper)
 
-function Get-GraphApplicationCertificate {
+Function Get-GraphApplicationCertificate {
     [cmdletbinding(defaultparametersetname='appid', positionalbinding=$false)]
     param (
         [parameter(parametersetname='appid', position=0, mandatory=$true)]
@@ -74,14 +72,16 @@ function Get-GraphApplicationCertificate {
             $AppId
         }
 
-        $keyCredentials = $::.ApplicationHelper |=> QueryApplications $targetAppId $null $null $null $RawContent $version $permissions $Cloud $connection keyCredentials
+        $app = $::.ApplicationHelper |=> QueryApplications $targetAppId $null $null $null $RawContent $version $permissions $Cloud $connection keyCredentials
 
-        if ( ! $RawContent.IsPresent ) {
-            $keyCredentials | select -expandproperty keycredentials | foreach {
-                $::.ApplicationHelper |=> KeyCredentialToDisplayableObject $_ $targetAppId
-            } | sort NotAfter
-        } else {
-            $keyCredentials
+        if ( $app -and ( $app | select -expandproperty KeyCredentials -erroraction silentlycontinue ) ) {
+            if ( ! $RawContent.IsPresent ) {
+                $app | select -expandproperty keycredentials | foreach {
+                    $::.ApplicationHelper |=> KeyCredentialToDisplayableObject $_ $targetAppId
+                } | sort NotAfter
+            } else {
+                $keyCredentials
+            }
         }
     }
 

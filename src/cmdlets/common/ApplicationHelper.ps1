@@ -53,7 +53,7 @@ ScriptClass ApplicationHelper {
             $apiVersion = if ( $Version ) {
                 $Version
             } else {
-                $::.GraphApplicationRegistration.DefaultApplicationApiVersion
+                $::.ApplicationAPI.DefaultApplicationApiVersion
             }
 
             $uri = '/Applications'
@@ -79,9 +79,9 @@ ScriptClass ApplicationHelper {
                 $requestArguments['Connection'] = $connection
             }
 
+            write-verbose "Querying for applications at version $apiVersion' with uri '$uri, filter '$filter', select '$select'"
             Invoke-GraphRequest -Method $queryMethod -RelativeUri $uri @requestArguments -version $apiVersion
         }
-
     }
 }
 

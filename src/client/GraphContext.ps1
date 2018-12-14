@@ -146,7 +146,7 @@ ScriptClass GraphContext {
         }
 
         function GetDefaultVersion {
-            'v1.0'
+            $::.GraphEndpoint.DefaultGraphAPIVersion
         }
 
         function __IsContextConnected($context) {

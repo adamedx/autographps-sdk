@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../cmdlets/Invoke-GraphRequest)
-. (import-script ../graphservice/GraphApplicationRegistration)
+. (import-script ../graphservice/ApplicationAPI)
 
 function Remove-GraphApplicationConsent {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='specificprincipal')]
@@ -21,7 +20,7 @@ function Remove-GraphApplicationConsent {
         [parameter(position=0, mandatory=$true)]
         $AppId,
 
-        [string[]] $Permissions,
+        [string[]] $RemovedPermissions,
 
         [parameter(parametersetname='entiretenant')]
         [switch] $Tenant,
@@ -33,7 +32,10 @@ function Remove-GraphApplicationConsent {
         $Principal
     )
 
-    $appSP = $::.GraphApplicationRegistration |=> GetAppServicePrincipal $AppId
+    $commandContext = new-so CommandContext $null $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+    $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
+
+    $appSP = $appAPI |=> GetAppServicePrincipal $AppId
     $appSPId = $appSP.id
 
     $appFilter = "clientId eq '$appSPId'"
@@ -53,17 +55,17 @@ function Remove-GraphApplicationConsent {
 
     $filterArgument = @{ ODataFilter = $filter }
 
-    $grants = Invoke-GraphRequest /oauth2PermissionGrants -method GET -ODataFilter $filter -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion
+    $grants = $commandContext |=> InvokeRequest -uri oauth2PermissionGrants -RESTmethod GET -ODataFilter $filter
 
-    if ( $grants | gm id ) {
+    if ( $grants -and ( $grants | gm id ) ) {
         $grants | foreach {
-            if ( ! $permissions ) {
-                Invoke-GraphRequest "/oauth2PermissionGrants/$($_.id)" -method DELETE -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion | out-null
+            if ( ! $RemovedPermissions ) {
+                $commandContext |=> InvokeRequest -uri "/oauth2PermissionGrants/$($_.id)" -RESTmethod DELETE | out-null
             } else {
-                $reducedPermissions = GetReducedPermissionsString $_.scope $permissions
+                $reducedPermissions = GetReducedPermissionsString $_.scope $RemovedPermissions
                 if ( $reducedPermissions ) {
                     $updatedScope = @{scope = $reducedPermissions}
-                    Invoke-GraphRequest "/oauth2PermissionGrants/$($_.id)" -method PATCH -body $updatedScope -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion | out-null
+                    $commandContext |=> InvokeRequest "/oauht2PermissionGrants/$($_.id)" -RESTmethod PATCH -body $updatedScope | out-null
                 } else {
                     write-verbose "Requested permissions were not present in existing grant, no change is necessary, skipping update for grant id='$($_.id)'"
                 }

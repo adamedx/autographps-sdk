@@ -28,6 +28,7 @@
 * Make AppAPI version
 * Reuse keycredentials in addkeycredentials
 * Make common request arguments
+* fix scriptclass issue where argument names collide with the invoke method in scriptclass
 
 * Add app creation, enumeration, update
   * Support confidential client for user auth?

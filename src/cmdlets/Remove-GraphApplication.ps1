@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../graphservice/GraphApplicationRegistration)
-. (import-script Invoke-GraphRequest)
+. (import-script ../graphservice/ApplicationAPI)
+. (import-script common/CommandContext)
 
 function Remove-GraphApplication {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='High', positionalbinding=$false)]
@@ -56,15 +56,8 @@ function Remove-GraphApplication {
     begin {}
 
     process {
-        $commonRequestArguments = @{
-            Version = $::.GraphApplicationRegistration.DefaultApplicationApiVersion
-            Permissions = $Permissions
-            Cloud = $Cloud
-        }
-
-        if ( $connection ) {
-            $commonRequestArguments['Connection'] = $Connection
-        }
+        $commandContext = new-so CommandContext $connection $version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
+        $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
         $targetAppDescription = ''
         $appObjectId = $null
@@ -78,8 +71,7 @@ function Remove-GraphApplication {
                 throw [ArgumentException]::new("The specified App Id '$AppId' is not a valid guid")
             }
 
-            $appObject = Invoke-GraphRequest -Method GET '/applications' -odatafilter "appId eq '$AppId'" @commonRequestArguments
-
+            $appObject = $appAPI |=> GetApplicationByAppId $AppId
 
             if ( ! $appObject -or ! ( $appObject | gm id -erroraction silentlycontinue ) ) {
                 throw "Application with appid '$AppId' not found"
@@ -102,15 +94,11 @@ function Remove-GraphApplication {
             $appObjectId = $app.id
         }
 
-        $targetUri = "/applications/{0}" -f $appObjectId.tostring()
-
-        write-verbose "DELETE requested for application $($targetAppDescription)'at uri '$targetUri'"
-
-        if ( $Force.IsPresent -or $pscmdlet.shouldprocess($targetUri, 'DELETE') ) {
+        if ( $Force.IsPresent -or $pscmdlet.shouldprocess("Application AppId = $AppId, objectId = $appObjectId", 'DELETE') ) {
             if ( $Force.IsPresent ) {
                 write-verbose "Force option was specified to override confirmation, object will be deleted"
             }
-            Invoke-GraphRequest $targetUri -Method DELETE @commonRequestArguments | out-null
+            $appAPI |=> RemoveApplicationByObjectId $appObjectId
         }
     }
 

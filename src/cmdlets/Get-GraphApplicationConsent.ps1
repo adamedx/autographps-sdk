@@ -13,8 +13,9 @@
 # limitations under the License.
 
 . (import-script Invoke-GraphRequest)
-. (import-script ../graphservice/GraphApplicationRegistration)
+. (import-script ../graphservice/ApplicationAPI)
 . (import-script common/ConsentHelper)
+. (import-script common/CommandContext)
 
 function Get-GraphApplicationConsent {
     param(
@@ -29,15 +30,17 @@ function Get-GraphApplicationConsent {
         [parameter(parametersetname='specificprincipal', mandatory=$true)]
         $Principal
     )
+    $commandContext = new-so CommandContext $null $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+    $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
     $app = try {
-        $::.GraphApplicationRegistration |=> GetApplicationByAppId $AppId
+        $appAPI |=> GetApplicationByAppId $AppId
     } catch {
         throw [Exception]::new("Unable to find application with AppId '$AppId'", $_.exception)
     }
 
     $appSP = try {
-        $::.GraphApplicationRegistration |=> GetAppServicePrincipal $AppId
+        $appAPI |=> GetAppServicePrincipal $AppId
     } catch {
         throw [Exception]::new("Unable to find a service prinicpal for application with AppId '$AppId', the application may not yet have been accessed in this tenant", $_.exception)
     }
@@ -63,7 +66,7 @@ function Get-GraphApplicationConsent {
 
     $RawContentArgument = @{ RawContent = $RawContent }
 
-    $response = Invoke-GraphRequest /oauth2PermissionGrants -method GET -ODataFilter $filter -version $::.GraphApplicationRegistration.DefaultApplicationApiVersion @RawContentArgument
+    $response = Invoke-GraphRequest /oauth2PermissionGrants -method GET -ODataFilter $filter -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
 
     if ( $response ) {
         if ( ! $RawContent.IsPresent ) {

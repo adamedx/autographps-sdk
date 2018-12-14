@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../cmdlets/Invoke-GraphRequest)
-. (import-script ../graphservice/GraphApplicationRegistration)
+. (import-script ../graphservice/ApplicationAPI)
 . (import-script common/PermissionParameterCompleter)
+. (import-script common/CommandContext)
 
 function Set-GraphApplicationConsent {
     [cmdletbinding(defaultparametersetname='explicitscopes', positionalbinding = $false)]
@@ -35,9 +35,12 @@ function Set-GraphApplicationConsent {
 
         $UserIdToConsent
     )
-    $app = $::.GraphApplicationRegistration |=> GetApplicationByAppId $AppId
+    $commandContext = new-so CommandContext $null $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+    $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
-    $::.GraphApplicationRegistration |=> SetConsent $app $DelegatedPermissions $AppOnlyPermissions $AllPermissions.IsPresent $ConsentForTenant.IsPresent ($UserIdToConsent -ne $null) $UserIdToConsent
+    $app = $appAPI |=> GetApplicationByAppId $AppId
+
+    $appAPI |=> SetConsent $app $DelegatedPermissions $AppOnlyPermissions $AllPermissions.IsPresent $ConsentForTenant.IsPresent ($UserIdToConsent -ne $null) $UserIdToConsent
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent DelegatedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
