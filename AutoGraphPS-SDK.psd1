@@ -75,13 +75,13 @@ FunctionsToExport = @('Get-DynamicValidateSetParameter')
     CmdletsToExport = @(
         'Connect-Graph',
         'Disconnect-Graph',
+        'Find-GraphLocalCertificate',
         'Get-GraphApplication',
         'Get-GraphApplicationCertificate',
         'Get-GraphApplicationConsent',
         'Get-GraphConnectionStatus',
         'Get-GraphError',
         'Get-GraphItem',
-        'Get-GraphLocalCertificate',
         'Get-GraphSchema',
         'Get-GraphToken',
         'Get-GraphVersion',
@@ -132,13 +132,13 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\client\LogicalGraphManager.ps1',
         '.\src\cmdlets\Connect-Graph.ps1',
         '.\src\cmdlets\Disconnect-Graph.ps1',
+        '.\src\cmdlets\Find-GraphLocalCertificate.ps1',
         '.\src\cmdlets\Get-GraphApplication.ps1',
         '.\src\cmdlets\Get-GraphApplicationCertificate.ps1',
         '.\src\cmdlets\Get-GraphApplicationConsent.ps1',
         '.\src\cmdlets\Get-GraphConnectionStatus.ps1',
         '.\src\cmdlets\Get-Grapherror.ps1',
         '.\src\cmdlets\Get-Graphitem.ps1',
-        '.\src\cmdlets\Get-GraphLocalCertificate.ps1',
         '.\src\cmdlets\Get-GraphSchema.ps1',
         '.\src\cmdlets\Get-GraphToken.ps1',
         '.\src\cmdlets\Get-GraphVersion.ps1',
@@ -213,7 +213,7 @@ PrivateData = @{
 * New-GraphApplication: new cmdlet that creates a new Graph application!
 * Get-GraphApplication: this new cmdlet retrieves specified applications from the tenant
 * New-GraphLocalCertificate: new cmdlet that creates a certificate that can be used to authenticate Microsoft Graph applications
-* Get-GraphLocalCertificate: new cmdlet that enumerates certificates in the local cert store used for app-only authenticate with Graph
+* Find-GraphLocalCertificate: new cmdlet that enumerates certificates in the local cert store used for app-only authenticate with Graph
 * Get-GraphApplicationConsent: new cmdlet that lists consent grants for a Graph application
 * Remove-GraphApplication: new cmdlet that deletes applications
 * Remove-GraphApplicationConsent: new cmdlet that removes consent grants for a Graph application

@@ -14,7 +14,7 @@
 
 . (import-script ../common/GraphApplicationCertificate)
 
-function Get-GraphLocalCertificate {
+function Find-GraphLocalCertificate {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='appid')]
     param(
         [parameter(position=0, parametersetname='appid', valuefrompipelinebypropertyname=$true)]
