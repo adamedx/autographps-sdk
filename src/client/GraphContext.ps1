@@ -65,18 +65,18 @@ ScriptClass GraphContext {
             $this.scriptclass |=> GetConnection
         }
 
-        if ( $this.connection |=> IsConnected ) {
-            write-verbose 'Disconnecting existing context connection'
-            $this.connection |=> Disconnect
-        } else {
-            write-verbose 'Skipping disconnect as exiting context connection is not connected'
-        }
-
         write-verbose 'Connecting...'
 
         $newConnection |=> Connect
 
         write-verbose 'Connection succeeded.'
+
+        if ( $this.connection |=> IsConnected ) {
+            write-verbose 'Disconnecting existing context connection'
+            $this.connection |=> Disconnect
+        } else {
+            write-verbose 'Skipping disconnect as existing context connection is not connected'
+        }
 
         $this.connection = $newConnection
     }
