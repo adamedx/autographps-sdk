@@ -132,8 +132,8 @@ function New-GraphApplication {
             $certificate |=> Create
             $appAPI |=> AddKeyCredentials $newApp $certificate | out-null
         } catch {
-            $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | rm -erroraction silentlycontinue
-            $appAPI |=> RemoveApplicationByObjectId $newApp.Id silentlycontinue
+            $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | rm -erroraction ignore
+            $appAPI |=> RemoveApplicationByObjectId $newApp.Id ignore
             throw
         }
     }

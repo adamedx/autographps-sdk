@@ -50,8 +50,10 @@ ScriptClass ScopeHelper {
 
         function ValidatePermissions([string[]] $permissions, [boolean] $isNoninteractive = $false, [boolean] $allowPermissionIdGuid = $false) {
             $type = if ( $isNoninteractive ) { 'Role' } else { 'Scope' }
-            $permissions | foreach {
-                GraphPermissionNameToId $_ $type $null $allowPermissionIdGuid | out-null
+            if ( $permissions ) {
+                $permissions | foreach {
+                    GraphPermissionNameToId $_ $type $null $allowPermissionIdGuid | out-null
+                }
             }
         }
 

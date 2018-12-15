@@ -18,16 +18,19 @@
 . (import-script common/CommandContext)
 
 function Get-GraphApplicationConsent {
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='TenantOrSpecificPrincipal')]
     param(
-        [parameter(position=0, mandatory=$true)]
-        $AppId,
+        [parameter(position=0, valuefrompipelinebypropertyname = $true, mandatory=$true)]
+        [Guid] $AppId,
 
-        [parameter(parametersetname='entiretenant')]
+        [parameter(parametersetname='entiretenant', mandatory=$true)]
+        [parameter(parametersetname='TenantOrSpecificPrinicpal')]
         [switch] $Tenant,
 
         [switch] $RawContent,
 
         [parameter(parametersetname='specificprincipal', mandatory=$true)]
+        [parameter(parametersetname='TenantOrSpecificPrinicpal')]
         $Principal
     )
     $commandContext = new-so CommandContext $null $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
@@ -70,7 +73,7 @@ function Get-GraphApplicationConsent {
 
     if ( $response ) {
         if ( ! $RawContent.IsPresent ) {
-            if ( $response | gm id -erroraction silentlycontinue ) {
+            if ( $response | gm id -erroraction ignore ) {
                 $response | foreach {
                     $::.ConsentHelper |=> ToDisplayableObject $_
                 }

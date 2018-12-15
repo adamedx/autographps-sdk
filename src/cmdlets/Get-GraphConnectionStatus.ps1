@@ -29,7 +29,7 @@ function Get-GraphConnectionStatus {
             if (! $specificContext ) {
                 throw "The specified Graph '$Graph' could not be found"
             }
-        } elseif ( $graph | gm Details -erroraction silentlycontinue ) {
+        } elseif ( $graph | gm Details -erroraction ignore ) {
             $Graph.details
         } else {
             throw "Specified Graph argument '$Graph' is not a valid type returned by Get-Graph"

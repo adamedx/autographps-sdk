@@ -2,6 +2,9 @@
 
 ## To-do items -- prioritized
 
+* Fix Connect-Graph failure mode to not disconnect you first, only after getting token
+* Add full pipeline support to consent commands
+* Change get-graphlocalcertificate to find-graphlocalcertificate
 * Make new-graphapplication explicitly use confidential / public
 * Add times to new-graphapplication and new-localgraphcertificate
 * Possibly remove query support from Remove-GraphItem if queries on DELETE method are not supported

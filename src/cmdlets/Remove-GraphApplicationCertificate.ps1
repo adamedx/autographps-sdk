@@ -72,7 +72,7 @@ function Remove-GraphApplicationCertificate {
         $keyCredentials = $::.ApplicationHelper |=> QueryApplications $AppId $null $null $null $null $commandContext.version $null null $commandContext.connection keyCredentials |
           select -expandproperty keyCredentials
 
-        $keyToRemove = if ( ! $keyCredentials -and ! ($keyCredentials | gm id -erroraction silentlycontinue ) ) {
+        $keyToRemove = if ( ! $keyCredentials -and ! ($keyCredentials | gm id -erroraction ignore ) ) {
             throw [ArgumentException]::new("No certificates could be found for AppId '$AppId'")
         } else {
             $keyCredentials | gm | out-host

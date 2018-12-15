@@ -19,8 +19,8 @@
 function Set-GraphApplicationConsent {
     [cmdletbinding(defaultparametersetname='explicitscopes', positionalbinding = $false)]
     param(
-        [parameter(position=0, mandatory=$true)]
-        $AppId,
+        [parameter(position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Guid] $AppId,
 
         [parameter(parametersetname='explicitscopes')]
         [string[]] $DelegatedPermissions,

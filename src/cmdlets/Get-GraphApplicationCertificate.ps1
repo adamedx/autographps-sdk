@@ -74,7 +74,7 @@ Function Get-GraphApplicationCertificate {
 
         $app = $::.ApplicationHelper |=> QueryApplications $targetAppId $null $null $null $RawContent $version $permissions $Cloud $connection keyCredentials
 
-        if ( $app -and ( $app | select -expandproperty KeyCredentials -erroraction silentlycontinue ) ) {
+        if ( $app -and ( $app | select -expandproperty KeyCredentials -erroraction ignore ) ) {
             if ( ! $RawContent.IsPresent ) {
                 $app | select -expandproperty keycredentials | foreach {
                     $::.ApplicationHelper |=> KeyCredentialToDisplayableObject $_ $targetAppId

@@ -20,7 +20,7 @@ function __GetResultVariable( $customVariableName ) {
         $__DefaultResultVariable.value = $null
         $__DefaultResultVariable
     } else {
-        $existingVariable = get-variable -scope 2 $customVariableName -erroraction silentlycontinue
+        $existingVariable = get-variable -scope 2 $customVariableName -erroraction ignore
 
         if ( $existingVariable ) {
             $existingVariable

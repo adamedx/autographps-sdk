@@ -60,7 +60,7 @@ ScriptClass ApplicationAPI {
             [PSCustomObject] @{
                 keyCredentials = $keyCredentials
             }
-        ) | convertto-json -depth 20
+        ) | convertto-json -depth 6
 
         Invoke-GraphRequest "applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.version -connection $this.connection
     }
@@ -185,7 +185,7 @@ ScriptClass ApplicationAPI {
     function __NewOauth2Grant($appId, [string] $permissionName, $consentUserId) {
         $appSP = GetAppServicePrincipal $appId
 
-        if ( ! $appSP -or ! ($appSP | gm id -erroraction silentlycontinue) ) {
+        if ( ! $appSP -or ! ($appSP | gm id -erroraction ignore) ) {
             throw "Application '$AppId' was not found"
         }
 

@@ -80,12 +80,12 @@ function Remove-GraphApplication {
             $targetAppDescription = "with app id '$AppId' "
             $appObjectId = $appObject.id
         } else {
-            if ( ! ( $app | gm id -erroraction silentlycontinue ) ) {
+            if ( ! ( $app | gm id -erroraction ignore ) ) {
                 throw [ArgumentException]::new("Specified pipeline object was not a valid graph object")
             }
 
             # Make sure it's an app -- it must at least have an appId property
-            if ( ! ( $app | gm appid -erroraction silentlycontinue ) ) {
+            if ( ! ( $app | gm appid -erroraction ignore ) ) {
                 throw [ArgumentException]::new("Specified pipeline object was not a valid application object")
             }
 

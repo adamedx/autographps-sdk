@@ -32,9 +32,9 @@ ScriptClass RESTResponse {
         $this.rawContentLength = $webResponse.rawContentLength
         $this.headers = $webResponse.headers
         $this.content = $webResponse.content
-        $this.images = if ( $webResponse | gm images -erroraction silentlycontinue ) { $webResponse.images } else { $null }
-        $this.inputFields = if ( $webResponse | gm inputfields -erroraction silentlycontinue ) { $webResponse.inputfields } else { $null }
-        $this.links = if ( $webResponse | gm links -erroraction silentlycontinue ) { $webResponse.links } else { $null }
+        $this.images = if ( $webResponse | gm images -erroraction ignore ) { $webResponse.images } else { $null }
+        $this.inputFields = if ( $webResponse | gm inputfields -erroraction ignore ) { $webResponse.inputfields } else { $null }
+        $this.links = if ( $webResponse | gm links -erroraction ignore ) { $webResponse.links } else { $null }
         $this.RequiredContentType = $requiredContentType
 
         SetContentTypeData

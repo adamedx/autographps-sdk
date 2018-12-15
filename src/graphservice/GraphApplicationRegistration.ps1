@@ -38,7 +38,7 @@ ScriptClass GraphApplicationRegistration {
         $newApp = __NewApp @appParameters
 
         if ( ! $isAppOnly ) {
-#            __SetPublicApp $newApp $redirectUris
+            __SetPublicApp $newApp $redirectUris
         } else {
             __SetConfidentialApp $newApp $redirectUris
         }

@@ -266,7 +266,7 @@ function Invoke-GraphRequest {
             try {
                 $request |=> Invoke $skipCount
             } catch [System.Net.WebException] {
-                $statusCode = if ( $_.exception.response | gm statuscode -erroraction silentlycontinue ) {
+                $statusCode = if ( $_.exception.response | gm statuscode -erroraction ignore ) {
                     $_.exception.response.statuscode
                 }
 

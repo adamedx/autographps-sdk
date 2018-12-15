@@ -17,7 +17,7 @@ ScriptClass DisplayTypeFormatter {
 
     static {
         function __RegisterDisplayType($displayTypeName, $displayProperties) {
-            remove-typedata -typename $displayTypeName -erroraction silentlycontinue
+            remove-typedata -typename $displayTypeName -erroraction ignore
 
             $DisplayTypeArguments = @{
                 TypeName    = $displayTypeName
