@@ -138,7 +138,7 @@ ScriptClass ApplicationAPI {
             $userIdToConsent
         } elseif ( ! $consentForTenant ) {
             write-verbose "No user was specified for consent, and consent for the entire tenant was not specified, so consent will be made for the user making this Graph API call"
-            $userObjectId = ('GraphContext' |::> GetConnection).Identity.GetUserInformation().userObjectId
+            $userObjectId = $this.connection.Identity.GetUserInformation().userObjectId
             if ( ! $userObjectId -and $userConsentRequired ) {
                 throw "User consent required but no user was specified and user id of current user could not be obtained"
             }
@@ -173,7 +173,7 @@ ScriptClass ApplicationAPI {
 
             $graphResourceAccess.resourceAccess | foreach {
                 $permissionId = $_.id
-                $permissionName = $::.ScopeHelper |=> GraphPermissionIdToName $permissionId
+                $permissionName = $::.ScopeHelper |=> GraphPermissionIdToName $permissionId $null $this.connection
                 $permissions += $permissionName
             }
             $permissions
@@ -198,7 +198,7 @@ ScriptClass ApplicationAPI {
         @{
             clientId = $appSP.id
             consentType = $consentType
-            resourceId = $::.ScopeHelper |=> GetGraphServicePrincipalId
+            resourceId = $::.ScopeHelper |=> GetGraphServicePrincipalId $this.connection
             principalId = $consentUserId
             scope = $permissionName
             startTime = (([DateTime]::UtcNow) - ([TimeSpan]::FromDays(1))).tostring('s')

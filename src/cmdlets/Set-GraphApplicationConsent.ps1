@@ -23,19 +23,46 @@ function Set-GraphApplicationConsent {
         [Guid] $AppId,
 
         [parameter(parametersetname='explicitscopes')]
+        [parameter(parametersetname='explicitscopesexistingconnection')]
+        [parameter(parametersetname='explicitscopesnewconnection')]
+        [parameter(parametersetname='explicitscopesnewconnectioncloud')]
         [string[]] $DelegatedPermissions,
 
         [parameter(parametersetname='explicitscopes')]
+        [parameter(parametersetname='explicitscopesexistingconnection')]
+        [parameter(parametersetname='explicitscopesnewconnection')]
+        [parameter(parametersetname='explicitscopesnewconnectioncloud')]
         [string[]] $AppOnlyPermissions,
 
         [parameter(parametersetname='allconfiguredpermissions', mandatory=$true)]
+        [parameter(parametersetname='allconfiguredpermissionsexistingconnection', mandatory=$true)]
+        [parameter(parametersetname='allconfiguredpermissionsnewconnection', mandatory=$true)]
+        [parameter(parametersetname='allconfiguredpermissionsnewconnectioncloud', mandatory=$true)]
         [switch] $AllPermissions,
 
         [switch] $ConsentForTenant,
 
-        $UserIdToConsent
+        $UserIdToConsent,
+
+        [parameter(parametersetname='allconfiguredpermissionsexistingconnection', mandatory=$true)]
+        [parameter(parametersetname='explicitscopesexistingconnection', mandatory=$true)]
+        $Connection,
+
+        [parameter(parametersetname='allconfiguredpermissionsnewconnection', mandatory=$true)]
+        [parameter(parametersetname='explicitscopesnewconnection', mandatory=$true)]
+        [parameter(parametersetname='allconfiguredpermissionsnewconnectioncloud', mandatory=$true)]
+        [parameter(parametersetname='explicitscopesnewconnectioncloud', mandatory=$true)]
+        $Permissions,
+
+        [parameter(parametersetname='allconfiguredpermissionsnewconnection')]
+        [parameter(parametersetname='allconfiguredpermissionsnewconnectioncloud', mandatory=$true)]
+        [parameter(parametersetname='explicitscopesnewconnection')]
+        [parameter(parametersetname='explicitscopesnewconnectioncloud', mandatory=$true)]
+        [GraphCloud] $Cloud = [GraphCloud]::Public,
+
+        $Version
     )
-    $commandContext = new-so CommandContext $null $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+    $commandContext = new-so CommandContext $Connection $Version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
     $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
     $app = $appAPI |=> GetApplicationByAppId $AppId
@@ -46,3 +73,5 @@ function Set-GraphApplicationConsent {
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent DelegatedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent AppOnlyPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AppOnlyPermission))
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

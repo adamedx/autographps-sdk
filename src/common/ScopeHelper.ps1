@@ -48,21 +48,17 @@ ScriptClass ScopeHelper {
             $this.sortedGraphAppOnlyPermissions = @() + $sortedRoleList.keys
         }
 
-        function ValidatePermissions([string[]] $permissions, [boolean] $isNoninteractive = $false, [boolean] $allowPermissionIdGuid = $false) {
+        function ValidatePermissions([string[]] $permissions, [boolean] $isNoninteractive = $false, [boolean] $allowPermissionIdGuid = $false, $connection ) {
             $type = if ( $isNoninteractive ) { 'Role' } else { 'Scope' }
             if ( $permissions ) {
                 $permissions | foreach {
-                    GraphPermissionNameToId $_ $type $null $allowPermissionIdGuid | out-null
+                    GraphPermissionNameToId $_ $type $connection $allowPermissionIdGuid | out-null
                 }
             }
         }
 
         function GetKnownPermissionsSorted($connection, $graphAppAuthType) {
-            $activeConnection = if ( $connection -and ( $connection |=> IsConnected ) ) {
-                $connection
-            }
-
-            __InitializeGraphScopes $activeConnection
+            __InitializeGraphScopes $connection
             if ( $this.sortedGraphPermissions ) {
                 if ( ! $graphAppAuthType ) {
                     $this.sortedGraphPermissions
@@ -138,19 +134,20 @@ ScriptClass ScopeHelper {
             }
         }
 
-        function GetGraphServicePrincipalId {
-            __InitializeGraphScopes
+        function GetGraphServicePrincipalId($connection) {
+            if ( ! $connection ) {
+                throw [ArgumentException]::("No connection specified to retrieve the Graph service principal")
+            }
+            __InitializeGraphScopes $connection
+
+            if ( ! $this.retrievedScopesFromGraphService ) {
+                throw "Unable to reach Graph service to retrieve Graph service principal"
+            }
             $this.graphSP.Id
         }
 
         function GraphPermissionNameToId($name, [ValidateSet('Scope', 'Role')] $type, $connection, $allowPermissionIdGuid = $false) {
-            $graphConnection = if ( $connection ) {
-                $connection
-            } else {
-                'GraphContext' |::> GetConnection
-            }
-
-            __InitializeGraphScopes $graphConnection
+            __InitializeGraphScopes $connection
 
             $authDescription = $null
             $otherCollection = $null
@@ -185,13 +182,7 @@ ScriptClass ScopeHelper {
         }
 
         function GraphPermissionIdToName($permissionId, $type, $connection) {
-            $graphConnection = if ( $connection ) {
-                $connection
-            } else {
-                'GraphContext' |::> GetConnection
-            }
-
-            __InitializeGraphScopes $graphConnection
+            __InitializeGraphScopes $connection
 
             $permission = $this.permissionsByIds[$permissionId]
 
@@ -221,15 +212,21 @@ ScriptClass ScopeHelper {
                 return
             }
 
+            $graphConnection = if ( $connection ) {
+                if ( $connection |=> IsConnected ) {
+                    $connection
+                }
+            }
+
             $retrievedFromService = $false
-            $graphSP = if ( $connection ) {
+            $graphSP = if ( $graphConnection ) {
                 $graphSPResponse = try {
                     # ScriptClass has an apparent problem with string interpolation using $this
                     # in string interpolation in the context of PowerShell argument completion
                     # via dynamic parameters, so get $this.GraphApplicationId into a local
                     # variable as a workaround.
                     $graphAppId = $this.GraphApplicationId
-                    $graphSPRequest = new-so GraphRequest $connection "/beta/servicePrincipals" GET $null "`$filter=appId eq '$graphAppId'"
+                    $graphSPRequest = new-so GraphRequest $graphConnection "/beta/servicePrincipals" GET $null "`$filter=appId eq '$graphAppId'"
                     $graphSPRequest |=> Invoke
                 } catch {
                 }

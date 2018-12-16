@@ -2,7 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Fix Connect-Graph failure mode to not disconnect you first, only after getting token
+* Whoa -- add scriptclass feature to generate unique hash codes (use psobject.members.gethashcode(), assuming it stays stable)
+* Remove __GetSimpleConnection
 * Add full pipeline support to consent commands
 * Make new-graphapplication explicitly use confidential / public
 * Add times to new-graphapplication and new-localgraphcertificate
@@ -173,8 +174,9 @@
   * Graph resource
 * Graphlets -- modules built on this that expose specific parts of the graph
 * Handle 403's in get-graphchilditem
- Add user consent, tenant consent options to set-graphconsent and new-graphapplication
- 
+* Add user consent, tenant consent options to set-graphconsent and new-graphapplication
+* Fix Connect-Graph failure mode to not disconnect you first, only after getting token
+
 ### Done
 
 * get-graphschema

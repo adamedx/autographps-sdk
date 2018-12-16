@@ -102,13 +102,12 @@ function New-GraphApplication {
             throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'UserIdToConsent' or 'ConsentForTenant' is specified")
         }
     }
+    $commandContext = new-so CommandContext $Connection $Version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
 
-    $commandContext = new-so CommandContext $Connection $Version $GrantedPermissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
+    $::.ScopeHelper |=> ValidatePermissions $GrantedPermissions $NoninteractiveAppOnlyAuth.IsPresent $SkipPermissionNameCheck.IsPresent $commandContext.connection
 
-    $::.ScopeHelper |=> ValidatePermissions $GrantedPermissions $NoninteractiveAppOnlyAuth.IsPresent $SkipPermissionNameCheck.IsPresent
-
-    $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $GrantedPermissions}
-    $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $GrantedPermissions}
+    $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $GrantedPermissions $commandContext.Connection }
+    $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $GrantedPermissions $commandContext.Connection }
 
     $computedTenancy = if ( $Tenancy -ne ([AppTenancy]::Auto) ) {
         $Tenancy
@@ -149,3 +148,5 @@ function New-GraphApplication {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication GrantedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

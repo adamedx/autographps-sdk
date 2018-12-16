@@ -75,7 +75,6 @@ function Remove-GraphApplicationCertificate {
         $keyToRemove = if ( ! $keyCredentials -and ! ($keyCredentials | gm id -erroraction ignore ) ) {
             throw [ArgumentException]::new("No certificates could be found for AppId '$AppId'")
         } else {
-            $keyCredentials | gm | out-host
             $keyCredentials | where $keyClientFilter
         }
 

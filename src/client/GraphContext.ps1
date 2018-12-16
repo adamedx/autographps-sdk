@@ -190,7 +190,7 @@ ScriptClass GraphContext {
             } elseif ( $currentContext ) {
                 write-verbose "Found existing connection from current context '$($currentcontext.name)'"
                 if ( ( ! $cloud -or $currentContext.cloud -eq $cloud) -and
-                     (!$scopenames -or $scopenames -eq 'User.Read' -or ($scopenames -is [String[]] -and $scopenames.length -eq 1 -and $scopenames[0] -eq 'User.Read' )) -and
+                     (!$scopenames -or ($scopenames -is [String] -and $scopenames -eq 'User.Read') -or ($scopenames -is [String[]] -and $scopenames.length -eq 1 -and $scopenames[0] -eq 'User.Read' )) -and
                      ! $anonymous
                    ) {
                        write-verbose "Current context is compatible with supplied arguments, will use it"
@@ -218,7 +218,7 @@ ScriptClass GraphContext {
                 $namedArguments['ScopeNames'] = $connectionScopes
 
                 write-verbose "Custom arguments or no current context -- getting a new connection"
-                $newConnection = __GetSimpleConnection ([GraphType]::MSGraph) @namedArguments
+                $newConnection = $::.GraphConnection |=> NewSimpleConnection ([GraphType]::MSGraph) @namedArguments
                 if ( $chosenContext ) {
                     write-verbose ("Adding new connection to context '{0}'" -f $chosenContext.name)
                     $chosenContext.connection = $newConnection

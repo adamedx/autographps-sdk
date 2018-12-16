@@ -34,7 +34,9 @@ ScriptClass CommandContext {
         $this.connection = if ( $Connection ) {
             $Connection
         } else {
-            'GraphContext' |::> GetConnection $null $null $cloud $permissions
+            $currentConnection = 'GraphContext' |::> GetConnection $null $null $cloud $permissions
+            $currentConnection |=> Connect
+            $currentConnection
         }
     }
 
