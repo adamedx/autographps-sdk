@@ -92,7 +92,7 @@ ScriptClass GraphContext {
 
         function __initialize {
             $::.LogicalGraphManager |=> __initialize
-            $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null (__GetSimpleConnection ([GraphType]::MSGraph)) (GetDefaultVersion) $this.defaultContextName
+            $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null ($::.GraphConnection |=> NewSimpleConnection ([GraphType]::MSGraph) Public @('User.Read')) (GetDefaultVersion) $this.defaultContextName
             $this.current = $currentContext.Name
         }
 
@@ -151,29 +151,6 @@ ScriptClass GraphContext {
 
         function __IsContextConnected($context) {
             $context -and ($context.connection |=> IsConnected)
-        }
-
-        function __GetSimpleConnection([GraphCloud] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false) {
-            write-verbose "Connection request for Graph = '$graphType', Cloud = '$cloud', Anonymous = $($anonymous -eq $true)"
-            $graphScopes = if ( $scopenames ) {
-                write-verbose "Scopes requested:"
-                $scopenames | foreach {
-                    write-verbose "`t$($_)"
-                }
-                $scopenames
-            } else {
-                write-verbose "No scopes requested, using User.Read"
-                @('User.Read')
-            }
-
-            $currentContext = GetCurrent
-
-            $sessionConnection = GetCurrentConnection
-            if ( $graphType -eq [GraphType]::AADGraph -or ! (__IsContextConnected $currentContext) -or (! $anonymous -and ! $sessionConnection.identity)) {
-                $::.GraphConnection |=> NewSimpleConnection $graphType $cloud $graphScopes $anonymous
-            } else {
-                $sessionConnection
-            }
         }
 
         function GetConnection($connection = $null, $context = $null, $cloud = $null, [String[]] $scopenames = $null, $anonymous = $null) {
