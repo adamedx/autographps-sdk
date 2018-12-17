@@ -44,7 +44,7 @@ Describe "Poshgraph application" {
                 'Get-GraphApplication',
                 'Get-GraphApplicationCertificate',
                 'Get-GraphApplicationConsent',
-                'Get-GraphConnectionStatus',
+                'Get-GraphConnection',
                 'Get-GraphError',
                 'Get-GraphItem',
                 'Get-GraphSchema',

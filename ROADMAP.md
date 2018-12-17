@@ -3,19 +3,18 @@
 ## To-do items -- prioritized
 
 * Whoa -- add scriptclass feature to generate unique hash codes (use psobject.members.gethashcode(), assuming it stays stable)
-* Remove __GetSimpleConnection
 * Add full pipeline support to consent commands
+* Register-GraphApplication
+* Add confidential client to user auth for app creation and commands
 * Make new-graphapplication explicitly use confidential / public
 * Add times to new-graphapplication and new-localgraphcertificate
-* Possibly remove query support from Remove-GraphItem if queries on DELETE method are not supported
 * Make Uri argument a non-array
 * Add default graph connection
 * Add named graph connections
 * Add connection enumeration
-* Add Get-GraphConnection
+* Possibly remove query support from Remove-GraphItem if queries on DELETE method are not supported
 * Add retry to service principal creation
 * Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
-* Rename Get-GraphApplicationConsent to Get-GraphConsent
 * Add ScriptProperty computed fields to displayformatter?
 * Add return types to cmdlets
 * Change autographps to use dynamic scope implementation
@@ -34,18 +33,19 @@
 * fix scriptclass issue where argument names collide with the invoke method in scriptclass
 
 * Add app creation, enumeration, update
-  * Support confidential client for user auth?
+  * Support confidential client for user auth? Yes.
   * Support expiration time in certificate
-  * Set-GraphApplication
+  * Set-GraphApplication -- needed
+  * Register-GraphApplication -- needed
   * Get-GraphApplicationServicePrincipal ?
   * Register-GraphApplication ?
   * Get-GraphApplicationRegistration ?
   * Unregister-GraphApplication ?
   * New-GraphApplicationCertificate
   * Remove-GraphApplicationCertificate
-  * Set-GraphApplicationCertificate
+  * Set-GraphApplicationCertificate ?
   * Remove-GraphApplicationLocalCertificate ?
-  * Import-GraphApplicationLocalCertificate
+  * Import-GraphApplicationLocalCertificate ?
   * Set-GraphApplicationPermissions ?
 
 * Extend Get-GraphToken to support all scenarios, better formats
@@ -176,6 +176,7 @@
 * Handle 403's in get-graphchilditem
 * Add user consent, tenant consent options to set-graphconsent and new-graphapplication
 * Fix Connect-Graph failure mode to not disconnect you first, only after getting token
+* Remove __GetSimpleConnection
 
 ### Done
 
@@ -319,6 +320,7 @@
 * Remove-GraphApplication
 * Get-GraphApplicationCertificate
 * Change get-graphlocalcertificate to find-graphlocalcertificate
+* Rename Get-GraphConnection to Get-GraphConnection
 
 ### Postponed
 

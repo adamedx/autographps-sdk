@@ -18,7 +18,7 @@
 . (import-script cmdlets\Get-GraphApplication)
 . (import-script cmdlets\Get-GraphApplicationCertificate)
 . (import-script cmdlets\Get-GraphApplicationConsent)
-. (import-script cmdlets\Get-GraphConnectionStatus)
+. (import-script cmdlets\Get-GraphConnection)
 . (import-script cmdlets\Get-GraphError)
 . (import-script cmdlets\Get-GraphItem)
 . (import-script cmdlets\Get-GraphSchema)
