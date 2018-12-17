@@ -12,27 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script common/CommandContext)
 . (import-script ../graphservice/ApplicationAPI)
 
 function Remove-GraphApplicationConsent {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='specificprincipal')]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='simple')]
     param(
-        [parameter(position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='simple', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='existingconnection', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='newpermissions', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='newpermissionsandcloud', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='newcloud', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Guid] $AppId,
 
         [string[]] $RemovedPermissions,
 
-        [parameter(parametersetname='entiretenant')]
-        [switch] $Tenant,
+        [switch] $ConsentForTenant,
 
-        [parameter(parametersetname='allgrants')]
         [switch] $AllConsent,
 
-        [parameter(parametersetname='specificprincipal', position=1, mandatory=$true)]
-        $Principal
+        $ConsentForPrincipal,
+
+        [parameter(parametersetname='existingconnection', mandatory=$true)]
+        $Connection,
+
+        [parameter(parametersetname='newpermissions', mandatory=$true)]
+        [parameter(parametersetname='newpermissionsandcloud', mandatory=$true)]
+        $Permissions,
+
+        [parameter(parametersetname='newpermissionsandcloud', mandatory=$true)]
+        [parameter(parametersetname='newcloud', mandatory=$true)]
+        [GraphCloud] $Cloud = [GraphCloud]::Public,
+
+        $Version
     )
 
-    $commandContext = new-so CommandContext $null $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+    if ( $ConsentForTenant.IsPresent ) {
+        if ( $ConsentForPrincipal ) {
+            throw [ArgumentException]::new("The 'ConsentForTenant' option may not be specified when 'ConsentForTenant' is specified'")
+        }
+    }
+
+    $commandContext = new-so CommandContext $Connection $Version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
     $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
     $appSP = $appAPI |=> GetAppServicePrincipal $AppId
@@ -42,10 +63,10 @@ function Remove-GraphApplicationConsent {
     $filterClauses = @($appFilter)
 
     if ( ! $AllConsent.IsPresent ) {
-        $grantFilter = if ( $Tenant.IsPresent ) {
+        $grantFilter = if ( $ConsentForTenant.IsPresent ) {
             "consentType eq 'AllPrincipals'"
-        } elseif ( $Principal ) {
-            "consentType eq 'Principal' and principalId eq '$Principal'"
+        } elseif ( $ConsentForPrincipal ) {
+            "consentType eq 'Principal' and principalId eq '$ConsentForPrincipal'"
         }
 
         $filterClauses += $grantFilter
@@ -73,3 +94,7 @@ function Remove-GraphApplicationConsent {
         }
     }
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphApplicationConsent RemovedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphApplicationConsent Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

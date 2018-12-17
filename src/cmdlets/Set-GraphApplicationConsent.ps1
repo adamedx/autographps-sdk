@@ -17,9 +17,17 @@
 . (import-script common/CommandContext)
 
 function Set-GraphApplicationConsent {
-    [cmdletbinding(defaultparametersetname='explicitscopes', positionalbinding = $false)]
+    [cmdletbinding(defaultparametersetname='simple', positionalbinding = $false)]
     param(
-        [parameter(position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='simple', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='explicitscopes', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='explicitscopesandexistingconnection', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='explicitscopesnewconnection', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='explicitscopesnewconnectioncloud', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='allconfiguredpermissions', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='allconfiguredpermissionsexistingconnection', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='allconfiguredpermissionsnewconnection', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='allconfiguredpermissionsnewconnectioncloud', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Guid] $AppId,
 
         [parameter(parametersetname='explicitscopes')]
@@ -50,8 +58,8 @@ function Set-GraphApplicationConsent {
 
         [parameter(parametersetname='allconfiguredpermissionsnewconnection', mandatory=$true)]
         [parameter(parametersetname='explicitscopesnewconnection', mandatory=$true)]
-        [parameter(parametersetname='allconfiguredpermissionsnewconnectioncloud', mandatory=$true)]
-        [parameter(parametersetname='explicitscopesnewconnectioncloud', mandatory=$true)]
+        [parameter(parametersetname='allconfiguredpermissionsnewconnectioncloud')]
+        [parameter(parametersetname='explicitscopesnewconnectioncloud')]
         $Permissions,
 
         [parameter(parametersetname='allconfiguredpermissionsnewconnection')]
