@@ -87,3 +87,5 @@ Function Get-GraphApplicationCertificate {
 
     end {}
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphApplicationCertificate Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

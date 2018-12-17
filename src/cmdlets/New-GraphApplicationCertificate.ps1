@@ -93,3 +93,5 @@ function New-GraphApplicationCertificate {
 
     $::.ApplicationHelper |=> KeyCredentialToDisplayableObject $newKeyCredential $targetapp.AppId
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplicationCertificate Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

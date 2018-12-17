@@ -89,3 +89,5 @@ function Remove-GraphApplicationCertificate {
 
     end {}
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphApplicationCertificate Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
