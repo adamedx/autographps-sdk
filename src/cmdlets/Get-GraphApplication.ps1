@@ -56,7 +56,7 @@ function Get-GraphApplication {
     )
     $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $OdataFilter $Name $RawContent $Version $Permissions $cloud $connection
 
-    if ( $result ) {
+    $displayableResult = if ( $result ) {
         if ( $RawContent.IsPresent ) {
             $result
         } elseif ( $result | gm id ) {
@@ -65,4 +65,10 @@ function Get-GraphApplication {
             }
         }
     }
+
+    if ( ! $displayableResult -and ( $AppId -and $ObjectId) ) {
+        throw "The specified application could not be found."
+    }
+
+    $displayableResult
 }

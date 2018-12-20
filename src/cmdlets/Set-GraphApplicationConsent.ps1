@@ -75,7 +75,7 @@ function Set-GraphApplicationConsent {
 
     $app = $appAPI |=> GetApplicationByAppId $AppId
 
-    $appAPI |=> SetConsent $app $DelegatedPermissions $AppOnlyPermissions $AllPermissions.IsPresent $ConsentForTenant.IsPresent ($UserIdToConsent -ne $null) $UserIdToConsent
+    $appAPI |=> SetConsent $app.appid $DelegatedPermissions $AppOnlyPermissions $AllPermissions.IsPresent $ConsentForTenant.IsPresent ($UserIdToConsent -ne $null) $UserIdToConsent $app
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent DelegatedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))

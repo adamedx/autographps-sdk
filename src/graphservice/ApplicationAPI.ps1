@@ -25,6 +25,7 @@ enum AppTenancy {
 ScriptClass ApplicationAPI {
     static {
         const DefaultApplicationApiVersion beta
+        $TenantToGraphServicePrincipal = @{}
     }
 
     $version = $null
@@ -74,34 +75,47 @@ ScriptClass ApplicationAPI {
     }
 
     function RegisterApplication($appId, $isExternal) {
+        write-verbose "Attempting to register existing appliation '$appId', isExternalTenant: '$isExternal'"
         if ( ! $isExternal ) {
-            $app = invoke-graphrequest /applications -method GET -odatafilter "appId eq '$appId'" -version $this.version -connection $this.connection -erroraction stop
+            write-verbose "Looking for existing application '$appId' in this tenant"
+            $existingApp = GetApplicationByAppId $appId
 
-            if ( ! $App ) {
+            if ( ! $existingApp ) {
                 throw "An application with AppId '$AppId' could not be found in this tenant."
             }
+            write-verbose "Found existing application '$appId' in this tenant"
         }
 
+        write-verbose "Looking for existing service principal for application '$appId' in this tenant"
         $appSP = GetAppServicePrincipal $appId
 
-        if ( $appSP -and $appSP | gm id ) {
-            throw "Application is already registered with service principal id = '$($appSP.id)'"
+        if ( $appSP ) {
+            throw "Application with Application Id '$appID' is already registered with service principal id = '$($appSP.id)'"
         }
 
-        NewAppServicePrincipal $appId | out-null
-        $app
+        write-verbose "No existing service principal found for application '$appId', registering it"
+        $newSP = NewAppServicePrincipal $appId
+
+        write-verbose "Registered application '$appId' with service principal '$($newSP.id)'"
+        $newSP
     }
 
     function NewAppServicePrincipal($appId) {
         invoke-graphrequest /servicePrincipals -method POST -body @{appId=$appId} -Version $this.version -connection $this.connection -erroraction stop
     }
 
-    function GetAppServicePrincipal($appId, $errorAction = 'stop') {
-        invoke-graphrequest /servicePrincipals -method GET -ODataFilter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction
+    function GetAppServicePrincipal($appId, $properties, $errorAction = 'stop') {
+        $selectArguments = @{}
+        if ( $properties ) {
+            $selectArguments['select'] = $properties
+        }
+        $result = invoke-graphrequest /servicePrincipals -method GET -ODataFilter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction @selectArguments
+        __NormalizeResult $result
     }
 
     function GetApplicationByAppId($appId, $errorAction = 'stop') {
-        invoke-graphrequest /Applications -method GET -ODataFilter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction
+        $result = invoke-graphrequest /Applications -method GET -ODataFilter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction
+        __NormalizeResult $result
     }
 
     function GetApplicationByObjectId($objectId, $errorAction = 'stop') {
@@ -125,13 +139,15 @@ ScriptClass ApplicationAPI {
     }
 
     function SetConsent (
-        $appObject,
+        $appId,
         [string[]] $delegatedPermissions,
         [string[]] $appOnlyPermissions,
         $allPermissions,
         $consentForTenant,
         $userConsentRequired,
-        $userIdToConsent
+        $userIdToConsent,
+        $appWithRequiredResource,
+        $appSP
     ) {
         $consentUser = if ( $userIdToConsent ) {
             write-verbose "User '$userIdToConsent' specified for consent"
@@ -142,7 +158,7 @@ ScriptClass ApplicationAPI {
             if ( ! $userObjectId -and $userConsentRequired ) {
                 throw "User consent required but no user was specified and user id of current user could not be obtained"
             }
-            write-verbose "Attempting to grant consent to app '$($appObject.appId)' for current user '$userObjectId'"
+            write-verbose "Attempting to grant consent to app '$appId' for current user '$userObjectId'"
             $userObjectId
         } else {
             write-verbose "User consent was not specified, and tenant consent was specified, will attempt to consent all app permissions for the tenant"
@@ -153,33 +169,56 @@ ScriptClass ApplicationAPI {
             return
         }
 
-        $grant = GetConsentGrantForApp $appObject $consentUser $DelegatedPermissions $AppOnlyPermissions $allPermissions
+        $grant = GetConsentGrantForApp $appId $consentUser $DelegatedPermissions $AppOnlyPermissions $allPermissions $appWithRequiredResource $appSP
 
         Invoke-GraphRequest /oauth2PermissionGrants -method POST -body $grant -version $this.version -connection $this.connection | out-null
     }
 
     function GetConsentGrantForApp(
-        $app,
+        $appId,
         $consentUser,
         $scopes = @(),
         $roles = @(),
-        $ConsentRequiredPermissions
+        $ConsentRequiredPermissions,
+        $appWithRequiredResource,
+        $appSP
     ) {
         $targetPermissions = if ( ! $ConsentRequiredPermissions ) {
             $scopes + $roles
         } else {
             $permissions = @()
-            $graphResourceAccess = $app.requiredResourceAccess | where resourceAppid -eq 00000003-0000-0000-c000-000000000000
+            if ( $appWithRequiredResource -and $appWithRequiredResource | gm requiredResourceAccess ) {
+                $graphResourceAccess = $appWithRequiredResource.requiredResourceAccess | where resourceAppid -eq 00000003-0000-0000-c000-000000000000
 
-            $graphResourceAccess.resourceAccess | foreach {
-                $permissionId = $_.id
-                $permissionName = $::.ScopeHelper |=> GraphPermissionIdToName $permissionId $null $this.connection
-                $permissions += $permissionName
+                $graphResourceAccess.resourceAccess | foreach {
+                    $permissionId = $_.id
+                    $permissionName = $::.ScopeHelper |=> GraphPermissionIdToName $permissionId $null $this.connection
+                    $permissions += $permissionName
+                }
             }
             $permissions
         }
 
-        __NewOauth2Grant $app.appId ($targetPermissions -join ' ') $consentUser
+        __NewOauth2Grant $appId ($targetPermissions -join ' ') $consentUser
+    }
+
+    function GetGraphServicePrincipalId($connection) {
+        $tenantId = $connection.identity.TenantDisplayId.tostring()
+        $spId = $this.scriptclass.TenantToGraphServicePrincipal[$tenantId]
+
+        if ( ! $spId ) {
+            $spResult = GetAppServicePrincipal $::.ScopeHelper.GraphApplicationId @('id')
+            if ( ! $spResult ) {
+                throw 'Unable to find service principal for Microsoft Graph in the tenant'
+            }
+            $spId = $spResult.id
+            $this.scriptclass.TenantToGraphServicePrincipal[$tenantId] = $spId
+            write-verbose "Retrieved Graph service principal id '$spId' for tenant '$tenantId' from Graph"
+        } else {
+            write-verbose "Found Graph service principal id '$spId' for tenant '$tenantId' in cache"
+        }
+
+        $spId
     }
 
     function __NewOauth2Grant($appId, [string] $permissionName, $consentUserId) {
@@ -198,11 +237,17 @@ ScriptClass ApplicationAPI {
         @{
             clientId = $appSP.id
             consentType = $consentType
-            resourceId = $::.ScopeHelper |=> GetGraphServicePrincipalId $this.connection
+            resourceId = GetGraphServicePrincipalId $this.connection
             principalId = $consentUserId
             scope = $permissionName
             startTime = (([DateTime]::UtcNow) - ([TimeSpan]::FromDays(1))).tostring('s')
             expiryTime = (([DateTime]::UtcNow) + ([TimeSpan]::FromDays(365))).tostring('s')
+        }
+    }
+
+    function __NormalizeResult($result) {
+        if ( $result -and ( $result | gm id ) ) {
+            $result
         }
     }
 }

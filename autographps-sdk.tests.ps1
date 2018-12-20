@@ -44,7 +44,8 @@ Describe "Poshgraph application" {
                 'Get-GraphApplication',
                 'Get-GraphApplicationCertificate',
                 'Get-GraphApplicationConsent',
-                'Get-GraphConnection',
+                'Get-GraphApplicationServicePrincipal',
+                'Get-GraphConnectionInfo',
                 'Get-GraphError',
                 'Get-GraphItem',
                 'Get-GraphSchema',
@@ -55,13 +56,15 @@ Describe "Poshgraph application" {
                 'New-GraphApplicationCertificate',
                 'New-GraphConnection',
                 'New-GraphLocalCertificate',
+                'Register-GraphApplication',
                 'Remove-GraphApplication',
                 'Remove-GraphApplicationCertificate',
                 'Remove-GraphApplicationConsent',
                 'Remove-GraphItem',
                 'Set-GraphApplicationConsent',
                 'Set-GraphConnectionStatus',
-                'Test-Graph')
+                'Test-Graph',
+                'Unregister-GraphApplication')
 
             $manifest.CmdletsToExport.count | Should BeExactly $expectedFunctions.length
 

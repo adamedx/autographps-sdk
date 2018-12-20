@@ -2,12 +2,21 @@
 
 ## To-do items -- prioritized
 
+* Rename appregistration class
+* Make app cmdlets use real time types
 * Whoa -- add scriptclass feature to generate unique hash codes (use psobject.members.gethashcode(), assuming it stays stable)
+* Remove permissions and cloud from cmdlets
 * Add full pipeline support to consent commands
 * Register-GraphApplication
+* Unregister-GraphApplication
+* Set-GraphApplication
+* Get-GraphApplication -Registration? Get-GraphApplicationServicePrincipal?
+* Rename GraphApplicationRegistration to GraphApplicationObject?
 * Add confidential client to user auth for app creation and commands
 * Make new-graphapplication explicitly use confidential / public
 * Add times to new-graphapplication and new-localgraphcertificate
+* ------------------------------------
+* Rewrite names in scriptclass to make it easier to understand
 * Make Uri argument a non-array
 * Add default graph connection
 * Add named graph connections
@@ -20,7 +29,7 @@
 * Change autographps to use dynamic scope implementation
 * Add logging implementation and cmdlets
 * Add show-scope command
-* Emit header object in get-graphchilditem
+* Emit header object in get-graphchilditem ?
 * Rename DisplayFormatter to OutputFormatter
 * Change relativeuri parameter to 'uri' to match invoke-webrequest and invoke-restmethod
 * Remove -force from remove- cmdlets
@@ -29,7 +38,7 @@
 * Add thumbprint option to get-graphapplicationcertificate
 * Make AppAPI version
 * Reuse keycredentials in addkeycredentials
-* Make common request arguments
+
 * fix scriptclass issue where argument names collide with the invoke method in scriptclass
 
 * Add app creation, enumeration, update
@@ -321,6 +330,7 @@
 * Get-GraphApplicationCertificate
 * Change get-graphlocalcertificate to find-graphlocalcertificate
 * Rename Get-GraphConnection to Get-GraphConnection
+* Make common request arguments
 
 ### Postponed
 

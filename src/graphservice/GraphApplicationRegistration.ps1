@@ -71,7 +71,7 @@ ScriptClass GraphApplicationRegistration {
             $scopes = $null
         }
 
-        $this.AppAPI |=> SetConsent $app $scopes $roles (! $skipRequiredResourcePermissions) $tenantConsent $userConsentRequired $userIdToConsent
+        $this.AppAPI |=> SetConsent $app.appId $scopes $roles (! $skipRequiredResourcePermissions) $tenantConsent $userConsentRequired $userIdToConsent $app
 
         $app
     }

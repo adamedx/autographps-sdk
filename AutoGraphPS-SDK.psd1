@@ -79,7 +79,8 @@ FunctionsToExport = @('Get-DynamicValidateSetParameter')
         'Get-GraphApplication',
         'Get-GraphApplicationCertificate',
         'Get-GraphApplicationConsent',
-        'Get-GraphConnection',
+        'Get-GraphApplicationServicePrincipal',
+        'Get-GraphConnectionInfo',
         'Get-GraphError',
         'Get-GraphItem',
         'Get-GraphSchema',
@@ -90,13 +91,15 @@ FunctionsToExport = @('Get-DynamicValidateSetParameter')
         'New-GraphApplicationCertificate',
         'New-GraphConnection',
         'New-GraphLocalCertificate',
+        'Register-GraphApplication',
         'Remove-GraphApplication',
         'Remove-GraphApplicationCertificate',
         'Remove-GraphApplicationConsent',
         'Remove-GraphItem',
         'Set-GraphApplicationConsent',
         'Set-GraphConnectionStatus',
-        'Test-Graph'
+        'Test-Graph',
+        'Unregister-GraphApplication'
     )
 
 # Variables to export from this module
@@ -136,7 +139,8 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Get-GraphApplication.ps1',
         '.\src\cmdlets\Get-GraphApplicationCertificate.ps1',
         '.\src\cmdlets\Get-GraphApplicationConsent.ps1',
-        '.\src\cmdlets\Get-GraphConnectionStatus.ps1',
+        '.\src\cmdlets\Get-GraphApplicationServicePrincipal.ps1',
+        '.\src\cmdlets\Get-GraphConnectionInfo.ps1',
         '.\src\cmdlets\Get-Grapherror.ps1',
         '.\src\cmdlets\Get-Graphitem.ps1',
         '.\src\cmdlets\Get-GraphSchema.ps1',
@@ -147,6 +151,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\New-GraphApplicationCertificate.ps1',
         '.\src\cmdlets\New-GraphConnection.ps1',
         '.\src\cmdlets\New-GraphLocalCertificate.ps1',
+        '.\src\cmdlets\Register-GraphApplication.ps1',
         '.\src\cmdlets\Remove-GraphApplication.ps1',
         '.\src\cmdlets\Remove-GraphApplicationCertificate.ps1',
         '.\src\cmdlets\Remove-GraphApplicationConsent.ps1',
@@ -154,6 +159,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Set-GraphApplicationConsent.ps1',
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1',
         '.\src\cmdlets\Test-Graph.ps1',
+        '.\src\cmdlets\Unregister-GraphApplication.ps1',
         '.\src\cmdlets\common\ApplicationHelper.ps1',
         '.\src\cmdlets\common\CommandContext.ps1',
         '.\src\cmdlets\common\ConsentHelper.ps1',
@@ -209,6 +215,9 @@ PrivateData = @{
 ## New features
 
 * Ability to dynamically obtain when possible values for permission scope names used by cmdlet auto-completion, fallback to hard-coded data
+* Get-GraphApplicationServicePrincipal: advanced cmdlet to get an app service principal for use with other API's / SDK's
+* Register-GraphApplication: registers a graph application in the tenant (i.e. creates its service principal)
+* Unregister-GraphApplication: Removes a graph application registration from the tenant (i.e. deletes its service principal)
 * Get-GraphApplicationCertificate: gets the certificates associated with the application
 * New-GraphApplication: new cmdlet that creates a new Graph application!
 * Get-GraphApplication: this new cmdlet retrieves specified applications from the tenant
@@ -221,7 +230,7 @@ PrivateData = @{
 * Remove-GraphItem: this new cmdlet makes ``DELETE`` requests and supports the object pipeline -- the output of Get-GraphItem can be piped to it to delete the items for instance.
 * The ``Verb`` option of ``Invoke-GraphRequest`` has been renamed to ``Method`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
 * The ``Payload`` option of ``Invoke-GraphRequest`` has been renamed to ``Body`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
-* Renamed Get-GraphConnectionStatus to Get-GraphConnection
+* Renamed Get-GraphConnectionStatus to Get-GraphConnectionInfo and added additional properties
 
 ## Fixed defects
 
