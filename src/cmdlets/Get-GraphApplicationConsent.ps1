@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ function Get-GraphApplicationConsent {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='TenantOrSpecificPrincipal')]
     param(
         [parameter(position=0, valuefrompipelinebypropertyname = $true, mandatory=$true)]
-        [Guid] $AppId,
+        [Guid[]] $AppId,
 
         [parameter(parametersetname='entiretenant', mandatory=$true)]
         [parameter(parametersetname='TenantOrSpecificPrinicpal')]
@@ -33,53 +33,65 @@ function Get-GraphApplicationConsent {
         [parameter(parametersetname='TenantOrSpecificPrinicpal')]
         $Principal
     )
-    $commandContext = new-so CommandContext $null $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
-    $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
-    $app = try {
-        $appAPI |=> GetApplicationByAppId $AppId
-    } catch {
-        throw [Exception]::new("Unable to find application with AppId '$AppId'", $_.exception)
-    }
+    begin {}
 
-    $appSP = try {
-        $appAPI |=> GetAppServicePrincipal $AppId
-    } catch {
-        throw [Exception]::new("Unable to find a service prinicpal for application with AppId '$AppId', the application may not yet have been accessed in this tenant", $_.exception)
-    }
+    process {
+        $commandContext = new-so CommandContext $null $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+        $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
-    $appSPId = $appSP.id
+        $app = try {
+            $appAPI |=> GetApplicationByAppId $AppId
+        } catch {
+            throw [Exception]::new("Unable to find application with AppId '$AppId'", $_.exception)
+        }
 
-    $appFilter = "clientId eq '$appSPId'"
-    $filterClauses = @($appFilter)
+        $appSP = try {
+            $appAPI |=> GetAppServicePrincipal $AppId
+        } catch {
+            throw [Exception]::new("Unable to find a service prinicpal for application with AppId '$AppId', the application may not yet have been accessed in this tenant", $_.exception)
+        }
 
-    $grantFilter = if ( $Tenant.IsPresent ) {
-        "consentType eq 'AllPrincipals'"
-    } elseif ( $Principal ) {
-        "consentType eq 'Principal' and 'principalId' eq '$Principal'"
-    }
+        if ( ! $appSP ) {
+            write-verbose "Unable to find service principal for application '$AppId', assuming no consent exists"
+        } else {
 
-    if ( $grantFilter ) {
-        $filterClauses += $grantFilter
-    }
+            $appSPId = $appSP.id
 
-    $filter = $filterClauses -join ' and '
+            $appFilter = "clientId eq '$appSPId'"
+            $filterClauses = @($appFilter)
 
-    $filterArgument = @{ ODataFilter = $filter }
+            $grantFilter = if ( $Tenant.IsPresent ) {
+                "consentType eq 'AllPrincipals'"
+            } elseif ( $Principal ) {
+                "consentType eq 'Principal' and 'principalId' eq '$Principal'"
+            }
 
-    $RawContentArgument = @{ RawContent = $RawContent }
+            if ( $grantFilter ) {
+                $filterClauses += $grantFilter
+            }
 
-    $response = Invoke-GraphRequest /oauth2PermissionGrants -method GET -ODataFilter $filter -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
+            $filter = $filterClauses -join ' and '
 
-    if ( $response ) {
-        if ( ! $RawContent.IsPresent ) {
-            if ( $response | gm id -erroraction ignore ) {
-                $response | foreach {
-                    $::.ConsentHelper |=> ToDisplayableObject $_
+            $filterArgument = @{ ODataFilter = $filter }
+
+            $RawContentArgument = @{ RawContent = $RawContent }
+
+            $response = Invoke-GraphRequest /oauth2PermissionGrants -method GET -ODataFilter $filter -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
+
+            if ( $response ) {
+                if ( ! $RawContent.IsPresent ) {
+                    if ( $response | gm id -erroraction ignore ) {
+                        $response | foreach {
+                            $::.ConsentHelper |=> ToDisplayableObject $_
+                        }
+                    }
+                } else {
+                    $response
                 }
             }
-        } else {
-            $response
         }
     }
+
+    end {}
 }

@@ -3,7 +3,6 @@
 ## To-do items -- prioritized
 
 * Fix copyrights
-* Add full pipeline support to consent commands
 * Add confidential client to user auth for app creation and commands
 * Make new-graphapplication explicitly use confidential / public
 * ------------------------------------
@@ -333,6 +332,7 @@
 * Rename GraphApplicationRegistration to GraphApplicationObject?
 * Make app cmdlets use real time types
 * Add times to new-graphapplication and new-localgraphcertificate
+* Add full pipeline support to consent commands
 
 ### Postponed
 

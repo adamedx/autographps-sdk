@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,22 +19,16 @@ function Remove-GraphApplication {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='High', positionalbinding=$false)]
     param(
         [parameter(parametersetname='FromApp', position=0, valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='FromAppExistingConnection', position=0, valuefrompipeline=$true, mandatory=$true)]
         $App = $null,
 
         [parameter(parametersetname='FromAppId', mandatory=$true)]
-        [parameter(parametersetname='FromAppIdExistingConnection', mandatory=$true)]
         [Guid] $AppId,
 
         [parameter(parametersetname='FromObjectId', mandatory=$true)]
-        [parameter(parametersetname='FromObjectIdExistingConnection', mandatory=$true)]
         [Guid] $ObjectId,
 
         [String] $Version = $null,
 
-        [parameter(parametersetname='FromAppExistingConnection', mandatory=$true)]
-        [parameter(parametersetname='FromAppIdExistingConnection', mandatory=$true)]
-        [parameter(parametersetname='FromObjectIdExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null
     )
 

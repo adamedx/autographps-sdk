@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,14 +17,10 @@
 . (import-script common/PermissionParameterCompleter)
 
 function Remove-GraphApplicationConsent {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='simple')]
+    [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0, parametersetname='simple', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=0, parametersetname='existingconnection', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=0, parametersetname='newpermissions', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=0, parametersetname='newpermissionsandcloud', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(position=0, parametersetname='newcloud', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [Guid] $AppId,
+        [parameter(position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Guid[]] $AppId,
 
         [string[]] $RemovedPermissions,
 
@@ -34,58 +30,63 @@ function Remove-GraphApplicationConsent {
 
         $ConsentForPrincipal,
 
-        [parameter(parametersetname='existingconnection', mandatory=$true)]
         $Connection,
 
         $Version
     )
 
-    if ( $ConsentForTenant.IsPresent ) {
-        if ( $ConsentForPrincipal ) {
-            throw [ArgumentException]::new("The 'ConsentForTenant' option may not be specified when 'ConsentForTenant' is specified'")
-        }
-    }
+    begin {}
 
-    $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
-    $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
-
-    $appSP = $appAPI |=> GetAppServicePrincipal $AppId
-    $appSPId = $appSP.id
-
-    $appFilter = "clientId eq '$appSPId'"
-    $filterClauses = @($appFilter)
-
-    if ( ! $AllConsent.IsPresent ) {
-        $grantFilter = if ( $ConsentForTenant.IsPresent ) {
-            "consentType eq 'AllPrincipals'"
-        } elseif ( $ConsentForPrincipal ) {
-            "consentType eq 'Principal' and principalId eq '$ConsentForPrincipal'"
+    process {
+        if ( $ConsentForTenant.IsPresent ) {
+            if ( $ConsentForPrincipal ) {
+                throw [ArgumentException]::new("The 'ConsentForTenant' option may not be specified when 'ConsentForTenant' is specified'")
+            }
         }
 
-        $filterClauses += $grantFilter
-    }
+        $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+        $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
-    $filter = $filterClauses -join ' and '
+        $appSP = $appAPI |=> GetAppServicePrincipal $AppId
+        $appSPId = $appSP.id
 
-    $filterArgument = @{ ODataFilter = $filter }
+        $appFilter = "clientId eq '$appSPId'"
+        $filterClauses = @($appFilter)
 
-    $grants = $commandContext |=> InvokeRequest -uri oauth2PermissionGrants -RESTmethod GET -ODataFilter $filter
+        if ( ! $AllConsent.IsPresent ) {
+            $grantFilter = if ( $ConsentForTenant.IsPresent ) {
+                "consentType eq 'AllPrincipals'"
+            } elseif ( $ConsentForPrincipal ) {
+                "consentType eq 'Principal' and principalId eq '$ConsentForPrincipal'"
+            }
 
-    if ( $grants -and ( $grants | gm id ) ) {
-        $grants | foreach {
-            if ( ! $RemovedPermissions ) {
-                $commandContext |=> InvokeRequest -uri "/oauth2PermissionGrants/$($_.id)" -RESTmethod DELETE | out-null
-            } else {
-                $reducedPermissions = GetReducedPermissionsString $_.scope $RemovedPermissions
-                if ( $reducedPermissions ) {
-                    $updatedScope = @{scope = $reducedPermissions}
-                    $commandContext |=> InvokeRequest "/oauht2PermissionGrants/$($_.id)" -RESTmethod PATCH -body $updatedScope | out-null
+            $filterClauses += $grantFilter
+        }
+
+        $filter = $filterClauses -join ' and '
+
+        $filterArgument = @{ ODataFilter = $filter }
+
+        $grants = $commandContext |=> InvokeRequest -uri oauth2PermissionGrants -RESTmethod GET -ODataFilter $filter
+
+        if ( $grants -and ( $grants | gm id ) ) {
+            $grants | foreach {
+                if ( ! $RemovedPermissions ) {
+                    $commandContext |=> InvokeRequest -uri "/oauth2PermissionGrants/$($_.id)" -RESTmethod DELETE | out-null
                 } else {
-                    write-verbose "Requested permissions were not present in existing grant, no change is necessary, skipping update for grant id='$($_.id)'"
+                    $reducedPermissions = GetReducedPermissionsString $_.scope $RemovedPermissions
+                    if ( $reducedPermissions ) {
+                        $updatedScope = @{scope = $reducedPermissions}
+                        $commandContext |=> InvokeRequest "/oauht2PermissionGrants/$($_.id)" -RESTmethod PATCH -body $updatedScope | out-null
+                    } else {
+                        write-verbose "Requested permissions were not present in existing grant, no change is necessary, skipping update for grant id='$($_.id)'"
+                    }
                 }
             }
         }
     }
+
+    end {}
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphApplicationConsent RemovedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
