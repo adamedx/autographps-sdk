@@ -178,7 +178,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\common\ScopeHelper.ps1',
         '.\src\common\Secret.ps1',
         '.\src\graphservice\ApplicationAPI.ps1',
-        '.\src\graphservice\GraphApplicationRegistration.ps1'
+        '.\src\graphservice\ApplicationObject.ps1'
         '.\src\graphservice\graphendpoint.ps1'
         '.\src\REST\GraphErrorRecorder.ps1',
         '.\src\REST\GraphRequest.ps1',

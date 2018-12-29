@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 . (import-script ../common/ScopeHelper)
 . (import-script ../graphservice/ApplicationAPI)
 
-ScriptClass GraphApplicationRegistration {
+ScriptClass ApplicationObject {
     $applicationObject = $null
     $ObjectId = $null
     $AppId = $null

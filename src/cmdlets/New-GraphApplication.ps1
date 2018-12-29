@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 
 . (import-script ../graphservice/ApplicationAPI)
-. (import-script ../graphservice/GraphApplicationRegistration)
+. (import-script ../graphservice/ApplicationObject)
 . (import-script ../common/GraphApplicationCertificate)
 . (import-script common/PermissionParameterCompleter)
 . (import-script common/CommandContext)
@@ -116,7 +116,7 @@ function New-GraphApplication {
 
     $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
 
-    $newAppRegistration = new-so GraphApplicationRegistration $appAPI $Name $InfoUrl $Tags $computedTenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent $RedirectUris
+    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent $RedirectUris
 
     $newApp = $newAppRegistration |=> CreateNewApp
 
