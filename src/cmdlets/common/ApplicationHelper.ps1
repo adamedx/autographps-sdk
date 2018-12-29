@@ -26,24 +26,22 @@ ScriptClass ApplicationHelper {
         }
 
         function ToDisplayableObject($object) {
+            $object.createdDateTime = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.createdDateTime $true
             $this.appFormatter |=> DeserializedGraphObjectToDisplayableObject $object
         }
 
         function KeyCredentialToDisplayableObject($object, $appId) {
-            $remappedObject = try {
-                $notAfter = try { [DateTime]::Parse($object.endDateTime) } catch { $object.endDateTime }
-                $notBefore = try { [DateTime]::Parse($object.startDateTime) } catch { $object.startDateTime }
-                [PSCustomObject] @{
-                    AppId = $appId
-                    KeyId = $object.KeyId
-                    Thumbprint = $object.customKeyIdentifier
-                    NotAfter = $notAfter
-                    NotBefore = $notBefore
-                    FriendlyName = $object.displayName
-                    Content = $object
-                }
-            } catch {
-                [PSCustomObject] @{Content=$object}
+            $notAfter = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.endDateTime $true
+            $notBefore = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.startDateTime $true
+
+            $remappedObject = [PSCustomObject] @{
+                AppId = $appId
+                KeyId = $object.KeyId
+                Thumbprint = $object.customKeyIdentifier
+                NotAfter = $notAfter
+                NotBefore = $notBefore
+                FriendlyName = $object.displayName
+                Content = [PSCustomObject] $object
             }
 
             $this.keyFormatter |=> DeserializedGraphObjectToDisplayableObject $remappedObject

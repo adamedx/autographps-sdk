@@ -26,6 +26,17 @@ ScriptClass DisplayTypeFormatter {
 
             Update-TypeData -force @DisplayTypeArguments
         }
+
+        function UtcTimeStringToDateTimeOffset($utcTimeString, $fallback = $false) {
+            try {
+                [DateTimeOffset]::Parse($utcTimeString)
+            } catch {
+                if ( ! $fallback ) {
+                    throw
+                }
+                $utcTimeString
+            }
+        }
     }
 
     function __initialize($displayTypeName, $displayProperties) {

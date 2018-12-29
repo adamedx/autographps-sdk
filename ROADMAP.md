@@ -2,16 +2,12 @@
 
 ## To-do items -- prioritized
 
-* Make app cmdlets use real time types
-* Remove -force from remove- cmdlets
 * Add full pipeline support to consent commands
-* Set-GraphApplication
-* Get-GraphApplication -Registration? Get-GraphApplicationServicePrincipal?
-* Rename GraphApplicationRegistration to GraphApplicationObject?
 * Add confidential client to user auth for app creation and commands
 * Make new-graphapplication explicitly use confidential / public
 * Add times to new-graphapplication and new-localgraphcertificate
 * ------------------------------------
+* Set-GraphApplication
 * Rewrite names in scriptclass to make it easier to understand
 * Make Uri argument a non-array
 * Add default graph connection
@@ -329,8 +325,11 @@
 * Register-GraphApplication
 * Unregister-GraphApplication
 * Remove permissions and cloud from cmdlets
-* Rename appregistration class
 * Whoa -- add scriptclass feature to generate unique hash codes (use psobject.members.gethashcode(), assuming it stays stable)
+* Remove -force from remove- cmdlets
+* Get-GraphApplicationServicePrincipal
+* Rename GraphApplicationRegistration to GraphApplicationObject?
+* Make app cmdlets use real time types
 
 ### Postponed
 

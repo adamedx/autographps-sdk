@@ -19,7 +19,7 @@ function Get-GraphApplicationServicePrincipal {
     [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(position=0, mandatory=$true)]
-        [string] $AppId,
+        [Guid] $AppId,
 
         [String] $Version = $null,
 

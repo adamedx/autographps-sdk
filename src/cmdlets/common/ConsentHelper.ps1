@@ -23,6 +23,8 @@ ScriptClass ConsentHelper {
         }
 
         function ToDisplayableObject($object) {
+            $object.startTime = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.startTime $true
+            $object.expiryTime = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.expiryTime $true
             $this.formatter |=> DeserializedGraphObjectToDisplayableObject $object
         }
     }
