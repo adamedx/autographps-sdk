@@ -35,9 +35,7 @@ function Remove-GraphApplication {
         [parameter(parametersetname='FromAppExistingConnection', mandatory=$true)]
         [parameter(parametersetname='FromAppIdExistingConnection', mandatory=$true)]
         [parameter(parametersetname='FromObjectIdExistingConnection', mandatory=$true)]
-        [PSCustomObject] $Connection = $null,
-
-        [switch] $Force
+        [PSCustomObject] $Connection = $null
     )
 
     # Note that PowerShell requires us to use the begin / process / end structure here
@@ -84,10 +82,7 @@ function Remove-GraphApplication {
             $appObjectId = $app.id
         }
 
-        if ( $Force.IsPresent -or $pscmdlet.shouldprocess("Application AppId = $AppId, objectId = $appObjectId", 'DELETE') ) {
-            if ( $Force.IsPresent ) {
-                write-verbose "Force option was specified to override confirmation, object will be deleted"
-            }
+        if ( $pscmdlet.shouldprocess("Application AppId = $AppId, objectId = $appObjectId", 'DELETE') ) {
             $appAPI |=> RemoveApplicationByObjectId $appObjectId
         }
     }

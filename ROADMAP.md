@@ -1,10 +1,9 @@
-# ROADMAP for PoshGraph-SDK (AutoGraphPS-SDK)
+# ROADMAP for AutoGraphPS-SDK (PoshGraph-SDK)
 
 ## To-do items -- prioritized
 
-* Rename appregistration class
 * Make app cmdlets use real time types
-* Whoa -- add scriptclass feature to generate unique hash codes (use psobject.members.gethashcode(), assuming it stays stable)
+* Remove -force from remove- cmdlets
 * Add full pipeline support to consent commands
 * Set-GraphApplication
 * Get-GraphApplication -Registration? Get-GraphApplicationServicePrincipal?
@@ -29,7 +28,6 @@
 * Emit header object in get-graphchilditem ?
 * Rename DisplayFormatter to OutputFormatter
 * Change relativeuri parameter to 'uri' to match invoke-webrequest and invoke-restmethod
-* Remove -force from remove- cmdlets
 * Use begin, and maybe end blocks in app cmdlets, also
 * Fix issue where switch parameters don't work in scriptclass methods because they don't get bound unless set explicitly -- maybe just prohibit them
 * Add thumbprint option to get-graphapplicationcertificate
@@ -331,6 +329,8 @@
 * Register-GraphApplication
 * Unregister-GraphApplication
 * Remove permissions and cloud from cmdlets
+* Rename appregistration class
+* Whoa -- add scriptclass feature to generate unique hash codes (use psobject.members.gethashcode(), assuming it stays stable)
 
 ### Postponed
 

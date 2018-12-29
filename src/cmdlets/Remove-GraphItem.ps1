@@ -41,8 +41,6 @@ function Remove-GraphItem {
         [parameter(parametersetname='FromObjectsExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null,
 
-        [switch] $Force,
-
         [parameter(parametersetname='FromObjects', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='FromObjectsExistingConnection', valuefrompipeline=$true, mandatory=$true)]
         $TargetItem
@@ -107,10 +105,7 @@ function Remove-GraphItem {
         }
 
         write-verbose "DELETE requested for target URI '$targetUri'"
-        if ( $Force.IsPresent -or $pscmdlet.shouldprocess($targetUri, 'DELETE') ) {
-            if ( $Force.IsPresent ) {
-                write-verbose "Force option was specified to override confirmation, object will be deleted"
-            }
+        if ( $pscmdlet.shouldprocess($targetUri, 'DELETE') ) {
             Invoke-GraphRequest $targetUri -Method DELETE @commonRequestArguments -AbsoluteUri:$useFullyQualifiedUri | out-null
         }
     }
