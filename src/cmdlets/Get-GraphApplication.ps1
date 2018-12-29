@@ -33,28 +33,12 @@ function Get-GraphApplication {
 
         [String] $Version = $null,
 
-        [parameter(parametersetname='NewConnection')]
-        [parameter(parametersetname='NewConnectionAppId')]
-        [parameter(parametersetname='NewConnectionObjectId')]
-        [parameter(parametersetname='NewConnectionODataFilter')]
-        [parameter(parametersetname='NewConnectionName')]
-        [String[]] $Permissions = $null,
-
-        [parameter(parametersetname='NewConnection')]
-        [parameter(parametersetname='NewConnectionAppId')]
-        [parameter(parametersetname='NewConnectionObjectId')]
-        [parameter(parametersetname='NewConnectionODataFilter')]
-        [parameter(parametersetname='NewConnectionName')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
-
-        [parameter(parametersetname='ExistingConnection')]
-        [parameter(parametersetname='ExistingConnectionAppId')]
         [parameter(parametersetname='ExistingConnectionODataFilter')]
         [parameter(parametersetname='ExistingConnectionObjectId')]
         [parameter(parametersetname='ExistingConnectionName')]
         [PSCustomObject] $Connection = $null
     )
-    $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $OdataFilter $Name $RawContent $Version $Permissions $cloud $connection
+    $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $OdataFilter $Name $RawContent $Version $null $null $connection
 
     $displayableResult = if ( $result ) {
         if ( $RawContent.IsPresent ) {

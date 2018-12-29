@@ -18,30 +18,16 @@ Function Get-GraphApplicationCertificate {
     [cmdletbinding(defaultparametersetname='appid', positionalbinding=$false)]
     param (
         [parameter(parametersetname='appid', position=0, mandatory=$true)]
-        [parameter(parametersetname='NewConnectionAppId', mandatory=$true)]
         [parameter(parametersetname='ExistingConnectionAppId', mandatory=$true)]
         $AppId,
 
         [parameter(parametersetname='name', mandatory=$true)]
-        [parameter(parametersetname='NewConnectionName', mandatory=$true)]
         [parameter(parametersetname='ExistingConnectionName', mandatory=$true)]
         $Name,
 
         [switch] $RawContent,
 
         [String] $Version = $null,
-
-        [parameter(parametersetname='NewConnection')]
-        [parameter(parametersetname='NewConnectionAppId')]
-        [parameter(parametersetname='NewConnectionName')]
-        [parameter(parametersetname='NewConnectionFromApp')]
-        [String[]] $Permissions = $null,
-
-        [parameter(parametersetname='NewConnection')]
-        [parameter(parametersetname='NewConnectionAppId')]
-        [parameter(parametersetname='NewConnectionName')]
-        [parameter(parametersetname='NewConnectionFromApp')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
 
         [parameter(parametersetname='ExistingConnection', mandatory=$true)]
         [parameter(parametersetname='ExistingConnectionAppId', mandatory=$true)]
@@ -51,8 +37,7 @@ Function Get-GraphApplicationCertificate {
 
         [parameter(parametersetname='FromApp', valuefrompipeline=$true, mandatory=$true)]
         [parameter(parametersetname='ExistingConnectionFromApp', valuefrompipeline=$true, mandatory=$true)]
-        [object[]]
-        $Application
+        [object[]] $Application
     )
 
     begin {}
@@ -72,7 +57,7 @@ Function Get-GraphApplicationCertificate {
             $AppId
         }
 
-        $app = $::.ApplicationHelper |=> QueryApplications $targetAppId $null $null $null $RawContent $version $permissions $Cloud $connection keyCredentials
+        $app = $::.ApplicationHelper |=> QueryApplications $targetAppId $null $null $null $RawContent $version $null $null $connection keyCredentials
 
         if ( $app -and ( $app | select -expandproperty KeyCredentials -erroraction ignore ) ) {
             if ( ! $RawContent.IsPresent ) {
@@ -88,4 +73,3 @@ Function Get-GraphApplicationCertificate {
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphApplicationCertificate Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

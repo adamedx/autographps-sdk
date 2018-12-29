@@ -24,8 +24,6 @@ function Register-GraphApplication {
 
         [String[]] $GrantedPermissions,
 
-        [String[]] $Permissions,
-
         [switch] $SkipPermissionNameCheck,
 
         [switch] $NoninteractiveAppOnlyAuth,
@@ -39,14 +37,11 @@ function Register-GraphApplication {
 
         [String] $Version = $null,
 
-        [parameter(parametersetname='MSGraphNewConnection')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
-
         [parameter(parametersetname='ExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null
     )
 
-    $commandContext = new-so CommandContext $Connection $Version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
+    $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
 
     $::.ScopeHelper |=> ValidatePermissions $GrantedPermissions $NoninteractiveAppOnlyAuth.IsPresent $SkipPermissionNameCheck.IsPresent $commandContext.connection
 
@@ -71,4 +66,3 @@ function Register-GraphApplication {
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Register-GraphApplication GrantedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Register-GraphApplication Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

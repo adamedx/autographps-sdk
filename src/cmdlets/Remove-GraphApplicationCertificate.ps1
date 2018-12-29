@@ -38,10 +38,6 @@ function Remove-GraphApplicationCertificate {
 
         [String] $Version = $null,
 
-        [String[]] $Permissions = $null,
-
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
-
         [parameter(parametersetname='FromUniqueIdExistingConnection', mandatory=$true)]
         [parameter(parametersetname='FromThumbprintExistingConnection', mandatory=$true)]
         [parameter(parametersetname='AllCertificatesExistingConnection')]
@@ -54,7 +50,7 @@ function Remove-GraphApplicationCertificate {
     begin {
         throw [NotImplementedException]::new("This method is not yet implemented due to missing functionality in the Graph application API")
 
-        $commandContext = new-so CommandContext $connection $version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
+        $commandContext = new-so CommandContext $connection $version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
     }
 
@@ -90,4 +86,3 @@ function Remove-GraphApplicationCertificate {
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphApplicationCertificate Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

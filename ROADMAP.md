@@ -5,10 +5,7 @@
 * Rename appregistration class
 * Make app cmdlets use real time types
 * Whoa -- add scriptclass feature to generate unique hash codes (use psobject.members.gethashcode(), assuming it stays stable)
-* Remove permissions and cloud from cmdlets
 * Add full pipeline support to consent commands
-* Register-GraphApplication
-* Unregister-GraphApplication
 * Set-GraphApplication
 * Get-GraphApplication -Registration? Get-GraphApplicationServicePrincipal?
 * Rename GraphApplicationRegistration to GraphApplicationObject?
@@ -331,6 +328,9 @@
 * Change get-graphlocalcertificate to find-graphlocalcertificate
 * Rename Get-GraphConnection to Get-GraphConnection
 * Make common request arguments
+* Register-GraphApplication
+* Unregister-GraphApplication
+* Remove permissions and cloud from cmdlets
 
 ### Postponed
 

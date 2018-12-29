@@ -14,6 +14,7 @@
 
 . (import-script common/CommandContext)
 . (import-script ../graphservice/ApplicationAPI)
+. (import-script common/PermissionParameterCompleter)
 
 function Remove-GraphApplicationConsent {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='simple')]
@@ -36,14 +37,6 @@ function Remove-GraphApplicationConsent {
         [parameter(parametersetname='existingconnection', mandatory=$true)]
         $Connection,
 
-        [parameter(parametersetname='newpermissions', mandatory=$true)]
-        [parameter(parametersetname='newpermissionsandcloud', mandatory=$true)]
-        $Permissions,
-
-        [parameter(parametersetname='newpermissionsandcloud', mandatory=$true)]
-        [parameter(parametersetname='newcloud', mandatory=$true)]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
-
         $Version
     )
 
@@ -53,7 +46,7 @@ function Remove-GraphApplicationConsent {
         }
     }
 
-    $commandContext = new-so CommandContext $Connection $Version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
+    $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
     $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
     $appSP = $appAPI |=> GetAppServicePrincipal $AppId
@@ -97,4 +90,3 @@ function Remove-GraphApplicationConsent {
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphApplicationConsent RemovedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphApplicationConsent Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

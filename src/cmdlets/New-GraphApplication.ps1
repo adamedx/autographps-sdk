@@ -54,8 +54,6 @@ function New-GraphApplication {
         [parameter(parametersetname='apponlyexistingcert')]
         [String[]] $GrantedPermissions,
 
-        [String[]] $Permissions,
-
         [parameter(parametersetname='delegated')]
         [switch] $AADAccountsOnly,
 
@@ -90,9 +88,6 @@ function New-GraphApplication {
 
         [String] $Version = $null,
 
-        [parameter(parametersetname='MSGraphNewConnection')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
-
         [parameter(parametersetname='ExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null
     )
@@ -102,7 +97,7 @@ function New-GraphApplication {
             throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'UserIdToConsent' or 'ConsentForTenant' is specified")
         }
     }
-    $commandContext = new-so CommandContext $Connection $Version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
+    $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
 
     $::.ScopeHelper |=> ValidatePermissions $GrantedPermissions $NoninteractiveAppOnlyAuth.IsPresent $SkipPermissionNameCheck.IsPresent $commandContext.connection
 
@@ -149,4 +144,3 @@ function New-GraphApplication {
 
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication GrantedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
 
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

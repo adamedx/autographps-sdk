@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script Invoke-GraphRequest)
+. (import-script common/PermissionParameterCompleter)
 
 function Remove-GraphItem {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='High', positionalbinding=$false)]
@@ -117,3 +118,4 @@ function Remove-GraphItem {
     end {}
 }
 
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

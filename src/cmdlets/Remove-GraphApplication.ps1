@@ -32,16 +32,6 @@ function Remove-GraphApplication {
 
         [String] $Version = $null,
 
-        [parameter(parametersetname='FromApp')]
-        [parameter(parametersetname='FromAppId')]
-        [parameter(parametersetname='FromObjectId')]
-        [String[]] $Permissions = $null,
-
-        [parameter(parametersetname='FromApp')]
-        [parameter(parametersetname='FromAppId')]
-        [parameter(parametersetname='FromObjectId')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
-
         [parameter(parametersetname='FromAppExistingConnection', mandatory=$true)]
         [parameter(parametersetname='FromAppIdExistingConnection', mandatory=$true)]
         [parameter(parametersetname='FromObjectIdExistingConnection', mandatory=$true)]
@@ -56,7 +46,7 @@ function Remove-GraphApplication {
     begin {}
 
     process {
-        $commandContext = new-so CommandContext $connection $version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
+        $commandContext = new-so CommandContext $connection $version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
         $targetAppDescription = ''
