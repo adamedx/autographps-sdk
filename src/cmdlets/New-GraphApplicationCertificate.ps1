@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,45 +14,29 @@
 
 . (import-script ../graphservice/ApplicationAPI)
 . (import-script ../common/GraphApplicationCertificate)
-. (import-script common/PermissionParameterCompleter)
 . (import-script common/CommandContext)
 
 function New-GraphApplicationCertificate {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='high', positionalbinding=$false)]
     param(
         [parameter(parametersetname='appId', position=0, mandatory=$true)]
-        [parameter(parametersetname='appIdNewCloud', mandatory=$true)]
-        [parameter(parametersetname='appIdNewPermissions', mandatory=$true)]
-        [parameter(parametersetname='appIdExistingConnection', mandatory=$true)]
         [Guid] $AppId,
 
+        [parameter(parametersetname='appId', position=1)]
+        [parameter(parametersetname='app')]
+        [parameter(parametersetname='objectId')]
+        [TimeSpan] $CertValidityTimeSpan,
+
+        [DateTime] $CertValidityStart,
+
         [parameter(parametersetname='objectId', mandatory=$true)]
-        [parameter(parametersetname='objectIdNewCloud', mandatory=$true)]
-        [parameter(parametersetname='objectIdNewPermissions', mandatory=$true)]
-        [parameter(parametersetname='objectIdExistingConnection', mandatory=$true)]
         [Guid] $ObjectId,
 
         [parameter(parametersetname='app', mandatory=$true)]
-        [parameter(parametersetname='appNewCloud', mandatory=$true)]
-        [parameter(parametersetname='appNewPermissions', mandatory=$true)]
-        [parameter(parametersetname='appIdExistingConnection', mandatory=$true)]
         $Application,
 
         $CertStoreLocation = 'cert:/currentuser/my',
 
-        [parameter(parametersetname='appNewPermissions', mandatory=$true)]
-        [parameter(parametersetname='appIdNewPermissions', mandatory=$true)]
-        [parameter(parametersetname='objectIdNewPermissions', mandatory=$true)]
-        $Permissions,
-
-        [parameter(parametersetname='appNewCloud', mandatory=$true)]
-        [parameter(parametersetname='appIdNewCloud', mandatory=$true)]
-        [parameter(parametersetname='objectIdNewCloud', mandatory=$true)]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
-
-        [parameter(parametersetname='appExistingConnection', mandatory=$true)]
-        [parameter(parametersetname='appIdExistingConnection', mandatory=$true)]
-        [parameter(parametersetname='objectIdExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null,
 
         [String] $Version = $null
@@ -61,7 +45,7 @@ function New-GraphApplicationCertificate {
     $targetApp = $Application
     $targetObjectId = $ObjectId
 
-    $commandContext = new-so CommandContext $connection $version $Permissions $Cloud $::.ApplicationAPI.DefaultApplicationApiVersion
+    $commandContext = new-so CommandContext $connection $version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
 
     $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
@@ -77,7 +61,7 @@ function New-GraphApplicationCertificate {
         return
     }
 
-    $certificate = new-so GraphApplicationCertificate $targetApp.AppId $targetApp.displayName $CertStoreLocation
+    $certificate = new-so GraphApplicationCertificate $targetApp.AppId $ObjectId $targetApp.displayName $CertValidityTimeSpan $CertValidityStart $CertStoreLocation
     $certificate |=> Create
 
     try {
@@ -94,4 +78,3 @@ function New-GraphApplicationCertificate {
     $::.ApplicationHelper |=> KeyCredentialToDisplayableObject $newKeyCredential $targetapp.AppId
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplicationCertificate Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

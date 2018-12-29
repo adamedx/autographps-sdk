@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,18 +15,23 @@
 . (import-script ../common/GraphApplicationCertificate)
 
 function New-GraphLocalCertificate {
-    [cmdletbinding()]
+    [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(mandatory=$true)]
+        [parameter(position=0, mandatory=$true)]
         [Guid] $AppId,
 
-        [parameter(mandatory=$true)]
+        [parameter(position=1, mandatory=$true)]
         [string] $ApplicationName,
+
+        [parameter(position=2)]
+        [TimeSpan] $CertValidityTimeSpan,
+
+        [DateTime] $CertValidityStart,
 
         $CertStoreLocation = 'cert:/currentuser/my'
     )
 
-    $certificate = new-so GraphApplicationCertificate $AppId $ApplicationName $CertStoreLocation
+    $certificate = new-so GraphApplicationCertificate $AppId $null $ApplicationName $CertValidityTimeSpan $CertValidityStart $CertStoreLocation
 
     $certificate |=> Create
     $certificate.X509Certificate

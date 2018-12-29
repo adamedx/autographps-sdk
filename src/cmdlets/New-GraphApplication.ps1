@@ -78,6 +78,12 @@ function New-GraphApplication {
         [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
         $Certificate,
 
+        [parameter(parametersetname='apponlynewcert')]
+        [TimeSpan] $CertValidityTimeSpan,
+
+        [parameter(parametersetname='apponlynewcert')]
+        [DateTime] $CertValidityStart,
+
         [switch] $ConsentForTenant,
 
         [parameter(parametersetname='delegated')]
@@ -122,7 +128,7 @@ function New-GraphApplication {
 
     if ( $NoninteractiveAppOnlyAuth.IsPresent -and ! $NoCredential.IsPresent ) {
         try {
-            $certificate = new-so GraphApplicationCertificate $newApp.appId $newApp.Id $Name $certStoreLocation
+            $certificate = new-so GraphApplicationCertificate $newApp.appId $newApp.Id $Name $CertValidityTimeSpan $CertValidityStart $certStoreLocation
             $certificate |=> Create
             $appAPI |=> AddKeyCredentials $newApp $certificate | out-null
         } catch {

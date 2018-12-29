@@ -2,11 +2,13 @@
 
 ## To-do items -- prioritized
 
+* Fix copyrights
 * Add full pipeline support to consent commands
 * Add confidential client to user auth for app creation and commands
 * Make new-graphapplication explicitly use confidential / public
-* Add times to new-graphapplication and new-localgraphcertificate
 * ------------------------------------
+* Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
+* Convert some verbose statements to debug
 * Set-GraphApplication
 * Rewrite names in scriptclass to make it easier to understand
 * Make Uri argument a non-array
@@ -330,6 +332,7 @@
 * Get-GraphApplicationServicePrincipal
 * Rename GraphApplicationRegistration to GraphApplicationObject?
 * Make app cmdlets use real time types
+* Add times to new-graphapplication and new-localgraphcertificate
 
 ### Postponed
 

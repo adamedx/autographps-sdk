@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ ScriptClass GraphApplicationCertificate {
     $DisplayName = $null
     $CertLocation = $null
     $X509Certificate = $null
+    $NotBefore = $null
+    $validityTimeSpan = $null
 
     static {
         const __AppCertificateSubjectParent 'CN=AutoGraphPS, CN=MicrosoftGraph'
@@ -76,11 +78,13 @@ ScriptClass GraphApplicationCertificate {
         }
     }
 
-    function __initialize($appId, $objectId, $displayName, $certStoreLocation = 'cert:/currentuser/my') {
+    function __initialize($appId, $objectId, $displayName, $validityTimeSpan, $notBefore, $certStoreLocation = 'cert:/currentuser/my') {
         $this.ObjectId = $objectId
         $this.AppId = $appId
         $this.CertLocation = $certStoreLocation
         $this.DisplayName = $displayName
+        $this.NotBefore = $NotBefore
+        $this.validityTimeSpan = $validityTimeSpan
     }
 
     function Create {
@@ -93,8 +97,22 @@ ScriptClass GraphApplicationCertificate {
         $description = $this.scriptclass |=> __GetAppCertificateFriendlyName $this.AppId $this.DisplayName $this.ObjectId
         $subject = $this.scriptclass |=> __GetAppCertificateSubject $this.AppId
 
+        $notBefore = if ( $this.NotBefore ) {
+            $this.NotBefore.ToLocalTime()
+        } else {
+            ([datetime]::Now - [TimeSpan]::FromMinutes(1)).ToLocalTime()
+        }
+
+        $validityTimeSpan = if ( $this.validityTimeSpan ) {
+            $this.validityTimeSpan
+        } else {
+            [TimeSpan]::FromDays(365)
+        }
+
+        $notAfter = $notBefore + $validityTimeSpan
+
         write-verbose "Creating certificate with subject '$subject'"
-        $this.X509Certificate = New-SelfSignedCertificate -Subject $subject -friendlyname $description -provider 'Microsoft Enhanced RSA and AES Cryptographic Provider' -CertStoreLocation $certStoreDestination -NotBefore ([datetime]::UtcNow - [TimeSpan]::FromDays(1)) -notafter ([DateTime]::UtcNow + [TimeSpan]::fromdays(365))
+        $this.X509Certificate = New-SelfSignedCertificate -Subject $subject -friendlyname $description -provider 'Microsoft Enhanced RSA and AES Cryptographic Provider' -CertStoreLocation $certStoreDestination -NotBefore $notBefore -NotAfter $notAfter
     }
 
     function GetEncodedPublicCertificate {
