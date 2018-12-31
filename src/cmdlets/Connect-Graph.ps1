@@ -23,23 +23,20 @@
 function Connect-Graph {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='simple')]
     param(
-        [parameter(position=0)]
-        [parameter(parametersetname='simple')]
-        [parameter(parametersetname='reconnect')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='apponly')]
+        [parameter(position=0, parametersetname='simple')]
+        [parameter(position=0, parametersetname='apponly', mandatory=$true)]
+        [parameter(parametersetname='delegatedconfidential', mandatory=$true)]
+        [string] $AppId = $null,
+
         [String[]] $Permissions = $null,
 
         [parameter(parametersetname='simple')]
         [parameter(parametersetname='apponly')]
+        [parameter(parametersetname='delegatedconfidential')]
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
-        [parameter(parametersetname='simple')]
-        [parameter(parametersetname='apponly', mandatory=$true)]
-        [string] $AppId = $null,
-
-        [parameter(parametersetname='custom',mandatory=$true)]
+        [parameter(parametersetname='existingconnection',mandatory=$true)]
         [PSCustomObject] $Connection = $null,
 
         [parameter(parametersetname='reconnect', mandatory=$true)]
@@ -48,14 +45,17 @@ function Connect-Graph {
         [parameter(parametersetname='apponly', mandatory=$true)]
         [Switch] $NoninteractiveAppOnlyAuth,
 
+        [parameter(parametersetname='simple')]
         [parameter(parametersetname='apponly')]
+        [parameter(parametersetname='delegatedconfidential')]
         [string] $CertificatePath,
 
+        [parameter(parametersetname='delegatedconfidential', mandatory=$true)]
         [switch] $Confidential,
 
         [parameter(parametersetname='apponly', mandatory=$true)]
         [parameter(parametersetname='simple')]
-        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='delegatedconfidential')]
         [string] $TenantId
     )
 

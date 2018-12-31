@@ -3,7 +3,7 @@
 ## To-do items -- prioritized
 
 * Fix copyrights
-* Simplify parametersets on new-graphapplication, others
+* Update README
 * Fix psm1
 * ------------------------------------
 * Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
@@ -325,6 +325,7 @@
 * Add parameter to disconnect-graph
 * Make connect-graph support confidential delegated user
 * Consistency in noninteractiveauth names
+* Simplify parametersets on new-graphapplication, others
 
 ### Postponed
 

@@ -32,19 +32,17 @@ function New-GraphApplication {
 
         [AppTenancy] $Tenancy = ([AppTenancy]::Auto),
 
-        [parameter(parametersetname='delegated')]
-        [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='apponlynocred')]
-        [parameter(parametersetname='apponlyexistingcert')]
         [String[]] $GrantedPermissions,
 
         [parameter(parametersetname='delegated')]
+        [parameter(parametersetname='delegatedconfidential', mandatory=$true)]
         [switch] $Confidential,
 
         [parameter(parametersetname='delegated')]
         [switch] $AADAccountsOnly,
 
         [parameter(parametersetname='apponlynocred', mandatory=$true)]
+        [parameter(parametersetname='delegatedconfidential')]
         [switch] $NoCredential,
 
         [switch] $SkipTenantRegistration,
@@ -74,14 +72,11 @@ function New-GraphApplication {
         [switch] $ConsentForTenant,
 
         [parameter(parametersetname='delegated')]
+        [parameter(parametersetname='delegatedconfidential')]
         [string] $UserIdToConsent,
-
-        [parameter(parametersetname='manifest', mandatory=$true)]
-        [string] $Manifest,
 
         [String] $Version = $null,
 
-        [parameter(parametersetname='ExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null
     )
 
