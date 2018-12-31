@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,18 +20,18 @@ ScriptClass V2AuthProvider {
         $this.base = $base
     }
 
-    function GetAuthContext($app, $graphUri, $authUri) {
-        if ( $app.authtype -eq ([GraphAppAuthType]::AppOnly) ) {
+    function GetAuthContext($app, $authUri) {
+        if ( $app |=> IsConfidential ) {
             $credential = New-Object Microsoft.Identity.Client.ClientCredential -ArgumentList ($app.secret |=> GetSecretData)
             New-Object "Microsoft.Identity.Client.ConfidentialClientApplication" -ArgumentList @(
                 $App.AppId,
                 $authUri,
                 $app.RedirectUri,
                 $credential,
-                $null,
-                $this.scriptclass.__AppTokenCache)
+                ($this.scriptclass |=> GetUserTokenCache $app.AppId),
+                ($this.scriptclass |=> GetAppTokenCache $app.AppId))
         } else {
-            New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $App.AppId, $authUri, $this.scriptclass.__UserTokenCache
+            New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $App.AppId, $authUri, ($this.scriptclass |=> GetUserTokenCache $app.AppId)
         }
     }
 
@@ -72,8 +72,33 @@ ScriptClass V2AuthProvider {
         $authContext.protocolContext.AcquireTokenForClientAsync($defaultScopeList)
     }
 
+    function AcquireFirstUserTokenConfidential($authContext, $scopes) {
+        write-verbose 'V2 auth provider acquiring user token via confidential client'
+
+        $scopeList = $this.__ScopesAsScopeList.InvokeReturnAsIs(@($scopes))
+
+        # Confidential user flow uses an authcode flow with a confidential rather than public client.
+        # First, get the auth code for the user -- MSAL does not support this, but it does return the URI
+        # that lets you get the authcode (presumably you're a web app sending that URI to a client
+        # web browser and not using it to get credentials locally as in our case). Once you have the auth code,
+        # MSAL *does* support an API that lets you get a user token from the auth code using a confidential
+        # client that must present its credentials.
+
+        # 1. Get the auth code URI
+        $uriResult = $authContext.protocolContext.GetAuthorizationRequestUrlAsync($scopeList, $null, $null)
+        $authCodeUxUri = $uriResult.Result
+
+        # 2. Use the URI to present a UX to the user via the URI to obtain credentials that
+        # yield the authcode in a response
+        $authCodeInfo = GetAuthCodeFromURIUserInteraction $authCodeUxUri
+
+        # 3. Now use MSAL's confidential client to obtain the token from the auth code
+        $authContext.protocolContext.AcquireTokenByAuthorizationCodeAsync($authCodeInfo.ResponseParameters.Code, $scopeList)
+    }
+
     function AcquireRefreshedToken($authContext, $token) {
         write-verbose 'V2 auth provider refreshing existing token'
+
         if ( $authContext.app.authtype -eq ([GraphAppAuthType]::AppOnly) ) {
             $defaultScopeList = $this.__GetDefaultScopeList.InvokeReturnAsIs(@($authContext, @()))
             $authContext.protocolContext.AcquireTokenForClientAsync($defaultScopeList)
@@ -136,23 +161,91 @@ ScriptClass V2AuthProvider {
         return , $scopeList
     }
 
+    function GetAuthCodeFromURIUserInteraction($authUxUri) {
+        add-type -AssemblyName System.Windows.Forms
+
+        $form = new-object -typename System.Windows.Forms.Form -property @{width=600;height=640}
+        $browser = new-object -typeName System.Windows.Forms.WebBrowser -property @{width=560;height=640;url=$authUxUri }
+
+        $resultUri = $null
+        $authError = $null
+        $completedBlock = {
+            # Use set-variable to access a variable outside the scope of this block
+            set-variable resultUri -scope 1 -value $browser.Url
+            if ($resultUri -match "error=[^&]*|code=[^&]*") {
+                $authError = $resultUri
+                $form.Close()
+            }
+        }
+
+        $browser.Add_DocumentCompleted($completedBlock)
+        $browser.ScriptErrorsSuppressed = $true
+
+        $form.Controls.Add($browser)
+        $form.Add_Shown({$form.Activate()})
+        $form.ShowDialog() | out-null
+
+        # The response mode for this uri is 'query', so we parse the query parameters
+        # to get the result
+        $queryParameters = [System.Web.HttpUtility]::ParseQueryString($resultUri.query)
+
+        $queryResponseParameters = @{}
+
+        $queryParameters.keys | foreach {
+            $key = $_
+            $value = $queryParameters.Get($_)
+
+            $queryResponseParameters[$key] = $value
+        }
+
+        $errorDescription = if ( $queryResponseParameters['error'] ) {
+            $authError = $queryResponseParameters['error']
+            $queryResponseParameters['error_description']
+        }
+
+        if ( $authError ) {
+            throw ("Error obtaining authorization code: {0}: '{2}' - {1}" -f $authError, $errorDescription, $resultUri)
+        }
+
+        @{
+            ResponseUri = $resultUri
+            ResponseParameters = $queryResponseParameters
+        }
+    }
+
     static {
         $__AuthLibraryLoaded = $false
-        $__UserTokenCache = $null
-        $__AppTokenCache = $null
+        $__UserTokenCache = @{}
+        $__AppTokenCache = @{}
 
         function InitializeProvider {
             if ( ! $this.__AuthLibraryLoaded ) {
                 import-assembly ../../lib/Microsoft.Identity.Client.dll
                 $this.__AuthLibraryLoaded = $true
             }
+        }
 
-            if ( ! $this.__UserTokenCache ) {
-                $this.__UserTokenCache = New-Object Microsoft.Identity.Client.TokenCache
+        function GetUserTokenCache($appId) {
+            $existingCache = $this.__UserTokenCache[$appId]
+
+            if ( $existingCache ) {
+                $existingCache
+            } else {
+                $newCache = New-Object Microsoft.Identity.Client.TokenCache
+                $this.__UserTokenCache.Add($appId, $newCache)
+                $newCache
             }
+        }
 
-            if ( ! $this.__AppTokenCache ) {
-                $this.__AppTokenCache = New-Object Microsoft.Identity.Client.TokenCache
+        function GetAppTokenCache($appId) {
+            $existingCache = $this.__AppTokenCache[$appId]
+
+            if ( $existingCache ) {
+                $existingCache
+            } else {
+                $newCache = New-Object Microsoft.Identity.Client.TokenCache
+                $this.__AppTokenCache.Add($appId, $newCache)
+                $newCache
             }
         }
 

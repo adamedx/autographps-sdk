@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ ScriptClass AuthProvider {
         [PSCustomObject]@{
             App = $app
             GraphEndpointUri = $graphEndpointUri
-            ProtocolContext = $this.derivedProvider |=> GetAuthContext $app $graphEndpointUri $authUri
+            ProtocolContext = $this.derivedProvider |=> GetAuthContext $app $authUri
         }
     }
 
@@ -35,6 +35,13 @@ ScriptClass AuthProvider {
 
     function AcquireFirstUserToken($authContext, $scopes) {
         $this.derivedProvider |=> AcquireFirstUserToken $authContext $scopes
+    }
+
+    function AcquireFirstUserTokenConfidential($authContext, $scopes) {
+        if ( ! ($authContext.app |=> IsConfidential) ) {
+            throw [ArgumentException]::new("Cannot obtain confidential token using an application that does not support confidential client")
+        }
+        $this.derivedProvider |=> AcquireFirstUserTokenConfidential $authContext $scopes
     }
 
     function AcquireFirstAppToken($authContext) {

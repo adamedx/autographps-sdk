@@ -5,6 +5,10 @@
 * Fix copyrights
 * Add confidential client to user auth for app creation and commands
 * Make new-graphapplication explicitly use confidential / public
+* Simplify parametersets on new-graphapplication, others
+* Remove graphuri from getauthcontext
+* Add confidential check to auth providers
+* Simplify token cache
 * ------------------------------------
 * Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
 * Convert some verbose statements to debug
@@ -333,6 +337,7 @@
 * Make app cmdlets use real time types
 * Add times to new-graphapplication and new-localgraphcertificate
 * Add full pipeline support to consent commands
+* make token cache per app for v2 auth at least
 
 ### Postponed
 

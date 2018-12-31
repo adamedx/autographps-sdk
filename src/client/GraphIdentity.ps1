@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -85,9 +85,10 @@ ScriptClass GraphIdentity {
     }
 
     function getGraphToken($graphEndpoint, $scopes) {
-        write-verbose "Using generic path..."
         write-verbose "Attempting to get token for '$($graphEndpoint.Graph)' ..."
         write-verbose "Using app id '$($this.App.AppId)'"
+        $isConfidential = ($this.app |=> IsConfidential)
+        write-verbose ("Is confidential client: '{0}'" -f $isConfidential)
 
         write-verbose ("Adding scopes to request: {0}" -f ($scopes -join ';'))
 
@@ -96,7 +97,7 @@ ScriptClass GraphIdentity {
 
         $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
 
-        $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.Graph $authUri $this.tenantname
+        $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.Graph $authUri
 
         $authResult = if ( $this.token ) {
             $providerInstance |=> AcquireRefreshedToken $authContext $this.token
@@ -104,7 +105,11 @@ ScriptClass GraphIdentity {
             if ( $this.App.AuthType -eq ([GraphAppAuthType]::Apponly) ) {
                 $providerInstance |=> AcquireFirstAppToken $authContext
             } else {
-                $providerInstance |=> AcquireFirstUserToken $authContext $scopes
+                if ( $isConfidential ) {
+                    $providerInstance |=> AcquireFirstUserTokenConfidential $authContext $scopes
+                } else {
+                    $providerInstance |=> AcquireFirstUserToken $authContext $scopes
+                }
             }
         }
 

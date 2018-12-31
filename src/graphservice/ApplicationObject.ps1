@@ -22,7 +22,7 @@ ScriptClass ApplicationObject {
     $AppId = $null
     $AppAPI = $null
 
-    function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isAppOnly, $redirectUris) {
+    function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isAppOnly, $redirectUris, $isDelegatedConfidential) {
         $this.AppAPI = $appAPI
 
         $appParameters = @{
@@ -37,7 +37,7 @@ ScriptClass ApplicationObject {
 
         $newApp = __NewApp @appParameters
 
-        if ( ! $isAppOnly ) {
+        if ( ! $isAppOnly -and ! $isDelegatedConfidential ) {
             __SetPublicApp $newApp $redirectUris
         } else {
             __SetConfidentialApp $newApp $redirectUris
@@ -94,7 +94,7 @@ ScriptClass ApplicationObject {
         $appRedirectUris = if ( $redirectUris ) {
             $redirectUris
         } else {
-            , @('http://localhost')
+            , @('http://localhost', 'urn:ietf:wg:oauth:2.0:oob')
         }
 
         $web = @{

@@ -24,28 +24,12 @@ function New-GraphApplication {
         [parameter(position=0, mandatory=$true)]
         [string] $Name,
 
-        [parameter(parametersetname='delegated', position=1)]
-        [parameter(parametersetname='apponlynewcert', position=1)]
-        [parameter(parametersetname='apponlynocred', position=1)]
-        [parameter(parametersetname='apponlyexistingcert', position=1)]
         [string[]] $RedirectUris = $null,
 
-        [parameter(parametersetname='delegated')]
-        [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='apponlynocred')]
-        [parameter(parametersetname='apponlyexistingcert')]
         [Uri] $InfoUrl,
 
-        [parameter(parametersetname='delegated')]
-        [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='apponlynocred')]
-        [parameter(parametersetname='apponlyexistingcert')]
         [string[]] $Tags,
 
-        [parameter(parametersetname='delegated')]
-        [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='apponlynocred')]
-        [parameter(parametersetname='apponlyexistingcert')]
         [AppTenancy] $Tenancy = ([AppTenancy]::Auto),
 
         [parameter(parametersetname='delegated')]
@@ -53,6 +37,9 @@ function New-GraphApplication {
         [parameter(parametersetname='apponlynocred')]
         [parameter(parametersetname='apponlyexistingcert')]
         [String[]] $GrantedPermissions,
+
+        [parameter(parametersetname='delegated')]
+        [switch] $Confidential,
 
         [parameter(parametersetname='delegated')]
         [switch] $AADAccountsOnly,
@@ -122,11 +109,11 @@ function New-GraphApplication {
 
     $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
 
-    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent $RedirectUris
+    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent $RedirectUris $Confidential.IsPresent
 
     $newApp = $newAppRegistration |=> CreateNewApp
 
-    if ( $NoninteractiveAppOnlyAuth.IsPresent -and ! $NoCredential.IsPresent ) {
+    if ( ( $Confidential.IsPresent -or $NoninteractiveAppOnlyAuth.IsPresent ) -and ! $NoCredential.IsPresent ) {
         try {
             $certificate = new-so GraphApplicationCertificate $newApp.appId $newApp.Id $Name $CertValidityTimeSpan $CertValidityStart $certStoreLocation
             $certificate |=> Create

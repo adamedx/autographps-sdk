@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,14 +26,17 @@ ScriptClass GraphApplication {
     $AuthType = ([GraphAppAuthType]::Delegated)
     $RedirectUri = $null
 
-    function __initialize($appId = $null, $RedirectUri = $null, $secret = $null) {
+    function __initialize($appId = $null, $RedirectUri = $null, $secret = $null, $appOnly = $false) {
         $this.AppId = if ( $appId -ne $null ) {
             $appId
         }
 
+        if ( $appOnly ) {
+            $this.AuthType = ([GraphAppAuthType]::AppOnly)
+        }
+
         if ( $secret ) {
             $this.secret = new-so Secret $secret
-            $this.AuthType = ([GraphAppAuthType]::AppOnly)
         }
 
         $this.RedirectUri = if ( $RedirectUri ) {

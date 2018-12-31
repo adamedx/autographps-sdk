@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,6 +52,8 @@ function New-GraphConnection {
         [parameter(parametersetname='customendpoint', mandatory=$true)]
         [parameter(parametersetname='autocert', mandatory=$true)]
         $AppId = $null,
+
+        [switch] $Confidential,
 
         [Uri] $AppRedirectUri,
 
@@ -146,7 +148,7 @@ function New-GraphConnection {
                 new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol
             }
 
-            $appSecret = if ( $NonInteractiveAppAuth.IsPresent ) {
+            $appSecret = if ( $Confidential.IsPresent -or $NonInteractiveAppAuth.IsPresent ) {
                 if ( $Password ) {
                     $Password
                 } elseif ( $Certificate ) {
@@ -156,9 +158,9 @@ function New-GraphConnection {
                 } else {
                     $appCertificate = $::.GraphApplicationCertificate |=> FindAppCertificate $AppId
                     if ( ! $appCertificate ) {
-                        throw "NonInteractiveAppAuth was specified, but no password or certificate was specified, and no certificate with the appId '$AppId' in the subject name could be found in the default certificate store location. Specify an explicit certificate or password and retry."
+                        throw "NonInteractiveAppOnly or Confidential was specified, but no password or certificate was specified, and no certificate with the appId '$AppId' in the subject name could be found in the default certificate store location. Specify an explicit certificate or password and retry."
                     } elseif ( ($appCertificate | gm length -erroraction silentlycontinue) -and $appCertificate.length -gt 1 ) {
-                        throw "NonInteractiveAppAuth was specified, and more than one certificate with the appId '$AppId' in the subject name could be found in the default certificate store location. Specify an explicity certificate or password and retry."
+                        throw "NonInteractiveAppAuth or Confidential was specified, and more than one certificate with the appId '$AppId' in the subject name could be found in the default certificate store location. Specify an explicity certificate or password and retry."
                     }
                     $appCertificate
                 }
@@ -170,7 +172,7 @@ function New-GraphConnection {
                 $::.Application.AppId
             }
 
-            $app = new-so GraphApplication $newAppId $AppRedirectUri $appSecret
+            $app = new-so GraphApplication $newAppId $AppRedirectUri $appSecret $NonInteractiveAppAuth.IsPresent
             $identity = new-so GraphIdentity $app $graphEndpoint $TenantId
             new-so GraphConnection $graphEndpoint $identity $specifiedScopes
         }
