@@ -16,7 +16,7 @@
 . (import-script ../Client/GraphContext)
 . (import-script ../Client/LogicalGraphManager)
 
-function Get-GraphConnectionStatus {
+function Get-GraphConnectionInfo {
     [cmdletbinding()]
     param(
         [parameter(position=0, valuefrompipeline=$true)]
@@ -29,7 +29,7 @@ function Get-GraphConnectionStatus {
             if (! $specificContext ) {
                 throw "The specified Graph '$Graph' could not be found"
             }
-        } elseif ( $graph | gm Details -erroraction silentlycontinue ) {
+        } elseif ( $graph | gm Details -erroraction ignore ) {
             $Graph.details
         } else {
             throw "Specified Graph argument '$Graph' is not a valid type returned by Get-Graph"
@@ -38,5 +38,11 @@ function Get-GraphConnectionStatus {
         $::.GraphContext |=> GetCurrent
     }
 
-    $context.connection |=> GetStatus
+    [PSCustomObject] @{
+        AppId = $context.connection.identity.app.appid
+        Endpoint = $context.connection.graphendpoint.graph
+        User = $context.connection.identity.GetUserInformation().UserId
+        Status = $context.connection.getstatus()
+        Connection = $context.connection
+    }
 }

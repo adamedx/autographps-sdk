@@ -18,6 +18,7 @@
 . (import-script common/QueryHelper)
 . (import-script ../REST/GraphRequest)
 . (import-script ../REST/GraphErrorRecorder)
+. (import-script common/PermissionParameterCompleter)
 
 function Invoke-GraphRequest {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
@@ -26,10 +27,10 @@ function Invoke-GraphRequest {
         [Uri[]] $RelativeUri,
 
         [parameter(position=1)]
-        [String] $Verb = 'GET',
+        [String] $Method = 'GET',
 
         [parameter(position=2)]
-        $Payload = $null,
+        $Body = $null,
 
         [String] $Query = $null,
 
@@ -47,7 +48,7 @@ function Invoke-GraphRequest {
         [Switch] $Descending,
 
         [parameter(parametersetname='MSGraphNewConnection')]
-        [String[]] $ScopeNames = $null,
+        [String[]] $Permissions = $null,
 
         [String] $Version = $null,
 
@@ -104,11 +105,11 @@ function Invoke-GraphRequest {
         ([GraphType]::MSGraph)
     }
 
-    $MSGraphScopeNames = if ( $ScopeNames -ne $null ) {
+    $MSGraphScopes = if ( $Permissions -ne $null ) {
         if ( $Connection -ne $null ) {
-            throw "Scopes may not be specified via -ScopeNames if an existing connection is supplied with -Connection"
+            throw "Permissions may not be specified via -Permissions if an existing connection is supplied with -Connection"
         }
-        $ScopeNames
+        $Permissions
     } else {
         @('User.Read')
     }
@@ -162,9 +163,9 @@ function Invoke-GraphRequest {
 
     $graphConnection = if ( $Connection -eq $null ) {
         if ( $graphType -eq ([GraphType]::AADGraph) ) {
-            $::.GraphConnection |=> NewSimpleConnection ([GraphType]::AADGraph) $cloud $MSGraphScopeNames
+            $::.GraphConnection |=> NewSimpleConnection ([GraphType]::AADGraph) $cloud $MSGraphScopes
         } else {
-            'GraphContext' |::> GetConnection $null $null $cloud $ScopeNames
+            'GraphContext' |::> GetConnection $null $null $cloud $Permissions
         }
     } else {
         $Connection
@@ -260,12 +261,12 @@ function Invoke-GraphRequest {
         }
 
         $graphResponse = if ( $graphConnection.status -ne ([GraphConnectionStatus]::Offline) ) {
-            $request = new-so GraphRequest $graphConnection $graphRelativeUri $Verb $Headers $requestQuery
-            $request |=> SetBody $Payload
+            $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $requestQuery
+            $request |=> SetBody $Body
             try {
                 $request |=> Invoke $skipCount
             } catch [System.Net.WebException] {
-                $statusCode = if ( $_.exception.response | gm statuscode -erroraction silentlycontinue ) {
+                $statusCode = if ( $_.exception.response | gm statuscode -erroraction ignore ) {
                     $_.exception.response.statuscode
                 }
 
@@ -347,3 +348,5 @@ function Invoke-GraphRequest {
         $results
     }
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphRequest Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

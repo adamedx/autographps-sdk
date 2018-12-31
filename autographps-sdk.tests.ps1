@@ -1,3 +1,4 @@
+
 # Copyright 2018, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,18 +38,33 @@ Describe "Poshgraph application" {
     Context "When loading the manifest" {
         It "should export the exact same set of functions as are in the set of expected functions" {
             $expectedFunctions = @(
-                'new-graphconnection',
-                'get-graphitem',
-                'test-graph',
-                'invoke-graphrequest',
-                'get-graphversion',
-                'get-graphschema',
-                'get-grapherror',
-                'connect-graph',
-                'disconnect-graph',
-                'Get-GraphConnectionStatus',
+                'Connect-Graph',
+                'Disconnect-Graph',
+                'Find-GraphLocalCertificate',
+                'Get-GraphApplication',
+                'Get-GraphApplicationCertificate',
+                'Get-GraphApplicationConsent',
+                'Get-GraphApplicationServicePrincipal',
+                'Get-GraphConnectionInfo',
+                'Get-GraphError',
+                'Get-GraphItem',
+                'Get-GraphSchema',
+                'Get-GraphToken',
+                'Get-GraphVersion',
+                'Invoke-GraphRequest',
+                'New-GraphApplication',
+                'New-GraphApplicationCertificate',
+                'New-GraphConnection',
+                'New-GraphLocalCertificate',
+                'Register-GraphApplication',
+                'Remove-GraphApplication',
+                'Remove-GraphApplicationCertificate',
+                'Remove-GraphApplicationConsent',
+                'Remove-GraphItem',
+                'Set-GraphApplicationConsent',
                 'Set-GraphConnectionStatus',
-                'get-graphtoken')
+                'Test-Graph',
+                'Unregister-GraphApplication')
 
             $manifest.CmdletsToExport.count | Should BeExactly $expectedFunctions.length
 

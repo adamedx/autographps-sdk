@@ -33,6 +33,7 @@ enum GraphAuthProtocol {
 
 ScriptClass GraphEndpoint {
     static {
+        const DefaultGraphAPIVersion 'v1.0'
         # Note: this hash table, as well as the nested hash tables,
         # Must be protected -- do *NOT* give references to them outside
         # the static methods of this class -- that includes preventing

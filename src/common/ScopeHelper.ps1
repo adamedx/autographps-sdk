@@ -12,154 +12,266 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script DefaultScopeData)
+. (import-script ../REST/GraphRequest)
+
 ScriptClass ScopeHelper {
     static {
-        const __graphAuthScopes @(
-            'Application.ReadWrite.All',
-			'Application.ReadWrite.OwnedBy',
-			'Bookings.Read.All',
-			'Bookings.ReadWrite.Appointments',
-			'Bookings.ReadWrite.All',
-			'Bookings.Manage',
-			'Calendars.Read',
-			'Calendars.Read.Shared',
-			'Calendars.ReadWrite',
-			'Calendars.ReadWrite.Shared',
-			'Calendars.Read',
-			'Calendars.ReadWrite',
-			'Contacts.Read',
-			'Contacts.Read.Shared',
-			'Contacts.ReadWrite',
-			'Contacts.ReadWrite.Shared',
-			'Contacts.Read',
-			'Contacts.ReadWrite',
-			'Device.Read',
-			'Device.Command',
-			'Device.ReadWrite.All',
-			'Directory.Read.All',
-			'Directory.ReadWrite.All',
-			'Directory.AccessAsUser.All',
-			'Directory.Read.All',
-			'Directory.ReadWrite.All',
-			'Files.Read',
-			'Files.Read.All',
-			'Files.ReadWrite',
-			'Files.ReadWrite.All',
-			'Files.ReadWrite.AppFolder',
-			'Files.Read.Selected',
-			'Files.ReadWrite.Selected',
-			'Files.Read.All',
-			'Files.ReadWrite.All',
-			'Group.Read.All',
-			'Group.ReadWrite.All',
-			'Group.Read.All',
-			'Group.ReadWrite.All',
-			'IdentityRiskEvent.Read.All',
-			'IdentityRiskEvent.Read.All',
-			'IdentityProvider.Read.All',
-			'IdentityProvider.ReadWrite.All',
-			'DeviceManagementApps.Read.All',
-			'DeviceManagementApps.ReadWrite.All',
-			'DeviceManagementConfiguration.Read.All',
-			'DeviceManagementConfiguration.ReadWrite.All',
-			'DeviceManagementManagedDevices.PrivilegedOperations.All',
-			'DeviceManagementManagedDevices.Read.All',
-			'DeviceManagementManagedDevices.ReadWrite.All',
-			'DeviceManagementRBAC.Read.All',
-			'DeviceManagementRBAC.ReadWrite.All',
-			'DeviceManagementServiceConfig.Read.All',
-			'DeviceManagementServiceConfig.ReadWrite.All',
-			'Mail.Read',
-			'Mail.ReadWrite',
-			'Mail.Read.Shared',
-			'Mail.ReadWrite.Shared',
-			'Mail.Send',
-			'Mail.Send.Shared',
-			'MailboxSettings.Read',
-			'MailboxSettings.ReadWrite',
-			'Mail.Read',
-			'Mail.ReadWrite',
-			'Mail.Send',
-			'MailboxSettings.Read',
-			'MailboxSettings.ReadWrite',
-			'Member.Read.Hidden',
-			'Member.Read.Hidden',
-			'Notes.Read',
-			'Notes.Create',
-			'Notes.ReadWrite',
-			'Notes.Read.All',
-			'Notes.ReadWrite.All',
-			'Notes.ReadWrite.CreatedByApp',
-			'Notes.Read.All',
-			'Notes.ReadWrite.All',
-			'email',
-			'offline_access',
-			'openid',
-			'profile',
-			'People.Read',
-			'People.Read.All',
-			'People.Read.All',
-			'Reports.Read.All',
-			'Reports.Read.All',
-			'SecurityEvents.Read.All',
-			'SecurityEvents.ReadWrite.All',
-			'SecurityEvents.Read.All',
-			'SecurityEvents.ReadWrite.All',
-			'Sites.Read.All',
-			'Sites.ReadWrite.All',
-			'Sites.Manage.All',
-			'Sites.FullControl.All',
-			'Sites.Read.All',
-			'Sites.ReadWrite.All',
-			'Sites.Manage.All',
-			'Sites.FullControl.All',
-			'Tasks.Read',
-			'Tasks.Read.Shared',
-			'Tasks.ReadWrite',
-			'Tasks.ReadWrite.Shared',
-			'Agreement.Read.All',
-			'Agreement.ReadWrite.All',
-			'AgreementAcceptance.Read',
-			'AgreementAcceptance.Read.All',
-			'User.Read',
-			'User.ReadWrite',
-			'User.ReadBasic.All',
-			'User.Read.All',
-			'User.ReadWrite.All',
-			'User.Invite.All',
-			'User.Export.All',
-			'User.Read.All',
-			'User.ReadWrite.All',
-			'User.Invite.All',
-			'User.Export.All',
-			'User.ReadBasic.All',
-			'User.Read',
-			'User.Read.All',
-			'User.Read',
-			'Files.Read',
-			'Mail.Read',
-			'Calendars.Read',
-			'User.Read',
-			'Files.Read',
-			'Sites.Read.All',
-			'User.ReadWrite',
-			'User.ReadWrite.All',
-			'User.ReadWrite',
-			'Files.ReadWrite',
-			'Mail.ReadWrite',
-			'Calendars.ReadWrite',
-			'User.Export.All',
-			'Group.Read.All',
-			'Group.Read.All',
-			'Group.ReadWrite.All',
-			'Sites.ReadWrite.All',
-			'Group.ReadWrite.All',
-			'Group.ReadWrite.All',
-			'UserActivity.ReadWrite.CreatedByApp'
-        )
+        const GraphApplicationId 00000003-0000-0000-c000-000000000000
+        $graphSP = $null
+        $permissionsByIds = $null
+        $appOnlyPermissionsByName = $null
+        $delegatedPermissionsByName = $null
+        $retrievedScopesFromGraphService = $false
+        $sortedGraphPermissions = $null
+        $sortedGraphDelegatedPermissions = $null
+        $sortedGraphAppOnlyPermissions = $null
 
-        function GetKnownScopes {
-            $this.__graphAuthScopes
+        function __AddConnectionScopeData($graphSP, $permissionsByIds, $sortedPermissionsList, $sortedScopeList, $sortedRoleList) {
+            if ( $this.graphSP -and $this.retrievedScopesFromGraphService ) {
+                throw "Scope data already dynamically retrieved from Graph service"
+            }
+
+            $this.graphSP = $graphSP
+
+            # Note that the ids referenced here are universal across tenants, so the
+            # first time we retrieve them will be the only time we need to do so,
+            # and it doesn't matter what tenant they come from as they are always
+            # the same no matter the tenant.
+            $this.permissionsByIds = $permissionsByIds
+
+            $this.delegatedPermissionsByName = $sortedScopeList
+            $this.appOnlyPermissionsByName = $sortedRoleList
+
+            $this.sortedGraphPermissions = @() + $sortedPermissionsList.keys
+            $this.sortedGraphDelegatedPermissions = @() + $sortedScopeList.keys
+            $this.sortedGraphAppOnlyPermissions = @() + $sortedRoleList.keys
+        }
+
+        function ValidatePermissions([string[]] $permissions, [boolean] $isNoninteractive = $false, [boolean] $allowPermissionIdGuid = $false, $connection ) {
+            $type = if ( $isNoninteractive ) { 'Role' } else { 'Scope' }
+            if ( $permissions ) {
+                $permissions | foreach {
+                    GraphPermissionNameToId $_ $type $connection $allowPermissionIdGuid | out-null
+                }
+            }
+        }
+
+        function GetKnownPermissionsSorted($connection, $graphAppAuthType) {
+            __InitializeGraphScopes $connection
+            if ( $this.sortedGraphPermissions ) {
+                if ( ! $graphAppAuthType ) {
+                    $this.sortedGraphPermissions
+                } elseif ( $graphAppAuthType -eq ([GraphAppAuthType]::Delegated) ) {
+                    $this.sortedGraphDelegatedPermissions
+                } elseif ( $graphAppAuthType -eq ([GraphAppAuthType]::AppOnly) ) {
+                    $this.sortedGraphAppOnlyPermissions
+                } else {
+                    throw [ArgumentException]::new("Permissions list requested for permission auth type '$graphAppAuthType'")
+                }
+            } else {
+                # At least return something if this fails
+                @('Directory.AccessAsUser.All', 'User.Read')
+            }
+        }
+
+        function GetDynamicScopeCmdletParameter($parameterName, [boolean] $skipValidation, [HashTable[]] $parameterSets) {
+            $scopes = $this |=> GetKnownPermissionsSorted ($::.GraphContext |=> GetCurrentConnection)
+            Get-DynamicValidateSetParameter $parameterName $scopes -ParameterType ([String[]]) -SkipValidation:$skipValidation -ParameterSets $parameterSets
+        }
+
+        function GetAppOnlyResourceAccessPermissions($scopes, $connection) {
+            if ( $scopes ) {
+                GetPermissionsByName $scopes Role $connection
+            } else {
+                @(
+                    @{
+                        id = 'df021288-bdef-4463-88db-98f22de89214'
+                        type = 'Role'
+                    }
+                )
+            }
+        }
+
+        function GetDelegatedResourceAccessPermissions($scopes, $connection) {
+            if ( $scopes ) {
+                GetPermissionsByName $scopes Scope $connection
+            } else {
+                @{
+                    id = 'e1fe6dd8-ba31-4d61-89e7-88639da4683d'
+                    type = 'Scope'
+                }
+            }
+        }
+
+        function GetPermissionsByName {
+            param(
+                [parameter(mandatory=$true)]
+                [string[]] $scopeNames,
+
+                [validateset('Scope', 'Role')]
+                [parameter(mandatory=$true)]
+                $permissionType,
+
+                $connection
+            )
+
+            # Case matters for the permission type when passed to the protocol, so
+            # enforce case and raise an exception if the case is invalid
+            $validValues = @('Scope', 'Role')
+            if ( $validValues -cnotcontains $permissionType ) {
+                $validValueOutput = $validValues -join ', '
+                throw [ArgumentException]::new("Specified type '$permissionType' has incorrect casing, case must match the exact case of the values in '$validValueOutput'")
+            }
+
+            $scopeNames | foreach {
+                $permissionId = GraphPermissionNameToId $_ $permissionType $connection
+
+                @{
+                    id = $permissionId
+                    type = $permissionType
+                }
+            }
+        }
+
+        function GetGraphServicePrincipalId($connection) {
+            if ( ! $connection ) {
+                throw [ArgumentException]::("No connection specified to retrieve the Graph service principal")
+            }
+            __InitializeGraphScopes $connection
+
+            if ( ! $this.retrievedScopesFromGraphService ) {
+                throw "Unable to reach Graph service to retrieve Graph service principal"
+            }
+            $this.graphSP.Id
+        }
+
+        function GraphPermissionNameToId($name, [ValidateSet('Scope', 'Role')] $type, $connection, $allowPermissionIdGuid = $false) {
+            __InitializeGraphScopes $connection
+
+            $authDescription = $null
+            $otherCollection = $null
+            $collection = if ( $type -eq 'Scope' ) {
+                $authDescription = 'Delegated'
+                $otherCollection = $this.appOnlyPermissionsByName
+                $this.delegatedPermissionsByName
+            } else {
+                $authDescription = 'Noninteractive App-only'
+                $otherCollection = $this.delegatedPermissionsByName
+                $this.appOnlyPermissionsByName
+            }
+
+            $permission = $collection[$name]
+            $permissionOfOtherType = $otherCollection[$name]
+
+            if ( ! $permission ) {
+                if ( $permissionOfOtherType ) {
+                    throw "Specified permission '$name' was not of specified type '$type' required for requested '$authDescription' authentication"
+                }
+                if ( ! $allowPermissionIdGuid ) {
+                    throw "Specified permission '$name' could not be mapped to a permission Id"
+                }
+                $permission = try {
+                    ([Guid] $Name)
+                } catch {
+                    throw "Specified permission '$name' could not be mapped to a permission Id or interpreted as a permission Id Guid"
+                }
+            }
+
+            $permission
+        }
+
+        function GraphPermissionIdToName($permissionId, $type, $connection) {
+            __InitializeGraphScopes $connection
+
+            $permission = $this.permissionsByIds[$permissionId]
+
+            if ( ! $permission ) {
+                throw "Specified permission '$permissionId' could not be mapped to a permission name"
+            }
+
+            if ( $type -and ! (__IsPermissionType $permission.id $type) ) {
+                throw "Specified permission '$permissionId' was not of specified type '$type'"
+            }
+
+            $permission.value
+        }
+
+        function __IsPermissionType($permissionId, $type) {
+            $collection = if ( $type -eq 'role' ) {
+                $this.graphSP.appRoles
+            } else {
+                $this.graphSP.publishedPermissionScopes
+            }
+
+            ($collection | where id -eq $permissionId) -ne $null
+        }
+
+        function __InitializeGraphScopes($connection) {
+            if ( $this.graphSP -and $this.retrievedScopesFromGraphService ) {
+                return
+            }
+
+            $graphConnection = if ( $connection ) {
+                if ( $connection |=> IsConnected ) {
+                    $connection
+                }
+            }
+
+            $retrievedFromService = $false
+            $graphSP = if ( $graphConnection ) {
+                $graphSPResponse = try {
+                    # ScriptClass has an apparent problem with string interpolation using $this
+                    # in string interpolation in the context of PowerShell argument completion
+                    # via dynamic parameters, so get $this.GraphApplicationId into a local
+                    # variable as a workaround.
+                    $graphAppId = $this.GraphApplicationId
+                    $graphSPRequest = new-so GraphRequest $graphConnection "/beta/servicePrincipals" GET $null "`$filter=appId eq '$graphAppId'"
+                    $graphSPRequest |=> Invoke
+                } catch {
+                }
+
+                if ( $graphSPResponse ) {
+                    $retrievedFromService = $true
+                    $graphSPResponse |=> Content | convertfrom-json | select -expandproperty value
+                }
+            }
+
+            if ( ! $graphSP ) {
+                $graphSP = $__DefaultScopeData
+            }
+
+            if ( $graphSP ) {
+                $permissionsByIds = @{}
+
+                $sortedPermissionsList = [System.Collections.Generic.SortedList[string, string]]::new(
+                    [System.StringComparer]::CurrentCultureIgnoreCase)
+                $sortedScopeList = [System.Collections.Generic.SortedList[string, string]]::new(
+                    [System.StringComparer]::CurrentCultureIgnoreCase)
+                $sortedRoleList = [System.Collections.Generic.SortedList[string, string]]::new(
+                    [System.StringComparer]::CurrentCultureIgnoreCase)
+
+                $graphSP.publishedPermissionScopes | foreach {
+                    $sortedPermissionsList.Add($_.value, $_.id)
+                    $permissionsByIds[$_.id] = $_
+                    $sortedScopeList.Add($_.value, $_.id)
+                }
+
+                $graphSP.appRoles | foreach {
+                    try {
+                        $sortedPermissionsList.Add($_.value, $_.id)
+                    } catch {
+                    }
+                    $sortedRoleList.Add($_.value, $_.id)
+                    $permissionsByIds[$_.id] = $_
+                }
+
+                __AddConnectionScopeData $graphSP $permissionsByIds $sortedPermissionsList $sortedScopeList $sortedRoleList
+
+                if ( $retrievedFromService ) {
+                    $this.retrievedScopesFromGraphService = $true
+                }
+            }
         }
     }
 }

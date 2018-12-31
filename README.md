@@ -16,6 +16,10 @@ AutoGraphPS-SDK
 
 *This repository / project was recently renamed from **PoshGraph-SDK** -- if you're looking for **PoshGraph-SDK**, you're in the right place!*
 
+## Documentation
+
+*Full documentation is not yet implemented, please visit the **[AutographPS WALKTHROUGH](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md)** for the best detail currently available.*
+
 ## Overview
 
 **AutoGraphPS-SDK** automates the [Microsoft Graph API](https://graph.microsoft.io/) through PowerShell. AutoGraphPS-SDK enables the development of PowerShell-based applications and automation of the Microsoft Graph REST API gateway; the PowerShell Graph exploration UX [AutoGraphPS](https://github.com/adamedx/autographps) is one such application based on the SDK. The Graph exposes a growing list of services such as
@@ -59,7 +63,7 @@ After you've responded to the authentication prompt, you should see output that 
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
-Now you're ready to use any of AutoGraphPS-SDK's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
+Now you're ready to use any of AutoGraphPS-SDK's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
 
 ### How do I use the cmdlets from the CLI?
 
@@ -93,20 +97,27 @@ If you're using a script module (`.psm1` file) or simply as a plan PowerShell `p
 
 ## Command inventory
 
-The full list of cmdlets in this module is given below; note that `Invoke-GraphRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-Graph` to request additional permission scopes as described in the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference). Additional cmdlets will be added to this module as development matures.
+The full list of cmdlets in this module is given below; note that `Invoke-GraphRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-Graph` to request additional permissions as described in the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference). Additional cmdlets will be added to this module as development matures.
 
 | Cmdlet                    | Alias | Description                                                                                     |
 |---------------------------|-------|-------------------------------------------------------------------------------------------------|
 | Connect-Graph             |       | Establishes authentication and authorization context used across cmdlets for the current graph  |
 | Disconnect-Graph          |       | Clears authentication and authorization context used across cmdlets for the current graph       |
+| Get-GraphApplication      |       | Gets a list of Azure AD applications in the tenant                                              |
+| Get-GraphApplicationConsent |     | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)     |
 | Get-GraphConnectionStatus |       | Gets the `Online` or `Offline` status of a connection to a Graph endpoint                    |
 | Get-GraphError            | gge   | Retrieves detailed errors returned from Graph in execution of the last command                  |
 | Get-GraphItem             | ggi   | Given a relative (to the Graph or current location) Uri gets information about the entity       |
+| Get-GraphLocalCertificate |       | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only auth to Graph      |
 | Get-GraphSchema           |       | Returns the [Entity Data Model](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/entity-data-model) for a part of the graph as expressed through [CSDL](http://www.odata.org/documentation/odata-version-3-0/common-schema-definition-language-csdl/)       |
 | Get-GraphToken            |       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
 | Get-GraphVersion          |       | Returns the set of workloads and their associated schemas for a given Graph API version         |
 | Invoke-GraphRequest       |       | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri           |
+| New-GraphApplication      |       | Creates an Azure AD application configured to authenticate to Microsoft Graph                   |
 | New-GraphConnection       |       | Creates an authenticated connection using advanced identity customizations for accessing a Graph|
+| Remove-GraphApplicationConsent |  | Removes consent grants for an Azure AD application                                              |
+| Remove-GraphItem         |        | Makes generic ``DELETE`` requests to a specified Graph URI to delete items                      |
+| Set-GraphApplicationConsent |     | Sets a consent grant for an Azure AD application                                                |
 | Set-GraphConnectionStatus |       | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service |
 | Test-Graph                |       | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint          |
 

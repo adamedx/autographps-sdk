@@ -1,35 +1,46 @@
-# ROADMAP for PoshGraph-SDK (AutoGraphPS-SDK)
+# ROADMAP for AutoGraphPS-SDK (PoshGraph-SDK)
 
 ## To-do items -- prioritized
 
-* Add app creation, enumeration, update
-  * New-GraphApplication
-  * Get-GraphApplication
-  * New-GraphApplicationCertificate
-  * Get-GraphApplicationCertificate
-  * Set-GraphApplicationCertificate
-  * Get-GraphApplicationLocalCertificate
-  * Remove-GraphApplicationLocalCertificate
-  * Import-GraphApplicationLocalCertificate
-  * Remove-GraphApplication
-  * Set-GraphApplication
-  * Set-GraphApplicationPermissions
-  * Remove-GraphApplicationConsent
+* Fix copyrights
+* Simplify parametersets on new-graphapplication, others
+* Add automatic tenantid detection
+* Make connect-graph support confidential delegated user
+* ------------------------------------
+* Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
+* Convert some verbose statements to debug
+* Set-GraphApplication
+* Rewrite names in scriptclass to make it easier to understand
+* Make Uri argument a non-array
+* Add default graph connection
+* Add named graph connections
+* Add connection enumeration
+* Possibly remove query support from Remove-GraphItem if queries on DELETE method are not supported
+* Add retry to service principal creation
+* Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
+* Add ScriptProperty computed fields to displayformatter?
+* Add return types to cmdlets
+* Change autographps to use dynamic scope implementation
+* Add logging implementation and cmdlets
+* Add show-scope command
+* Emit header object in get-graphchilditem ?
+* Rename DisplayFormatter to OutputFormatter
+* Change relativeuri parameter to 'uri' to match invoke-webrequest and invoke-restmethod
+* Use begin, and maybe end blocks in app cmdlets, also
+* Fix issue where switch parameters don't work in scriptclass methods because they don't get bound unless set explicitly -- maybe just prohibit them
+* Add thumbprint option to get-graphapplicationcertificate
+* Make AppAPI version
+* Reuse keycredentials in addkeycredentials
 
 * Extend Get-GraphToken to support all scenarios, better formats
+* Extend Get-GraphToken to support auth code
 
 * Customize README
 * Customize WALKTHROUGH
 * Release
 
-* Add app enumeration
-* Add app creation
-* App deletion
 * Add app updating
 * Release
-
-* Fix invoke-graphrequest parameter names (-verb should be -method, -payload should be -body)
-* Add Remove-GraphItem
 
 * Clean up parse methods in GraphUtilities
 * Investigate console.writeline background thread
@@ -42,11 +53,6 @@
 
 * Clean up utilities, special-case, duplicate code in get-graphuri, invoke-graphrequest, get-graphitem, get-graphchilditem
 * Make gcd work without hanging for new graphs
-
-* Investigate metadata perf optimization -- perform:
-  * Discover roots only
-  * Just-in-time discovery of types
-  * Just-in-time resolution of navigation properties
 
 * change $graphverbosepreference to $graphverboselevelpreference
 
@@ -152,6 +158,9 @@
   * Graph resource
 * Graphlets -- modules built on this that expose specific parts of the graph
 * Handle 403's in get-graphchilditem
+* Add user consent, tenant consent options to set-graphconsent and new-graphapplication
+* Fix Connect-Graph failure mode to not disconnect you first, only after getting token
+* Remove __GetSimpleConnection
 
 ### Done
 
@@ -263,6 +272,57 @@
 * Rename to AutoGraphPS-SDK
 * Customize README
 * Customize WALKTHROUGH
+* Fix invoke-graphrequest parameter names (-verb should be -method, -payload should be -body)
+* Add Remove-GraphItem
+* Change scopenames arguments to scopes
+* New-GraphApplication
+* Get-GraphApplication
+* Get-GraphApplicationLocalCertificate (wrong name thought)
+* Remove-GraphApplicationConsent
+* Get-GraphApplicationConsent
+* Set-GraphApplicationConsent
+* Automatically find cert for apponly
+* Add app enumeration
+* Add app creation
+* App deletion
+* Change -tenantname to -tenantid
+* Allow connect-graph to specify -tenantid to support single tenant app
+* Dynamically obtain scopes
+* Add formatting to get-graphapplication
+* Rename get-graphapplicationcertificate to get-graphlocalcertificate
+* Change -scopes to -permissions
+* Add formatting to get-graphapplicationconsent
+* Add scope parameter completion to new-graphapplication
+* Add consent user to set-graphconsent
+* Fix case sensitivity in collections
+* Add scope parameter completion to get-graphitem, invoke-graphitem, get-graphapplication, any others
+* Separate permissions args -- apparently apponly and delegated permissions have duplicate names, but different id's
+* Preserve case on parameter completion
+* Eliminate need for skipscopecheck by moving to autocompleted dynamicparams
+* Make new-graphconnection position 0 argument be permissions
+* Reference walkthrough at top of README -- nobody's reading!
+* Remove-GraphApplication
+* Get-GraphApplicationCertificate
+* Change get-graphlocalcertificate to find-graphlocalcertificate
+* Rename Get-GraphConnection to Get-GraphConnection
+* Make common request arguments
+* Register-GraphApplication
+* Unregister-GraphApplication
+* Remove permissions and cloud from cmdlets
+* Whoa -- add scriptclass feature to generate unique hash codes (use psobject.members.gethashcode(), assuming it stays stable)
+* Remove -force from remove- cmdlets
+* Get-GraphApplicationServicePrincipal
+* Rename GraphApplicationRegistration to GraphApplicationObject?
+* Make app cmdlets use real time types
+* Add times to new-graphapplication and new-localgraphcertificate
+* Add full pipeline support to consent commands
+* make token cache per app for v2 auth at least
+* Add confidential client to user auth for app creation and commands
+* Make new-graphapplication explicitly use confidential / public
+* Remove graphuri from getauthcontext
+* Simplify token cache
+* fix scriptclass issue where argument names collide with the invoke method in scriptclass
+* Add app creation, enumeration, update
 
 ### Postponed
 

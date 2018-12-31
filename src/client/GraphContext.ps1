@@ -65,18 +65,18 @@ ScriptClass GraphContext {
             $this.scriptclass |=> GetConnection
         }
 
-        if ( $this.connection |=> IsConnected ) {
-            write-verbose 'Disconnecting existing context connection'
-            $this.connection |=> Disconnect
-        } else {
-            write-verbose 'Skipping disconnect as exiting context connection is not connected'
-        }
-
         write-verbose 'Connecting...'
 
         $newConnection |=> Connect
 
         write-verbose 'Connection succeeded.'
+
+        if ( $this.connection |=> IsConnected ) {
+            write-verbose 'Disconnecting existing context connection'
+            $this.connection |=> Disconnect
+        } else {
+            write-verbose 'Skipping disconnect as existing context connection is not connected'
+        }
 
         $this.connection = $newConnection
     }
@@ -92,7 +92,7 @@ ScriptClass GraphContext {
 
         function __initialize {
             $::.LogicalGraphManager |=> __initialize
-            $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null (__GetSimpleConnection ([GraphType]::MSGraph)) (GetDefaultVersion) $this.defaultContextName
+            $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null ($::.GraphConnection |=> NewSimpleConnection ([GraphType]::MSGraph) Public @('User.Read')) (GetDefaultVersion) $this.defaultContextName
             $this.current = $currentContext.Name
         }
 
@@ -146,34 +146,11 @@ ScriptClass GraphContext {
         }
 
         function GetDefaultVersion {
-            'v1.0'
+            $::.GraphEndpoint.DefaultGraphAPIVersion
         }
 
         function __IsContextConnected($context) {
             $context -and ($context.connection |=> IsConnected)
-        }
-
-        function __GetSimpleConnection([GraphCloud] $graphType, [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false) {
-            write-verbose "Connection request for Graph = '$graphType', Cloud = '$cloud', Anonymous = $($anonymous -eq $true)"
-            $graphScopes = if ( $scopenames ) {
-                write-verbose "Scopes requested:"
-                $scopenames | foreach {
-                    write-verbose "`t$($_)"
-                }
-                $scopenames
-            } else {
-                write-verbose "No scopes requested, using User.Read"
-                @('User.Read')
-            }
-
-            $currentContext = GetCurrent
-
-            $sessionConnection = GetCurrentConnection
-            if ( $graphType -eq [GraphType]::AADGraph -or ! (__IsContextConnected $currentContext) -or (! $anonymous -and ! $sessionConnection.identity)) {
-                $::.GraphConnection |=> NewSimpleConnection $graphType $cloud $graphScopes $anonymous
-            } else {
-                $sessionConnection
-            }
         }
 
         function GetConnection($connection = $null, $context = $null, $cloud = $null, [String[]] $scopenames = $null, $anonymous = $null) {
@@ -190,7 +167,7 @@ ScriptClass GraphContext {
             } elseif ( $currentContext ) {
                 write-verbose "Found existing connection from current context '$($currentcontext.name)'"
                 if ( ( ! $cloud -or $currentContext.cloud -eq $cloud) -and
-                     (!$scopenames -or $scopenames -eq 'User.Read' -or ($scopenames -is [String[]] -and $scopenames.length -eq 1 -and $scopenames[0] -eq 'User.Read' )) -and
+                     (!$scopenames -or ($scopenames -is [String] -and $scopenames -eq 'User.Read') -or ($scopenames -is [String[]] -and $scopenames.length -eq 1 -and $scopenames[0] -eq 'User.Read' )) -and
                      ! $anonymous
                    ) {
                        write-verbose "Current context is compatible with supplied arguments, will use it"
@@ -218,7 +195,7 @@ ScriptClass GraphContext {
                 $namedArguments['ScopeNames'] = $connectionScopes
 
                 write-verbose "Custom arguments or no current context -- getting a new connection"
-                $newConnection = __GetSimpleConnection ([GraphType]::MSGraph) @namedArguments
+                $newConnection = $::.GraphConnection |=> NewSimpleConnection ([GraphType]::MSGraph) @namedArguments
                 if ( $chosenContext ) {
                     write-verbose ("Adding new connection to context '{0}'" -f $chosenContext.name)
                     $chosenContext.connection = $newConnection

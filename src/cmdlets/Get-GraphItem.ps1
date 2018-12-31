@@ -14,6 +14,7 @@
 
 . (import-script Invoke-GraphRequest)
 . (import-script common/ItemResultHelper)
+. (import-script common/PermissionParameterCompleter)
 
 function Get-GraphItem {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
@@ -38,7 +39,7 @@ function Get-GraphItem {
         [Switch] $Descending,
 
         [parameter(parametersetname='MSGraphNewConnection')]
-        [String[]] $ScopeNames = $null,
+        [String[]] $Permissions = $null,
 
         [String] $Version = $null,
 
@@ -80,8 +81,8 @@ function Get-GraphItem {
 
     if ( $AADGraph.ispresent ) {
         $requestArguments['AADGraph'] = $AADGraph
-    } elseif ($ScopeNames -ne $null) {
-        $requestArguments['ScopeNames'] = $ScopeNames
+    } elseif ($Permissions -ne $null) {
+        $requestArguments['Permissions'] = $Permissions
     }
 
     if ( $Connection -ne $null ) {
@@ -96,3 +97,4 @@ function Get-GraphItem {
     $targetResultVariable.value = $localResult
 }
 
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

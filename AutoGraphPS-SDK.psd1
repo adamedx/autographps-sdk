@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.5.1'
+ModuleVersion = '0.6.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -75,16 +75,31 @@ FunctionsToExport = @('Get-DynamicValidateSetParameter')
     CmdletsToExport = @(
         'Connect-Graph',
         'Disconnect-Graph',
-        'Get-GraphConnectionStatus',
+        'Find-GraphLocalCertificate',
+        'Get-GraphApplication',
+        'Get-GraphApplicationCertificate',
+        'Get-GraphApplicationConsent',
+        'Get-GraphApplicationServicePrincipal',
+        'Get-GraphConnectionInfo',
         'Get-GraphError',
         'Get-GraphItem',
         'Get-GraphSchema',
         'Get-GraphToken',
         'Get-GraphVersion',
         'Invoke-GraphRequest',
+        'New-GraphApplication',
+        'New-GraphApplicationCertificate',
         'New-GraphConnection',
+        'New-GraphLocalCertificate',
+        'Register-GraphApplication',
+        'Remove-GraphApplication',
+        'Remove-GraphApplicationCertificate',
+        'Remove-GraphApplicationConsent',
+        'Remove-GraphItem',
+        'Set-GraphApplicationConsent',
         'Set-GraphConnectionStatus',
-        'Test-Graph'
+        'Test-Graph',
+        'Unregister-GraphApplication'
     )
 
 # Variables to export from this module
@@ -118,27 +133,52 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\client\GraphContext.ps1',
         '.\src\client\GraphIdentity.ps1',
         '.\src\client\LogicalGraphManager.ps1',
-        '.\src\cmdlets\connect-graph.ps1',
-        '.\src\cmdlets\disconnect-graph.ps1',
-        '.\src\cmdlets\Get-GraphConnectionStatus.ps1',
-        '.\src\cmdlets\get-grapherror.ps1',
-        '.\src\cmdlets\get-graphitem.ps1',
+        '.\src\cmdlets\Connect-Graph.ps1',
+        '.\src\cmdlets\Disconnect-Graph.ps1',
+        '.\src\cmdlets\Find-GraphLocalCertificate.ps1',
+        '.\src\cmdlets\Get-GraphApplication.ps1',
+        '.\src\cmdlets\Get-GraphApplicationCertificate.ps1',
+        '.\src\cmdlets\Get-GraphApplicationConsent.ps1',
+        '.\src\cmdlets\Get-GraphApplicationServicePrincipal.ps1',
+        '.\src\cmdlets\Get-GraphConnectionInfo.ps1',
+        '.\src\cmdlets\Get-Grapherror.ps1',
+        '.\src\cmdlets\Get-Graphitem.ps1',
         '.\src\cmdlets\Get-GraphSchema.ps1',
         '.\src\cmdlets\Get-GraphToken.ps1',
         '.\src\cmdlets\Get-GraphVersion.ps1',
         '.\src\cmdlets\Invoke-GraphRequest.ps1',
+        '.\src\cmdlets\New-GraphApplication.ps1',
+        '.\src\cmdlets\New-GraphApplicationCertificate.ps1',
         '.\src\cmdlets\New-GraphConnection.ps1',
+        '.\src\cmdlets\New-GraphLocalCertificate.ps1',
+        '.\src\cmdlets\Register-GraphApplication.ps1',
+        '.\src\cmdlets\Remove-GraphApplication.ps1',
+        '.\src\cmdlets\Remove-GraphApplicationCertificate.ps1',
+        '.\src\cmdlets\Remove-GraphApplicationConsent.ps1',
+        '.\src\cmdlets\Remove-GraphItem.ps1',
+        '.\src\cmdlets\Set-GraphApplicationConsent.ps1',
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1',
         '.\src\cmdlets\Test-Graph.ps1',
-        '.\src\cmdlets\common\ItemResultHelper.ps1',
+        '.\src\cmdlets\Unregister-GraphApplication.ps1',
+        '.\src\cmdlets\common\ApplicationHelper.ps1',
+        '.\src\cmdlets\common\CommandContext.ps1',
+        '.\src\cmdlets\common\ConsentHelper.ps1',
+        '.\src\cmdlets\common\DisplayTypeFormatter.ps1',
         '.\src\cmdlets\common\DynamicParamHelper.ps1',
+        '.\src\cmdlets\common\ItemResultHelper.ps1',
+        '.\src\cmdlets\common\ParameterCompleter.ps1',
+        '.\src\cmdlets\common\PermissionParameterCompleter.ps1',
         '.\src\cmdlets\common\QueryHelper.ps1',
+        '.\src\common\DefaultScopeData.ps1',
         '.\src\common\GraphAccessDeniedException.ps1',
+        '.\src\common\GraphApplicationCertificate.ps1',
         '.\src\common\GraphUtilities.ps1',
         '.\src\common\PreferenceHelper.ps1',
         '.\src\common\ProgressWriter.ps1',
         '.\src\common\ScopeHelper.ps1',
         '.\src\common\Secret.ps1',
+        '.\src\graphservice\ApplicationAPI.ps1',
+        '.\src\graphservice\ApplicationObject.ps1'
         '.\src\graphservice\graphendpoint.ps1'
         '.\src\REST\GraphErrorRecorder.ps1',
         '.\src\REST\GraphRequest.ps1',
@@ -170,16 +210,33 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.5.1 Release Notes
+# AutoGraphPS-SDK 0.6.0 Release Notes
 
 ## New features
 
-None.
+* Ability to dynamically obtain when possible values for permission scope names used by cmdlet auto-completion, fallback to hard-coded data
+* Get-GraphApplicationServicePrincipal: advanced cmdlet to get an app service principal for use with other API's / SDK's
+* Register-GraphApplication: registers a graph application in the tenant (i.e. creates its service principal)
+* Unregister-GraphApplication: Removes a graph application registration from the tenant (i.e. deletes its service principal)
+* Get-GraphApplicationCertificate: gets the certificates associated with the application
+* New-GraphApplication: new cmdlet that creates a new Graph application!
+* Get-GraphApplication: this new cmdlet retrieves specified applications from the tenant
+* New-GraphLocalCertificate: new cmdlet that creates a certificate that can be used to authenticate Microsoft Graph applications
+* Find-GraphLocalCertificate: new cmdlet that enumerates certificates in the local cert store used for app-only authenticate with Graph
+* Get-GraphApplicationConsent: new cmdlet that lists consent grants for a Graph application
+* Remove-GraphApplication: new cmdlet that deletes applications
+* Remove-GraphApplicationConsent: new cmdlet that removes consent grants for a Graph application
+* Set-GraphApplicationConsent: new cmdlet that updates consent grants for a Graph application
+* Remove-GraphItem: this new cmdlet makes ``DELETE`` requests and supports the object pipeline -- the output of Get-GraphItem can be piped to it to delete the items for instance.
+* The ``new-graphconnection`` cmdlet now supports the ``-Confidential`` option for delegated confidential auth
+* The ``Verb`` option of ``Invoke-GraphRequest`` has been renamed to ``Method`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
+* The ``Payload`` option of ``Invoke-GraphRequest`` has been renamed to ``Body`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
+* Renamed Get-GraphConnectionStatus to Get-GraphConnectionInfo and added additional properties
 
 ## Fixed defects
 
-* Connect-Graph / Disconnect-Graph fail if the current connection is app-only
-* Request body corrupted for Invoke-GraphRequest due to insufficent json serialization depth of 2 causing failed requests
+* Get-GraphError threw exceptions trying to access not-always-present ``headers`` field
+* Certificate paths specified to ``New-GraphConnection`` failed to parse when fully qualified
 "@
 
     } # End of PSData hashtable

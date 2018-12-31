@@ -18,23 +18,25 @@
 . (import-script New-GraphConnection)
 . (import-script common/DynamicParamHelper)
 . (import-script ../common/ScopeHelper)
+. (import-script common/PermissionParameterCompleter)
 
 function Connect-Graph {
-    [cmdletbinding(positionalbinding=$false)]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='simple')]
     param(
-        <#
-        This is implemented as a DynamicParam -- see below
         [parameter(position=0)]
         [parameter(parametersetname='simple')]
         [parameter(parametersetname='reconnect')]
-        [String[]] $ScopeNames = $null,
-        #>
+        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='apponly')]
+        [String[]] $Permissions = $null,
 
         [parameter(parametersetname='simple')]
+        [parameter(parametersetname='apponly')]
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
         [parameter(parametersetname='simple')]
+        [parameter(parametersetname='apponly', mandatory=$true)]
         [string] $AppId = $null,
 
         [parameter(parametersetname='custom',mandatory=$true)]
@@ -43,33 +45,19 @@ function Connect-Graph {
         [parameter(parametersetname='reconnect', mandatory=$true)]
         [Switch] $Reconnect,
 
+        [parameter(parametersetname='apponly', mandatory=$true)]
+        [Switch] $NoninteractiveAppAuth,
+
+        [parameter(parametersetname='apponly')]
+        [string] $CertificatePath,
+
+        [parameter(parametersetname='apponly', mandatory=$true)]
         [parameter(parametersetname='simple')]
-        [parameter(parametersetname='reconnect')]
-        [Switch] $SkipScopeValidation
+        [parameter(parametersetname='custom')]
+        [string] $TenantId
     )
 
-    DynamicParam {
-        Get-DynamicValidateSetParameter ScopeNames ($::.ScopeHelper |=> GetKnownScopes) -ParameterType ([String[]]) -SkipValidation:$SkipScopeValidation.IsPresent -ParameterSets @(
-            @{
-                Position = 0
-            }
-            @{
-                ParameterSetName = 'simple'
-            },
-            @{
-                ParameterSetName = 'reconnect'
-            }
-        )
-    }
-
     begin {
-        <# Make a friendly local variable name for the parameter
-        [parameter(position=0)]
-        [parameter(parametersetname='simple')]
-        [parameter(parametersetname='reconnect')]
-        [String[]] $ScopeNames = $null,
-        #>
-        $ScopeNames = $PsBoundParameters['ScopeNames']
     }
 
     process {
@@ -79,8 +67,8 @@ function Connect-Graph {
             ([GraphCloud]::Public)
         }
 
-        $computedScopes = if ( $scopeNames -ne $null ) {
-            $ScopeNames
+        $computedScopes = if ( $Permissions -ne $null ) {
+            $Permissions
         } else {
             @('User.Read')
         }
@@ -107,8 +95,8 @@ function Connect-Graph {
 
             $newConnection = if ( $Reconnect.IsPresent ) {
                 write-verbose 'Reconnecting using the existing connection if it exists'
-                if ( $scopenames -and $context.connection -and $context.connection.identity ) {
-                    write-verbose 'Creating connection from existing connection but with new scopes'
+                if ( $Permissions -and $context.connection -and $context.connection.identity ) {
+                    write-verbose 'Creating connection from existing connection but with new permissions'
                     $identity = new-so GraphIdentity $context.connection.identity.app $context.connection.graphEndpoint $context.connection.identity.tenantname
                     new-so GraphConnection $context.connection.graphEndpoint $identity $computedScopes
                 } else {
@@ -117,10 +105,29 @@ function Connect-Graph {
                 }
             } else {
                 write-verbose 'No reconnect -- creating a new connection for this context'
-                new-graphconnection -cloud $validatedCloud -appid $applicationid -scopenames $computedScopes
+                $appOnlyArguments = @{}
+                $permissionsArgument = @{}
+
+                if ( $NonInteractiveAppAuth.IsPresent ) {
+                    $appOnlyArguments['NoninteractiveAppAuth'] = $NonInteractiveAppAuth
+                    $appOnlyArguments['TenantId'] = $TenantId
+                } else {
+                    $permissionsArgument['Permissions'] = $computedScopes
+                    if ( $TenantId ) {
+                        $permissionsArgument['TenantId'] = $TenantId
+                    }
+                }
+
+                try {
+                    new-graphconnection -cloud $validatedCloud -appid $applicationid @permissionsArgument @appOnlyArguments -erroraction stop
+                } catch {
+                    throw
+                }
             }
 
             $context |=> UpdateConnection $newConnection
         }
     }
 }
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Connect-Graph Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

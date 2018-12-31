@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,20 +26,17 @@ ScriptClass GraphApplication {
     $AuthType = ([GraphAppAuthType]::Delegated)
     $RedirectUri = $null
 
-    function __initialize($appId = $null, $RedirectUri = $null, $secret = $null) {
+    function __initialize($appId = $null, $RedirectUri = $null, $secret = $null, $appOnly = $false) {
         $this.AppId = if ( $appId -ne $null ) {
             $appId
-        } else {
-            if ( $RedirectUri ) {
-                throw [ArgumentException]::new("Redirect Uri must '$RedirectUri', it must be `$null since no AppId was specified")
-            }
+        }
 
-            $::.Application.AppId
+        if ( $appOnly ) {
+            $this.AuthType = ([GraphAppAuthType]::AppOnly)
         }
 
         if ( $secret ) {
             $this.secret = new-so Secret $secret
-            $this.AuthType = ([GraphAppAuthType]::AppOnly)
         }
 
         $this.RedirectUri = if ( $RedirectUri ) {
@@ -50,7 +47,7 @@ ScriptClass GraphApplication {
     }
 
     function __GetDefaultRedirectUri($appId) {
-        'msal{0}://auth' -f $appId
+        'urn:ietf:wg:oauth:2.0:oob'
     }
 
     function IsConfidential {

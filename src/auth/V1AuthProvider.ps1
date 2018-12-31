@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,22 +20,25 @@ ScriptClass V1AuthProvider {
         $this.base = $base
     }
 
-    function GetAuthContext($app, $graphEndpointUri, $authUri) {
+    function GetAuthContext($app, $authUri) {
         New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $authUri, $this.scriptclass.__TokenCache
     }
 
     function GetUserInformation($token) {
         $userId = $null
         $scopes = $null
+        $userObjectId = $null
 
         if ( $token -and $token.UserInfo ) {
             $userId = $token.UserInfo.DisplayableId
             $scopes = $null
+            $userObjectId = $token.UserInfo.UniqueId
         }
 
         [PSCustomObject]@{
             userId = $userId
             scopes = $scopes
+            userObjectId = $userObjectId
         }
     }
 
@@ -56,6 +59,10 @@ ScriptClass V1AuthProvider {
         write-verbose 'V1 auth provider acquiring initial app token'
 
         __AcquireAppToken $authContext
+    }
+
+    function AcquireFirstUserTokenConfidential($authContext, $scopes) {
+        throw [NotImplementedException]::new("Confidential delegated user authentication not yet implemented for v1 authentication provider")
     }
 
     function AcquireRefreshedToken($authContext, $token) {
