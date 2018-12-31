@@ -4,7 +4,8 @@
 
 * Fix copyrights
 * Simplify parametersets on new-graphapplication, others
-* Simplify token cache
+* Add automatic tenantid detection
+* Make connect-graph support confidential delegated user
 * ------------------------------------
 * Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
 * Convert some verbose statements to debug
@@ -30,24 +31,6 @@
 * Add thumbprint option to get-graphapplicationcertificate
 * Make AppAPI version
 * Reuse keycredentials in addkeycredentials
-
-* fix scriptclass issue where argument names collide with the invoke method in scriptclass
-
-* Add app creation, enumeration, update
-  * Support confidential client for user auth? Yes.
-  * Support expiration time in certificate
-  * Set-GraphApplication -- needed
-  * Register-GraphApplication -- needed
-  * Get-GraphApplicationServicePrincipal ?
-  * Register-GraphApplication ?
-  * Get-GraphApplicationRegistration ?
-  * Unregister-GraphApplication ?
-  * New-GraphApplicationCertificate
-  * Remove-GraphApplicationCertificate
-  * Set-GraphApplicationCertificate ?
-  * Remove-GraphApplicationLocalCertificate ?
-  * Import-GraphApplicationLocalCertificate ?
-  * Set-GraphApplicationPermissions ?
 
 * Extend Get-GraphToken to support all scenarios, better formats
 * Extend Get-GraphToken to support auth code
@@ -337,6 +320,9 @@
 * Add confidential client to user auth for app creation and commands
 * Make new-graphapplication explicitly use confidential / public
 * Remove graphuri from getauthcontext
+* Simplify token cache
+* fix scriptclass issue where argument names collide with the invoke method in scriptclass
+* Add app creation, enumeration, update
 
 ### Postponed
 

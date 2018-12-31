@@ -228,6 +228,7 @@ PrivateData = @{
 * Remove-GraphApplicationConsent: new cmdlet that removes consent grants for a Graph application
 * Set-GraphApplicationConsent: new cmdlet that updates consent grants for a Graph application
 * Remove-GraphItem: this new cmdlet makes ``DELETE`` requests and supports the object pipeline -- the output of Get-GraphItem can be piped to it to delete the items for instance.
+* The ``new-graphconnection`` cmdlet now supports the ``-Confidential`` option for delegated confidential auth
 * The ``Verb`` option of ``Invoke-GraphRequest`` has been renamed to ``Method`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
 * The ``Payload`` option of ``Invoke-GraphRequest`` has been renamed to ``Body`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
 * Renamed Get-GraphConnectionStatus to Get-GraphConnectionInfo and added additional properties
