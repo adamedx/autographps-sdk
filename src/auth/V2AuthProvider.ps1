@@ -28,10 +28,10 @@ ScriptClass V2AuthProvider {
                 $authUri,
                 $app.RedirectUri,
                 $credential,
-                ($this.scriptclass |=> GetUserTokenCache $app.AppId),
-                ($this.scriptclass |=> GetAppTokenCache $app.AppId))
+                ($this.scriptclass |=> GetTokenCacheForApp $app.AppId ([GraphAppAuthType]::AppOnly)),
+                ($this.scriptclass |=> GetTokenCacheForApp $app.AppId ([GraphAppAuthType]::AppOnly)))
         } else {
-            New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $App.AppId, $authUri, ($this.scriptclass |=> GetUserTokenCache $app.AppId)
+            New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $App.AppId, $authUri, ($this.scriptclass |=> GetTokenCacheForApp $app.AppId ([GraphAppAuthType]::Delegated))
         }
     }
 
@@ -225,26 +225,20 @@ ScriptClass V2AuthProvider {
             }
         }
 
-        function GetUserTokenCache($appId) {
-            $existingCache = $this.__UserTokenCache[$appId]
-
-            if ( $existingCache ) {
-                $existingCache
+        function GetTokenCacheForApp($appId, [GraphAppAuthType] $authType) {
+            $cacheTable = if ( $authType -eq ([GraphAppAuthType]::Delegated) ) {
+                $this.__UserTokenCache
             } else {
-                $newCache = New-Object Microsoft.Identity.Client.TokenCache
-                $this.__UserTokenCache.Add($appId, $newCache)
-                $newCache
+                $this.__AppTokenCache
             }
-        }
 
-        function GetAppTokenCache($appId) {
-            $existingCache = $this.__AppTokenCache[$appId]
+            $existingCache = $cacheTable[$appId]
 
             if ( $existingCache ) {
                 $existingCache
             } else {
                 $newCache = New-Object Microsoft.Identity.Client.TokenCache
-                $this.__AppTokenCache.Add($appId, $newCache)
+                $cacheTable.Add($appId, $newCache)
                 $newCache
             }
         }
