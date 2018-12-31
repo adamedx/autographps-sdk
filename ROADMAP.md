@@ -4,7 +4,6 @@
 
 * Fix copyrights
 * Update README
-* Fix psm1
 * ------------------------------------
 * Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
 * Convert some verbose statements to debug
@@ -326,6 +325,7 @@
 * Make connect-graph support confidential delegated user
 * Consistency in noninteractiveauth names
 * Simplify parametersets on new-graphapplication, others
+* Fix psm1
 
 ### Postponed
 
