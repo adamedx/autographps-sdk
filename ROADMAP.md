@@ -4,8 +4,7 @@
 
 * Fix copyrights
 * Simplify parametersets on new-graphapplication, others
-* Add automatic tenantid detection
-* Make connect-graph support confidential delegated user
+* Fix psm1
 * ------------------------------------
 * Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
 * Convert some verbose statements to debug
@@ -159,7 +158,6 @@
 * Graphlets -- modules built on this that expose specific parts of the graph
 * Handle 403's in get-graphchilditem
 * Add user consent, tenant consent options to set-graphconsent and new-graphapplication
-* Fix Connect-Graph failure mode to not disconnect you first, only after getting token
 * Remove __GetSimpleConnection
 
 ### Done
@@ -323,6 +321,10 @@
 * Simplify token cache
 * fix scriptclass issue where argument names collide with the invoke method in scriptclass
 * Add app creation, enumeration, update
+* Add automatic tenantid detection
+* Add parameter to disconnect-graph
+* Make connect-graph support confidential delegated user
+* Consistency in noninteractiveauth names
 
 ### Postponed
 

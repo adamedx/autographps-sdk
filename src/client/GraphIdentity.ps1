@@ -74,7 +74,7 @@ ScriptClass GraphIdentity {
 
     function ClearAuthentication {
         if ( $this.token -and $this.app.AuthType -eq ([GraphAppAuthType]::Delegated) ) {
-            $authUri = $this.graphEndpoint |=> GetAuthUri $this.TenantName
+            $authUri = $this.graphEndpoint |=> GetAuthUri (GetTenantId $this.TenantName)
 
             $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
             $authContext = $providerInstance |=> GetAuthContext $this.app $this.graphEndpoint.Graph $authUri
@@ -92,7 +92,7 @@ ScriptClass GraphIdentity {
 
         write-verbose ("Adding scopes to request: {0}" -f ($scopes -join ';'))
 
-        $authUri = $graphEndpoint |=> GetAuthUri $this.TenantName
+        $authUri = $graphEndpoint |=> GetAuthUri (GetTenantId $this.TenantName)
         write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
 
         $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
@@ -134,6 +134,15 @@ ScriptClass GraphIdentity {
         }
 
         $result
+    }
+
+    function GetTenantId($specifiedTenantId) {
+        if ( $specifiedTenantId ) {
+            $specifiedTenantId
+        } else {
+            __UpdateTenantDisplayInfo
+            $this.tenantDisplayId
+        }
     }
 
     function __UpdateTenantDisplayInfo {

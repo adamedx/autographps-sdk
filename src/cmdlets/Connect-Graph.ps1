@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,10 +46,12 @@ function Connect-Graph {
         [Switch] $Reconnect,
 
         [parameter(parametersetname='apponly', mandatory=$true)]
-        [Switch] $NoninteractiveAppAuth,
+        [Switch] $NoninteractiveAppOnlyAuth,
 
         [parameter(parametersetname='apponly')]
         [string] $CertificatePath,
+
+        [switch] $Confidential,
 
         [parameter(parametersetname='apponly', mandatory=$true)]
         [parameter(parametersetname='simple')]
@@ -106,20 +108,21 @@ function Connect-Graph {
             } else {
                 write-verbose 'No reconnect -- creating a new connection for this context'
                 $appOnlyArguments = @{}
-                $permissionsArgument = @{}
+                $delegatedArguments = @{}
 
-                if ( $NonInteractiveAppAuth.IsPresent ) {
-                    $appOnlyArguments['NoninteractiveAppAuth'] = $NonInteractiveAppAuth
+                if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
+                    $appOnlyArguments['NoninteractiveAppOnlyAuth'] = $NoninteractiveAppOnlyAuth
                     $appOnlyArguments['TenantId'] = $TenantId
                 } else {
-                    $permissionsArgument['Permissions'] = $computedScopes
+                    $delegatedArguments['Permissions'] = $computedScopes
+                    $delegatedArguments['Confidential'] = $Confidential
                     if ( $TenantId ) {
-                        $permissionsArgument['TenantId'] = $TenantId
+                        $delegatedArguments['TenantId'] = $TenantId
                     }
                 }
 
                 try {
-                    new-graphconnection -cloud $validatedCloud -appid $applicationid @permissionsArgument @appOnlyArguments -erroraction stop
+                    new-graphconnection -cloud $validatedCloud -appid $applicationid @delegatedArguments @appOnlyArguments -erroraction stop
                 } catch {
                     throw
                 }
