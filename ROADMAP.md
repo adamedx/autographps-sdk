@@ -2,9 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Fix copyrights
-* Update README
 * ------------------------------------
+* Add -Token option to new-graphconnection and connect-graph
 * Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
 * Convert some verbose statements to debug
 * Set-GraphApplication
@@ -326,6 +325,8 @@
 * Consistency in noninteractiveauth names
 * Simplify parametersets on new-graphapplication, others
 * Fix psm1
+* Fix copyrights
+* Update README
 
 ### Postponed
 
