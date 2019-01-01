@@ -61,7 +61,7 @@ function New-GraphConnection {
         [parameter(parametersetname='cert', mandatory=$true)]
         [parameter(parametersetname='certpath', mandatory=$true)]
         [parameter(parametersetname='autocert', mandatory=$true)]
-        [Switch] $NoninteractiveAppAuth,
+        [Switch] $NoninteractiveAppOnlyAuth,
 
         [parameter(parametersetname='secret', mandatory=$true)]
         [Switch] $Secret,
@@ -94,13 +94,6 @@ function New-GraphConnection {
         [parameter(parametersetname='customendpoint')]
         [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
 
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [parameter(parametersetname='autocert', mandatory=$true)]
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='cloud')]
-        [parameter(parametersetname='customendpoint')]
         [String] $TenantId = $null
     )
 
@@ -148,7 +141,9 @@ function New-GraphConnection {
                 new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol
             }
 
-            $appSecret = if ( $Confidential.IsPresent -or $NonInteractiveAppAuth.IsPresent ) {
+            $adjustedTenantId = $TenantId
+
+            $appSecret = if ( $Confidential.IsPresent -or $NoninteractiveAppOnlyAuth.IsPresent ) {
                 if ( $Password ) {
                     $Password
                 } elseif ( $Certificate ) {
@@ -158,11 +153,22 @@ function New-GraphConnection {
                 } else {
                     $appCertificate = $::.GraphApplicationCertificate |=> FindAppCertificate $AppId
                     if ( ! $appCertificate ) {
-                        throw "NonInteractiveAppOnly or Confidential was specified, but no password or certificate was specified, and no certificate with the appId '$AppId' in the subject name could be found in the default certificate store location. Specify an explicit certificate or password and retry."
+                        throw "NoninteractiveAppOnlyAuth or Confidential was specified, but no password or certificate was specified, and no certificate with the appId '$AppId' in the subject name could be found in the default certificate store location. Specify an explicit certificate or password and retry."
                     } elseif ( ($appCertificate | gm length -erroraction silentlycontinue) -and $appCertificate.length -gt 1 ) {
-                        throw "NonInteractiveAppAuth or Confidential was specified, and more than one certificate with the appId '$AppId' in the subject name could be found in the default certificate store location. Specify an explicity certificate or password and retry."
+                        throw "NoninteractiveAppOnlyAuth or Confidential was specified, and more than one certificate with the appId '$AppId' in the subject name could be found in the default certificate store location. Specify an explicity certificate or password and retry."
                     }
                     $appCertificate
+                }
+
+                if ( ! $TenantId ) {
+                    write-verbose "No tenant id was specified and app is non-interactive, attempting to get tenant id from current token"
+                    $inferredTenantId = ('GraphContext' |::> GetConnection).Identity |=> GetTenantId
+
+                    if ( ! $inferredTenantId ) {
+                        throw [ArgumentException]::new("No tenant was specified for app-only auth, and a tenant could not be inferred from the current token -- specify a tenant id with the -TenantId parameter and retry the command.")
+                    }
+
+                    $adjustedTenantId = $inferredTenantId
                 }
             }
 
@@ -172,8 +178,8 @@ function New-GraphConnection {
                 $::.Application.AppId
             }
 
-            $app = new-so GraphApplication $newAppId $AppRedirectUri $appSecret $NonInteractiveAppAuth.IsPresent
-            $identity = new-so GraphIdentity $app $graphEndpoint $TenantId
+            $app = new-so GraphApplication $newAppId $AppRedirectUri $appSecret $NoninteractiveAppOnlyAuth.IsPresent
+            $identity = new-so GraphIdentity $app $graphEndpoint $adjustedTenantId
             new-so GraphConnection $graphEndpoint $identity $specifiedScopes
         }
     }

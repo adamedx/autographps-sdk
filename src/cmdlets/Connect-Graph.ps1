@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,37 +23,39 @@
 function Connect-Graph {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='simple')]
     param(
-        [parameter(position=0)]
-        [parameter(parametersetname='simple')]
-        [parameter(parametersetname='reconnect')]
-        [parameter(parametersetname='custom')]
-        [parameter(parametersetname='apponly')]
+        [parameter(position=0, parametersetname='simple')]
+        [parameter(position=0, parametersetname='apponly', mandatory=$true)]
+        [parameter(parametersetname='delegatedconfidential', mandatory=$true)]
+        [string] $AppId = $null,
+
         [String[]] $Permissions = $null,
 
         [parameter(parametersetname='simple')]
         [parameter(parametersetname='apponly')]
+        [parameter(parametersetname='delegatedconfidential')]
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
-        [parameter(parametersetname='simple')]
-        [parameter(parametersetname='apponly', mandatory=$true)]
-        [string] $AppId = $null,
-
-        [parameter(parametersetname='custom',mandatory=$true)]
+        [parameter(parametersetname='existingconnection',mandatory=$true)]
         [PSCustomObject] $Connection = $null,
 
         [parameter(parametersetname='reconnect', mandatory=$true)]
         [Switch] $Reconnect,
 
         [parameter(parametersetname='apponly', mandatory=$true)]
-        [Switch] $NoninteractiveAppAuth,
+        [Switch] $NoninteractiveAppOnlyAuth,
 
+        [parameter(parametersetname='simple')]
         [parameter(parametersetname='apponly')]
+        [parameter(parametersetname='delegatedconfidential')]
         [string] $CertificatePath,
+
+        [parameter(parametersetname='delegatedconfidential', mandatory=$true)]
+        [switch] $Confidential,
 
         [parameter(parametersetname='apponly', mandatory=$true)]
         [parameter(parametersetname='simple')]
-        [parameter(parametersetname='custom')]
+        [parameter(parametersetname='delegatedconfidential')]
         [string] $TenantId
     )
 
@@ -106,20 +108,21 @@ function Connect-Graph {
             } else {
                 write-verbose 'No reconnect -- creating a new connection for this context'
                 $appOnlyArguments = @{}
-                $permissionsArgument = @{}
+                $delegatedArguments = @{}
 
-                if ( $NonInteractiveAppAuth.IsPresent ) {
-                    $appOnlyArguments['NoninteractiveAppAuth'] = $NonInteractiveAppAuth
+                if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
+                    $appOnlyArguments['NoninteractiveAppOnlyAuth'] = $NoninteractiveAppOnlyAuth
                     $appOnlyArguments['TenantId'] = $TenantId
                 } else {
-                    $permissionsArgument['Permissions'] = $computedScopes
+                    $delegatedArguments['Permissions'] = $computedScopes
+                    $delegatedArguments['Confidential'] = $Confidential
                     if ( $TenantId ) {
-                        $permissionsArgument['TenantId'] = $TenantId
+                        $delegatedArguments['TenantId'] = $TenantId
                     }
                 }
 
                 try {
-                    new-graphconnection -cloud $validatedCloud -appid $applicationid @permissionsArgument @appOnlyArguments -erroraction stop
+                    new-graphconnection -cloud $validatedCloud -appid $applicationid @delegatedArguments @appOnlyArguments -erroraction stop
                 } catch {
                     throw
                 }

@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ function Get-GraphConnectionInfo {
             if (! $specificContext ) {
                 throw "The specified Graph '$Graph' could not be found"
             }
+            $specificContext
         } elseif ( $graph | gm Details -erroraction ignore ) {
             $Graph.details
         } else {
