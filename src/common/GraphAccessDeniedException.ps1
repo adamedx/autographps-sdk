@@ -19,7 +19,7 @@ function __GetGraphAccessDeniedExceptionMessage( [System.Net.WebException] $webE
         $response.statuscode
     }
 
-    "Graph endpoint returned http status '$statusCode' accessing '$graphUri'. Retry after re-authenticating via the 'Connect-Graph' cmdlet and requesting appropriate permission scopes for this application. See the following location for documentation on scopes that may apply to this part of the Graph: 'https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference'."
+    "Graph endpoint returned http status '$statusCode' accessing '$graphUri'. Retry after re-authenticating via the 'Connect-Graph' cmdlet and requesting appropriate permissions for this application. See the following location for documentation on permissions that may apply to this part of the Graph: 'https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference'."
 }
 
 class GraphAccessDeniedException : Exception {
