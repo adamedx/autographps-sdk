@@ -3,6 +3,7 @@
 ## To-do items -- prioritized
 
 * ------------------------------------
+* Change get-graphconnection to take a connection or a graph
 * Add -Token option to new-graphconnection and connect-graph
 * Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
 * Convert some verbose statements to debug

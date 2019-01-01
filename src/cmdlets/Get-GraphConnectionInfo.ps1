@@ -30,7 +30,7 @@ function Get-GraphConnectionInfo {
                 throw "The specified Graph '$Graph' could not be found"
             }
         } elseif ( $graph | gm Details -erroraction ignore ) {
-            $Graph.details
+            $Graph
         } else {
             throw "Specified Graph argument '$Graph' is not a valid type returned by Get-Graph"
         }
