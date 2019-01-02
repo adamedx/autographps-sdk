@@ -25,22 +25,19 @@ Describe "The Test-Graph cmdlet" {
     }
 
     BeforeAll {
-        get-job | remove-job -force
         remove-module -force scriptclass -erroraction silentlycontinue
         import-module -force scriptclass
     }
 
     Context "when receiving a successful response from Graph" {
         BeforeAll {
-            get-job | remove-job -force
             remove-module -force 'autographps-sdk' -erroraction silentlycontinue
             import-module scriptclass -force
             import-module $manifestlocation -force
         }
 
         AfterAll {
-            get-job | remove-job -force
-            remove-module -force 'autographps-sdk' -erroractio silentlycontinue
+            remove-module -force 'autographps-sdk' -erroraction silentlycontinue
         }
 
         It "should succeed when given no parameters" {

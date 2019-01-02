@@ -66,7 +66,7 @@ ScriptsToProcess = @('./src/graph-sdk.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.13.7';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.14.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @('Get-DynamicValidateSetParameter')
@@ -211,6 +211,10 @@ PrivateData = @{
         # ReleaseNotes of this module
         ReleaseNotes = @"
 # AutoGraphPS-SDK 0.6.0 Release Notes
+
+## New dependencies
+
+ScriptClass 0.14.0
 
 ## New features
 
