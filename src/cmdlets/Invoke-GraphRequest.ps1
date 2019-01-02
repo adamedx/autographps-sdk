@@ -27,6 +27,7 @@ function Invoke-GraphRequest {
         [Uri[]] $RelativeUri,
 
         [parameter(position=1)]
+        [ValidateSet('DELETE', 'GET', 'HEAD', 'MERGE', 'OPTIONS', 'PATCH', 'POST', 'PUT', 'TRACE')]
         [String] $Method = 'GET',
 
         [parameter(position=2)]
