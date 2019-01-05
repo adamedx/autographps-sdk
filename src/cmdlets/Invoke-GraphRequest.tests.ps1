@@ -16,24 +16,13 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $manifestLocation   = Join-Path $here '..\..\autographps-sdk.psd1'
 
 Describe 'Invoke-GraphRequest cmdlet' {
-    BeforeAll {
-        remove-module -force 'autographps-sdk' -erroraction ignore
-        import-module scriptclass -force
-        import-module $manifestlocation -force
-    }
-
-    AfterAll {
-        remove-module -force 'autographps-sdk' -erroraction ignore
-    }
-
     $expectedUserPrincipalName = 'searchman@megarock.org'
     $meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName
     $meResponseExpected = "{$meResponseDataExpected}"
 
     Context 'When making REST method calls to Graph' {
         ScriptClass MockToken {
-            function CreateAuthorizationHeader {}
-        }
+            function CreateAuthorizationHeader         }
 
         Mock-ScriptClassMethod GraphConnection GetToken {new-so MockToken}
 
