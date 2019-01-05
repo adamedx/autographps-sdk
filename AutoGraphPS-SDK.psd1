@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.6.0'
+ModuleVersion = '0.6.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@ Author = 'Adam Edwards'
 CompanyName = 'Modulus Group'
 
 # Copyright statement for this module
-Copyright = '(c) 2018 Adam Edwards.'
+Copyright = '(c) 2019 Adam Edwards.'
 
 # Description of the functionality provided by this module
 Description = 'PowerShell SDK for automating the Microsoft Graph'
@@ -66,7 +66,7 @@ ScriptsToProcess = @('./src/graph-sdk.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.14.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.14.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @('Get-DynamicValidateSetParameter')
@@ -210,38 +210,18 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.6.0 Release Notes
+# AutoGraphPS-SDK 0.6.1 Release Notes
 
 ## New dependencies
 
-ScriptClass 0.14.0
+ScriptClass 0.14.1
 
 ## New features
 
-* Ability to dynamically obtain when possible values for permission scope names used by cmdlet auto-completion, fallback to hard-coded data
-* Get-GraphApplicationServicePrincipal: advanced cmdlet to get an app service principal for use with other API's / SDK's
-* Register-GraphApplication: registers a graph application in the tenant (i.e. creates its service principal)
-* Unregister-GraphApplication: Removes a graph application registration from the tenant (i.e. deletes its service principal)
-* Get-GraphApplicationCertificate: gets the certificates associated with the application
-* New-GraphApplication: new cmdlet that creates a new Graph application!
-* Get-GraphApplication: this new cmdlet retrieves specified applications from the tenant
-* New-GraphLocalCertificate: new cmdlet that creates a certificate that can be used to authenticate Microsoft Graph applications
-* Find-GraphLocalCertificate: new cmdlet that enumerates certificates in the local cert store used for app-only authenticate with Graph
-* Get-GraphApplicationConsent: new cmdlet that lists consent grants for a Graph application
-* Remove-GraphApplication: new cmdlet that deletes applications
-* Remove-GraphApplicationConsent: new cmdlet that removes consent grants for a Graph application
-* Set-GraphApplicationConsent: new cmdlet that updates consent grants for a Graph application
-* Remove-GraphItem: this new cmdlet makes ``DELETE`` requests and supports the object pipeline -- the output of Get-GraphItem can be piped to it to delete the items for instance.
-* The ``new-graphconnection`` cmdlet now supports the ``-Confidential`` option for delegated confidential auth
-* The ``new-graphconnection`` and ``Connect-Graph`` cmdlets ``NoninteractiveAppAuth`` parameter has been renamed to ``NoninteractiveAppOnlyAuth``
-* The ``Verb`` option of ``Invoke-GraphRequest`` has been renamed to ``Method`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
-* The ``Payload`` option of ``Invoke-GraphRequest`` has been renamed to ``Body`` to match the standard set by core PowerShell commands ``Invoke-WebRequest`` and ``Invoke-RestMethod``.
-* Renamed Get-GraphConnectionStatus to Get-GraphConnectionInfo and added additional properties
-
 ## Fixed defects
 
-* Get-GraphError threw exceptions trying to access not-always-present ``headers`` field
-* Certificate paths specified to ``New-GraphConnection`` failed to parse when fully qualified
+* Add omitted parameter completion for 'Method' parameter of ``Invoke-GraphRequest``
+* Update to ScriptClass 0.14.1 to remove slow  'import-module / remove-module' sequence  before tests that use ScriptClass mock functionality
 "@
 
     } # End of PSData hashtable
