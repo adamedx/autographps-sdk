@@ -22,7 +22,8 @@ Describe 'Invoke-GraphRequest cmdlet' {
 
     Context 'When making REST method calls to Graph' {
         ScriptClass MockToken {
-            function CreateAuthorizationHeader         }
+            function CreateAuthorizationHeader {}
+        }
 
         Mock-ScriptClassMethod GraphConnection GetToken {new-so MockToken}
 
