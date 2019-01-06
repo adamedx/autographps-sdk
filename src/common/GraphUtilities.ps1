@@ -62,7 +62,14 @@ ScriptClass GraphUtilities {
                     'GraphContext' |::> GetCurrent
                 }
 
-                $locationUri = $graphContext.location |=> ToGraphUri
+                $locationUri = if ( $graphContext.location ) {
+                    $graphContext.location |=> ToGraphUri
+                } else {
+                    # By default, locations are not defined, so if there isn't one,
+                    # assume the root
+                    '/'
+                }
+
                 $graphUri = $this.JoinGraphUri($locationUri, $normalizedUri)
                 $canonicalGraphUri = __NormalizeBacktrack $graphUri.tostring()
                 $canonicalGraphUri
@@ -202,8 +209,13 @@ ScriptClass GraphUtilities {
             }
         }
 
-        function ParseGraphRelativeLocation($locationUri) {
-            $components = $locationUri -split ':'
+        function ParseGraphRelativeLocation([string] $locationUri) {
+            $graphName = if ( $locationUri.startswith('/') ) {
+                $segments = $locationUri.tostring() -split '/'
+                if ( $segments[1].endswith(':') ) {
+                    ($locationUri -split ':')[0].trimstart('/')
+                }
+            }
 
             # Handle absolute web uri's, e.g. https://mygraph.microsoft.com/v1.0/singleton/etc
             $locationUriAsWebUri = [Uri] $locationUri
@@ -217,15 +229,11 @@ ScriptClass GraphUtilities {
                 }
             } else {
                 $relativeUri = $locationUri
-                $context = if ( $components.length -eq 1 ) {
+                $context = if ( ! $graphName ) {
                     $::.GraphContext |=> GetCurrent
                 } else {
-                    $graphName = $components[0].trimstart('/')
-                    $relativeUri = ''
-
-                    for ( $component = 1; $component -lt $components.length; $component++ ) {
-                        $relativeUri += $components[$component]
-                    }
+                    # Start 2 after graphname due to the required '/' and ':' in '/graphname:', and account for that in length as well
+                    $relativeUri = $locationUri.substring($graphName.length + 2, $locationUri.length - $graphName.length - 2)
                     $::.logicalgraphmanager.Get().contexts[$graphName].context
                 }
 
