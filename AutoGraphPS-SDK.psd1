@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.6.1'
+ModuleVersion = '0.6.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -66,7 +66,7 @@ ScriptsToProcess = @('./src/graph-sdk.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.14.1';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.14.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @('Get-DynamicValidateSetParameter')
@@ -210,18 +210,23 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.6.1 Release Notes
+# AutoGraphPS-SDK 0.6.2 Release Notes
+
+Bug fix release to address defect in Graph URI parsing library function.
 
 ## New dependencies
 
-ScriptClass 0.14.1
+ScriptClass 0.14.2
 
 ## New features
 
+None.
+
 ## Fixed defects
 
-* Add omitted parameter completion for 'Method' parameter of ``Invoke-GraphRequest``
-* Update to ScriptClass 0.14.1 to remove slow  'import-module / remove-module' sequence  before tests that use ScriptClass mock functionality
+* Fix GraphUtilities ParseGraphRelativeLocation method to correctly handle ':' characters in the URI, add unit tests
+* Use ScriptClass 0.14.2 which fixes broken object mocks
+
 "@
 
     } # End of PSData hashtable

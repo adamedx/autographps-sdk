@@ -13,7 +13,8 @@
 # limitations under the License.
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$manifestLocation   = Join-Path $here '..\..\autographps-sdk.psd1'
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
+. "$here\$sut"
 
 Describe 'Invoke-GraphRequest cmdlet' {
     $expectedUserPrincipalName = 'searchman@megarock.org'

@@ -13,9 +13,10 @@
 # limitations under the License.
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
+. "$here\$sut"
 
 Describe "The Test-Graph cmdlet" {
-    $manifestLocation   = Join-Path $here '..\..\autographps-sdk.psd1'
     $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\testassets\graphping200.json"
 
     Mock Invoke-WebRequest {
@@ -24,22 +25,7 @@ Describe "The Test-Graph cmdlet" {
         $result
     }
 
-    BeforeAll {
-        remove-module -force scriptclass -erroraction silentlycontinue
-        import-module -force scriptclass
-    }
-
     Context "when receiving a successful response from Graph" {
-        BeforeAll {
-            remove-module -force 'autographps-sdk' -erroraction silentlycontinue
-            import-module scriptclass -force
-            import-module $manifestlocation -force
-        }
-
-        AfterAll {
-            remove-module -force 'autographps-sdk' -erroraction silentlycontinue
-        }
-
         It "should succeed when given no parameters" {
             { Test-Graph | out-null } | Should Not Throw
         }
