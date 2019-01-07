@@ -328,6 +328,7 @@
 * Fix psm1
 * Fix copyrights
 * Update README
+* Fix bug in scopehelper where we return all scopes when asked only for delegated
 
 ### Postponed
 
