@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Fix bug in scopehelper where we return all scopes when asked only for delegated
+
 * ------------------------------------
 * Change get-graphconnection to take a connection or a graph
 * Add -Token option to new-graphconnection and connect-graph

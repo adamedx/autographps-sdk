@@ -60,7 +60,7 @@ ScriptClass ScopeHelper {
         function GetKnownPermissionsSorted($connection, $graphAppAuthType) {
             __InitializeGraphScopes $connection
             if ( $this.sortedGraphPermissions ) {
-                if ( ! $graphAppAuthType ) {
+                if ( $graphAppAuthType -eq $null ) {
                     $this.sortedGraphPermissions
                 } elseif ( $graphAppAuthType -eq ([GraphAppAuthType]::Delegated) ) {
                     $this.sortedGraphDelegatedPermissions
@@ -73,11 +73,6 @@ ScriptClass ScopeHelper {
                 # At least return something if this fails
                 @('Directory.AccessAsUser.All', 'User.Read')
             }
-        }
-
-        function GetDynamicScopeCmdletParameter($parameterName, [boolean] $skipValidation, [HashTable[]] $parameterSets) {
-            $scopes = $this |=> GetKnownPermissionsSorted ($::.GraphContext |=> GetCurrentConnection)
-            Get-DynamicValidateSetParameter $parameterName $scopes -ParameterType ([String[]]) -SkipValidation:$skipValidation -ParameterSets $parameterSets
         }
 
         function GetAppOnlyResourceAccessPermissions($scopes, $connection) {
@@ -126,10 +121,27 @@ ScriptClass ScopeHelper {
 
             $scopeNames | foreach {
                 $permissionId = GraphPermissionNameToId $_ $permissionType $connection
+                $permissionData = $this.permissionsByIds[$permissionId]
+
+                $description = if ( $permissionData | gm adminConsentDescription -erroraction ignore ) {
+                    $permissionData.adminConsentDescription
+                } elseif ( $permissionData | gm description -erroraction ignore ) {
+                    $permissionData.description
+                }
+
+                $consentType = 'Admin'
+                if ( $permissionType -eq 'Scope' ) {
+                    if ( $permissionData | gm type -erroraction ignore ) {
+                        $consentType = $permissionData.type
+                    }
+                }
 
                 @{
                     id = $permissionId
                     type = $permissionType
+                    description = $description
+                    consentType = $consentType
+                    name = $_
                 }
             }
         }

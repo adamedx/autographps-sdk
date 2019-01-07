@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.6.2'
+ModuleVersion = '0.7.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -210,22 +210,24 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.6.2 Release Notes
+# AutoGraphPS-SDK 0.7.0 Release Notes
 
-Bug fix release to address defect in Graph URI parsing library function.
+Add full token specification functionality to ``Get-GraphToken``.
 
 ## New dependencies
 
-ScriptClass 0.14.2
+None.
 
 ## New features
 
-None.
+* The ``Get-GraphToken`` cmdlet now takes all of the parameters that can be passed to ``New-GraphConnection``, which means you can easily obtain a token using those parameters for options such as app-only authentication of ``v1`` vs ``v2`` protocols. There is also a ``Current`` parameter that lets you obtain the existing token for the current Graph, and ``Connection`` that lets you obtain the token from an existing connection of your specification.
+* ``ScopeHelper``'s ``GetPermissionsByName`` method now returns full information about the permission, including the name, consent type, and description.
 
 ## Fixed defects
 
-* Fix GraphUtilities ParseGraphRelativeLocation method to correctly handle ':' characters in the URI, add unit tests
-* Use ScriptClass 0.14.2 which fixes broken object mocks
+* Remove unused method from ScopeHelper.
+* Fix issue in ScopeHelper where passing an enum of value 0 for the authtype parameter of GetKnownPermissionsSorted was treated as $null instead of as the enum value, resulting in completely different query results
+
 
 "@
 
