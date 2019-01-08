@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.7.0'
+ModuleVersion = '0.7.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -210,7 +210,7 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.7.0 Release Notes
+# AutoGraphPS-SDK 0.7.1 Release Notes
 
 Add full token specification functionality to ``Get-GraphToken``.
 
@@ -225,8 +225,9 @@ None.
 
 ## Fixed defects
 
+* Fix inability to publish this module due to a problematic '`$' character (missing the backtick escape) in this release notes section! Errors from PowerShellGallery API included nonsensical 500's and 403's.
 * Remove unused method from ScopeHelper.
-* Fix issue in ScopeHelper where passing an enum of value 0 for the authtype parameter of GetKnownPermissionsSorted was treated as $null instead of as the enum value, resulting in completely different query results
+* Fix issue in ScopeHelper where passing an enum of value 0 for the authtype parameter of GetKnownPermissionsSorted was treated as `$null instead of as the enum value, resulting in completely different query results
 
 
 "@
