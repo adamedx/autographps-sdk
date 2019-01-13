@@ -34,15 +34,15 @@ function New-GraphApplication {
 
         [String[]] $GrantedPermissions,
 
-        [parameter(parametersetname='delegated')]
         [parameter(parametersetname='delegatedconfidential', mandatory=$true)]
+        [parameter(parametersetname='delegatedconfidentialexistingcertstorepath', mandatory=$true)]
         [switch] $Confidential,
 
         [parameter(parametersetname='delegated')]
         [switch] $AADAccountsOnly,
 
         [parameter(parametersetname='apponlynocred', mandatory=$true)]
-        [parameter(parametersetname='delegatedconfidential')]
+        [parameter(parametersetname='delegatedconfidentialnocred', mandatory=$true)]
         [switch] $NoCredential,
 
         [switch] $SkipTenantRegistration,
@@ -54,20 +54,28 @@ function New-GraphApplication {
         [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
         [switch] $NoninteractiveAppOnlyAuth,
 
-        [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
+        [parameter(parametersetname='apponlyexistingcertpath', mandatory=$true)]
+        [parameter(parametersetname='delegatedconfidentialexistingcertstorepath', mandatory=$true)]
         $ExistingCertStorePath,
 
         [parameter(parametersetname='apponlynewcert')]
+        [parameter(parametersetname='delegatedconfidentialnewcert')]
         $CertStoreLocation = 'cert:/currentuser/my',
 
         [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
         $Certificate,
 
         [parameter(parametersetname='apponlynewcert')]
+        [parameter(parametersetname='delegatedconfidentialnewcert')]
         [TimeSpan] $CertValidityTimeSpan,
 
         [parameter(parametersetname='apponlynewcert')]
+        [parameter(parametersetname='delegatedconfidentialnewcert')]
         [DateTime] $CertValidityStart,
+
+        [parameter(parametersetname='apponlynewcert')]
+        [parameter(parametersetname='delegatedconfidentialnewcert')]
+        [string] $CertOutputDirectory,
 
         [switch] $ConsentForTenant,
 
@@ -79,6 +87,10 @@ function New-GraphApplication {
 
         [PSCustomObject] $Connection = $null
     )
+
+    if ( $CertOutputDirectory -and ! (test-path -pathtype container $CertOutputDirectory) ) {
+        throw [ArgumentException]::new("The CertOutputDirectory parameter value '$CertOutputDirectory' is not a valid directory")
+    }
 
     if ( $SkipTenantRegistration.IsPresent ) {
         if ( $UserIdToConsent -or $ConsentForTenant.IsPresent ) {
@@ -109,6 +121,7 @@ function New-GraphApplication {
     $newApp = $newAppRegistration |=> CreateNewApp
 
     if ( ( $Confidential.IsPresent -or $NoninteractiveAppOnlyAuth.IsPresent ) -and ! $NoCredential.IsPresent ) {
+        $certificate = $null
         try {
             $certificate = new-so GraphApplicationCertificate $newApp.appId $newApp.Id $Name $CertValidityTimeSpan $CertValidityStart $certStoreLocation
             $certificate |=> Create
@@ -117,6 +130,10 @@ function New-GraphApplication {
             $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | rm -erroraction ignore
             $appAPI |=> RemoveApplicationByObjectId $newApp.Id ignore
             throw
+        }
+
+        if ( $CertOutputDirectory ) {
+            $certificate |=> Export $CertOutputDirectory
         }
     }
 

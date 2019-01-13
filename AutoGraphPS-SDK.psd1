@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.7.1'
+ModuleVersion = '0.8.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -66,7 +66,7 @@ ScriptsToProcess = @('./src/graph-sdk.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.14.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.15.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @('Get-DynamicValidateSetParameter')
@@ -210,25 +210,19 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.7.1 Release Notes
-
-Add full token specification functionality to ``Get-GraphToken``.
+# AutoGraphPS-SDK 0.8.0 Release Notes
 
 ## New dependencies
 
-None.
+ScriptClass 0.15.0
 
 ## New features
 
-* The ``Get-GraphToken`` cmdlet now takes all of the parameters that can be passed to ``New-GraphConnection``, which means you can easily obtain a token using those parameters for options such as app-only authentication of ``v1`` vs ``v2`` protocols. There is also a ``Current`` parameter that lets you obtain the existing token for the current Graph, and ``Connection`` that lets you obtain the token from an existing connection of your specification.
-* ``ScopeHelper``'s ``GetPermissionsByName`` method now returns full information about the permission, including the name, consent type, and description.
+* The ``New-GraphApplication`` cmdlet now supports a ``CertOutputDirectory`` parameter to which the new certificate created by the cmdlet is exported as a .pfx file.
 
 ## Fixed defects
 
-* Fix inability to publish this module due to a problematic '`$' character (missing the backtick escape) in this release notes section! Errors from PowerShellGallery API included nonsensical 500's and 403's.
-* Remove unused method from ScopeHelper.
-* Fix issue in ScopeHelper where passing an enum of value 0 for the authtype parameter of GetKnownPermissionsSorted was treated as `$null instead of as the enum value, resulting in completely different query results
-
+* Fixed regression in ``New-GraphApplication`` for creating app-only apps with the ``NoninteractiveAppOnlyAuth`` parameter -- the cmdlet was failing with ``BadRequest`` due to passing incorrect parameters to the Graph REST API.
 
 "@
 
