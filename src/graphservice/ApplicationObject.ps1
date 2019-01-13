@@ -115,8 +115,8 @@ ScriptClass ApplicationObject {
 
         $resourceAccess = @()
 
-        if ( $appOnlyPermissions ) { $appOnlyPermissions | foreach { $resourceAccess += $_ } }
-        if ( $delegatedPermissions ) { $delegatedPermissions | foreach { $resourceAccess += $_ } }
+        if ( $appOnlyPermissions ) { $appOnlyPermissions | foreach { $accessEntry = @{id=$_.id;type=$_.type}; $resourceAccess += $accessEntry } }
+        if ( $delegatedPermissions ) { $delegatedPermissions | foreach { $accessEntry = @{id=$_.id;type=$_.type}; $resourceAccess += $accessEntry } }
 
         $app = @{
             displayName = $displayName

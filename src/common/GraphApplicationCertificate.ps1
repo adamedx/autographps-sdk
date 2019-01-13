@@ -123,4 +123,15 @@ ScriptClass GraphApplicationCertificate {
     function GetEncodedCertificateThumbprint {
         [Convert]::ToBase64String($this.X509Certificate.thumbprint)
     }
+
+    function Export($outputDirectory) {
+        $destination = join-path $outputDirectory "GraphApp-$($this.appid).pfx"
+
+        if ( test-path $destination ) {
+            throw [ArgumentError]::new("An exported certificate for appid '$($this.appid)' already exists at the specified directory location '$outputDirectory'")
+        }
+
+        $this.X509Certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx) |
+          Set-Content -Encoding byte $destination
+    }
 }
