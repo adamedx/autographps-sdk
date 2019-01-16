@@ -56,25 +56,29 @@ ScriptClass ParameterCompleter {
             $matchingItems = @()
             $lastMatch = $null
 
-            $interval = $sortedItemsCollection.Count / 2
-            $current = $interval
+            $first = 0
+            $last = $sortedItemsCollection.Count - 1
+
+            $current = 0
             $previous = -1
+
             if ( $target.length -ne 0 ) {
-                while ( [int] $previous -ne [int] $current ) {
-                    $interval /= 2
+                while ($current -ne $previous) {
                     $previous = $current
-                    $item = $sortedItemsCollection[[int]$current]
+                    $current = $first + [int] ($last - $first) / 2
+
+                    $item = $sortedItemsCollection[$current]
                     $itemNormal = $item.tolower()
 
                     $comparison = $targetNormal.CompareTo($itemNormal)
 
                     if ( $comparison -gt 0 ) {
-                        $current += $interval
+                        $first = $current
                     } else {
                         if ( $itemNormal.StartsWith($targetNormal) ) {
-                            $lastMatch = [int] $current
+                            $lastMatch = $current
                         }
-                        $current -= $interval
+                        $last = $current
                     }
                 }
             } else {
