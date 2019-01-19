@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.8.0'
+ModuleVersion = '0.8.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -210,19 +210,19 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.8.0 Release Notes
+# AutoGraphPS-SDK 0.8.1 Release Notes
 
 ## New dependencies
 
-ScriptClass 0.15.0
+None.
 
 ## New features
 
-* The ``New-GraphApplication`` cmdlet now supports a ``CertOutputDirectory`` parameter to which the new certificate created by the cmdlet is exported as a .pfx file.
+None.
 
 ## Fixed defects
 
-* Fixed regression in ``New-GraphApplication`` for creating app-only apps with the ``NoninteractiveAppOnlyAuth`` parameter -- the cmdlet was failing with ``BadRequest`` due to passing incorrect parameters to the Graph REST API.
+* Fixed defect in parameter completion where some parameters were not completed, added tests to prevent regression
 
 "@
 

@@ -41,7 +41,7 @@ ScriptClass ParameterCompleter {
                 if ( $sortedItems.Count -eq 0 ) {
                     return $null
                 }
-                $sortedItems
+                , $sortedItems
             } catch [System.Management.Automation.PropertyNotFoundException] {
                 # Don't assign an array / collection of size 1 here as PowerShell
                 # converts this to a non-array / collection! Do it outside the catch
@@ -50,39 +50,50 @@ ScriptClass ParameterCompleter {
             # This happens if $sortedItems is not an array, i.e. it is
             # just one string.
             if ( ! $sortedItemsCollection ) {
-                $sortedItemsCollection = @($sortedItems)
+                $sortedItemsCollection = , $sortedItems
             }
 
             $matchingItems = @()
-            $lastMatch = $null
+            $matchIndex = $null
 
-            $interval = $sortedItemsCollection.Count / 2
-            $current = $interval
-            $previous = -1
             if ( $target.length -ne 0 ) {
-                while ( [int] $previous -ne [int] $current ) {
-                    $interval /= 2
-                    $previous = $current
-                    $item = $sortedItemsCollection[[int]$current]
+                $left = 0
+                $right = $sortedItemsCollection.Count - 1
+                $current = $null
+
+                while ($right -ge $left) {
+                    $current = $left + [int] (($right - $left) / 2)
+
+                    $item = $sortedItemsCollection[$current]
                     $itemNormal = $item.tolower()
 
                     $comparison = $targetNormal.CompareTo($itemNormal)
 
                     if ( $comparison -gt 0 ) {
-                        $current += $interval
+                        $left = $current + 1
                     } else {
                         if ( $itemNormal.StartsWith($targetNormal) ) {
-                            $lastMatch = [int] $current
+                            $matchIndex = $current
+                            break
                         }
-                        $current -= $interval
+                        $right = $current -1
                     }
                 }
             } else {
-                $lastMatch = 0
+                $matchIndex = 0
             }
 
-            if ( $lastMatch -ne $null ) {
-                for ( $startsWithCandidate = $lastMatch; $startsWithCandidate -lt $sortedItemsCollection.Count; $startsWithCandidate++ ) {
+            if ( $matchIndex -ne $null ) {
+                for ( $startsWithCandidateBefore = $matchIndex - 1; $startsWithCandidateBefore -ge 0; $startsWithCandidateBefore-- ) {
+                    $candidate = $sortedItemsCollection[$startsWithCandidateBefore]
+                    if ( ! $candidate.tolower().StartsWith($targetNormal) ) {
+                        break
+                    }
+
+                    $matchingItems = @($candidate) + $matchingItems
+                }
+
+                for ( $startsWithCandidate = $matchIndex; $startsWithCandidate -lt $sortedItemsCollection.Count; $startsWithCandidate++ ) {
                     $candidate = $sortedItemsCollection[$startsWithCandidate]
                     if ( ! $candidate.tolower().StartsWith($targetNormal) ) {
                         break
