@@ -44,10 +44,20 @@ function InstallDependencies($clean) {
     $packagesConfigFile = join-path -path (join-path $psscriptroot ..) -child packages.config
     iex "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination' -packagesavemode nuspec" | out-host
 
-
-    # Remove everything that is not .net45 -- otherwise there will be binaries
+    # Remove everything that is not net45 -- otherwise there will be binaries
     # for 5 or more additional packages!
-    ls lib\*\lib\* | where { $_.name -ne 'net45' } | rm -r -force
+     ls lib -directory | foreach {
+        # Not currently using this, but may need to for
+        # per-assembly exceptions
+        $assemblyName = $_.name.tolower()
+
+        ls "$($_.fullname)/lib" -r | where {
+            $pathname = $_.fullname.tolower()
+            ! $pathname.contains('net45')
+        }
+    } | foreach {
+        rm $_.fullname -r -force
+    }
 }
 
 InstallDependencies $clean
