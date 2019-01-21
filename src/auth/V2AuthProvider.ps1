@@ -40,8 +40,8 @@ ScriptClass V2AuthProvider {
         $scopes = $null
         $userObjectId = $null
 
-        if ( $token -and $token.User ) {
-            $userId = $token.User.DisplayableId
+        if ( $token -and $token.Account ) {
+            $userId = $token.Account.Username
             $scopes = $token.scopes
             $userObjectId = $token.uniqueid
         }
@@ -105,16 +105,17 @@ ScriptClass V2AuthProvider {
         } else {
             # See comment on __ScopesAsScopeList member to understand strange call syntax here
             $requestedScopesFromToken = $this.__ScopesAsScopeList.InvokeReturnAsIs(@($token.scopes))
-            $authContext.protocolContext.AcquireTokenSilentAsync($requestedScopesFromToken, $token.user)
+            $authContext.protocolContext.AcquireTokenSilentAsync($requestedScopesFromToken, $token.account)
         }
     }
 
     function ClearToken($authContext, $token) {
         write-verbose 'V2 auth provider clearing existing token'
-        $user = $token.user
-        $userUpn = $user.displayableid
+        $user = $token.account
+        $userUpn = $token.account.username
         write-verbose "Clearing token for user '$userUpn'"
-        $authContext.protocolContext.Remove($user)
+        $asyncRemoveResult = $authContext.protocolContext.RemoveAsync($user)
+        $asyncRemoveResult.Wait()
     }
 
     $__GetDefaultScopeList = {

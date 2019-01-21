@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Command line SDK for the Microsoft Graph API</description>
     <releaseNotes>Initial development</releaseNotes>
-    <copyright>Copyright 2018</copyright>
+    <copyright>Copyright 2019</copyright>
     <tags>MSGraph Graph Directory PSModule</tags>
     <dependencies>
       <dependency id="scriptclass" version="0.15.0" />
@@ -24,7 +24,7 @@
     <file src="autographps-sdk.tests.ps1" target="." />
     <file src="src\**\*.ps1" target="src/" />
     <file src="build\**\*.ps1" target="build/" />
-    <file src="lib\Microsoft.Identity.Client.1.1.4-preview0002\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.1.1.4-preview0002\lib\net45" />
-    <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.3.19.0\lib\net45\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.3.19.0\lib\net45" />
+    <file src="lib\Microsoft.Identity.Client.2.6.2\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.2.6.2\lib\net45" />
+    <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2\lib\net45\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2\lib\net45" />
   </files>
 </package>
