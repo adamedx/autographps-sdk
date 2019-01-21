@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.8.1'
+ModuleVersion = '0.8.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -210,11 +210,12 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.8.1 Release Notes
+# AutoGraphPS-SDK 0.8.2 Release Notes
 
 ## New dependencies
 
-None.
+Microsoft.Identity.Client.2.6.2
+Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2
 
 ## New features
 
