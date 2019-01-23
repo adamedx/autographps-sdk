@@ -26,12 +26,14 @@ ScriptClass GraphConnection {
     $Scopes = $null
     $Connected = $false
     $Status = [GraphConnectionStatus]::Online
+    $NoBrowserUI = $false
 
-    function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes) {
+    function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes, $noBrowserUI = $false) {
         $this.GraphEndpoint = $graphEndpoint
         $this.Identity = $Identity
         $this.Connected = $false
         $this.Status = [GraphConnectionStatus]::Online
+        $this.NoBrowserUI = ! $::.Application.SupportsBrowserSignin -or $noBrowserUI
 
         if ( $this.GraphEndpoint.Type -eq ([GraphType]::MSGraph) ) {
             if ( $Identity -and ! $scopes ) {
@@ -44,7 +46,7 @@ ScriptClass GraphConnection {
     function Connect {
         if ( ($this.Status -eq [GraphConnectionStatus]::Online) -and (! $this.connected) ) {
             if ($this.Identity) {
-                $this.Identity |=> Authenticate $this.Scopes
+                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI
             }
             $this.connected = $true
         }
@@ -58,7 +60,7 @@ ScriptClass GraphConnection {
         if ( $this.Status -eq [GraphConnectionStatus]::Online ) {
             if ( $this.GraphEndpoint.Type -eq [GraphType]::MSGraph ) {
                 # Trust the library's token cache to get a new token if necessary
-                $this.Identity |=> Authenticate $this.Scopes $true
+                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI
                 $this.connected = $true
             } else {
                 Connect

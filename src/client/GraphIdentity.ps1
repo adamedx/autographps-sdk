@@ -55,7 +55,7 @@ ScriptClass GraphIdentity {
         }
     }
 
-    function Authenticate($scopes = $null) {
+    function Authenticate($scopes = $null, $noBrowserUI = $false) {
         if ( $this.token ) {
             $tokenTimeLeft = $this.token.expireson - [DateTime]::UtcNow
             write-verbose ("Found existing token with {0} minutes left before expiration" -f $tokenTimeLeft.TotalMinutes)
@@ -63,7 +63,7 @@ ScriptClass GraphIdentity {
 
         write-verbose ("Getting token for resource {0} from auth endpoint: {1} with protocol {2}" -f $this.graphEndpoint.Graph, $this.graphEndpoint.Authentication, $this.graphEndpoint.AuthProtocol)
 
-        $this.Token = getGraphToken $this.graphEndpoint $scopes
+        $this.Token = getGraphToken $this.graphEndpoint $scopes $noBrowserUI
 
         if ($this.token -eq $null) {
             throw "Failed to acquire token, no additional error information"
@@ -84,7 +84,7 @@ ScriptClass GraphIdentity {
         $this.token = $null
     }
 
-    function getGraphToken($graphEndpoint, $scopes) {
+    function getGraphToken($graphEndpoint, $scopes, $noBrowserUI) {
         write-verbose "Attempting to get token for '$($graphEndpoint.Graph)' ..."
         write-verbose "Using app id '$($this.App.AppId)'"
         $isConfidential = ($this.app |=> IsConfidential)
@@ -108,7 +108,7 @@ ScriptClass GraphIdentity {
                 if ( $isConfidential ) {
                     $providerInstance |=> AcquireFirstUserTokenConfidential $authContext $scopes
                 } else {
-                    $providerInstance |=> AcquireFirstUserToken $authContext $scopes
+                    $providerInstance |=> AcquireFirstUserToken $authContext $scopes $noBrowserUI
                 }
             }
         }

@@ -55,6 +55,10 @@ ScriptClass V1AuthProvider {
             $promptBehavior)
     }
 
+    function AcquireFirstUserTokenFromDeviceCode($authContext, $scopes) {
+        throw [NotImplementedException]::new("Device code authentication is not implemented for the v1 authentication protocol.")
+    }
+
     function AcquireFirstAppToken($authContext) {
         write-verbose 'V1 auth provider acquiring initial app token'
 

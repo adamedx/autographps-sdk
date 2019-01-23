@@ -42,6 +42,9 @@ function Connect-Graph {
         [parameter(parametersetname='reconnect', mandatory=$true)]
         [Switch] $Reconnect,
 
+        [parameter(parametersetname='simple')]
+        [Switch] $NoBrowserSigninUI,
+
         [parameter(parametersetname='apponly', mandatory=$true)]
         [Switch] $NoninteractiveAppOnlyAuth,
 
@@ -100,7 +103,7 @@ function Connect-Graph {
                 if ( $Permissions -and $context.connection -and $context.connection.identity ) {
                     write-verbose 'Creating connection from existing connection but with new permissions'
                     $identity = new-so GraphIdentity $context.connection.identity.app $context.connection.graphEndpoint $context.connection.identity.tenantname
-                    new-so GraphConnection $context.connection.graphEndpoint $identity $computedScopes
+                    new-so GraphConnection $context.connection.graphEndpoint $identity $computedScopes $NoBrowserSigninUI.IsPresent
                 } else {
                     write-verbose 'Just reconnecting the existing connection'
                     $context.connection
@@ -116,6 +119,7 @@ function Connect-Graph {
                 } else {
                     $delegatedArguments['Permissions'] = $computedScopes
                     $delegatedArguments['Confidential'] = $Confidential
+                    $delegatedArguments['NoBrowserSigninUI'] = $NoBrowserSigninUI
                     if ( $TenantId ) {
                         $delegatedArguments['TenantId'] = $TenantId
                     }
