@@ -46,18 +46,20 @@ function InstallDependencies($clean) {
 
     # Remove everything that is not net45 -- otherwise there will be binaries
     # for 5 or more additional packages!
-     ls lib -directory | foreach {
-        # Not currently using this, but may need to for
-        # per-assembly exceptions
-        $assemblyName = $_.name.tolower()
-
-        ls "$($_.fullname)/lib" -r | where {
-            $pathname = $_.fullname.tolower()
-            ! $pathname.contains('net45')
-        }
-    } | foreach {
-        rm $_.fullname -r -force
+    $allowedFiles = ls ./lib -r *.dll | where fullname -like *\lib\net45*
+    $allObjects = ls ./lib -r
+    $filesToRemove = $allObjects | where PSIsContainer -eq $false | where {
+        $allowedFiles.fullname -notcontains $_.fullname
     }
+
+    $filesToRemove | rm
+
+    $directoriesToRemove = $allObjects | where PSIsContainer -eq $true | where {
+        $children = ls -r $_.fullname | where PSISContainer -eq $false
+        $null -eq $children
+    }
+
+    $directoriesToRemove | foreach { if ( test-path $_.fullname ) { $_ | rm -r -force } }
 }
 
 InstallDependencies $clean
