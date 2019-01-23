@@ -125,6 +125,8 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets.ps1',
         '.\src\graph-sdk.ps1',
         '.\src\auth\AuthProvider.ps1',
+        '.\src\auth\CompiledDeviceCodeAuthenticator.ps1',
+        '.\src\auth\DeviceCodeAuthenticator.ps1',
         '.\src\auth\V1AuthProvider.ps1',
         '.\src\auth\V2AuthProvider.ps1',
         '.\src\client\Application.ps1',

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script AuthProvider)
+. (import-script DeviceCodeAuthenticator)
 
 ScriptClass V2AuthProvider {
     $base = $null
@@ -63,6 +64,11 @@ ScriptClass V2AuthProvider {
         $scopeList = $this.__ScopesAsScopeList.InvokeReturnAsIs(@($scopes))
 
         $authContext.protocolContext.AcquireTokenAsync($scopeList)
+    }
+
+    function AcquireFirstUserTokenFromDeviceCode($authContext, $scopes) {
+        write-verbose 'V2 auth provider acquiring initial user token using device code'
+        $::.DeviceCodeAuthenticator |=> Authenticate $authContext.protocolcontext $scopes
     }
 
     function AcquireFirstAppToken($authContext) {

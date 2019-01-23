@@ -33,8 +33,12 @@ ScriptClass AuthProvider {
         $this.derivedProvider |=> GetUserInformation $token
     }
 
-    function AcquireFirstUserToken($authContext, $scopes) {
-        $this.derivedProvider |=> AcquireFirstUserToken $authContext $scopes
+    function AcquireFirstUserToken($authContext, $scopes, $useDeviceCodeUI) {
+        if ( $useDeviceCodeUI ) {
+            $this.derivedProvider |=> AcquireFirstUserTokenFromDeviceCode $authContext $scopes
+        } else {
+            $this.derivedProvider |=> AcquireFirstUserToken $authContext $scopes
+        }
     }
 
     function AcquireFirstUserTokenConfidential($authContext, $scopes) {

@@ -57,6 +57,9 @@ function New-GraphConnection {
 
         [Uri] $AppRedirectUri,
 
+        [parameter(parametersetname='msgraph')]
+        [Switch] $NoBrowserSigninUI,
+
         [parameter(parametersetname='secret', mandatory=$true)]
         [parameter(parametersetname='cert', mandatory=$true)]
         [parameter(parametersetname='certpath', mandatory=$true)]
@@ -180,7 +183,7 @@ function New-GraphConnection {
 
             $app = new-so GraphApplication $newAppId $AppRedirectUri $appSecret $NoninteractiveAppOnlyAuth.IsPresent
             $identity = new-so GraphIdentity $app $graphEndpoint $adjustedTenantId
-            new-so GraphConnection $graphEndpoint $identity $specifiedScopes
+            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent
         }
     }
 }

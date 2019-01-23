@@ -24,7 +24,7 @@
     <file src="autographps-sdk.tests.ps1" target="." />
     <file src="src\**\*.ps1" target="src/" />
     <file src="build\**\*.ps1" target="build/" />
-    <file src="lib\Microsoft.Identity.Client.2.6.2\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.2.6.2\lib\net45" />
+    <file src="lib\Microsoft.Identity.Client.2.7.0\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.2.7.0\lib\net45" />
     <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2\lib\net45\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2\lib\net45" />
   </files>
 </package>

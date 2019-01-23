@@ -52,6 +52,9 @@ function Get-GraphToken {
 
         [Uri] $AppRedirectUri,
 
+        [parameter(parametersetname='msgraph')]
+        [Switch] $NoBrowserSigninUI,
+
         [parameter(parametersetname='secret', mandatory=$true)]
         [parameter(parametersetname='cert', mandatory=$true)]
         [parameter(parametersetname='certpath', mandatory=$true)]
