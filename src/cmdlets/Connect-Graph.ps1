@@ -95,7 +95,7 @@ function Connect-Graph {
             $applicationId = if ( $AppId ) {
             [Guid] $AppId
             } else {
-                $::.Application.AppId
+                $::.Application.DefaultAppId
             }
 
             $newConnection = if ( $Reconnect.IsPresent ) {

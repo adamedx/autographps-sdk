@@ -96,7 +96,7 @@ ScriptClass GraphConnection {
     static {
         function NewSimpleConnection([GraphType] $graphType = 'MSGraph', [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null ) {
             $endpoint = new-so GraphEndpoint $cloud $graphType $null $null $authProtocol
-            $app = new-so GraphApplication $::.Application.AppId
+            $app = new-so GraphApplication $::.Application.DefaultAppId
             $identity = if ( ! $anonymous ) {
                 new-so GraphIdentity $app $endpoint $tenantName
             }
