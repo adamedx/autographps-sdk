@@ -14,7 +14,7 @@
 
 ScriptClass Application {
     static {
-        const AppId (strict-val [Guid] '9825d80c-5aa0-42ef-bf13-61e12116704c')
+        const DefaultAppId (strict-val [Guid] '9825d80c-5aa0-42ef-bf13-61e12116704c')
         $SupportsBrowserSignin = $PSVersionTable.PSEdition -eq 'Desktop'
     }
 }

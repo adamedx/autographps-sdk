@@ -178,7 +178,7 @@ function New-GraphConnection {
             $newAppId = if ( $appId ) {
                 $appId
             } else {
-                $::.Application.AppId
+                $::.Application.DefaultAppId
             }
 
             $app = new-so GraphApplication $newAppId $AppRedirectUri $appSecret $NoninteractiveAppOnlyAuth.IsPresent
