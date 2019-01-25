@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.8.2'
+ModuleVersion = '0.9.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -212,16 +212,16 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.8.2 Release Notes
+# AutoGraphPS-SDK 0.9.0 Release Notes
 
 ## New dependencies
 
-Microsoft.Identity.Client.2.6.2
-Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2
+* Microsoft.Identity.Client.2.6.2
+* Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2
 
 ## New features
 
-None.
+* Device code authentication support for user sign-in on devices without a web browser: Use the ``-NoBrowserSigninUI`` option for user authentication with the following cmdlets: ``Connect-Graph``, ``New-GraphConnection``, and ``Get-GraphToken``.
 
 ## Fixed defects
 
