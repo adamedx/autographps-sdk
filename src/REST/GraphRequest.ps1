@@ -97,7 +97,7 @@ ScriptClass GraphRequest {
     function __InvokeRequest($verb, $uri, $query) {
         $uriPath = __UriWithQuery $uri $query
         $uri = new-object Uri $uriPath
-        $restRequest = new-so RestRequest $uri $verb $this.headers $this.body
+        $restRequest = new-so RESTRequest $uri $verb $this.headers $this.body
         $restRequest |=> Invoke
     }
 

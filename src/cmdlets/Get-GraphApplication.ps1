@@ -44,7 +44,7 @@ function Get-GraphApplication {
         if ( $RawContent.IsPresent ) {
             $result
         } elseif ( $result | gm id ) {
-            $result | sort displayname | foreach {
+            $result | sort-object displayname | foreach {
                 $::.ApplicationHelper |=> ToDisplayableObject $_
             }
         }

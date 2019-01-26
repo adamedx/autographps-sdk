@@ -92,7 +92,7 @@ function Get-GraphItem {
     $localResult = $null
     $targetResultVariable = __GetResultVariable $ResultVariable
 
-    Invoke-GraphRequest @requestArguments | tee -variable localResult
+    Invoke-GraphRequest @requestArguments | tee-object -variable localResult
 
     $targetResultVariable.value = $localResult
 }

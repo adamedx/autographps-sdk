@@ -232,7 +232,7 @@ function Invoke-GraphRequest {
 
     $maxReturnedResults = $null
     $maxResultCount = if ( $pscmdlet.pagingparameters.first -ne $null -and $pscmdlet.pagingparameters.first -lt [Uint64]::MaxValue ) {
-        $pscmdlet.pagingparameters.First | tee -variable maxReturnedResults
+        $pscmdlet.pagingparameters.First | tee-object -variable maxReturnedResults
     } else {
         10
     }

@@ -227,7 +227,7 @@ ScriptClass V2AuthProvider {
 
         function InitializeProvider {
             if ( ! $this.__AuthLibraryLoaded ) {
-                import-assembly ../../lib/Microsoft.Identity.Client.dll
+                import-assembly ../../lib/Microsoft.Identity.Client.dll -TargetFrameworkMoniker netstandard1.3
                 $this.__AuthLibraryLoaded = $true
             }
         }

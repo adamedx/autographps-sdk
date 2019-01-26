@@ -135,7 +135,7 @@ ScriptClass GraphEndpoint {
 
         $this.Authentication = new-object Uri $endpointData.Authentication
         $this.Graph = new-object Uri $endpointData.Graph
-        $this.AuthProtocol = $endpointData.authProtocol
+        $this.AuthProtocol = $endpointData.AuthProtocol
     }
 
     function GetAuthUri($tenantName) {

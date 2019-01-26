@@ -13,9 +13,9 @@
 # limitations under the License.
 
 . (import-script ../REST/GraphRequest)
-. (import-script ../GraphService/GraphEndpoint)
-. (import-script ../Client/GraphConnection)
-. (import-script ../Client/GraphContext)
+. (import-script ../graphservice/GraphEndpoint)
+. (import-script ../client/GraphConnection)
+. (import-script ../client/GraphContext)
 . (import-script Get-GraphVersion)
 
 function Get-GraphSchema {

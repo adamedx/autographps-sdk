@@ -63,7 +63,7 @@ Function Get-GraphApplicationCertificate {
             if ( ! $RawContent.IsPresent ) {
                 $app | select -expandproperty keycredentials | foreach {
                     $::.ApplicationHelper |=> KeyCredentialToDisplayableObject $_ $targetAppId
-                } | sort NotAfter
+                } | sort-object NotAfter
             } else {
                 $keyCredentials
             }

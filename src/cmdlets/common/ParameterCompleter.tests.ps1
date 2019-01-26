@@ -42,7 +42,7 @@ Describe "ParameterCompleter class" {
 
         function GetExpectedMatches($target, $candidates) {
             $normalized = $target.tolower()
-            $candidates | where { $_.tolower().startswith($normalized) } | sort
+            $candidates | where { $_.tolower().startswith($normalized) } | sort-object
         }
 
         function CompareResults($target, $candidates, $truncationLength) {
@@ -53,7 +53,7 @@ Describe "ParameterCompleter class" {
             }
 
             $expected = GetExpectedMatches $adjustedTarget @($candidates)
-            $actual = $::.ParameterCompleter |=> FindMatchesStartingWith $adjustedTarget @($candidates | sort)
+            $actual = $::.ParameterCompleter |=> FindMatchesStartingWith $adjustedTarget @($candidates | sort-object)
             if ( ! $expected ) {
                 $actual
             } else {
@@ -76,7 +76,7 @@ Describe "ParameterCompleter class" {
 
         It "Should return at least an exact match for each element in every sample list" {
             $testlists.keys | foreach {
-                $currentList = $testlists[$_] | sort
+                $currentList = $testlists[$_] | sort-object
                 $currentList | foreach {
                     CompareResults $_ $currentList | Should Be $null
                     $_ | Should BeIn ($::.ParameterCompleter |=> FindMatchesStartingWith $_ $currentList)
@@ -86,7 +86,7 @@ Describe "ParameterCompleter class" {
 
         It "Should return at least an exact match for each element truncated to 1 char in every sample list" {
             $testlists.keys | foreach {
-                $currentList = $testlists[$_] | sort
+                $currentList = $testlists[$_] | sort-object
                 $currentList | foreach {
                     CompareResults $_ $currentList 1 | Should Be $null
                 }
@@ -95,7 +95,7 @@ Describe "ParameterCompleter class" {
 
         It "Should return at least an exact match for each element truncated to 2 chars in every sample list" {
             $testlists.keys | foreach {
-                $currentList = $testlists[$_] | sort
+                $currentList = $testlists[$_] | sort-object
                 $currentList | foreach {
                     CompareResults $_ $currentList 2 | Should Be $null
                 }
@@ -104,7 +104,7 @@ Describe "ParameterCompleter class" {
 
         It "Should return at least an exact match for each element truncated to 3 chars in every sample list" {
             $testlists.keys | foreach {
-                $currentList = $testlists[$_] | sort
+                $currentList = $testlists[$_] | sort-object
                 $currentList | foreach {
                     CompareResults $_ $currentList 3 | Should Be $null
                 }
