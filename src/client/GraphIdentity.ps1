@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../GraphService/GraphEndpoint)
+. (import-script ../graphservice/GraphEndpoint)
 . (import-script GraphApplication)
 . (import-script ../auth/AuthProvider)
 . (import-script ../auth/V1AuthProvider)

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../Client/GraphConnection)
-. (import-script ../Client/LogicalGraphManager)
+. (import-script ../client/GraphConnection)
+. (import-script ../client/LogicalGraphManager)
 
 ScriptClass GraphContext {
     $connection = $null

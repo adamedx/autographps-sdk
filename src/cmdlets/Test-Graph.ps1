@@ -13,9 +13,9 @@
 # limitations under the License.
 
 . (import-script ../REST/RESTRequest)
-. (import-script ../GraphService/GraphEndpoint)
-. (import-script ../Client/GraphConnection)
-. (import-script ../Client/GraphContext)
+. (import-script ../graphservice/GraphEndpoint)
+. (import-script ../client/GraphConnection)
+. (import-script ../client/GraphContext)
 
 $AlternatePropertyMapping = @{
     'Time-Local'=@('TimeLocal', {param($val) [DateTime] $val})
@@ -60,7 +60,7 @@ function Test-Graph {
         $content | add-member -notepropertyname PingUri -notepropertyvalue $pinguri
 
         # Sort by name to get consistent sort formatting
-        $content | gm -membertype noteproperty | sort name | foreach {
+        $content | gm -membertype noteproperty | sort-object name | foreach {
             $value = ($content | select -expandproperty $_.name)
             $mapping = $alternatePropertyMapping[$_.name]
 
