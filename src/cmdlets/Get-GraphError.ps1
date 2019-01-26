@@ -105,7 +105,7 @@ The Get-GraphError command was invoked after the following Graph command failed:
 
 Invoke-GraphRequest was invoked to POST to the 'me/contacts' relative URI of https://graph.microsoft.com/v1.0 with a Body parameter that specifies the first and last name of a personal contact. The command should create a new contact resource, but received a 'BadRequest' status code of 400 from Graph and threw and exception.
 
-By executing the Get-GraphError command after receiving the error, the operator is able to see additional detail beyond the status code and the line number on which the error occurred. The ResponseStream property often has detailed information about the error, and in this case it contains an error message "The property 'firstName' does not exist on type 'Microsoft.OutlookServices.Contact'". This guides the operator to look more clsoely at the documentation for the contat resource, which instead of a 'firstName' property contains a 'givenName' property.
+By executing the Get-GraphError command after the failed command, the operator is able to see additional information beyond the status code and the line number on which the error occurred. The ResponseStream property often has detailed information about the error, and in this case it contains an error message "The property 'firstName' does not exist on type 'Microsoft.OutlookServices.Contact'". This guides the operator to look more clsoely at the documentation for the contat resource, which instead of a 'firstName' property contains a 'givenName' property.
 
 The operator can then correct the error in the original Invoke-GraphRequest command, replacing 'firstName' with 'givenName' in the Body parameter and the command will succeed.
 
