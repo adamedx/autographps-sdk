@@ -110,14 +110,14 @@ function Get-GraphSchema {
     $results = @()
     $graphNamespaces | foreach {
         $graphSchemaVersion = $graphSchemaVersions[$_]
-        $apiVersionDisplay = if ( $apiVersion -ne $null ) {
-            "'$apiVersion'"
+        $apiVersionDisplay = if ( $apiVersion ) {
+            "$apiVersion"
         } else {
             'v1.0'
         }
 
         if ($graphSchemaVersion -eq $null) {
-            throw "Specified namespace '$_' does not exist in the provided version '$apiVersionDisplay'"
+            throw "Specified namespace '$_' does not exist in the provided Graph API version '$apiVersionDisplay'"
         }
 
         $relativeUri = $relativeBase, $_, $graphSchemaVersion -join '/'

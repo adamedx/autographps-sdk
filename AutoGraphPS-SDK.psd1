@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.8.2'
+ModuleVersion = '0.9.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -125,6 +125,8 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets.ps1',
         '.\src\graph-sdk.ps1',
         '.\src\auth\AuthProvider.ps1',
+        '.\src\auth\CompiledDeviceCodeAuthenticator.ps1',
+        '.\src\auth\DeviceCodeAuthenticator.ps1',
         '.\src\auth\V1AuthProvider.ps1',
         '.\src\auth\V2AuthProvider.ps1',
         '.\src\client\Application.ps1',
@@ -210,20 +212,20 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.8.2 Release Notes
+# AutoGraphPS-SDK 0.9.0 Release Notes
 
 ## New dependencies
 
-Microsoft.Identity.Client.2.6.2
-Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2
+* Microsoft.Identity.Client.2.7.0
 
 ## New features
 
-None.
+* Device code authentication support for user sign-in on devices without a web browser: Use the ``-NoBrowserSigninUI`` option for user authentication with the following cmdlets: ``Connect-Graph``, ``New-GraphConnection``, and ``Get-GraphToken``.
+* Command-line help for Test-Graph, Get-GraphError
 
 ## Fixed defects
 
-* Fixed defect in parameter completion where some parameters were not completed, added tests to prevent regression
+* Fix broken error messages in Get-GraphSchema
 
 "@
 
