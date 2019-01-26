@@ -216,16 +216,16 @@ PrivateData = @{
 
 ## New dependencies
 
-* Microsoft.Identity.Client.2.6.2
-* Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2
+* Microsoft.Identity.Client.2.7.0
 
 ## New features
 
 * Device code authentication support for user sign-in on devices without a web browser: Use the ``-NoBrowserSigninUI`` option for user authentication with the following cmdlets: ``Connect-Graph``, ``New-GraphConnection``, and ``Get-GraphToken``.
+* Command-line help for Test-Graph, Get-GraphError
 
 ## Fixed defects
 
-* Fixed defect in parameter completion where some parameters were not completed, added tests to prevent regression
+* Fix broken error messages in Get-GraphSchema
 
 "@
 
