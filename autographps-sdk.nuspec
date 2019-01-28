@@ -13,7 +13,7 @@
     <copyright>Copyright 2019</copyright>
     <tags>MSGraph Graph Directory PSModule</tags>
     <dependencies>
-      <dependency id="scriptclass" version="0.15.0" />
+      <dependency id="scriptclass" version="0.16.0" />
     </dependencies>
   </metadata>
   <files>
@@ -25,6 +25,8 @@
     <file src="src\**\*.ps1" target="src/" />
     <file src="build\**\*.ps1" target="build/" />
     <file src="lib\Microsoft.Identity.Client.2.7.0\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.2.7.0\lib\net45" />
+    <file src="lib\Microsoft.Identity.Client.2.7.0\lib\netstandard1.3\*.dll" target="lib/Microsoft.Identity.Client.2.7.0\lib\netstandard1.3" />
     <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2\lib\net45\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2\lib\net45" />
+    <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2\lib\netstandard1.1\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.4.4.2\lib\netstandard1.1" />
   </files>
 </package>

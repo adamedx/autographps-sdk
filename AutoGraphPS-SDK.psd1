@@ -66,7 +66,7 @@ ScriptsToProcess = @('./src/graph-sdk.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.15.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(@{ModuleName='ScriptClass';ModuleVersion='0.16.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @('Get-DynamicValidateSetParameter')
@@ -119,7 +119,7 @@ AliasesToExport = @('gge', 'ggi')
 
 # List of all files packaged with this module
     FileList = @(
-        '.\autographps-sdk.psd1',
+        '.\AutoGraphPS-SDK.psd1',
         '.\autographps-sdk.psm1',
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
@@ -130,7 +130,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\auth\V1AuthProvider.ps1',
         '.\src\auth\V2AuthProvider.ps1',
         '.\src\client\Application.ps1',
-        '.\src\client\graphapplication.ps1',
+        '.\src\client\GraphApplication.ps1',
         '.\src\client\GraphConnection.ps1',
         '.\src\client\GraphContext.ps1',
         '.\src\client\GraphIdentity.ps1',
@@ -143,8 +143,8 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Get-GraphApplicationConsent.ps1',
         '.\src\cmdlets\Get-GraphApplicationServicePrincipal.ps1',
         '.\src\cmdlets\Get-GraphConnectionInfo.ps1',
-        '.\src\cmdlets\Get-Grapherror.ps1',
-        '.\src\cmdlets\Get-Graphitem.ps1',
+        '.\src\cmdlets\Get-GraphError.ps1',
+        '.\src\cmdlets\Get-GraphItem.ps1',
         '.\src\cmdlets\Get-GraphSchema.ps1',
         '.\src\cmdlets\Get-GraphToken.ps1',
         '.\src\cmdlets\Get-GraphVersion.ps1',
@@ -181,12 +181,12 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\common\Secret.ps1',
         '.\src\graphservice\ApplicationAPI.ps1',
         '.\src\graphservice\ApplicationObject.ps1'
-        '.\src\graphservice\graphendpoint.ps1'
+        '.\src\graphservice\GraphEndpoint.ps1'
         '.\src\REST\GraphErrorRecorder.ps1',
         '.\src\REST\GraphRequest.ps1',
         '.\src\REST\GraphResponse.ps1',
-        '.\src\REST\RestRequest.ps1',
-        '.\src\REST\RestResponse.ps1'
+        '.\src\REST\RESTRequest.ps1',
+        '.\src\REST\RESTResponse.ps1'
     )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
@@ -221,7 +221,7 @@ PrivateData = @{
 ## New features
 
 * Device code authentication support for user sign-in on devices without a web browser: Use the ``-NoBrowserSigninUI`` option for user authentication with the following cmdlets: ``Connect-Graph``, ``New-GraphConnection``, and ``Get-GraphToken``.
-* Command-line help for Test-Graph, Get-GraphError
+* Command-line help for ``Test-Graph``, ``Get-GraphError``
 
 ## Fixed defects
 
