@@ -17,6 +17,27 @@ $erroractionpreference = 'stop'
 
 $moduleOutputSubdirectory = 'modules'
 
+function new-directory {
+    param(
+        [Parameter(mandatory=$true)]
+        $Name,
+        $Path,
+        [switch] $Force
+    )
+    $fullPath = if ( $Path ) {
+        join-path $Path $Name
+    } else {
+        $Name
+    }
+    $forceArgument = @{
+        Force=$Force
+    }
+
+    new-item -ItemType Directory $fullPath @forceArgument
+}
+
+set-alias psmkdir new-directory -erroraction ignore
+
 function Get-SourceRootDirectory {
     (get-item (split-path -parent $psscriptroot)).fullname
 }
@@ -126,7 +147,7 @@ function New-ModuleOutputDirectory {
     }
 
     if ( ! (test-path $outputDirectory) ) {
-        mkdir $outputDirectory | out-null
+        psmkdir $outputDirectory | out-null
     } elseif ($clean) {
         ls $outputDirectory | rm -r -force
     }
@@ -154,7 +175,7 @@ function build-module {
     $verifyInstalledLibrariesArgument = @{verifyInstalledLibraries=$includeInstalledLibraries}
     validate-prerequisites @verifyInstalledLibrariesArgument
 
-    mkdir $targetDirectory | out-null
+    psmkdir $targetDirectory | out-null
 
     $ignorableSegmentCount = ($module.modulebase -split '\\').count
     $sourceFileList = @()
@@ -173,12 +194,20 @@ function build-module {
     }
 
      0..($sourceFileList.length - 1) | foreach {
-        $parent = split-path -parent $destinationFileList[ $_ ]
-        if ( ! (test-path $parent) ) {
-            mkdir $parent | out-null
-        }
+         $parent = split-path -parent $destinationFileList[ $_ ]
+         if ( ! (test-path $parent) ) {
+            psmkdir $parent | out-null
+         }
 
-        cp $sourceFileList[ $_ ] $destinationFileList[ $_ ]
+         $destinationName = split-path -leaf $destinationFileList[ $_ ]
+         $syntaxOnlySourceName = split-path -leaf $sourceFileList[ $_ ]
+         $sourceActualName = (get-childitem (split-path -parent $sourceFileList[ $_ ]) -filter $syntaxOnlySourceName).name
+
+         if ( $destinationName -cne $sourceActualName ) {
+             throw "The case-sensitive name of the file at source path '$($sourceFileList[$_])' is actually '$sourceActualName' and it does not match the case of the last element of destination path '$($destinationFileList[$_])' -- the case of the file names must match exactly in order to support environments with case-sensitive file systems. This can be corrected in the module manifest by specifying the case of the file exactly as it exists in the module source code directory"
+         }
+
+         cp $sourceFileList[ $_ ] $destinationFileList[ $_ ]
      }
 
     if ($includeInstalledLibraries.ispresent) {
@@ -215,7 +244,7 @@ function build-nugetpackage {
     $packageOutputDirectory = join-path $outputDirectory 'nuget'
 
     if ( ! (test-path $packageOutputDirectory) ) {
-        mkdir $packageOutputDirectory | out-null
+        psmkdir $packageOutputDirectory | out-null
     } else {
         ls -r $packageOutputDirectory *.nupkg | rm
     }
@@ -342,7 +371,7 @@ function Generate-ReferenceModules($manifestPath, $referenceModuleRoot) {
     $moduleData.NestedModules | foreach {
         if ( $_ -is [HashTable] ) {
             $nestedModuleDirectory = join-path $referenceModuleRoot (join-path $_.ModuleName $_.ModuleVersion)
-            mkdir -force $nestedModuleDirectory | out-null
+            psmkdir -force $nestedModuleDirectory | out-null
             $syntheticModuleManifest = join-path $nestedModuleDirectory "$($_.ModuleName).psd1"
             set-content $syntheticModuleManifest @"
 # Synthetic module -- for publishing dependent module only
@@ -436,7 +465,7 @@ function publish-modulelocal {
         $targetDirectory = if ( $_[1] -eq $null ) {
             $defaultLocation = $_[0]
             if ( ! (test-path $defaultLocation) ) {
-                mkdir $defaultLocation | out-null
+                psmkdir $defaultLocation | out-null
             }
             $defaultLocation
         } else {
@@ -572,4 +601,11 @@ function get-temporarypackagerepository($moduleName, $moduleDependencySource)  {
     register-packagesource $localPackageRepositoryName $localPackageRepositoryLocation -providername nuget | out-null
 
     $localPackageRepositoryName
+}
+
+function get-allowedlibrarydirectoriesfromnuspec($nuspecFile) {
+    $packageData = [xml] (get-content $nuspecFile | out-string)
+    $packageData.package.files.file | where target -like lib/* | select -expandproperty target | foreach {
+        $_.replace("`\", '/')
+    }
 }

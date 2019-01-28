@@ -138,7 +138,7 @@ ScriptClass V1AuthProvider {
 
         function InitializeProvider {
             if ( ! $this.__AuthLibraryLoaded ) {
-                import-assembly ../../lib/Microsoft.IdentityModel.Clients.ActiveDirectory.dll
+                Import-Assembly Microsoft.IdentityModel.Clients.ActiveDirectory ../../lib | out-null
                 $this.__AuthLibraryLoaded = $true
             }
 
