@@ -42,7 +42,9 @@ function InstallDependencies($clean) {
         ''
     }
     $packagesConfigFile = join-path -path (join-path $psscriptroot ..) -child packages.config
-    iex "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination' -packagesavemode nuspec" | out-host
+    $restoreCommand = "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination' -packagesavemode nuspec"
+    write-host "Executing command: $restoreCommand"
+    iex $restoreCommand | out-host
 
     $nuspecFile = get-childitem -path $approot -filter '*.nuspec' | select -expandproperty fullname
 
