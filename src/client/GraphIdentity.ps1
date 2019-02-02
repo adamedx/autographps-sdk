@@ -27,10 +27,10 @@ ScriptClass GraphIdentity {
     $TenantDisplayName = $null
 
     static {
+        $AuthProvidersInitialized = $false
         function __initialize {
             $::.V1AuthProvider |=> RegisterProvider
             $::.V2AuthProvider |=> RegisterProvider
-            $::.AuthProvider |=> InitializeProviders
         }
     }
 
@@ -94,6 +94,11 @@ ScriptClass GraphIdentity {
 
         $authUri = $graphEndpoint |=> GetAuthUri (GetTenantId $this.TenantName)
         write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
+
+        if ( ! $this.scriptclass.AuthProvidersInitialized ) {
+            $::.AuthProvider |=> InitializeProviders
+            $this.scriptclass.AuthProvidersInitialized = $true
+        }
 
         $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
 

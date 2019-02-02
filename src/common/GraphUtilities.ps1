@@ -234,7 +234,7 @@ ScriptClass GraphUtilities {
                 } else {
                     # Start 2 after graphname due to the required '/' and ':' in '/graphname:', and account for that in length as well
                     $relativeUri = $locationUri.substring($graphName.length + 2, $locationUri.length - $graphName.length - 2)
-                    $::.logicalgraphmanager.Get().contexts[$graphName].context
+                    $::.logicalgraphmanager.Get().contexts[$graphName].Context
                 }
 
                 @{
