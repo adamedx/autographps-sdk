@@ -44,7 +44,7 @@ function Test-Graph {
     } elseif ( $endpointUri -ne $null ) {
         $endpointUri
     } else {
-        ($::.GraphContext |=> GetConnection $null $null $Cloud 'User.Read' $true).GraphEndpoint.Graph
+        ($::.GraphContext |=> GetConnection).GraphEndpoint.Graph
     }
 
     $pingUri = [Uri]::new($graphEndpointUri, 'ping')

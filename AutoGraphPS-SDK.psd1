@@ -225,6 +225,8 @@ PrivateData = @{
 
 ## Fixed defects
 
+* Fix Test-Graph so that it uses the current Graph connection by default -- it was creating a new connection in the default case
+* Fix New-GraphConnection so that it does not require specification of appid custom endpoints
 * Query parameters for Get-GraphItem, Invoke-GraphRequest such as Select, Expand, ODataFilter, etc. threw an exception when results needed to be paged.
 * Fix broken error messages in Get-GraphSchema
 

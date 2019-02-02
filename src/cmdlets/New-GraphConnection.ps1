@@ -49,7 +49,7 @@ function New-GraphConnection {
         [parameter(parametersetname='cert', mandatory=$true)]
         [parameter(parametersetname='certpath', mandatory=$true)]
         [parameter(parametersetname='secret', mandatory=$true)]
-        [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [parameter(parametersetname='autocert', mandatory=$true)]
         $AppId = $null,
 
