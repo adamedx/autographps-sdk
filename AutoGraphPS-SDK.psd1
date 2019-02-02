@@ -217,6 +217,7 @@ PrivateData = @{
 ## New dependencies
 
 * Microsoft.Identity.Client.2.7.0
+* ScriptClass 0.16.0
 
 ## New features
 
@@ -225,6 +226,8 @@ PrivateData = @{
 
 ## Fixed defects
 
+* Fix case of env:PSModulePath in import-devmodule script for compatibility with Linux
+* Fix import-devmodule to use ':' as the separator in PSModulePath on Linux instead of Windows ';'
 * Fix Test-Graph so that it uses the current Graph connection by default -- it was creating a new connection in the default case
 * Fix New-GraphConnection so that it does not require specification of appid custom endpoints
 * Query parameters for Get-GraphItem, Invoke-GraphRequest such as Select, Expand, ODataFilter, etc. threw an exception when results needed to be paged.

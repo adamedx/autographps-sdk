@@ -57,7 +57,7 @@ Describe "ParameterCompleter class" {
             if ( ! $expected ) {
                 $actual
             } else {
-                diff -referenceobject $expected -differenceobject $actual
+                compare-object -referenceobject $expected -differenceobject $actual
             }
         }
 
@@ -114,19 +114,19 @@ Describe "ParameterCompleter class" {
         It "Should return matches for a substring that matches every word except the first" {
             $expected = $matchatstart | select -last ($matchatstart.length - 1)
             $actual = $::.ParameterCompleter |=> FindMatchesStartingWith 'ever' $matchatstart
-            diff -referenceobject $expected -differenceobject $actual | Should Be $null
+            compare-object -referenceobject $expected -differenceobject $actual | Should Be $null
         }
 
         It "Should return matches for a substring that matches every word except the last" {
             $expected = $matchatend | select -first ($matchatend.length - 1)
             $actual = $::.ParameterCompleter |=> FindMatchesStartingWith 'ever' $matchatend
-            diff -referenceobject $expected -differenceobject $actual | Should Be $null
+            compare-object -referenceobject $expected -differenceobject $actual | Should Be $null
         }
 
         It "Should return all the words starting with 'calend' when 'calend' is given in a list containing 4 words starting with 'calendar'" {
             $expected = @( "calendar", "calendarGroups", "calendars", "calendarView" )
-            $actual = $::.ParameterCompleter |=> FindMatchesStartingWith 'calend' $testlists.sampletargetslist
-            diff -referenceobject $expected -differenceobject $actual | Should Be $null
+            $actual = $::.ParameterCompleter |=> FindMatchesStartingWith 'calend' $testlists.sampleTargetsList
+            compare-object -referenceobject $expected -differenceobject $actual | Should Be $null
         }
     }
 }

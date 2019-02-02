@@ -32,7 +32,7 @@ Describe 'GraphUtilities methods' {
             $testUri = $relativeUri
             $result = $::.GraphUtilities |=> ParseGraphRelativeLocation $testUri
 
-            $result.Context.version | Should Be 'v1.0'
+            $result.Context.Version | Should Be 'v1.0'
             $result.GraphRelativeUri | Should Be "/$testUri"
         }
 
@@ -40,7 +40,7 @@ Describe 'GraphUtilities methods' {
             $testUri = ($graphName + ":"), $relativeUri -join '/'
             $result = $::.GraphUtilities |=> ParseGraphRelativeLocation $testUri
 
-            $result.Context.version | Should Be 'v1.0'
+            $result.Context.Version | Should Be 'v1.0'
             $result.GraphRelativeUri | Should Be "/$testUri"
 
         }
@@ -49,7 +49,7 @@ Describe 'GraphUtilities methods' {
             $testUri = '/', $relativeUri -join '/'
             $result = $::.GraphUtilities |=> ParseGraphRelativeLocation $testUri
 
-            $result.Context.version | Should Be 'v1.0'
+            $result.Context.Version | Should Be 'v1.0'
             $result.GraphRelativeUri | Should Be $testUri
         }
 
@@ -57,7 +57,7 @@ Describe 'GraphUtilities methods' {
             $testUri = 'bad:name', $relativeUri -join '/'
             $result = $::.GraphUtilities |=> ParseGraphRelativeLocation $testUri
 
-            $result.Context.version | Should Be 'v1.0'
+            $result.Context.Version | Should Be 'v1.0'
             $result.GraphRelativeUri | Should Be "/$testUri"
         }
 
@@ -65,7 +65,7 @@ Describe 'GraphUtilities methods' {
             $testUri = ('/' + $graphName + ':'), $relativeUri -join '/'
             $result = $::.GraphUtilities |=> ParseGraphRelativeLocation $testUri
 
-            $result.Context.version | Should Be $graphName
+            $result.Context.Version | Should Be $graphName
             $result.GraphRelativeUri | Should Be "/$relativeUri"
         }
 
@@ -78,7 +78,7 @@ Describe 'GraphUtilities methods' {
             $testUri = ('/' + $graphName + ':')
             $result = $::.GraphUtilities |=> ParseGraphRelativeLocation $testUri
 
-            $result.Context.version | Should Be $graphName
+            $result.Context.Version | Should Be $graphName
             $result.GraphRelativeUri | Should Be '/'
         }
 
@@ -86,7 +86,7 @@ Describe 'GraphUtilities methods' {
             $testUri = ('/' + $graphName + ':/')
             $result = $::.GraphUtilities |=> ParseGraphRelativeLocation $testUri
 
-            $result.Context.version | Should Be $graphName
+            $result.Context.Version | Should Be $graphName
             $result.GraphRelativeUri | Should Be '/'
         }
 
@@ -94,7 +94,7 @@ Describe 'GraphUtilities methods' {
             $testUri = $graphName
             $result = $::.GraphUtilities |=> ParseGraphRelativeLocation $testUri
 
-            $result.Context.version | Should Be 'v1.0'
+            $result.Context.Version | Should Be 'v1.0'
             $result.GraphRelativeUri | Should Be "/$graphName"
         }
     }
