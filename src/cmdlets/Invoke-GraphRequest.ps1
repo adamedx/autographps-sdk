@@ -192,7 +192,7 @@ function Invoke-GraphRequest {
             $info = $::.GraphUtilities |=> ParseGraphRelativeLocation $RelativeUri[0]
             @{
                 GraphRelativeUri = $info.GraphRelativeUri
-                GraphVersion = $info.context.version
+                GraphVersion = $info.Context.version
             }
         } else {
             @{
