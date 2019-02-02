@@ -90,7 +90,7 @@ The Test-Graph cmdlet makes a simple GET request to a specified Graph endpoint's
 Specifies that the target Graph endpoint to test is the Graph endpoint associated with cloud environment indicated by the parameter. By default, Test-Graph makes a request against the current connection, which itself defaults to https://graph.microsoft.com, so this parameter allows the default to be overridden.
 
 .PARAMETER Connection
-Specifies a Connection object returned by the New-GraphConnection command whose endpoint will be accessed by the endpoint.
+Specifies a Connection object returned by the New-GraphConnection command whose Graph endpoint will be accessed when making Graph requests with this Connection object.
 
 .PARAMETER EndpointUri
 Specifies an arbitrary URI as the Graph endpoint -- the URI must be an absolute URI, e.g. https://graph.microsoft.com.

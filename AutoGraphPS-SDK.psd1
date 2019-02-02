@@ -225,6 +225,7 @@ PrivateData = @{
 
 ## Fixed defects
 
+* Query parameters for Get-GraphItem, Invoke-GraphRequest such as Select, Expand, ODataFilter, etc. threw an exception when results needed to be paged.
 * Fix broken error messages in Get-GraphSchema
 
 "@
