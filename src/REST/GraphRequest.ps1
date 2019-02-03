@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script RestRequest)
+. (import-script RESTRequest)
 . (import-script GraphResponse)
 
 ScriptClass GraphRequest {
@@ -97,7 +97,7 @@ ScriptClass GraphRequest {
     function __InvokeRequest($verb, $uri, $query) {
         $uriPath = __UriWithQuery $uri $query
         $uri = new-object Uri $uriPath
-        $restRequest = new-so RestRequest $uri $verb $this.headers $this.body
+        $restRequest = new-so RESTRequest $uri $verb $this.headers $this.body
         $restRequest |=> Invoke
     }
 

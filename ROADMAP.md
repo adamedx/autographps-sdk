@@ -2,6 +2,16 @@
 
 ## To-do items -- prioritized
 
+* Add support for test endpoints
+* Add $ref?
+* Get module to install and function on Linux
+* Make token caches per app-per cloud.
+* Create interface for certificate store, make it not implemented outside of Windows
+* Add -value parameter
+* Output data based on content-type
+* Add request linked data to obtain odata references such as file download uri's
+* Allow for requests to be dumped into a directory
+
 * ------------------------------------
 * Change get-graphconnection to take a connection or a graph
 * Add -Token option to new-graphconnection and connect-graph

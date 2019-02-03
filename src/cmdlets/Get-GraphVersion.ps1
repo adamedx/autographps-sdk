@@ -13,8 +13,8 @@
 # limitations under the License.
 
 . (import-script ../REST/GraphRequest)
-. (import-script ../Client/GraphConnection)
-. (import-script ../Client/GraphContext)
+. (import-script ../client/GraphConnection)
+. (import-script ../client/GraphContext)
 
 function Get-GraphVersion {
     [cmdletbinding(positionalbinding=$false)]

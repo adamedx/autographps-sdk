@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../GraphService/GraphEndpoint)
-. (import-script ../Client/GraphIdentity)
-. (import-script ../Client/GraphConnection)
+. (import-script ../graphservice/GraphEndpoint)
+. (import-script ../client/GraphIdentity)
+. (import-script ../client/GraphConnection)
 . (import-script common/DynamicParamHelper)
 . (import-script ../common/ScopeHelper)
 . (import-script common/PermissionParameterCompleter)
@@ -49,7 +49,7 @@ function New-GraphConnection {
         [parameter(parametersetname='cert', mandatory=$true)]
         [parameter(parametersetname='certpath', mandatory=$true)]
         [parameter(parametersetname='secret', mandatory=$true)]
-        [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [parameter(parametersetname='autocert', mandatory=$true)]
         $AppId = $null,
 

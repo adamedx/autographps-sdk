@@ -117,7 +117,7 @@ ScriptClass LogicalGraphManager {
             $contextRecord = $this.contexts[$name]
 
             if ($contextRecord) {
-                $contextRecord.context
+                $contextRecord.Context
             }
         } else {
             $this.contexts.values | select -expandproperty Context

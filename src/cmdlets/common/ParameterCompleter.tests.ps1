@@ -42,7 +42,7 @@ Describe "ParameterCompleter class" {
 
         function GetExpectedMatches($target, $candidates) {
             $normalized = $target.tolower()
-            $candidates | where { $_.tolower().startswith($normalized) } | sort
+            $candidates | where { $_.tolower().startswith($normalized) } | sort-object
         }
 
         function CompareResults($target, $candidates, $truncationLength) {
@@ -53,11 +53,11 @@ Describe "ParameterCompleter class" {
             }
 
             $expected = GetExpectedMatches $adjustedTarget @($candidates)
-            $actual = $::.ParameterCompleter |=> FindMatchesStartingWith $adjustedTarget @($candidates | sort)
+            $actual = $::.ParameterCompleter |=> FindMatchesStartingWith $adjustedTarget @($candidates | sort-object)
             if ( ! $expected ) {
                 $actual
             } else {
-                diff -referenceobject $expected -differenceobject $actual
+                compare-object -referenceobject $expected -differenceobject $actual
             }
         }
 
@@ -76,7 +76,7 @@ Describe "ParameterCompleter class" {
 
         It "Should return at least an exact match for each element in every sample list" {
             $testlists.keys | foreach {
-                $currentList = $testlists[$_] | sort
+                $currentList = $testlists[$_] | sort-object
                 $currentList | foreach {
                     CompareResults $_ $currentList | Should Be $null
                     $_ | Should BeIn ($::.ParameterCompleter |=> FindMatchesStartingWith $_ $currentList)
@@ -86,7 +86,7 @@ Describe "ParameterCompleter class" {
 
         It "Should return at least an exact match for each element truncated to 1 char in every sample list" {
             $testlists.keys | foreach {
-                $currentList = $testlists[$_] | sort
+                $currentList = $testlists[$_] | sort-object
                 $currentList | foreach {
                     CompareResults $_ $currentList 1 | Should Be $null
                 }
@@ -95,7 +95,7 @@ Describe "ParameterCompleter class" {
 
         It "Should return at least an exact match for each element truncated to 2 chars in every sample list" {
             $testlists.keys | foreach {
-                $currentList = $testlists[$_] | sort
+                $currentList = $testlists[$_] | sort-object
                 $currentList | foreach {
                     CompareResults $_ $currentList 2 | Should Be $null
                 }
@@ -104,7 +104,7 @@ Describe "ParameterCompleter class" {
 
         It "Should return at least an exact match for each element truncated to 3 chars in every sample list" {
             $testlists.keys | foreach {
-                $currentList = $testlists[$_] | sort
+                $currentList = $testlists[$_] | sort-object
                 $currentList | foreach {
                     CompareResults $_ $currentList 3 | Should Be $null
                 }
@@ -114,19 +114,19 @@ Describe "ParameterCompleter class" {
         It "Should return matches for a substring that matches every word except the first" {
             $expected = $matchatstart | select -last ($matchatstart.length - 1)
             $actual = $::.ParameterCompleter |=> FindMatchesStartingWith 'ever' $matchatstart
-            diff -referenceobject $expected -differenceobject $actual | Should Be $null
+            compare-object -referenceobject $expected -differenceobject $actual | Should Be $null
         }
 
         It "Should return matches for a substring that matches every word except the last" {
             $expected = $matchatend | select -first ($matchatend.length - 1)
             $actual = $::.ParameterCompleter |=> FindMatchesStartingWith 'ever' $matchatend
-            diff -referenceobject $expected -differenceobject $actual | Should Be $null
+            compare-object -referenceobject $expected -differenceobject $actual | Should Be $null
         }
 
         It "Should return all the words starting with 'calend' when 'calend' is given in a list containing 4 words starting with 'calendar'" {
             $expected = @( "calendar", "calendarGroups", "calendars", "calendarView" )
-            $actual = $::.ParameterCompleter |=> FindMatchesStartingWith 'calend' $testlists.sampletargetslist
-            diff -referenceobject $expected -differenceobject $actual | Should Be $null
+            $actual = $::.ParameterCompleter |=> FindMatchesStartingWith 'calend' $testlists.sampleTargetsList
+            compare-object -referenceobject $expected -differenceobject $actual | Should Be $null
         }
     }
 }

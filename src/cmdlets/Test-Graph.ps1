@@ -13,13 +13,13 @@
 # limitations under the License.
 
 . (import-script ../REST/RESTRequest)
-. (import-script ../GraphService/GraphEndpoint)
-. (import-script ../Client/GraphConnection)
-. (import-script ../Client/GraphContext)
+. (import-script ../graphservice/GraphEndpoint)
+. (import-script ../client/GraphConnection)
+. (import-script ../client/GraphContext)
 
 $AlternatePropertyMapping = @{
     'Time-Local'=@('TimeLocal', {param($val) [DateTime] $val})
-    'Time-Utc'=@('TimeUtc', {param($val) [DateTime]::new(([DateTime] $val).ticks, [DateTimeKind]::Utc)})
+    'Time-UTC'=@('TimeUtc', {param($val) [DateTime]::new(([DateTime] $val).ticks, [DateTimeKind]::Utc)})
 }
 
 function Test-Graph {
@@ -44,7 +44,7 @@ function Test-Graph {
     } elseif ( $endpointUri -ne $null ) {
         $endpointUri
     } else {
-        ($::.GraphContext |=> GetConnection $null $null $Cloud 'User.Read' $true).GraphEndpoint.Graph
+        ($::.GraphContext |=> GetConnection).GraphEndpoint.Graph
     }
 
     $pingUri = [Uri]::new($graphEndpointUri, 'ping')
@@ -60,7 +60,7 @@ function Test-Graph {
         $content | add-member -notepropertyname PingUri -notepropertyvalue $pinguri
 
         # Sort by name to get consistent sort formatting
-        $content | gm -membertype noteproperty | sort name | foreach {
+        $content | gm -membertype noteproperty | sort-object name | foreach {
             $value = ($content | select -expandproperty $_.name)
             $mapping = $alternatePropertyMapping[$_.name]
 
@@ -90,7 +90,7 @@ The Test-Graph cmdlet makes a simple GET request to a specified Graph endpoint's
 Specifies that the target Graph endpoint to test is the Graph endpoint associated with cloud environment indicated by the parameter. By default, Test-Graph makes a request against the current connection, which itself defaults to https://graph.microsoft.com, so this parameter allows the default to be overridden.
 
 .PARAMETER Connection
-Specifies a Connection object returned by the New-GraphConnection command whose endpoint will be accessed by the endpoint.
+Specifies a Connection object returned by the New-GraphConnection command whose Graph endpoint will be accessed when making Graph requests with this Connection object.
 
 .PARAMETER EndpointUri
 Specifies an arbitrary URI as the Graph endpoint -- the URI must be an absolute URI, e.g. https://graph.microsoft.com.

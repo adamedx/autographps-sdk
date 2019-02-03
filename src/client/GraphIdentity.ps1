@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../GraphService/GraphEndpoint)
+. (import-script ../graphservice/GraphEndpoint)
 . (import-script GraphApplication)
 . (import-script ../auth/AuthProvider)
 . (import-script ../auth/V1AuthProvider)
@@ -27,10 +27,10 @@ ScriptClass GraphIdentity {
     $TenantDisplayName = $null
 
     static {
+        $AuthProvidersInitialized = $false
         function __initialize {
             $::.V1AuthProvider |=> RegisterProvider
             $::.V2AuthProvider |=> RegisterProvider
-            $::.AuthProvider |=> InitializeProviders
         }
     }
 
@@ -94,6 +94,11 @@ ScriptClass GraphIdentity {
 
         $authUri = $graphEndpoint |=> GetAuthUri (GetTenantId $this.TenantName)
         write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
+
+        if ( ! $this.scriptclass.AuthProvidersInitialized ) {
+            $::.AuthProvider |=> InitializeProviders
+            $this.scriptclass.AuthProvidersInitialized = $true
+        }
 
         $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
 
