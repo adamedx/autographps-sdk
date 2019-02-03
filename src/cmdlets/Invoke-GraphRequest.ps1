@@ -505,6 +505,47 @@ This example uses Graph to create a user. First it uses the PowerShell command G
 
 The body is given a PowerShell object that conforms to the documented structure given in the documentation for the users resource. Because Graph requires the body to be specified as JSON, the PowerShell object is serialized into JSON before sending it to Graph. To understand how PowerShell objects are serialized and deserialized to and from JSON, see the standard ConvertTo-Json and ConvertFrom-Json commands.
 
+.EXAMPLE
+Invoke-GraphRequest groups POST @{mailNickName='AccessGroup6';displayName='Group 6 Access';mailEnabled=$false;securityEnabled=$true}
+
+id                           : d90733b4-8aba-40e0-86ac-8eb0ede2b799
+displayName                  : Group 6 Access
+createdDateTime              : 2019-02-03T05:02:26Z
+securityEnabled              : True
+@odata.context               : https://graph.microsoft.com/v1.0/$metadata#groups/$entity
+renewedDateTime              : 2019-02-03T05:02:26Z
+visibility                   :
+mailEnabled                  : False
+mailNickname                 : AccessGroup6
+
+
+This example creates a group via POST, and passes the body as a PowerShell hashtable which will be converted to JSON when communicating with Graph.
+
+.EXAMPLE
+Invoke-GraphRequest groups POST '
+{
+     "mailNickName":    "AccessGroup7",
+     "displayName":     "Group 7 Access",
+     "mailEnabled":     false,
+     "securityEnabled": true,
+     "visibility":      "Private"
+}'
+
+id                           : c4cc09b2-fc4a-42ec-81f5-1d4894a702bc
+displayName                  : Group 7 Access
+createdDateTime              : 2019-02-03T05:02:26Z
+securityEnabled              : True
+@odata.context               : https://graph.microsoft.com/v1.0/$metadata#groups/$entity
+renewedDateTime              : 2019-02-03T05:02:26Z
+visibility                   : Private
+mailEnabled                  : False
+mailNickname                 : AccessGroup7
+
+In this example a group is created and the body that defines the group is specified directly in JSON rather than PowerShell objects.
+
+.EXAMPLE
+
+
 .LINK
 Get-GraphItem
 Connect-Graph
