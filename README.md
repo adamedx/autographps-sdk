@@ -1,9 +1,10 @@
 AutoGraphPS-SDK
-=============
+===============
 
 <img src="https://raw.githubusercontent.com/adamedx/autographps-sdk/master/assets/PoshGraphIcon.png" width="100">
 
 ----
+[![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-SDK-CI?branchName=adamedx/azure-pipelines)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=4&branchName=adamedx/azure-pipelines)
 
 * [Overview](#Overview)
 * [Installation](#Installation)
@@ -11,10 +12,7 @@ AutoGraphPS-SDK
 * [Command inventory](#command-inventory)
 * [Developer installation from source](#developer-installation-from-source)
 * [Contributing and development](#contributing-and-development)
-* [Quickstart](#quickstart)
 * [License and authors](#license-and-authors)
-
-*This repository / project was recently renamed from **PoshGraph-SDK** -- if you're looking for **PoshGraph-SDK**, you're in the right place!*
 
 ## Documentation
 
@@ -34,7 +32,7 @@ The project is in the earliest stages of development and almost but not quite ye
 
 ### System requirements
 
-AutoGraphPS-SDK requires Windows 10 and PowerShell 5.0.
+On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are at a pre-release support level. MacOS has not been tested, but may work with PowerShell 6.1.2 and higher.
 
 ## Installation
 AutoGraphPS-SDK is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/autographps-sdk); run the following command to install the latest stable release of AutoGraphPSGraph-SDK into your user profile:

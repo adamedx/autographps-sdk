@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.9.0'
+ModuleVersion = '0.9.1'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -212,26 +212,18 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.9.0 Release Notes
+# AutoGraphPS-SDK 0.9.1 Release Notes
 
 ## New dependencies
 
-* Microsoft.Identity.Client.2.7.0
-* ScriptClass 0.16.0
+None.
 
 ## New features
 
-* Device code authentication support for user sign-in on devices without a web browser: Use the ``-NoBrowserSigninUI`` option for user authentication with the following cmdlets: ``Connect-Graph``, ``New-GraphConnection``, and ``Get-GraphToken``.
-* Command-line help for ``Test-Graph``, ``Get-GraphError``
+* Build script improvements -- tools obtain a specific nuget version and use it only in the context of this repository
+* Azure Pipelines integration -- basic continuous integration support added.
 
 ## Fixed defects
-
-* Fix case of env:PSModulePath in import-devmodule script for compatibility with Linux
-* Fix import-devmodule to use ':' as the separator in PSModulePath on Linux instead of Windows ';'
-* Fix Test-Graph so that it uses the current Graph connection by default -- it was creating a new connection in the default case
-* Fix New-GraphConnection so that it does not require specification of appid custom endpoints
-* Query parameters for Get-GraphItem, Invoke-GraphRequest such as Select, Expand, ODataFilter, etc. threw an exception when results needed to be paged.
-* Fix broken error messages in Get-GraphSchema
 
 "@
 

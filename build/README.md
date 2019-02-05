@@ -8,7 +8,6 @@ This document describes how to build AutoGraphPS-SDK and provides additional inf
 **AutoGraphPS-SDK** development requires the following:
 
 * A **Windows 10** operating system or later
-* The [NuGet](https://nuget.org) command-line tools, which can be installed [here](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe).
 * [PowerShellGet](https://www.powershellgallery.com/packages/PowerShellGet) PowerShell module version 1.0.0.1 (default in Windows 10 versions) or [version 1.6.0](https://www.powershellgallery.com/packages/PowerShellGet/1.6.0).
 * [Git command-line tools](https://git-for-windows.github.io/) to clone this repository locally:
 
@@ -26,6 +25,7 @@ The most common case is to build the module and then execute it in a new shell.
 To create a new version of the module in the `pkg` output directory, run this command:
 
 ```powershell
+.\build\configure-tools.ps1 # only needed before your first build
 .\build\build-package.ps1 -downloaddependencies
 ```
 
