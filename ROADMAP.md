@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Update build tools to not change path in order to use nuget
+* Update build tools to not change path in order to use nuget
 * Add support for test endpoints
 * Add $ref?
 * Get module to install and function on Linux
