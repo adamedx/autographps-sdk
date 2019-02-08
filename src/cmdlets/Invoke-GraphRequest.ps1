@@ -447,10 +447,10 @@ This parameter specifies that the command should return results exactly in the f
 This parameter specifies that instead of accessing Microsoft Graph, the command should make requests against Azure Active Directory Graph (AAD Graph). Note that most functionality of this command and other commands in the module is not compatible with AAD Graph; this parameter may be deprecated in the future.
 
 .OUTPUTS
-The command returns the content of the HTTP response from the Graph endpoint. The results are either deserialized PowerShell objects, or, if the RawContent parameter is also specified, the literal content of the HTTP response. Because Graph responds to requests with JSON except in cases where content types such as images or other media are requested, use of the RawContent parameter will usually result in JSON output.
+TThe command returns the content of the HTTP response from the Graph endpoint. The result will depend on the documented response for the specified HTTP method parameter for the Graph URI. The results are formatted as either deserialized PowerShell objects, or, if the RawContent parameter is also specified, the literal content of the HTTP response. Because Graph responds to requests with JSON except in cases where content types such as images or other media are requested, use of the RawContent parameter will usually result in JSON output.
 
 .EXAMPLE
-Invoke-GraphItem me
+Invoke-GraphRequest me
 
     id                : 82f53da9-b996-4227-b268-c20564ceedf7
     officeLocation    : 7/3191
@@ -542,9 +542,6 @@ mailEnabled                  : False
 mailNickname                 : AccessGroup7
 
 In this example a group is created and the body that defines the group is specified directly in JSON rather than PowerShell objects.
-
-.EXAMPLE
-
 
 .LINK
 Get-GraphItem
