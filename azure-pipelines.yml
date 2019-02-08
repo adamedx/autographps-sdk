@@ -55,7 +55,7 @@ jobs:
     displayName: 'Clean build'
     inputs:
       targetType: inline
-      script: 'Get-Module Pester -ListAvailable'
+      script: './build/clean-build.ps1'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Install and configure build tools'
