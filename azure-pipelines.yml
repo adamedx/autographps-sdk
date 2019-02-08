@@ -6,10 +6,6 @@
 trigger:
   - master
 
-variables:
-- name: mainvar
-  value: "'build/templates/parameterized-step-template.yml'"
-
 jobs:
 - job: BuildWithTests
   displayName: 'Build and test PowerShell module'

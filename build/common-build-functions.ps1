@@ -633,9 +633,14 @@ function get-temporarypackagerepository($moduleName, $moduleDependencySource)  {
 }
 
 function get-allowedlibrarydirectoriesfromnuspec($nuspecFile) {
+    write-verbose "Identifying ./lib files for module from '$nuspecFile'"
     $packageData = [xml] (get-content $nuspecFile | out-string)
-    $packageData.package.files.file | where target -like lib/* | select -expandproperty target | foreach {
-        $_.replace("`\", '/')
+    if ( $packageData.package ) {
+        $packageData.package.files.file | where target -like lib/* | select -expandproperty target | foreach {
+            $_.replace("`\", '/')
+        }
+    } else {
+        @()
     }
 }
 
@@ -644,11 +649,21 @@ function get-AssemblyPackagesListFilePath {
 }
 
 function get-AssemblyPackagesFromFile($assemblyListFilePath) {
+    write-verbose "Getting assemblies from '$assemblyListFilePath'"
+
+    if ( ! ( test-path $assemblyListFilePath ) ) {
+        throw "Assembly list file '$assemblyListFilePath' not found"
+    }
+
     $packageData = [Xml] (get-content $assemblyListFilePath)
 
     # Should throw exception if a node does not exist, i.e.
     # if the schema is invalid
-    $packageData.packages.package
+    if ( $packageData.packages ) {
+        $packageData.packages.package
+    } else {
+        @()
+    }
 }
 
 function get-AssemblyDependencies {

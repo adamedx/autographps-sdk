@@ -73,7 +73,7 @@ function InstallDependencies($clean) {
 
     $allObjects = get-childitem ./lib -r
     $filesToRemove = $allObjects | where PSIsContainer -eq $false | where {
-        $allowedFiles.fullname -notcontains $_.fullname
+        ! $allowedFiles -or $allowedFiles.FullName -notcontains $_.FullName
     }
 
     $filesToRemove | remove-item
