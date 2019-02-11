@@ -18,21 +18,21 @@
 ScriptClass RESTRequest {
     static {
         const PoshGraphUserAgent (. {
-                                         $osversion = [System.Environment]::OSVersion.version.tostring()
-                                         $platform = 'Windows NT'
-                                         $os = 'Windows NT'
-                                         if ( $PSVersionTable.PSEdition -eq 'Core' ) {
-                                             if ( ! $PSVersionTable.OS.contains('Windows') ) {
-                                                 $platform = $PSVersionTable.Platform
-                                                 if ( $PSVersionTable.OS.contains('Linux') ) {
-                                                     $os = 'Linux'
-                                                 } else {
-                                                     $os = [System.Environment]::OSVersion.Platform
-                                                 }
-                                             }
-                                         }
-                                         $language = [System.Globalization.CultureInfo]::CurrentCulture.name
-                                         'PoshGraph/0.9 ({0}; {1} {2}; {3})' -f $platform, $os, $osversion, $language
+                                      $osversion = [System.Environment]::OSVersion.version.tostring()
+                                      $platform = 'Windows NT'
+                                      $os = 'Windows NT'
+                                      if ( $PSVersionTable.PSEdition -eq 'Core' ) {
+                                          if ( ! $PSVersionTable.OS.contains('Windows') ) {
+                                              $platform = $PSVersionTable.Platform
+                                              if ( $PSVersionTable.OS.contains('Linux') ) {
+                                                  $os = 'Linux'
+                                              } else {
+                                                  $os = [System.Environment]::OSVersion.Platform
+                                              }
+                                          }
+                                      }
+                                      $language = [System.Globalization.CultureInfo]::CurrentCulture.name
+                                      'PoshGraph/0.9 PowerShell/{4} ({0}; {1} {2}; {3})' -f $platform, $os, $osversion, $language, $PSVersionTable.PSversion
                                   })
     }
 
