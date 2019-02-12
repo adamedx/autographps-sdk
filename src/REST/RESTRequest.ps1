@@ -16,13 +16,31 @@
 . (import-script ../common/PreferenceHelper)
 
 ScriptClass RESTRequest {
-    const PoshGraphUserAgent 'PoshGraph/0.1 (Windows NT; Windows NT 10.0; en-US)'
+    static {
+        const PoshGraphUserAgent (. {
+                                      $osversion = [System.Environment]::OSVersion.version.tostring()
+                                      $platform = 'Windows NT'
+                                      $os = 'Windows NT'
+                                      if ( $PSVersionTable.PSEdition -eq 'Core' ) {
+                                          if ( ! $PSVersionTable.OS.contains('Windows') ) {
+                                              $platform = $PSVersionTable.Platform
+                                              if ( $PSVersionTable.OS.contains('Linux') ) {
+                                                  $os = 'Linux'
+                                              } else {
+                                                  $os = [System.Environment]::OSVersion.Platform
+                                              }
+                                          }
+                                      }
+                                      $language = [System.Globalization.CultureInfo]::CurrentCulture.name
+                                      'PoshGraph/0.9 PowerShell/{4} ({0}; {1} {2}; {3})' -f $platform, $os, $osversion, $language, $PSVersionTable.PSversion
+                                  })
+    }
 
     $uri = strict-val [Uri]
     $headers = strict-val [HashTable]
     $method = strict-val [String]
     $body = $null
-    $userAgent = $PoshGraphUserAgent
+    $userAgent = $null
 
     function __initialize([Uri] $uri, $method = "GET", [HashTable] $headers = @{}, $body = $null, $userAgent = $null) {
         $this.headers = $headers
@@ -39,6 +57,8 @@ ScriptClass RESTRequest {
 
         $this.userAgent = if ( $userAgent -ne $null ) {
             $this.userAgent = $userAgent
+        } else {
+            $this.scriptclass.PoshGraphUserAgent
         }
     }
 

@@ -3,10 +3,8 @@
 ## To-do items -- prioritized
 
 * Update build tools to not change path in order to use nuget
-* Update build tools to not change path in order to use nuget
 * Add support for test endpoints
 * Add $ref?
-* Get module to install and function on Linux
 * Make token caches per app-per cloud.
 * Create interface for certificate store, make it not implemented outside of Windows
 * Add -value parameter
@@ -341,6 +339,8 @@
 * Fix copyrights
 * Update README
 * Fix bug in scopehelper where we return all scopes when asked only for delegated
+* Get module to install and function on Linux
+* Fix output for remote ps sessions in device code login
 
 ### Postponed
 

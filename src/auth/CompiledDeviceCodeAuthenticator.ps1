@@ -20,23 +20,45 @@ $dotnetPlatform = if ( $PSVersionTable.PSEdition -eq 'Core' ) {
 
 $authLibraryPath = [System.Reflection.Assembly]::GetAssembly(([Microsoft.Identity.Client.PublicClientApplication])).location
 
-# Use C# here due to threading complications when using AcquireTokenWithDeviceCodeAsync
+# Use C# here due to threading complications when using AcquireTokenWithDeviceCodeAsync.
+#
 try {
-    add-type -referencedassemblies $authLibraryPath, System.Console, System.Threading.Tasks -ignorewarnings @'
+    add-type -referencedassemblies $authLibraryPath, System.Console, System.Threading.Tasks, System.Threading, System.Runtime.Extensions -ignorewarnings @'
     using System;
+    using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Identity.Client;
 
     public class CompiledDeviceCodeAuthenticator
     {
+        public static ManualResetEvent messageReadyEvent;
+        public static MemoryStream messageStream;
+
         public static Task ShowMessage(DeviceCodeResult deviceCodeResult)
         {
-            Console.WriteLine(deviceCodeResult.Message);
+            // Note that here instead of performing a Console.WriteLine for the message,
+            // we actually write it to a memory stream -- this is to handle the situation with
+            // PowerShell remote sessions -- in this case, Console.WriteLine is actually not
+            // writing to the PowerShell host, it's simply "lost" to a .NET console that is not
+            // associated to the PowerShell host that displays text to the user. To work around this,
+            // we send the message to a stream supplied by the caller of GetTokenWithCode -- the caller
+            // is expected to read the message from that stream once we signal the event also
+            // supplied by this caller in the method below. That caller which is presumalbly running with
+            // the ability to invoke 'write-host' to the PowerShell host can then display the message
+            // to the user who can then complete the actions necessary for the orignal call to acquire
+            // the token to complete.
+            StreamWriter writer = new StreamWriter(messageStream, System.Text.Encoding.Unicode);
+            writer.WriteLine(deviceCodeResult.Message); // Write the user prompt message to the stream
+            writer.Flush();
+            messageReadyEvent.Set(); // Notify the initiator that the user prompt with device code information is ready to read
             return Task.FromResult(0);
         }
 
-        public static Task<AuthenticationResult> GetTokenWithCode(PublicClientApplication authContext, string[] scopes)
+        public static Task<AuthenticationResult> GetTokenWithCode(PublicClientApplication authContext, string[] scopes, MemoryStream messageStream, ManualResetEvent messageReadyEvent)
         {
+            CompiledDeviceCodeAuthenticator.messageStream = messageStream;
+            CompiledDeviceCodeAuthenticator.messageReadyEvent = messageReadyEvent;
             var asyncResult = authContext.AcquireTokenWithDeviceCodeAsync(
                 scopes,
                 ShowMessage);

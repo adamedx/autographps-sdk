@@ -220,10 +220,13 @@ None.
 
 ## New features
 
+* Auto-detect PS remote sessions and invoke device code auth for delegated user auth scenarios
 * Build script improvements -- tools obtain a specific nuget version and use it only in the context of this repository
 * Azure Pipelines integration -- basic continuous integration support added.
 
 ## Fixed defects
+
+* Fixed hang in PS remote sessions when performing delegated user auth via device code
 
 "@
 

@@ -33,7 +33,11 @@ ScriptClass GraphConnection {
         $this.Identity = $Identity
         $this.Connected = $false
         $this.Status = [GraphConnectionStatus]::Online
-        $this.NoBrowserUI = ! $::.Application.SupportsBrowserSignin -or $noBrowserUI
+
+        $isRemotePSSession = (get-variable PSSenderInfo -erroraction ignore) -ne $null
+        write-verbose ("Browser supported: {0}, NoBrowserUISpecified {1}, IsRemotePSSession: {2}" -f $::.Application.SupportsBrowserSignin, $noBrowserUI, $isRemotePSSession)
+        
+        $this.NoBrowserUI = ! $::.Application.SupportsBrowserSignin -or $noBrowserUI -or $isRemotePSSession
 
         if ( $this.GraphEndpoint.Type -eq ([GraphType]::MSGraph) ) {
             if ( $Identity -and ! $scopes ) {
