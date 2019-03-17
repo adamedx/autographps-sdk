@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script New-GraphConnection)
 . (import-script ../common/GraphUtilities)
 . (import-script ../common/GraphAccessDeniedException)
 . (import-script common/QueryHelper)
 . (import-script ../REST/GraphRequest)
 . (import-script ../REST/GraphErrorRecorder)
+. (import-script common/GraphOutputFile)
 . (import-script common/PermissionParameterCompleter)
 
 function Invoke-GraphRequest {
@@ -46,6 +46,10 @@ function Invoke-GraphRequest {
 
         [Switch] $Descending,
 
+        [Switch] $Value,
+
+        [String] $OutputFilePrefix = $null,
+
         [String] $Query = $null,
 
         [HashTable] $Headers = $null,
@@ -65,15 +69,32 @@ function Invoke-GraphRequest {
 
         [switch] $RawContent,
 
+        [switch] $IncludeFullResponse,
+
         [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
         [switch] $AADGraph
     )
+
+    if ( $OutputFilePrefix ) {
+        $outputFileParent = split-path $OutputFilePrefix -parent
+        if ( $outputFileParent ) {
+            if ( ! (test-path $outputFileParent) ) {
+                throw "Specified OutputFilePrefix parameter value '$OutputFilePrefix' includes non-existent directories"
+            }
+        }
+    }
+
+    if ( $Value.IsPresent -and $Method -ne 'GET' ) {
+        throw [ArgumentException]::new("The 'Value' parameter may not be specified when the 'Method' parameter has the value 'GET'")
+    }
+
+    $useRawContent = $RawContent.IsPresent -or $Value.IsPresent
 
     $::.GraphErrorRecorder |=> StartRecording
 
     if ( $Query ) {
         if ( $Search -or $ODataFilter -or $Select -or $OrderBy ) {
-            throw [ArgumentException]::new("'-ODataFilter', '-Search', '-OrderBy',  and '-Select' options may not specified with '-Query'")
+            throw [ArgumentException]::new("'ODataFilter', 'Search', 'OrderBy',  and 'Select' parameters may not specified when the 'Query' parameter is specified")
         }
     }
 
@@ -251,11 +272,17 @@ function Invoke-GraphRequest {
     } else {
         $inputUriRelative
     }
+
+    if ( $Value.IsPresent ) {
+        $contextUri = $contextUri, '$value' -join '/'
+    }
+
     $graphRelativeUri = $::.GraphUtilities |=> JoinRelativeUri $tenantQualifiedVersionSegment $contextUri
 
     $countError = $false
     $optionalCountResult = $null
     $pageCount = 0
+    $contentTypeData = $null
 
     while ( $graphRelativeUri -ne $null -and ($graphRelativeUri.tostring().length -gt 0) -and ($maxResultCount -eq $null -or $results.length -lt $maxResultCount) ) {
         if ( $graphType -eq ([GraphType]::AADGraph) ) {
@@ -294,8 +321,13 @@ function Invoke-GraphRequest {
         $skipCount = $null
 
         $content = if ( $graphResponse -and $graphResponse.Entities -ne $null ) {
+            if ( ! $contentTypeData ) {
+                $contentTypeData = $graphResponse.RestResponse.ContentTypeData
+            }
+
             $graphRelativeUri = $graphResponse.Nextlink
-            if (! $RawContent.ispresent) {
+
+            if (! $useRawContent) {
                 $entities = if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
                     @([PSCustomObject] $graphResponse.entities)
                 } elseif ($graphResponse.entities -is [HashTable]) {
@@ -313,7 +345,11 @@ function Invoke-GraphRequest {
                 }
                 $entities
             } else {
-                $graphResponse |=> Content
+                if ( $IncludeFullResponse.IsPresent -and ! $outputFilePrefix) {
+                    __ToResponseWithObject ($graphResponse |=> Content) $graphResponse
+                } else {
+                    $graphResponse |=> Content
+                }
             }
         } else {
             $graphRelativeUri = $null
@@ -322,7 +358,7 @@ function Invoke-GraphRequest {
             }
         }
 
-        if ( $graphResponse -and ( ! $RawContent.ispresent ) ) {
+        if ( $graphResponse -and ( ! $useRawContent ) ) {
             # Add __ItemContext to decorate the object with its source uri.
             # Do this as a script method to prevent deserialization
             $requestUriNoQuery = $request.Uri.GetLeftPart([System.UriPartial]::Path)
@@ -352,10 +388,35 @@ function Invoke-GraphRequest {
         $PSCmdlet.PagingParameters.NewTotalCount($count,  $accuracy)
     }
 
-    if ( $maxReturnedResults ) {
+    $filteredResults = if ( $maxReturnedResults ) {
         $results | select -first $maxReturnedResults
     } else {
         $results
+    }
+
+    if ( ! $OutputFilePrefix ) {
+        $filteredResults
+    } else {
+        $enumerableResults = if ( ! $contentTypeData['charset'] ) {
+            $byteResults = @($null, $null)
+            $byteResults[0] = $filteredResults
+            $byteResults
+        } else {
+            $filteredResults
+        }
+
+        $resultIndex = 0
+        $enumerableResults | foreach {
+            if ( $_ ) {
+                $baseName = $OutputFilePrefix
+                if ( $resultIndex -gt 0 ) {
+                    $baseName += $resultIndex.tostring()
+                }
+                $resultIndex++
+                $outputFile = new-so GraphOutputFile $baseName $_ $contentTypeData
+                $outputFile |=> Save
+            }
+        }
     }
 
 <#
@@ -419,6 +480,12 @@ The First parameter specifies that Graph should only return a specific number of
 .PARAMETER Skip
 Skip specifies that Graph should not return the first N results in the HTTP response, i.e. that it should "discard" them. Graph determines the results to throw away after sorting them according to the order Graph defaults to or is specified by this command through the OrderBy parameter. This parameter can be used in conjunction with this First parameter to page through results -- if 20 results were already returned by one or more previous invocations of this command, then by specifying 20 for Skip in the next invocation, Graph will skip past the previously returned results and return the next "page" of results with a page size specified by First.
 
+.PARAMETER Value
+The Value parameter may be used when the result is itself metadata describing some data, such as an image. To obtain the actual data, rather than the metadata, specify Value. This is particularly useful for obtaining pictures for instance, e.g. me/photo.
+
+.PARAMETER OutputFilePrefix
+The OutputFilePrefix parameter specifies that rather than emitting the results to the PowerShell pipeline, each result should be written to a file name prefixed with the value of the OutputFilePrefix. The parameter value may be a path to a directory, or simply a name with no path separator. If there is more than one item in the result, the base file name for that result will end with a unique integer identifier within the result set. The file extension will be 'json' unless the result is of another content type, in which case the command will attempt to determine the extension from the content type returned in the HTTP response. If the content type cannot be determined, then the file extension will be '.dat'.
+
 .PARAMETER Query
 The Query parameter specifies the URI query parameter of the REST request made by the command to Graph. Because the URI's query parameter is affected by the Select, ODataFilter, OrderBy, Search, and Expand options, the command's Query parameter may not be specified of any those parameters are specified. This parameter is most useful for advanced scenarios where the other command parameters are unable to express valid Graph protocol use of the URI query parameter.
 
@@ -442,6 +509,9 @@ By default the URIs specified by the RelativeUri parameter are relative to the c
 
 .PARAMETER RawContent
 This parameter specifies that the command should return results exactly in the format of the HTTP response from the Graph endpoint, rather than the default behavior where the objects are deserialized into PowerShell objects. Graph returns objects as JSON except in cases where content types such as media are being requested, so use of this parameter will generally cause the command to return JSON output.
+
+.PARAMETER IncludeFullResponse
+This parameter specifies that the output of this command should be structured as an object with a reference to the output typically returned when this parameter is not specified, along with the responses from the service. This parameter may be replaced in the future with a more generic interface.
 
 .PARAMETER AADGraph
 This parameter specifies that instead of accessing Microsoft Graph, the command should make requests against Azure Active Directory Graph (AAD Graph). Note that most functionality of this command and other commands in the module is not compatible with AAD Graph; this parameter may be deprecated in the future.
