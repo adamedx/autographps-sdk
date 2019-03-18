@@ -51,17 +51,17 @@ ScriptClass GraphEndpoint {
             [GraphCloud]::ChinaCloud = @{
                 Authentication='https://login.chinacloudapi.cn'
                 Graph='https://microsoftgraph.chinacloudapi.cn'
-                AuthProtocol=[GraphAuthProtocol]::v1
+                AuthProtocol=[GraphAuthProtocol]::v2
             }
             [GraphCloud]::GermanyCloud = @{
                 Authentication='https://login.microsoftonline.de'
                 Graph='https://graph.microsoft.de'
-                AuthProtocol=[GraphAuthProtocol]::v1
+                AuthProtocol=[GraphAuthProtocol]::v2
             }
             [GraphCloud]::USGovernmentCloud = @{
                 Authentication='https://login.microsoftonline.us'
                 Graph='https://graph.microsoft.us'
-                AuthProtocol=[GraphAuthProtocol]::v1
+                AuthProtocol=[GraphAuthProtocol]::v2
             }
         }
 

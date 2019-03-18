@@ -36,6 +36,10 @@ function Get-GraphItem {
 
         [Switch] $Descending,
 
+        [Switch] $Value,
+
+        $OutputFilePrefix,
+
         [String] $Query = $null,
 
         [HashTable] $Headers = $null,
@@ -70,6 +74,8 @@ function Get-GraphItem {
         Expand = $Expand
         OrderBy = $OrderBy
         Descending = $Descending
+        OutputFilePrefix = $OutputFilePrefix
+        Value = $Value
         Version=$Version
         RawContent=$RawContent
         AbsoluteUri=$AbsoluteUri
@@ -136,6 +142,12 @@ The First parameter specifies that Graph should only return a specific number of
 
 .PARAMETER Skip
 Skip specifies that Graph should not return the first N results in the HTTP response, i.e. that it should "discard" them. Graph determines the results to throw away after sorting them according to the order Graph defaults to or is specified by this command through the OrderBy parameter. This parameter can be used in conjunction with this First parameter to page through results -- if 20 results were already returned by one or more previous invocations of this command, then by specifying 20 for Skip in the next invocation, Graph will skip past the previously returned results and return the next "page" of results with a page size specified by First.
+
+.PARAMETER Value
+The Value parameter may be used when the result is itself metadata describing some data, such as an image. To obtain the actual data, rather than the metadata, specify Value. This is particularly useful for obtaining pictures for instance, e.g. me/photo.
+
+.PARAMETER OutputFilePrefix
+The OutputFilePrefix parameter specifies that rather than emitting the results to the PowerShell pipeline, each result should be written to a file name prefixed with the value of the OutputFilePrefix. The parameter value may be a path to a directory, or simply a name with no path separator. If there is more than one item in the result, the base file name for that result will end with a unique integer identifier within the result set. The file extension will be 'json' unless the result is of another content type, in which case the command will attempt to determine the extension from the content type returned in the HTTP response. If the content type cannot be determined, then the file extension will be '.dat'.
 
 .PARAMETER Query
 The Query parameter specifies the URI query parameter of the REST request made by the command to Graph. Because the URI's query parameter is affected by the Select, ODataFilter, OrderBy, Search, and Expand options, the command's Query parameter may not be specified of any those parameters are specified. This parameter is most useful for advanced scenarios where the other command parameters are unable to express valid Graph protocol use of the URI query parameter.

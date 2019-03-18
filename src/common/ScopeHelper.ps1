@@ -18,6 +18,7 @@
 ScriptClass ScopeHelper {
     static {
         const GraphApplicationId 00000003-0000-0000-c000-000000000000
+        const DefaultScopeQualifier ([Uri] 'https://graph.microsoft.com')
         $graphSP = $null
         $permissionsByIds = $null
         $appOnlyPermissionsByName = $null
@@ -207,6 +208,20 @@ ScriptClass ScopeHelper {
             }
 
             $permission.value
+        }
+
+        function QualifyScopes([string[]] $scopes, [Uri] $resourceUri) {
+            if ( ! $resourceUri -or ( $resourceUri -eq $this.DefaultScopeQualifier ) ) {
+                $scopes
+            } else {
+                foreach ( $scope in $scopes )  {
+                    if ( ( [Uri] $scope ).IsAbsoluteUri ) {
+                        [string] $scope
+                    } else {
+                        [string] [Uri]::new($resourceUri, $scope)
+                    }
+                }
+            }
         }
 
         function __IsPermissionType($permissionId, $type) {

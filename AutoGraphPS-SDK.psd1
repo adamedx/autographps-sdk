@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.9.1'
+ModuleVersion = '0.10.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -167,6 +167,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\common\ConsentHelper.ps1',
         '.\src\cmdlets\common\DisplayTypeFormatter.ps1',
         '.\src\cmdlets\common\DynamicParamHelper.ps1',
+        '.\src\cmdlets\common\GraphOutputFile.ps1',
         '.\src\cmdlets\common\ItemResultHelper.ps1',
         '.\src\cmdlets\common\ParameterCompleter.ps1',
         '.\src\cmdlets\common\PermissionParameterCompleter.ps1',
@@ -212,7 +213,7 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.9.1 Release Notes
+# AutoGraphPS-SDK 0.10.0 Release Notes
 
 ## New dependencies
 
@@ -221,12 +222,16 @@ None.
 ## New features
 
 * Auto-detect PS remote sessions and invoke device code auth for delegated user auth scenarios
+* Value parameter for Invoke-GraphRequest, Get-GraphItem to make `$value requests
+* OutputFilePrefix parameter for Invoke-GraphRequest, Get-GraphItem for sending output to the file system
+* IncludeFullResponse parameter for Invoke-GraphRequest to allow retrieval of the full response object in the output
 * Build script improvements -- tools obtain a specific nuget version and use it only in the context of this repository
 * Azure Pipelines integration -- basic continuous integration support added.
 
 ## Fixed defects
 
 * Fixed hang in PS remote sessions when performing delegated user auth via device code
+* Fixed broken v2 auth for national clouds due to incorrectly qualified scopes
 
 "@
 

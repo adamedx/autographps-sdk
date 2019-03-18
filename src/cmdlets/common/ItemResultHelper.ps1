@@ -29,3 +29,11 @@ function __GetResultVariable( $customVariableName ) {
         }
     }
 }
+
+function  __ToResponseWithObject($object, $response) {
+    [PSCustomObject] @{
+        Data = $object
+        ResponseContent = $response.RestResponse.Content
+        ResponseRawContent = $response.RestResponse.RawContent
+    }
+}
