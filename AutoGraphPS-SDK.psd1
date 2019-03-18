@@ -231,6 +231,7 @@ None.
 ## Fixed defects
 
 * Fixed hang in PS remote sessions when performing delegated user auth via device code
+* Fixed broken v2 auth for national clouds due to incorrectly qualified scopes
 
 "@
 

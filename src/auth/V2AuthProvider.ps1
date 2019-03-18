@@ -60,10 +60,9 @@ ScriptClass V2AuthProvider {
             throw [ArgumentException]::new('No scopes specified for v2 auth protocol, at least one scope is required')
         }
 
-        # See comment on __ScopesAsScopeList member to understand strange call syntax here
-        $scopeList = $this.__ScopesAsScopeList.InvokeReturnAsIs(@($scopes))
+        $scopeList = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri
 
-        $authContext.protocolContext.AcquireTokenAsync($scopeList)
+        $authContext.protocolContext.AcquireTokenAsync([System.Collections.Generic.List[string]] $scopeList)
     }
 
     function AcquireFirstUserTokenFromDeviceCode($authContext, $scopes) {
@@ -73,15 +72,15 @@ ScriptClass V2AuthProvider {
 
     function AcquireFirstAppToken($authContext) {
         write-verbose 'V2 auth provider acquiring initial app token'
-        $defaultScopeList = $this.__GetDefaultScopeList.InvokeReturnAsIs(@($authContext))
+        $defaultScopeList = $this |=> __GetDefaultScopeList $authContext
 
-        $authContext.protocolContext.AcquireTokenForClientAsync($defaultScopeList)
+        $authContext.protocolContext.AcquireTokenForClientAsync([System.Collections.Generic.List[string]] $defaultScopeList)
     }
 
     function AcquireFirstUserTokenConfidential($authContext, $scopes) {
         write-verbose 'V2 auth provider acquiring user token via confidential client'
 
-        $scopeList = $this.__ScopesAsScopeList.InvokeReturnAsIs(@($scopes))
+        $scopeList = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri
 
         # Confidential user flow uses an authcode flow with a confidential rather than public client.
         # First, get the auth code for the user -- MSAL does not support this, but it does return the URI
@@ -99,19 +98,19 @@ ScriptClass V2AuthProvider {
         $authCodeInfo = GetAuthCodeFromURIUserInteraction $authCodeUxUri
 
         # 3. Now use MSAL's confidential client to obtain the token from the auth code
-        $authContext.protocolContext.AcquireTokenByAuthorizationCodeAsync($authCodeInfo.ResponseParameters.Code, $scopeList)
+        $authContext.protocolContext.AcquireTokenByAuthorizationCodeAsync($authCodeInfo.ResponseParameters.Code, [System.Collections.Generic.List[string]] $scopeList)
     }
 
     function AcquireRefreshedToken($authContext, $token) {
         write-verbose 'V2 auth provider refreshing existing token'
 
         if ( $authContext.app.authtype -eq ([GraphAppAuthType]::AppOnly) ) {
-            $defaultScopeList = $this.__GetDefaultScopeList.InvokeReturnAsIs(@($authContext, @()))
-            $authContext.protocolContext.AcquireTokenForClientAsync($defaultScopeList)
+            $defaultScopeList = $this |=> __GetDefaultScopeList $authContext @()
+            $authContext.protocolContext.AcquireTokenForClientAsync([System.Collections.Generic.List[string]] $defaultScopeList)
         } else {
-            # See comment on __ScopesAsScopeList member to understand strange call syntax here
-            $requestedScopesFromToken = $this.__ScopesAsScopeList.InvokeReturnAsIs(@($token.scopes))
-            $authContext.protocolContext.AcquireTokenSilentAsync($requestedScopesFromToken, $token.account)
+            $requestedScopesFromToken = $::.ScopeHelper |=> QualifyScopes $token.scopes $authContext.GraphEndpointUri |
+              where { $_ -notin @('openid', 'profile', 'offline_access') }
+            $authContext.protocolContext.AcquireTokenSilentAsync([System.Collections.Generic.List[string]] $requestedScopesFromToken, $token.account)
         }
     }
 
@@ -124,48 +123,8 @@ ScriptClass V2AuthProvider {
         $asyncRemoveResult.Wait()
     }
 
-    $__GetDefaultScopeList = {
-        param($authContext)
-        # See comments for $__ScopesAsScopeList as to why this is a script block instead
-        # of a function and has a strange return value
-        $scopes = new-object System.Collections.Generic.List[string]
-        $defaultScope = $authContext.GraphEndpointUri.tostring().trimend('/'), '.default' -join '/'
-        $scopes.Add($defaultScope)
-
-        # This is not a typo -- see $__ScopesAsScopeList member block comments
-        return , $scopes
-    }
-
-    $__ScopesAsScopeList = {
-        param($scopes)
-        $scopeList = new-object System.Collections.Generic.List[string]
-        $alreadyPresentScopes = @('openid', 'profile', 'offline_access')
-        $scopes | where { $alreadyPresentScopes -notcontains $_ } | foreach {
-            $scopeList.Add($_)
-        }
-
-        # OK, this last line is *strange*. Yes, the syntax with the comma is correct. This
-        # is a trick to get PowerShell to not convert this .NET generic List class to an array,
-        # or, in the case of a List with one element simply a single object of that element!
-        # In our case, the caller *really* wants this to be the List type as it will be
-        # passed to a .NET metho, which means the argument is type checked and the call will
-        # fail the call if the argument is not the expected .NET type. See the issue below:
-        #
-        #    https://stackoverflow.com/questions/16121969/function-not-returning-expected-object
-        #
-        # Additionally, the problem persists if this is a function. And if you make it a script
-        # block and call Invoke, it still happens! The only way I've found around this is the following,
-        # which also reveals why this is a script block rather than a function :) :
-        #
-        #   * Make this a script block rather than a function
-        #   * Return the value by explicitly using return, and passing the result preceded by ",", i.e. "return , $myresult"
-        #   * Invoke it with the InvokeReturnAsIs method instead of Invoke to preserve the actual type of the return value
-        #
-        # This is a really unfortunate behavior -- I'm surprised I haven't run into it
-        # before, but probably only an issue when doing interop with actual .NET code
-        # as in our case.
-
-        return , $scopeList
+    function __GetDefaultScopeList($authContext) {
+        $::.ScopeHelper |=> QualifyScopes @('.default') $authContext.GraphEndpointUri
     }
 
     function GetAuthCodeFromURIUserInteraction($authUxUri) {
