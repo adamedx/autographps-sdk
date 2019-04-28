@@ -9,10 +9,10 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-# RootModule = ''
+RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.10.0'
+ModuleVersion = '0.11.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -57,7 +57,7 @@ PowerShellVersion = '5.1'
 # RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @('./src/graph-sdk.ps1')
+ScriptsToProcess = @('src/PreModuleInitialization.ps1')
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -66,47 +66,47 @@ ScriptsToProcess = @('./src/graph-sdk.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='ScriptClass';ModuleVersion='0.16.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(@{ModuleName='ScriptClass';ModuleVersion='0.20.0';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @('Get-DynamicValidateSetParameter')
+FunctionsToExport = @(
+    'Connect-Graph',
+    'Disconnect-Graph',
+    'Find-GraphLocalCertificate',
+    'Get-GraphApplication',
+    'Get-GraphApplicationCertificate',
+    'Get-GraphApplicationConsent',
+    'Get-GraphApplicationServicePrincipal',
+    'Get-GraphConnectionInfo',
+    'Get-GraphError',
+    'Get-GraphItem',
+    'Get-GraphSchema',
+    'Get-GraphToken',
+    'Get-GraphVersion',
+    'Invoke-GraphRequest',
+    'New-GraphApplication',
+    'New-GraphApplicationCertificate',
+    'New-GraphConnection',
+    'New-GraphLocalCertificate',
+    'Register-GraphApplication',
+    'Remove-GraphApplication',
+    'Remove-GraphApplicationCertificate',
+    'Remove-GraphApplicationConsent',
+    'Remove-GraphItem',
+    'Set-GraphApplicationConsent',
+    'Set-GraphConnectionStatus',
+    'Test-Graph',
+    'Unregister-GraphApplication'
+)
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-    CmdletsToExport = @(
-        'Connect-Graph',
-        'Disconnect-Graph',
-        'Find-GraphLocalCertificate',
-        'Get-GraphApplication',
-        'Get-GraphApplicationCertificate',
-        'Get-GraphApplicationConsent',
-        'Get-GraphApplicationServicePrincipal',
-        'Get-GraphConnectionInfo',
-        'Get-GraphError',
-        'Get-GraphItem',
-        'Get-GraphSchema',
-        'Get-GraphToken',
-        'Get-GraphVersion',
-        'Invoke-GraphRequest',
-        'New-GraphApplication',
-        'New-GraphApplicationCertificate',
-        'New-GraphConnection',
-        'New-GraphLocalCertificate',
-        'Register-GraphApplication',
-        'Remove-GraphApplication',
-        'Remove-GraphApplicationCertificate',
-        'Remove-GraphApplicationConsent',
-        'Remove-GraphItem',
-        'Set-GraphApplicationConsent',
-        'Set-GraphConnectionStatus',
-        'Test-Graph',
-        'Unregister-GraphApplication'
-    )
+CmdletsToExport = @()
 
 # Variables to export from this module
-    VariablesToExport = @(
-        'GraphVerboseOutputPreference',
-        'LastGraphItems'
-    )
+VariablesToExport = @(
+    'GraphVerboseOutputPreference',
+    'LastGraphItems'
+)
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
 AliasesToExport = @('gge', 'ggi')
@@ -124,6 +124,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\graph-sdk.ps1',
+        '.\src\PreModuleInitialization.ps1',
         '.\src\auth\AuthProvider.ps1',
         '.\src\auth\CompiledDeviceCodeAuthenticator.ps1',
         '.\src\auth\DeviceCodeAuthenticator.ps1',
@@ -213,7 +214,7 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @"
-# AutoGraphPS-SDK 0.10.0 Release Notes
+# AutoGraphPS-SDK 0.11.0 Release Notes
 
 ## New dependencies
 
@@ -221,17 +222,7 @@ None.
 
 ## New features
 
-* Auto-detect PS remote sessions and invoke device code auth for delegated user auth scenarios
-* Value parameter for Invoke-GraphRequest, Get-GraphItem to make `$value requests
-* OutputFilePrefix parameter for Invoke-GraphRequest, Get-GraphItem for sending output to the file system
-* IncludeFullResponse parameter for Invoke-GraphRequest to allow retrieval of the full response object in the output
-* Build script improvements -- tools obtain a specific nuget version and use it only in the context of this repository
-* Azure Pipelines integration -- basic continuous integration support added.
-
 ## Fixed defects
-
-* Fixed hang in PS remote sessions when performing delegated user auth via device code
-* Fixed broken v2 auth for national clouds due to incorrectly qualified scopes
 
 "@
 

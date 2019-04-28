@@ -15,17 +15,25 @@
 $__DefaultResultVariableName = 'LastGraphItems'
 $__DefaultResultVariable = new-variable $__DefaultResultVariableName -scope script -passthru -force
 
-function __GetResultVariable( $customVariableName ) {
-    if ( ! $customVariableName ) {
-        $__DefaultResultVariable.value = $null
-        $__DefaultResultVariable
-    } else {
-        $existingVariable = get-variable -scope 2 $customVariableName -erroraction ignore
+ScriptClass ItemResultHelper -ArgumentList $__DefaultResultVariable {
+    param($defaultResultVariableParameter)
 
-        if ( $existingVariable ) {
-            $existingVariable
-        } else {
-            new-variable -scope 2 $customVariableName -passthru
+    static {
+        $defaultResultVariable = $defaultResultVariableParameter
+
+        function GetResultVariable( $customVariableName ) {
+            if ( ! $customVariableName ) {
+                $this.defaultResultVariable.value = $null
+                $this.defaultResultVariable
+            } else {
+                $existingVariable = get-variable -scope 2 $customVariableName -erroraction ignore
+
+                if ( $existingVariable ) {
+                    $existingVariable
+                } else {
+                    new-variable -scope 2 $customVariableName -passthru
+                }
+            }
         }
     }
 }

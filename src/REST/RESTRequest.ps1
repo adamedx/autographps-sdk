@@ -64,8 +64,8 @@ ScriptClass RESTRequest {
 
     function Invoke {
         [cmdletbinding(SupportsShouldProcess=$true)]
-        param()
-        if ($pscmdlet.shouldprocess($this.uri, $this.method)) {
+        param($PSCmdletArgument)
+        if (! $PSCmdletArgument -or $PSCmdletArgument.shouldprocess($this.uri, $this.method)) {
             # Disable progress display
             $progresspreference = 'SilentlyContinue'
 

@@ -60,12 +60,12 @@ Describe "Poshgraph application" {
                 'Test-Graph',
                 'Unregister-GraphApplication')
 
-            $manifest.CmdletsToExport.count | Should BeExactly $expectedFunctions.length
+            $manifest.FunctionsToExport.count | Should BeExactly $expectedFunctions.length
 
             $verifiedExportsCount = 0
 
             $expectedFunctions | foreach {
-                if ( $manifest.CmdletsToExport -contains $_ ) {
+                if ( $manifest.FunctionsToExport -contains $_ ) {
                     $verifiedExportsCount++
                 }
             }
@@ -76,7 +76,7 @@ Describe "Poshgraph application" {
 
     Context "When invoking the autographps-sdk application" {
         It "Should be able to create a connection object" {
-            $connection = New-GraphConnection
+            { $connection = New-GraphConnection } | Should Not Throw
         }
     }
 }

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (join-path $psscriptroot src/graph-sdk.ps1)
+
 $cmdlets = @(
     'Connect-Graph',
     'Disconnect-Graph',
@@ -42,4 +44,8 @@ $cmdlets = @(
     'Unregister-GraphApplication'
 )
 
-export-modulemember -cmdlet $cmdlets
+$aliases = @('gge', 'ggi')
+
+$variables = @('GraphVerboseOutputPreference', 'LastGraphItems')
+
+export-modulemember -function $cmdlets -alias $aliases -variable $variables

@@ -2,12 +2,17 @@
 
 ## To-do items -- prioritized
 
-* Update build tools to not change path in order to use nuget
-* Add support for test endpoints
-* Add $ref?
+* make connect-graph and new-graphconnection have same arguments or make an alias
 * Make token caches per app-per cloud.
+* Add support for test endpoints
+* Add view to get-grapherror
+* Add throttling
+* Update build tools to not change path in order to use nuget
+
+* Add $ref?
+
 * Create interface for certificate store, make it not implemented outside of Windows
-* Add -value parameter
+
 * Output data based on content-type
 * Add request linked data to obtain odata references such as file download uri's
 * Allow for requests to be dumped into a directory
@@ -341,6 +346,8 @@
 * Fix bug in scopehelper where we return all scopes when asked only for delegated
 * Get module to install and function on Linux
 * Fix output for remote ps sessions in device code login
+* Add -value parameter
+* clean error stream
 
 ### Postponed
 

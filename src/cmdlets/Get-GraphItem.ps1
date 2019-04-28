@@ -96,7 +96,8 @@ function Get-GraphItem {
     }
 
     $localResult = $null
-    $targetResultVariable = __GetResultVariable $ResultVariable
+
+    $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
 
     Invoke-GraphRequest @requestArguments | tee-object -variable localResult
 

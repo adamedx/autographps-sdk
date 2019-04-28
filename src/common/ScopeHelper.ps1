@@ -15,7 +15,9 @@
 . (import-script DefaultScopeData)
 . (import-script ../REST/GraphRequest)
 
-ScriptClass ScopeHelper {
+ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
+    param($scopeData)
+
     static {
         const GraphApplicationId 00000003-0000-0000-c000-000000000000
         const DefaultScopeQualifier ([Uri] 'https://graph.microsoft.com')
@@ -27,6 +29,7 @@ ScriptClass ScopeHelper {
         $sortedGraphPermissions = $null
         $sortedGraphDelegatedPermissions = $null
         $sortedGraphAppOnlyPermissions = $null
+        $defaultScopeData = $scopeData
 
         function __AddConnectionScopeData($graphSP, $permissionsByIds, $sortedPermissionsList, $sortedScopeList, $sortedRoleList) {
             if ( $this.graphSP -and $this.retrievedScopesFromGraphService ) {
@@ -265,7 +268,7 @@ ScriptClass ScopeHelper {
             }
 
             if ( ! $graphSP ) {
-                $graphSP = $__DefaultScopeData
+                $graphSP = $this.defaultScopeData
             }
 
             if ( $graphSP ) {

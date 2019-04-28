@@ -39,7 +39,7 @@ ScriptClass GraphIdentity {
         $this.GraphEndpoint = $graphEndpoint
         $this.TenantName = $tenantName
 
-        __UpdateTenantDisplayInfo
+        $this |=> __UpdateTenantDisplayInfo
     }
 
     function GetUserInformation {
@@ -69,7 +69,7 @@ ScriptClass GraphIdentity {
             throw "Failed to acquire token, no additional error information"
         }
 
-        __UpdateTenantDisplayInfo
+        $this |=> __UpdateTenantDisplayInfo
     }
 
     function ClearAuthentication {
@@ -131,11 +131,10 @@ ScriptClass GraphIdentity {
             throw [Exception]::new(("An authentication error occurred: '{0}'. See verbose output for additional details" -f $authResult.Exception.message), $authResult.Exception)
         }
 
-        try {
-            if ( ! $this.tenantId -and $result.tenantid ) {
-                $this.tenantid = $result.tenantid
+        if ( ! $this.tenantDisplayId -and ( $result | gm -erroraction ignore tenantid ) ) {
+            if ( $result.tenantid ) {
+                $this.tenantDisplayId = $result.tenantid
             }
-        } catch {
         }
 
         $result
@@ -145,23 +144,21 @@ ScriptClass GraphIdentity {
         if ( $specifiedTenantId ) {
             $specifiedTenantId
         } else {
-            __UpdateTenantDisplayInfo
+            $this |=> __UpdateTenantDisplayInfo
             $this.tenantDisplayId
         }
     }
 
     function __UpdateTenantDisplayInfo {
-        $tenant = try {
-            if ( $this.token ) {
-                (([uri] $this.token.authority).segments | select -last 1).trimend('/')
-            }
-        } catch {
+        $tenant = if ( $this.token -and ( $this.token | gm authority -erroraction ignore ) ) {
+            (([uri] $this.token.authority).segments | select -last 1).trimend('/')
         }
 
         if ( ! $tenant ) {
-            $tenant = try {
-                (([uri] $this.token.user.identityprovider).segments | select -first 2 | select -last 1).trimend('/')
-            } catch {
+            $tenant = if ( $this.token -and ( $this.token | gm user -erroraction ignore ) ) {
+                if ( $this.token.user | gm identityprovider -erroraction ignore ) {
+                    (([uri] $this.token.user.identityprovider).segments | select -first 2 | select -last 1).trimend('/')
+                }
             }
         }
 
@@ -173,11 +170,12 @@ ScriptClass GraphIdentity {
         } catch {
         }
 
-        $parsedTenantId = try {
-            if ( $tenant ) {
-                [guid] $tenant
-            }
-        } catch {
+        $isGuid = $false
+        $parsedTenantId = if ( $tenant ) {
+            [guid]::TryParse($tenant, [ref] $isGuid)
+        }
+
+        if ( ! $isGuid ) {
             $tenantName = $tenant
         }
 

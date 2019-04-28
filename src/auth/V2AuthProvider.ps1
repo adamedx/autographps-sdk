@@ -183,10 +183,16 @@ ScriptClass V2AuthProvider {
         $__AuthLibraryLoaded = $false
         $__UserTokenCache = @{}
         $__AppTokenCache = @{}
+        $scriptRoot = $null
+
+        function __initialize($scriptRoot) {
+            $this.scriptRoot = $scriptRoot
+        }
 
         function InitializeProvider {
             if ( ! $this.__AuthLibraryLoaded ) {
-                Import-Assembly Microsoft.Identity.Client ../../lib | out-null
+                $libPath = join-path $this.scriptRoot ../../lib
+                Import-Assembly Microsoft.Identity.Client -AssemblyRoot $libPath | out-null
                 $this.__AuthLibraryLoaded = $true
             }
         }
@@ -214,3 +220,5 @@ ScriptClass V2AuthProvider {
         }
     }
 }
+
+$::.V2AuthProvider |=> __initialize $psscriptroot

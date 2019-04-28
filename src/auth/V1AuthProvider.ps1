@@ -135,10 +135,16 @@ ScriptClass V1AuthProvider {
     static {
         $__AuthLibraryLoaded = $false
         $__TokenCache = $null
+        $scriptRoot = $null
+
+        function __initialize($scriptRoot) {
+            $this.scriptRoot = $scriptRoot
+        }
 
         function InitializeProvider {
             if ( ! $this.__AuthLibraryLoaded ) {
-                Import-Assembly Microsoft.IdentityModel.Clients.ActiveDirectory ../../lib | out-null
+                $libPath = join-path $this.scriptRoot ../../lib
+                Import-Assembly Microsoft.IdentityModel.Clients.ActiveDirectory -AssemblyRoot $libPath | out-null
                 $this.__AuthLibraryLoaded = $true
             }
 
@@ -152,3 +158,5 @@ ScriptClass V1AuthProvider {
         }
     }
 }
+
+$::.V1AuthProvider |=> __initialize $psscriptroot
