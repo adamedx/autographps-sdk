@@ -38,6 +38,8 @@ function Remove-GraphApplicationConsent {
     begin {}
 
     process {
+        Enable-ScriptClassVerbosePreference
+
         if ( $ConsentForTenant.IsPresent ) {
             if ( $ConsentForPrincipal ) {
                 throw [ArgumentException]::new("The 'ConsentForTenant' option may not be specified when 'ConsentForTenant' is specified'")

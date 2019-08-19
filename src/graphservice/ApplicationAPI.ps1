@@ -75,7 +75,7 @@ ScriptClass ApplicationAPI {
     }
 
     function RegisterApplication($appId, $isExternal) {
-        write-verbose "Attempting to register existing appliation '$appId', isExternalTenant: '$isExternal'"
+        write-verbose "Attempting to register existing application '$appId', isExternalTenant: '$isExternal'"
         if ( ! $isExternal ) {
             write-verbose "Looking for existing application '$appId' in this tenant"
             $existingApp = GetApplicationByAppId $appId

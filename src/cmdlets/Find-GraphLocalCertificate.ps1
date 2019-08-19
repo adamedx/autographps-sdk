@@ -32,6 +32,8 @@ function Find-GraphLocalCertificate {
     begin {}
 
     process {
+        Enable-ScriptClassVerbosePreference
+
         $::.GraphApplicationCertificate |=> FindAppCertificate $AppId $CertStoreLocation $Name $ObjectId
     }
 

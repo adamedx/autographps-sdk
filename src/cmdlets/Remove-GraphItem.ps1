@@ -52,6 +52,8 @@ function Remove-GraphItem {
     begin {}
 
     process {
+        Enable-ScriptClassVerbosePreference
+
         $useFullyQualifiedUri = $AbsoluteUri.IsPresent
 
         $targetUri = if ( ! $targetItem ) {

@@ -100,6 +100,7 @@ function Get-GraphToken {
         [parameter(parametersetname='existingconnection', mandatory=$true)]
         $Connection
     )
+    Enable-ScriptClassVerbosePreference
 
     $targetConnection = if ( $connection ) {
         $connection

@@ -36,7 +36,7 @@ ScriptClass GraphConnection {
 
         $isRemotePSSession = (get-variable PSSenderInfo -erroraction ignore) -ne $null
         write-verbose ("Browser supported: {0}, NoBrowserUISpecified {1}, IsRemotePSSession: {2}" -f $::.Application.SupportsBrowserSignin, $noBrowserUI, $isRemotePSSession)
-        
+
         $this.NoBrowserUI = ! $::.Application.SupportsBrowserSignin -or $noBrowserUI -or $isRemotePSSession
 
         if ( $this.GraphEndpoint.Type -eq ([GraphType]::MSGraph) ) {
@@ -106,6 +106,16 @@ ScriptClass GraphConnection {
             }
 
             new-so GraphConnection $endpoint $identity $ScopeNames
+        }
+
+        function ToConnectionInfo([PSCustomObject] $connection) {
+            [PSCustomObject] @{
+                AppId = $connection.identity.app.appid
+                Endpoint = $connection.graphendpoint.graph
+                User = $connection.identity.GetUserInformation().UserId
+                Status = $connection.getstatus()
+                Connection = $connection
+            }
         }
     }
 }

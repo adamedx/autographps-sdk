@@ -31,9 +31,36 @@ function New-GraphConnection {
         [parameter(parametersetname='secret', position=0)]
         [String[]] $Permissions = $null,
 
-        [parameter(parametersetname='aadgraph', mandatory=$true)]
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='cloud')]
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='secret', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
-        [switch] $AADGraph,
+        [parameter(parametersetname='autocert', mandatory=$true)]
+        $AppId = $null,
+
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='autocert', mandatory=$true)]
+        [Switch] $NoninteractiveAppOnlyAuth,
+
+        [String] $TenantId = $null,
+
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [string] $CertificatePath = $null,
+
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate = $null,
+
+        [switch] $Confidential,
+
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [Switch] $Secret,
+
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [SecureString] $Password,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud', mandatory=$true)]
@@ -44,39 +71,10 @@ function New-GraphConnection {
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='cloud')]
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [parameter(parametersetname='customendpoint')]
-        [parameter(parametersetname='autocert', mandatory=$true)]
-        $AppId = $null,
-
-        [switch] $Confidential,
-
         [Uri] $AppRedirectUri,
 
         [parameter(parametersetname='msgraph')]
         [Switch] $NoBrowserSigninUI,
-
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [parameter(parametersetname='autocert', mandatory=$true)]
-        [Switch] $NoninteractiveAppOnlyAuth,
-
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [Switch] $Secret,
-
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [SecureString] $Password,
-
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [string] $CertificatePath = $null,
-
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate = $null,
 
         [parameter(parametersetname='customendpoint', mandatory=$true)]
         [parameter(parametersetname='secret')]
@@ -97,13 +95,17 @@ function New-GraphConnection {
         [parameter(parametersetname='customendpoint')]
         [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
 
-        [String] $TenantId = $null
+        [parameter(parametersetname='aadgraph', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
+        [switch] $AADGraph
     )
 
     begin {
     }
 
     process {
+        Enable-ScriptClassVerbosePreference
+
         $validatedCloud = if ( $Cloud ) {
             [GraphCloud] $Cloud
         } else {

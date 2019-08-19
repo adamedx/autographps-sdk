@@ -43,6 +43,8 @@ Function Get-GraphApplicationCertificate {
     begin {}
 
     process {
+        Enable-ScriptClassVerbosePreference
+
         $targetAppId = if ( $Application ) {
             $appIdProperty = if ( $Application | gm appid -erroraction silentlycontinue ) {
                 $Application.AppId

@@ -37,6 +37,8 @@ function Get-GraphApplicationConsent {
     begin {}
 
     process {
+        Enable-ScriptClassVerbosePreference
+
         $commandContext = new-so CommandContext $null $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 

@@ -22,6 +22,7 @@ function Get-GraphConnectionInfo {
         [parameter(position=0, valuefrompipeline=$true)]
         $Graph = $null
     )
+    Enable-ScriptClassVerbosePreference
 
     $context = if ( $Graph ) {
         if ( $Graph -is [String] ) {
@@ -39,14 +40,7 @@ function Get-GraphConnectionInfo {
         $::.GraphContext |=> GetCurrent
     }
 
-    [PSCustomObject] @{
-        AppId = $context.connection.identity.app.appid
-        Endpoint = $context.connection.graphendpoint.graph
-        User = $context.connection.identity.GetUserInformation().UserId
-        Status = $context.connection.getstatus()
-        Connection = $context.connection
-    }
-
+    $::.GraphConnection |=> ToConnectionInfo $context.connection
 <#
 .SYNOPSIS
 Retrieves information about the endpoint and credentials of the current or specified Graph.

@@ -37,6 +37,7 @@ function Get-GraphVersion {
         [parameter(parametersetname='GetVersionExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null
     )
+    Enable-ScriptClassVerbosePreference
 
     $graphConnection = if ( $connection ) {
         $connection

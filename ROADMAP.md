@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* make connect-graph and new-graphconnection have same arguments or make an alias
 * Make token caches per app-per cloud.
 * Add support for test endpoints
 * Add view to get-grapherror
@@ -348,6 +347,8 @@
 * Fix output for remote ps sessions in device code login
 * Add -value parameter
 * clean error stream
+* Update to latest msal / adal
+* make connect-graph and new-graphconnection have same arguments or make an alias
 
 ### Postponed
 

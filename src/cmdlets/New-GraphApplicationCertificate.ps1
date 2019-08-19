@@ -41,6 +41,7 @@ function New-GraphApplicationCertificate {
 
         [String] $Version = $null
     )
+    Enable-ScriptClassVerbosePreference
 
     $targetApp = $Application
     $targetObjectId = $ObjectId

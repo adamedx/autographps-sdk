@@ -87,6 +87,7 @@ function New-GraphApplication {
 
         [PSCustomObject] $Connection = $null
     )
+    Enable-ScriptClassVerbosePreference
 
     if ( $CertOutputDirectory -and ! (test-path -pathtype container $CertOutputDirectory) ) {
         throw [ArgumentException]::new("The CertOutputDirectory parameter value '$CertOutputDirectory' is not a valid directory")

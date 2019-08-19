@@ -72,6 +72,15 @@ Describe "Poshgraph application" {
 
             $verifiedExportsCount | Should BeExactly $expectedFunctions.length
         }
+
+        It "Should export the exact same set of variables that are in the set of expected variables" {
+            $expectedVariables = @(
+                'GraphVerboseOutputPreference'
+                'LastGraphItems'
+            )
+
+            Compare-Object ($manifest.VariablesToExport | sort) ($expectedVariables | sort) | Should Be $null
+        }
     }
 
     Context "When invoking the autographps-sdk application" {

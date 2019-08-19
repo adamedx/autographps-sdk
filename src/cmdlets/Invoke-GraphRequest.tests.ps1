@@ -12,16 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# . (Initialize-ScriptClassTest)
-<#
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-
-$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
-. (join-path $psscriptroot ../client/LogicalGraphManager.ps1)
-. (join-path $psscriptroot ../client/GraphContext.ps1)
-. (join-path $psscriptroot ../client/GraphConnection.ps1)
-. "$here\$sut"
-#>
 Describe 'Invoke-GraphRequest cmdlet' {
     $expectedUserPrincipalName = 'searchman@megarock.org'
     $meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName

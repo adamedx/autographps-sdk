@@ -17,6 +17,8 @@
 function Get-GraphError {
     [cmdletbinding()]
     param()
+    Enable-ScriptClassVerbosePreference
+
     $graphErrors = $::.GraphErrorRecorder |=> GetLastRecordedErrors
 
     $afterTimeUtc = $graphErrors.AfterTimeUtc

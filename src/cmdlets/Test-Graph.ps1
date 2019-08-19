@@ -36,6 +36,7 @@ function Test-Graph {
 
         [switch] $RawContent
     )
+    Enable-ScriptClassVerbosePreference
 
     $graphEndpointUri = if ( $Connection -ne $null ) {
         $Connection.GraphEndpoint.Graph

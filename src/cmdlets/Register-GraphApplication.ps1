@@ -40,6 +40,7 @@ function Register-GraphApplication {
         [parameter(parametersetname='ExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null
     )
+    Enable-ScriptClassVerbosePreference
 
     $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
 

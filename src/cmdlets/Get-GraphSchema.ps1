@@ -55,6 +55,7 @@ function Get-GraphSchema {
 
         [PSCustomObject] $Connection = $null
     )
+    Enable-ScriptClassVerbosePreference
 
     $graphConnection = if ( $connection ) {
         $connection

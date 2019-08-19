@@ -19,6 +19,8 @@ function Disconnect-Graph {
     param(
         [PSTypeName('GraphConnection')] $Connection
     )
+    Enable-ScriptClassVerbosePreference
+
     if ( $Connection ) {
         $Connection |=> Disconnect
     } else {

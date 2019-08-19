@@ -65,6 +65,8 @@ function Get-GraphItem {
         [string] $ResultVariable = $null
     )
 
+    Enable-ScriptClassVerbosePreference
+
     $requestArguments = @{
         RelativeUri=$ItemRelativeUri
         Query = $Query

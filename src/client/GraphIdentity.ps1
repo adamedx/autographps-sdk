@@ -74,7 +74,7 @@ ScriptClass GraphIdentity {
 
     function ClearAuthentication {
         if ( $this.token -and $this.app.AuthType -eq ([GraphAppAuthType]::Delegated) ) {
-            $authUri = $this.graphEndpoint |=> GetAuthUri (GetTenantId $this.TenantName)
+            $authUri = $this.graphEndpoint |=> GetAuthUri $this.TenantName
 
             $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
             $authContext = $providerInstance |=> GetAuthContext $this.app $this.graphEndpoint.Graph $authUri
@@ -85,14 +85,14 @@ ScriptClass GraphIdentity {
     }
 
     function getGraphToken($graphEndpoint, $scopes, $noBrowserUI) {
-        write-verbose "Attempting to get token for '$($graphEndpoint.Graph)' ..."
+        write-verbose "Attempting to get token in tenant '$($this.tenantName)' for '$($graphEndpoint.Graph)' ..."
         write-verbose "Using app id '$($this.App.AppId)'"
         $isConfidential = ($this.app |=> IsConfidential)
         write-verbose ("Is confidential client: '{0}'" -f $isConfidential)
 
         write-verbose ("Adding scopes to request: {0}" -f ($scopes -join ';'))
 
-        $authUri = $graphEndpoint |=> GetAuthUri (GetTenantId $this.TenantName)
+        $authUri = $graphEndpoint |=> GetAuthUri $this.TenantName
         write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
 
         if ( ! $this.scriptclass.AuthProvidersInitialized ) {
@@ -171,8 +171,14 @@ ScriptClass GraphIdentity {
         }
 
         $isGuid = $false
-        $parsedTenantId = if ( $tenant ) {
-            [guid]::TryParse($tenant, [ref] $isGuid)
+        $parsedTenantId = $null
+
+        if ( $tenant ) {
+            $outputGuid = (new-guid).guid
+            $isGuid = [guid]::TryParse($tenant, [ref] $outputguid)
+            if ( $isGuid ) {
+                $parsedTenantid = $outputguid
+            }
         }
 
         if ( ! $isGuid ) {

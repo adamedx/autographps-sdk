@@ -23,49 +23,94 @@
 function Connect-Graph {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='simple')]
     param(
-        [parameter(position=0, parametersetname='simple')]
-        [parameter(position=0, parametersetname='apponly', mandatory=$true)]
-        [parameter(parametersetname='delegatedconfidential', mandatory=$true)]
-        [string] $AppId = $null,
-
+        [parameter(parametersetname='msgraph', position=0)]
+        [parameter(parametersetname='cloud', position=0)]
+        [parameter(parametersetname='customendpoint', position=0)]
+        [parameter(parametersetname='cert', position=0)]
+        [parameter(parametersetname='certpath', position=0)]
+        [parameter(parametersetname='autocert', position=0)]
+        [parameter(parametersetname='secret', position=0)]
         [String[]] $Permissions = $null,
 
-        [parameter(parametersetname='simple')]
-        [parameter(parametersetname='apponly')]
-        [parameter(parametersetname='delegatedconfidential')]
+        [parameter(parametersetname='cloud')]
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
+        [parameter(parametersetname='autocert', mandatory=$true)]
+        [string] $AppId = $null,
+
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='autocert', mandatory=$true)]
+        [Switch] $NoninteractiveAppOnlyAuth,
+
+        [string] $TenantId,
+
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [string] $CertificatePath,
+
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate = $null,
+
+        [switch] $Confidential,
+
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [Switch] $Secret,
+
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [SecureString] $Password,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='cloud', mandatory=$true)]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='autocert')]
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
-        [parameter(parametersetname='existingconnection',mandatory=$true)]
-        [PSCustomObject] $Connection = $null,
+        [Uri] $AppRedirectUri,
+
+        [Switch] $NoBrowserSigninUI,
+
+        [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [Uri] $GraphEndpointUri = $null,
+
+        [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [Uri] $AuthenticationEndpointUri = $null,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='customendpoint')]
+        [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
+
+        [parameter(parametersetname='aadgraph', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
+        [switch] $AADGraph,
 
         [parameter(parametersetname='reconnect', mandatory=$true)]
         [Switch] $Reconnect,
 
-        [parameter(parametersetname='simple')]
-        [Switch] $NoBrowserSigninUI,
-
-        [parameter(parametersetname='apponly', mandatory=$true)]
-        [Switch] $NoninteractiveAppOnlyAuth,
-
-        [parameter(parametersetname='simple')]
-        [parameter(parametersetname='apponly')]
-        [parameter(parametersetname='delegatedconfidential')]
-        [string] $CertificatePath,
-
-        [parameter(parametersetname='delegatedconfidential', mandatory=$true)]
-        [switch] $Confidential,
-
-        [parameter(parametersetname='apponly', mandatory=$true)]
-        [parameter(parametersetname='simple')]
-        [parameter(parametersetname='delegatedconfidential')]
-        [string] $TenantId
+        [parameter(parametersetname='existingconnection',mandatory=$true)]
+        [PSCustomObject] $Connection = $null
     )
 
     begin {
     }
 
     process {
+        Enable-ScriptClassVerbosePreference
+
         $validatedCloud = if ( $Cloud ) {
             [GraphCloud] $Cloud
         } else {
@@ -84,12 +129,14 @@ function Connect-Graph {
             throw "No current session -- unable to connect it to Graph"
         }
 
-        if ( $Connection ) {
+        $connectionResult = if ( $Connection ) {
             write-verbose "Explicit connection was specified"
 
             $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $Connection
 
             $::.GraphContext |=> SetCurrentByName $newContext.name
+
+            $Connection
         } else {
             write-verbose "Connecting context '$($context.name)'"
             $applicationId = if ( $AppId ) {
@@ -110,30 +157,38 @@ function Connect-Graph {
                 }
             } else {
                 write-verbose 'No reconnect -- creating a new connection for this context'
-                $appOnlyArguments = @{}
-                $delegatedArguments = @{}
+                $conditionalArguments = @{}
 
                 if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
-                    $appOnlyArguments['NoninteractiveAppOnlyAuth'] = $NoninteractiveAppOnlyAuth
-                    $appOnlyArguments['TenantId'] = $TenantId
+                    $conditionalArguments['NoninteractiveAppOnlyAuth'] = $NoninteractiveAppOnlyAuth
+                    $conditionalArguments['TenantId'] = $TenantId
                 } else {
-                    $delegatedArguments['Permissions'] = $computedScopes
-                    $delegatedArguments['Confidential'] = $Confidential
-                    $delegatedArguments['NoBrowserSigninUI'] = $NoBrowserSigninUI
+                    $conditionalArguments['Permissions'] = $computedScopes
+                    $conditionalArguments['Confidential'] = $Confidential
+                    $conditionalArguments['NoBrowserSigninUI'] = $NoBrowserSigninUI
                     if ( $TenantId ) {
-                        $delegatedArguments['TenantId'] = $TenantId
+                        $conditionaldArguments['TenantId'] = $TenantId
                     }
                 }
 
+                $conditionalArguments = @{}
+
+                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconect', 'ErrorAction') } | foreach {
+                    $conditionalArguments[$_] = $PSBoundParameters[$_]
+                }
+
                 try {
-                    new-graphconnection -cloud $validatedCloud -appid $applicationid @delegatedArguments @appOnlyArguments -erroraction stop
+                    new-graphconnection @conditionalArguments -erroraction stop
                 } catch {
                     throw
                 }
             }
 
             $context |=> UpdateConnection $newConnection
+            $newConnection
         }
+
+        $::.GraphConnection |=> ToConnectionInfo $connectionResult
     }
 }
 

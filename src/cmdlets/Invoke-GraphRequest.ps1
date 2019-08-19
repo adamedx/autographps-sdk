@@ -75,6 +75,8 @@ function Invoke-GraphRequest {
         [switch] $AADGraph
     )
 
+    Enable-ScriptClassVerbosePreference
+
     if ( $OutputFilePrefix ) {
         $outputFileParent = split-path $OutputFilePrefix -parent
         if ( $outputFileParent ) {

@@ -62,6 +62,7 @@ ScriptClass AuthProvider {
 
     static {
         $providers = @{}
+        $instances = @{}
 
         function InitializeProviders {
             $this.providers.values | foreach {
@@ -80,9 +81,12 @@ ScriptClass AuthProvider {
                 [GraphAuthProtocol]::V2
             }
 
-            $providerClass = $this.providers[$protocol]
+            if ( ! $this.instances[$protocol] ) {
+                $providerClass = $this.providers[$protocol]
+                $this.instances[$protocol] = new-so $this.ClassName $providerClass
+            }
 
-            new-so $this.ClassName $providerClass
+            $this.instances[$protocol]
         }
     }
 }

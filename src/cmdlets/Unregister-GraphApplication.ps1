@@ -25,6 +25,7 @@ function Unregister-GraphApplication {
 
         [PSCustomObject] $Connection = $null
     )
+    Enable-ScriptClassVerbosePreference
 
     $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
     $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
