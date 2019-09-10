@@ -288,10 +288,10 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
                 }
 
                 $graphSP.appRoles | foreach {
-                    try {
+                    if ( ! $sortedPermissionsList.ContainsKey($_.value) ) {
                         $sortedPermissionsList.Add($_.value, $_.id)
-                    } catch {
                     }
+
                     $sortedRoleList.Add($_.value, $_.id)
                     $permissionsByIds[$_.id] = $_
                 }

@@ -58,10 +58,6 @@ function Register-GraphApplication {
 
     $appAPI |=> SetConsent $appId $delegatedPermissionIds $appOnlyPermissionIds $false $ConsentForTenant.IsPresent ($ConsentForPrincipal -ne $null) $ConsentForPrincipal $null $newAppSP | out-null
 
-    if ( $GrantedPermissions -and $NoninteractiveAppOnlyAuth.IsPresent ) {
-        write-warning "The application '$appId' was successfully registered in this tenant, but consent for the application in the tenant could not be granted because the consent API is not yet fully implemented. Please visit the Azure Portal at`n`n    https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredAppsPreview`n`nto manually configure consent for the application. Choose the application with application id '$AppId' and then access API Permissions to grant consent to the application in the tenant."
-    }
-
     $newAppSP
 }
 

@@ -164,14 +164,33 @@ ScriptClass ApplicationAPI {
             write-verbose "User consent was not specified, and tenant consent was specified, will attempt to consent all app permissions for the tenant"
         }
 
-        if ( $userConsentRequired -and ! $consentUser ) {
-            write-verbose "No user was specified for consent, and user consent was required, so skipping consent completely"
+        if ( ! $consentUser -and ! $ConsentForTenant ) {
+            write-verbose "Consent for tenant not required and user consent not required, so skipping consent completely"
             return
         }
 
-        $grant = GetConsentGrantForApp $appId $consentUser $DelegatedPermissions $AppOnlyPermissions $allPermissions $appWithRequiredResource $appSP
+        $appServicePrincipal = if ( $appSP ) {
+            $appSP
+        } else {
+            GetAppServicePrincipal $appId
+        }
 
-        Invoke-GraphRequest /oauth2PermissionGrants -method POST -body $grant -version $this.version -connection $this.connection | out-null
+        if ( ! $appServicePrincipal -or ! ($appServicePrincipal | gm id -erroraction ignore) ) {
+            throw "Application '$AppId' was not found"
+        }
+
+        if ( $userConsentRequired ) {
+            write-verbose 'Processing user consent...'
+            $grant = GetConsentGrantForApp $appId $consentUser $DelegatedPermissions $AppOnlyPermissions $allPermissions $appWithRequiredResource
+            Invoke-GraphRequest /oauth2PermissionGrants -method POST -body $grant -version $this.version -connection $this.connection | out-null
+        }
+
+        if ( $AppOnlyPermissions -or $AllPermissions ) {
+            write-verbose ( 'Processing app-only consent: SpecifiedPermissionsSpecified: {0}; AllPermissionsSpecified: {1}' -f ($AppOnlyPermissions -ne $null -and $AppOnlyPermissions.length -gt 0), $AllPermissions )
+            ConsentAppOnlyRolesForTenant $appId $AppOnlyPermissions $allPermissions $appWithRequiredResource $appServicePrincipal
+        } else {
+            write-verbose 'Skipping consent for app only permissions because no permissions are specified'
+        }
     }
 
     function GetConsentGrantForApp(
@@ -180,8 +199,7 @@ ScriptClass ApplicationAPI {
         $scopes = @(),
         $roles = @(),
         $ConsentRequiredPermissions,
-        $appWithRequiredResource,
-        $appSP
+        $appWithRequiredResource
     ) {
         $targetPermissions = if ( ! $ConsentRequiredPermissions ) {
             $scopes + $roles
@@ -189,17 +207,54 @@ ScriptClass ApplicationAPI {
             $permissions = @()
             if ( $appWithRequiredResource -and $appWithRequiredResource | gm requiredResourceAccess ) {
                 $graphResourceAccess = $appWithRequiredResource.requiredResourceAccess | where resourceAppid -eq 00000003-0000-0000-c000-000000000000
-
                 $graphResourceAccess.resourceAccess | foreach {
-                    $permissionId = $_.id
-                    $permissionName = $::.ScopeHelper |=> GraphPermissionIdToName $permissionId $null $this.connection
-                    $permissions += $permissionName
+                    if ( $_.type -eq 'Scope') {
+                        $permissionId = $_.id
+                        $permissionName = $::.ScopeHelper |=> GraphPermissionIdToName $permissionId $null $this.connection
+                        $permissions += $permissionName
+                    }
                 }
             }
+
             $permissions
         }
 
         __NewOauth2Grant $appId ($targetPermissions -join ' ') $consentUser
+    }
+
+    function ConsentAppOnlyRolesForTenant(
+        $appId,
+        $appPermissions,
+        $ConsentRequiredPermissions,
+        $appWithRequiredResource,
+        $appSP
+    ) {
+        $targetPermissions = if ( ! $ConsentRequiredPermissions ) {
+            foreach ( $roleName in $appPermissions ) {
+                $::.ScopeHelper |=> GraphPermissionNameToId $roleName 'Role' $this.connection $true
+            }
+        } else {
+            $permissions = @()
+            if ( $appWithRequiredResource -and ( $appWithRequiredResource | gm requiredResourceAccess ) ) {
+                $graphResourceAccess = $appWithRequiredResource.requiredResourceAccess | where resourceAppid -eq 00000003-0000-0000-c000-000000000000
+
+                $graphResourceAccess.resourceAccess | foreach {
+                    if ( $_.type -eq 'Role') {
+                        $permissions += $_.id
+                    }
+                }
+            }
+
+            $permissions
+        }
+
+        $appRoleAssignments = foreach ( $roleId in $targetPermissions ) {
+            __NewAppRoleAssignment $appSP.Id $roleId
+        }
+
+        foreach ( $assignment in $appRoleAssignments ) {
+            Invoke-GraphRequest /servicePrincipals/$($appSP.id)/appRoleAssignments -method POST -body $assignment -version $this.version -connection $this.connection | out-null
+        }
     }
 
     function GetGraphServicePrincipalId($connection) {
@@ -242,6 +297,16 @@ ScriptClass ApplicationAPI {
             scope = $permissionName
             startTime = (([DateTime]::UtcNow) - ([TimeSpan]::FromDays(1))).tostring('s')
             expiryTime = (([DateTime]::UtcNow) + ([TimeSpan]::FromDays(365))).tostring('s')
+        }
+    }
+
+    function __NewAppRoleAssignment($appServicePrincipalId, [string] $roleId) {
+        @{
+            principalId = $appServicePrincipalId
+            resourceId = GetGraphServicePrincipalId $this.connection
+            principalType = 'ServicePrincipal'
+            appRoleId = $roleId
+            resourceDisplayName = 'Microsoft Graph'
         }
     }
 

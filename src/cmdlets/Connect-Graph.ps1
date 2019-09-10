@@ -157,19 +157,6 @@ function Connect-Graph {
                 }
             } else {
                 write-verbose 'No reconnect -- creating a new connection for this context'
-                $conditionalArguments = @{}
-
-                if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
-                    $conditionalArguments['NoninteractiveAppOnlyAuth'] = $NoninteractiveAppOnlyAuth
-                    $conditionalArguments['TenantId'] = $TenantId
-                } else {
-                    $conditionalArguments['Permissions'] = $computedScopes
-                    $conditionalArguments['Confidential'] = $Confidential
-                    $conditionalArguments['NoBrowserSigninUI'] = $NoBrowserSigninUI
-                    if ( $TenantId ) {
-                        $conditionaldArguments['TenantId'] = $TenantId
-                    }
-                }
 
                 $conditionalArguments = @{}
 

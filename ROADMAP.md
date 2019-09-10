@@ -2,11 +2,24 @@
 
 ## To-do items -- prioritized
 
+* Add more command help
+* Add client-side correlationid
 * Make token caches per app-per cloud.
-* Add support for test endpoints
+* Make comments start at beginning of command
+* Add useragent to connection commands
+* Add support for test endpoints by allowing alternate resource for endpoint uri
 * Add view to get-grapherror
 * Add throttling
 * Update build tools to not change path in order to use nuget
+* Add equivalent of -Token option to new-graphconnection and connect-graph -- this sets token from external source
+* Make Get-GraphToken take all params from new-graphconnection and get-graphconnection
+* Remove-GraphApplicationConsent should remove approleassignments
+  * Make specification of some target mandatory
+  * Non-explicit targets would be AllConsent, UserConsent, AllTenantUsersConsent, AppConsent
+  * Remove consentfortenant --e.g. AllTenantUsers instead
+* Make verbose output more readable
+* Document strange splatting behavior with noteproperty
+
 
 * Add $ref?
 
@@ -15,10 +28,11 @@
 * Output data based on content-type
 * Add request linked data to obtain odata references such as file download uri's
 * Allow for requests to be dumped into a directory
+* Add help support via write-information?
 
 * ------------------------------------
+* Use argumentcompleter advanced parameter rather than registerparametercompleter
 * Change get-graphconnection to take a connection or a graph
-* Add -Token option to new-graphconnection and connect-graph
 * Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
 * Convert some verbose statements to debug
 * Set-GraphApplication
@@ -34,7 +48,6 @@
 * Add return types to cmdlets
 * Change autographps to use dynamic scope implementation
 * Add logging implementation and cmdlets
-* Add show-scope command
 * Emit header object in get-graphchilditem ?
 * Rename DisplayFormatter to OutputFormatter
 * Change relativeuri parameter to 'uri' to match invoke-webrequest and invoke-restmethod
@@ -74,8 +87,6 @@
 * fix -expand issues
 * fix parent issues in public segment
 
-* Add auto-complete for scopes
-
 * Release
 
 * Samples
@@ -99,8 +110,6 @@
 * Unauthenticated functional tests
 * Parse odata context
 * Background runspace jobs
-
-* Add CI
 
 * Release
 
@@ -154,7 +163,6 @@
 * set-graphconfig
 * invoke-graphaction
 * generate nuspec
-* Find a better name!
 * README
 * Extended Samples
 * More tests

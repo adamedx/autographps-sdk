@@ -128,7 +128,7 @@ function New-GraphApplication {
             $certificate |=> Create
             $appAPI |=> AddKeyCredentials $newApp $certificate | out-null
         } catch {
-            $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | rm -erroraction ignore
+            $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | remove-item -erroraction ignore
             $appAPI |=> RemoveApplicationByObjectId $newApp.Id ignore
             throw
         }
@@ -139,10 +139,7 @@ function New-GraphApplication {
     }
 
     if ( ! $SkipTenantRegistration.IsPresent ) {
-        $newAppRegistration |=> Register $ConsentForTenant.IsPresent $NonInteractiveAppOnlyAuth.IsPresent ($UserIdToConsent -ne $null) $UserIdToConsent $GrantedPermissions | out-null
-        if ( $GrantedPermissions -and $NoninteractiveAppOnlyAuth.IsPresent ) {
-            write-warning "The application was successfully created, but consent for the application in the tenant could not be granted because the consent API is not yet fully implemented. Please visit the Azure Portal at`n`n    https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredAppsPreview`n`nto manually configure consent for the application. Choose the application '$($newApp.displayname)' with application id '$($newApp.AppId)' and then access API Permissions to grant consent to the application in the tenant."
-        }
+        $newAppRegistration |=> Register $ConsentForTenant.IsPresent $NonInteractiveAppOnlyAuth.IsPresent (! $NoninteractiveAppOnlyAuth.IsPresent) $UserIdToConsent $GrantedPermissions | out-null
     }
 
     $newApp
