@@ -19,7 +19,7 @@
 . (import-script common/CommandContext)
 
 function New-GraphApplication {
-    [cmdletbinding(defaultparametersetname='delegated', positionalbinding=$false)]
+    [cmdletbinding(defaultparametersetname='publicapp', positionalbinding=$false)]
     param(
         [parameter(position=0, mandatory=$true)]
         [string] $Name,
@@ -32,55 +32,53 @@ function New-GraphApplication {
 
         [AppTenancy] $Tenancy = ([AppTenancy]::Auto),
 
-        [String[]] $GrantedPermissions,
+        [parameter(parametersetname='publicapp')]
+        [String[]] $DelegatedUserPermissions,
 
-        [parameter(parametersetname='delegatedconfidential', mandatory=$true)]
-        [parameter(parametersetname='delegatedconfidentialexistingcertstorepath', mandatory=$true)]
+        [parameter(parametersetname='confidentialapp', mandatory=$true)]
+        [String[]] $ApplicationPermissions,
+
+        [parameter(parametersetname='confidentialapp', mandatory=$true)]
+        [parameter(parametersetname='confidentialappexistingcertpath', mandatory=$true)]
+        [parameter(parametersetname='confidentialappnewcert', mandatory=$true)]
+        [parameter(parametersetname='confidentialappexistingcert', mandatory=$true)]
         [switch] $Confidential,
 
-        [parameter(parametersetname='delegated')]
+        [parameter(parametersetname='publicapp')]
         [switch] $AADAccountsOnly,
 
-        [parameter(parametersetname='apponlynocred', mandatory=$true)]
-        [parameter(parametersetname='delegatedconfidentialnocred', mandatory=$true)]
+        [parameter(parametersetname='confidentialapp')]
+        [parameter(parametersetname='confidentialappexistingcertpath')]
+        [parameter(parametersetname='confidentialappnewcert')]
+        [parameter(parametersetname='confidentialappexistingcert')]
         [switch] $NoCredential,
+
+        [switch] $ConsentAllUsers,
+
+        [switch] $NoConsent,
 
         [switch] $SkipTenantRegistration,
 
         [switch] $SkipPermissionNameCheck,
 
-        [parameter(parametersetname='apponlynewcert', mandatory=$true)]
-        [parameter(parametersetname='apponlynocred', mandatory=$true)]
-        [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
-        [switch] $NoninteractiveAppOnlyAuth,
-
-        [parameter(parametersetname='apponlyexistingcertpath', mandatory=$true)]
-        [parameter(parametersetname='delegatedconfidentialexistingcertstorepath', mandatory=$true)]
+        [parameter(parametersetname='confidentialappexistingcertpath', mandatory=$true)]
         $ExistingCertStorePath,
 
-        [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='delegatedconfidentialnewcert')]
+        [parameter(parametersetname='confidentialappnewcert')]
         $CertStoreLocation = 'cert:/currentuser/my',
 
-        [parameter(parametersetname='apponlyexistingcert', mandatory=$true)]
+        [parameter(parametersetname='confidentialappexistingcert', mandatory=$true)]
         $Certificate,
 
-        [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='delegatedconfidentialnewcert')]
+        [parameter(parametersetname='confidentialappnewcert')]
         [TimeSpan] $CertValidityTimeSpan,
 
-        [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='delegatedconfidentialnewcert')]
+        [parameter(parametersetname='confidentialappnewcert')]
         [DateTime] $CertValidityStart,
 
-        [parameter(parametersetname='apponlynewcert')]
-        [parameter(parametersetname='delegatedconfidentialnewcert')]
+        [parameter(parametersetname='confidentialappnewcert')]
         [string] $CertOutputDirectory,
 
-        [switch] $ConsentForTenant,
-
-        [parameter(parametersetname='delegated')]
-        [parameter(parametersetname='delegatedconfidential')]
         [string] $UserIdToConsent,
 
         [String] $Version = $null,
@@ -100,15 +98,16 @@ function New-GraphApplication {
     }
     $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
 
-    $::.ScopeHelper |=> ValidatePermissions $GrantedPermissions $NoninteractiveAppOnlyAuth.IsPresent $SkipPermissionNameCheck.IsPresent $commandContext.connection
+    $::.ScopeHelper |=> ValidatePermissions $ApplicationPermissions $true $SkipPermissionNameCheck.IsPresent $commandContext.connection
+    $::.ScopeHelper |=> ValidatePermissions $DelegatedUserPermissions $false $SkipPermissionNameCheck.IsPresent $commandContext.connection
 
-    $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $GrantedPermissions $commandContext.Connection }
-    $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $GrantedPermissions $commandContext.Connection }
+    $appOnlyPermissions = $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $ApplicationPermissions $commandContext.Connection
+    $delegatedPermissions = $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $DelegatedUserPermissions $commandContext.Connection
 
     $computedTenancy = if ( $Tenancy -ne ([AppTenancy]::Auto) ) {
         $Tenancy
     } else {
-        if( $NoninteractiveAppOnlyAuth.IsPresent ) {
+        if( $Confidential.IsPresent ) {
             [AppTenancy]::SingleTenant
         } else {
             [AppTenancy]::AnyTenant
@@ -117,11 +116,11 @@ function New-GraphApplication {
 
     $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
 
-    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $NoninteractiveAppOnlyAuth.IsPresent $RedirectUris $Confidential.IsPresent
+    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris
 
     $newApp = $newAppRegistration |=> CreateNewApp
 
-    if ( ( $Confidential.IsPresent -or $NoninteractiveAppOnlyAuth.IsPresent ) -and ! $NoCredential.IsPresent ) {
+    if ( $Confidential.IsPresent -and ! $NoCredential.IsPresent ) {
         $certificate = $null
         try {
             $certificate = new-so GraphApplicationCertificate $newApp.appId $newApp.Id $Name $CertValidityTimeSpan $CertValidityStart $certStoreLocation
@@ -139,11 +138,13 @@ function New-GraphApplication {
     }
 
     if ( ! $SkipTenantRegistration.IsPresent ) {
-        $newAppRegistration |=> Register $ConsentForTenant.IsPresent $NonInteractiveAppOnlyAuth.IsPresent (! $NoninteractiveAppOnlyAuth.IsPresent) $UserIdToConsent $GrantedPermissions | out-null
+        $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $ConsentAllUsers.IsPresent $UserIdToConsent $DelegatedUserPermissions $ApplicationPermissions | out-null
     }
 
     $newApp
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication GrantedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication DelegatedUserPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
+
+$::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication ApplicationPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AppOnlyPermission))
 

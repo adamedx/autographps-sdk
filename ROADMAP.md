@@ -16,9 +16,11 @@
 * Remove-GraphApplicationConsent should remove approleassignments
   * Make specification of some target mandatory
   * Non-explicit targets would be AllConsent, UserConsent, AllTenantUsersConsent, AppConsent
-  * Remove consentfortenant --e.g. AllTenantUsers instead
+  * Remove consentfortenant -- e.g. AllTenantUsers instead
+  * -AppPermissions, -DelegatedUserPermissions, -NoConsent -ConsentUser -ConfidentialClient -PublicClient
 * Make verbose output more readable
 * Document strange splatting behavior with noteproperty
+* Rename New-GraphApplicationCertificate to Set-GraphApplicationCertificate?
 
 
 * Add $ref?

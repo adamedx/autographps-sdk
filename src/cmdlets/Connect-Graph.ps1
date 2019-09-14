@@ -21,9 +21,9 @@
 . (import-script common/PermissionParameterCompleter)
 
 function Connect-Graph {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='simple')]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='public')]
     param(
-        [parameter(parametersetname='msgraph', position=0)]
+        [parameter(parametersetname='public', position=0)]
         [parameter(parametersetname='cloud', position=0)]
         [parameter(parametersetname='customendpoint', position=0)]
         [parameter(parametersetname='cert', position=0)]
@@ -33,6 +33,7 @@ function Connect-Graph {
         [String[]] $Permissions = $null,
 
         [parameter(parametersetname='cloud')]
+        [parameter(parametersetname='public')]
         [parameter(parametersetname='cert', mandatory=$true)]
         [parameter(parametersetname='certpath', mandatory=$true)]
         [parameter(parametersetname='secret', mandatory=$true)]
@@ -40,6 +41,7 @@ function Connect-Graph {
         [parameter(parametersetname='autocert', mandatory=$true)]
         [string] $AppId = $null,
 
+        [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='secret', mandatory=$true)]
         [parameter(parametersetname='cert', mandatory=$true)]
         [parameter(parametersetname='certpath', mandatory=$true)]
@@ -49,20 +51,24 @@ function Connect-Graph {
         [string] $TenantId,
 
         [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [string] $CertificatePath,
 
         [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate = $null,
 
         [switch] $Confidential,
 
         [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [Switch] $Secret,
 
         [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [SecureString] $Password,
 
-        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='public')]
         [parameter(parametersetname='cloud', mandatory=$true)]
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
@@ -179,4 +185,4 @@ function Connect-Graph {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Connect-Graph Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Connect-Graph Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))

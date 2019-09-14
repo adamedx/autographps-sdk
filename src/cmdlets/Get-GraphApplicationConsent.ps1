@@ -92,6 +92,20 @@ function Get-GraphApplicationConsent {
                     $response
                 }
             }
+
+            $roleResponse = Invoke-GraphRequest /servicePrincipals/$appSPId/appRoleAssignedTo -method GET -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
+
+            if ( $roleResponse ) {
+                if ( ! $RawContent.IsPresent ) {
+                    if ( $roleResponse | gm id -erroraction ignore ) {
+                        $roleResponse | foreach {
+                            $::.ConsentHelper |=> ToDisplayableObject $_
+                        }
+                    }
+                } else {
+                    $roleResponse
+                }
+            }
         }
     }
 

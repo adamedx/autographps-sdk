@@ -624,4 +624,4 @@ ConvertFrom-JSON
 #>
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphRequest Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphRequest Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))

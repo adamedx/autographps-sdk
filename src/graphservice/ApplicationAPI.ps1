@@ -142,30 +142,28 @@ ScriptClass ApplicationAPI {
         $appId,
         [string[]] $delegatedPermissions,
         [string[]] $appOnlyPermissions,
-        $allPermissions,
-        $consentForTenant,
-        $userConsentRequired,
+        $consentRequiredPermissions,
         $userIdToConsent,
+        $consentAllUsers,
         $appWithRequiredResource,
         $appSP
     ) {
         $consentUser = if ( $userIdToConsent ) {
             write-verbose "User '$userIdToConsent' specified for consent"
             $userIdToConsent
-        } elseif ( ! $consentForTenant ) {
-            write-verbose "No user was specified for consent, and consent for the entire tenant was not specified, so consent will be made for the user making this Graph API call"
+        } elseif ( ! $consentAllUsers ) {
+            write-verbose "No user was specified for consent, but all user consent was not specified, so consent will be made for the user making this Graph API call"
             $userObjectId = $this.connection.Identity.GetUserInformation().userObjectId
-            if ( ! $userObjectId -and $userConsentRequired ) {
-                throw "User consent required but no user was specified and user id of current user could not be obtained"
+            if ( $userObjectId ) {
+                write-verbose "Attempting to grant consent to app '$appId' for current user '$userObjectId'"
             }
-            write-verbose "Attempting to grant consent to app '$appId' for current user '$userObjectId'"
             $userObjectId
         } else {
             write-verbose "User consent was not specified, and tenant consent was specified, will attempt to consent all app permissions for the tenant"
         }
 
-        if ( ! $consentUser -and ! $ConsentForTenant ) {
-            write-verbose "Consent for tenant not required and user consent not required, so skipping consent completely"
+        if ( ! $consentUser -and ! $ConsentAllUsers -and ! $appOnlyPermissions ) {
+            write-verbose "Consent for all users was not required and no specific user consent was required and no app only permissions were specified, so skipping consent completely"
             return
         }
 
@@ -179,15 +177,19 @@ ScriptClass ApplicationAPI {
             throw "Application '$AppId' was not found"
         }
 
-        if ( $userConsentRequired ) {
+        if ( $consentUser ) {
             write-verbose 'Processing user consent...'
-            $grant = GetConsentGrantForApp $appId $consentUser $DelegatedPermissions $AppOnlyPermissions $allPermissions $appWithRequiredResource
-            Invoke-GraphRequest /oauth2PermissionGrants -method POST -body $grant -version $this.version -connection $this.connection | out-null
+            $grant = GetConsentGrantForApp $appId $consentUser $DelegatedPermissions $consentRequiredPermissions $appWithRequiredResource
+            if ( $grant ) {
+                Invoke-GraphRequest /oauth2PermissionGrants -method POST -body $grant -version $this.version -connection $this.connection | out-null
+            } else {
+                write-verbose 'Skipping consent because no consent was specified'
+            }
         }
 
-        if ( $AppOnlyPermissions -or $AllPermissions ) {
-            write-verbose ( 'Processing app-only consent: SpecifiedPermissionsSpecified: {0}; AllPermissionsSpecified: {1}' -f ($AppOnlyPermissions -ne $null -and $AppOnlyPermissions.length -gt 0), $AllPermissions )
-            ConsentAppOnlyRolesForTenant $appId $AppOnlyPermissions $allPermissions $appWithRequiredResource $appServicePrincipal
+        if ( $AppOnlyPermissions -or $consentRequiredPermissions ) {
+            write-verbose ( 'Processing app-only consent: SpecificPermissionsSpecified: {0}; ConsentRequiredPermissionsSpecified: {1}' -f ($AppOnlyPermissions -ne $null -and $AppOnlyPermissions.length -gt 0), $consentRequiredPermissions )
+            ConsentAppOnlyRolesForTenant $appId $AppOnlyPermissions $consentRequiredPermissions $appWithRequiredResource $appServicePrincipal
         } else {
             write-verbose 'Skipping consent for app only permissions because no permissions are specified'
         }
@@ -197,12 +199,18 @@ ScriptClass ApplicationAPI {
         $appId,
         $consentUser,
         $scopes = @(),
-        $roles = @(),
         $ConsentRequiredPermissions,
         $appWithRequiredResource
     ) {
         $targetPermissions = if ( ! $ConsentRequiredPermissions ) {
-            $scopes + $roles
+            foreach ( $scopeName in $scopes ) {
+                $canonicalScopeName = $::.ScopeHelper.DelegatedPermissionsByName.keys | where { $_ -eq $scopeName }
+                if ( $canonicalScopeName ) {
+                    $canonicalScopeName
+                } else {
+                    $scopeName
+                }
+            }
         } else {
             $permissions = @()
             if ( $appWithRequiredResource -and $appWithRequiredResource | gm requiredResourceAccess ) {
@@ -219,7 +227,9 @@ ScriptClass ApplicationAPI {
             $permissions
         }
 
-        __NewOauth2Grant $appId ($targetPermissions -join ' ') $consentUser
+        if ( $targetPermissions -and $targetPermissions.length -gt 0 ) {
+            __NewOauth2Grant $appId ($targetPermissions -join ' ') $consentUser
+        }
     }
 
     function ConsentAppOnlyRolesForTenant(

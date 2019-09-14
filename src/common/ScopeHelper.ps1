@@ -197,17 +197,19 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
             $permission
         }
 
-        function GraphPermissionIdToName($permissionId, $type, $connection) {
+        function GraphPermissionIdToName($permissionId, $type, $connection, [bool] $ignoreUnknownIds) {
             __InitializeGraphScopes $connection
 
             $permission = $this.permissionsByIds[$permissionId]
 
-            if ( ! $permission ) {
-                throw "Specified permission '$permissionId' could not be mapped to a permission name"
-            }
+            if ( ! $ignoreUnknownIds ) {
+                if ( ! $permission ) {
+                    throw "Specified permission '$permissionId' could not be mapped to a permission name"
+                }
 
-            if ( $type -and ! (__IsPermissionType $permission.id $type) ) {
-                throw "Specified permission '$permissionId' was not of specified type '$type'"
+                if ( $type -and ! (__IsPermissionType $permission.id $type) ) {
+                    throw "Specified permission '$permissionId' was not of specified type '$type'"
+                }
             }
 
             $permission.value
