@@ -93,7 +93,8 @@ function Test-Graph {
     [cmdletbinding()]
     param(
         [parameter(parametersetname='KnownClouds')]
-        [GraphCloud] $Cloud,
+        [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
+        [string] $Cloud = 'Public',
 
         [parameter(parametersetname='Connection', mandatory=$true)]
         [PSCustomObject] $Connection,

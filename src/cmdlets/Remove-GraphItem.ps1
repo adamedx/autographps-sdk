@@ -97,7 +97,8 @@ function Remove-GraphItem {
 
         [parameter(parametersetname='FromUri')]
         [parameter(parametersetname='FromObjects')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
+        [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
+        [string] $Cloud,
 
         [parameter(parametersetname='FromUriExistingConnection', mandatory=$true)]
         [parameter(parametersetname='FromObjectsExistingConnection', mandatory=$true)]

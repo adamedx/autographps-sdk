@@ -12,12 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# . (Initialize-ScriptClassTest)
-
-# $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-#$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
-# . "$here\$sut"
-
 Describe "The Test-Graph cmdlet" {
     Context "when receiving a successful response from Graph" {
         $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\testassets\graphping200.json"
@@ -33,10 +27,10 @@ Describe "The Test-Graph cmdlet" {
         }
 
         It "should succeed when given a cloud parameter" {
-            { Test-Graph -cloud ([GraphCloud]::Public) | out-null } | Should Not Throw
-            { Test-Graph -cloud ([GraphCloud]::ChinaCloud) | out-null } | Should Not Throw
-            { Test-Graph -cloud ([GraphCloud]::GermanyCloud) | out-null } | Should Not Throw
-            { Test-Graph -cloud ([GraphCloud]::USGovernmentCloud) | out-null } | Should Not Throw
+            { Test-Graph -cloud Public | out-null } | Should Not Throw
+            { Test-Graph -cloud ChinaCloud | out-null } | Should Not Throw
+            { Test-Graph -cloud GermanyCloud | out-null } | Should Not Throw
+            { Test-Graph -cloud USGovernmentCloud | out-null } | Should Not Throw
         }
 
         It "should succeed when given a custom graph URI parameter" {

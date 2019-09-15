@@ -104,7 +104,8 @@ function Connect-Graph {
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
         [parameter(parametersetname='customendpoint')]
-        [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
+        [ValidateSet('v1', 'v2', 'Default')]
+        [String] $AuthProtocol = 'Default',
 
         [parameter(parametersetname='aadgraph', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]

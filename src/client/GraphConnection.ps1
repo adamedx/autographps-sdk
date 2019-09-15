@@ -39,7 +39,7 @@ ScriptClass GraphConnection {
 
         $this.NoBrowserUI = ! $::.Application.SupportsBrowserSignin -or $noBrowserUI -or $isRemotePSSession
 
-        if ( $this.GraphEndpoint.Type -eq ([GraphType]::MSGraph) ) {
+        if ( $this.GraphEndpoint.Type -eq 'MSGraph') {
             if ( $Identity -and ! $scopes ) {
                 throw "No scopes were specified, at least one scope must be specified"
             }
@@ -62,7 +62,7 @@ ScriptClass GraphConnection {
         }
 
         if ( $this.Status -eq [GraphConnectionStatus]::Online ) {
-            if ( $this.GraphEndpoint.Type -eq [GraphType]::MSGraph ) {
+            if ( $this.GraphEndpoint.Type -eq 'MSGraph' ) {
                 # Trust the library's token cache to get a new token if necessary
                 $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI
                 $this.connected = $true
@@ -98,7 +98,7 @@ ScriptClass GraphConnection {
     }
 
     static {
-        function NewSimpleConnection([GraphType] $graphType = 'MSGraph', [GraphCloud] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null ) {
+        function NewSimpleConnection([string] $graphType = 'MSGraph', [string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null ) {
             $endpoint = new-so GraphEndpoint $cloud $graphType $null $null $authProtocol
             $app = new-so GraphApplication $::.Application.DefaultAppId
             $identity = if ( ! $anonymous ) {

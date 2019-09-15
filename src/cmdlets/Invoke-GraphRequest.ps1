@@ -261,7 +261,8 @@ function Invoke-GraphRequest {
         [PSCustomObject] $Connection = $null,
 
         [parameter(parametersetname='MSGraphNewConnection')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
+        [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
+        [string] $Cloud,
 
         [parameter(parametersetname='MSGraphNewConnection')]
         [String[]] $Permissions = $null,

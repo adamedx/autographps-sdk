@@ -176,7 +176,8 @@ function Get-GraphItem {
         [PSCustomObject] $Connection = $null,
 
         [parameter(parametersetname='MSGraphNewConnection')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
+        [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
+        [string] $Cloud,
 
         [parameter(parametersetname='MSGraphNewConnection')]
         [String[]] $Permissions = $null,
@@ -211,6 +212,10 @@ function Get-GraphItem {
         First=$pscmdlet.pagingparameters.first
         Skip=$pscmdlet.pagingparameters.skip
         IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
+    }
+
+    if ( $Cloud ) {
+        $requestArguments['Cloud'] = $Cloud
     }
 
     if ( $AADGraph.ispresent ) {

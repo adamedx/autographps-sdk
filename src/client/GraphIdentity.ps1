@@ -43,7 +43,7 @@ ScriptClass GraphIdentity {
     }
 
     function GetUserInformation {
-        if ( $this.App.AuthType -eq ([GraphAppAuthType]::Delegated) ) {
+        if ( $this.App.AuthType -eq 'Delegated' ) {
                  $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
                  $providerInstance |=> GetUserInformation $this.token
         } else {
@@ -73,7 +73,7 @@ ScriptClass GraphIdentity {
     }
 
     function ClearAuthentication {
-        if ( $this.token -and $this.app.AuthType -eq ([GraphAppAuthType]::Delegated) ) {
+        if ( $this.token -and $this.app.AuthType -eq 'Delegated' ) {
             $authUri = $this.graphEndpoint |=> GetAuthUri $this.TenantName
 
             $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
@@ -107,7 +107,7 @@ ScriptClass GraphIdentity {
         $authResult = if ( $this.token ) {
             $providerInstance |=> AcquireRefreshedToken $authContext $this.token
         } else {
-            if ( $this.App.AuthType -eq ([GraphAppAuthType]::Apponly) ) {
+            if ( $this.App.AuthType -eq 'Apponly' ) {
                 $providerInstance |=> AcquireFirstAppToken $authContext
             } else {
                 if ( $isConfidential ) {

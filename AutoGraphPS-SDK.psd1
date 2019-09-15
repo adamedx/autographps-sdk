@@ -57,7 +57,7 @@ PowerShellVersion = '5.1'
 # RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @('src/PreModuleInitialization.ps1')
+# ScriptsToProcess = @()
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -124,7 +124,6 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\aliases.ps1',
         '.\src\cmdlets.ps1',
         '.\src\graph-sdk.ps1',
-        '.\src\PreModuleInitialization.ps1',
         '.\src\auth\AuthProvider.ps1',
         '.\src\auth\CompiledDeviceCodeAuthenticator.ps1',
         '.\src\auth\DeviceCodeAuthenticator.ps1',
