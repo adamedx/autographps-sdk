@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Remove enums
 * Add more command help
 * Add client-side correlationid
 * Make token caches per app-per cloud.
@@ -10,7 +11,6 @@
 * Add throttling
 * Update build tools to not change path in order to use nuget
 * Add equivalent of -Token option to new-graphconnection and connect-graph -- this sets token from external source
-* Make Get-GraphToken take all params from new-graphconnection and get-graphconnection
 * Make verbose output more readable
 * Document strange splatting behavior with noteproperty
 * Rename New-GraphApplicationCertificate to Set-GraphApplicationCertificate?
@@ -356,6 +356,7 @@
 * Remove-GraphApplicationConsent should remove approleassignments
 * Add support for test endpoints by allowing alternate resource for endpoint uri
 * Make comments start at beginning of command
+* Make Get-GraphToken take all params from new-graphconnection and get-graphconnection
 
 ### Postponed
 
