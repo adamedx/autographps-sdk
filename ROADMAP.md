@@ -13,11 +13,6 @@
 * Update build tools to not change path in order to use nuget
 * Add equivalent of -Token option to new-graphconnection and connect-graph -- this sets token from external source
 * Make Get-GraphToken take all params from new-graphconnection and get-graphconnection
-* Remove-GraphApplicationConsent should remove approleassignments
-  * Make specification of some target mandatory
-  * Non-explicit targets would be AllConsent, UserConsent, AllTenantUsersConsent, AppConsent
-  * Remove consentfortenant -- e.g. AllTenantUsers instead
-  * -AppPermissions, -DelegatedUserPermissions, -NoConsent -ConsentUser -ConfidentialClient -PublicClient
 * Make verbose output more readable
 * Document strange splatting behavior with noteproperty
 * Rename New-GraphApplicationCertificate to Set-GraphApplicationCertificate?
@@ -359,6 +354,8 @@
 * clean error stream
 * Update to latest msal / adal
 * make connect-graph and new-graphconnection have same arguments or make an alias
+* Set-GraphApplicationConsent, New-GraphApplication parameter renaming to clarify permissions, public vs. confidential: -AppPermissions, -DelegatedUserPermissions, -NoConsent -ConsentUser -ConfidentialClient -PublicClient
+* Remove-GraphApplicationConsent should remove approleassignments
 
 ### Postponed
 

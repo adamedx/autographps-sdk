@@ -204,7 +204,13 @@ ScriptClass ApplicationAPI {
     ) {
         $targetPermissions = if ( ! $ConsentRequiredPermissions ) {
             foreach ( $scopeName in $scopes ) {
-                $canonicalScopeName = $::.ScopeHelper.DelegatedPermissionsByName.keys | where { $_ -eq $scopeName }
+                $scopeId = try {
+                    $::.ScopeHelper |=> GraphPermissionNameToId $scopeName Scope
+                } catch {
+                }
+                $canonicalScopeName = if ( $scopeId ) {
+                    $::.ScopeHelper |=> GraphPermissionIdToName $scopeId Scope $null $true
+                }
                 if ( $canonicalScopeName ) {
                     $canonicalScopeName
                 } else {
