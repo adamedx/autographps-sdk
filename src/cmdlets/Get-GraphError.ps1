@@ -14,56 +14,6 @@
 
 . (import-script ../REST/GraphErrorRecorder)
 
-function Get-GraphError {
-    [cmdletbinding()]
-    param()
-    Enable-ScriptClassVerbosePreference
-
-    $graphErrors = $::.GraphErrorRecorder |=> GetLastRecordedErrors
-
-    $afterTimeUtc = $graphErrors.AfterTimeUtc
-    $afterTimeLocal = $graphErrors.AfterTimeLocal
-
-    $graphErrors.ErrorRecords | foreach {
-        $headerOutput = @{}
-        $errorValue = $_.ErrorRecord
-        $responseStream = $_.ResponseStream
-        $headers = try {
-            $errorValue.exception.response.headers
-        } catch {
-        }
-
-        # Headers at times are a dictionary, and in other
-        # cases an array. In the latter case, each element
-        # seems to be simply the name of the header and
-        # not its value, which is regrettable from a diagnostic
-        # standpoint.
-        if ( $headers -ne $null ) {
-            if ( $headers | gm keys ) {
-                $headers.keys | foreach {
-                    $headerOutput[$_] = $headers[$_]
-                }
-            } else {
-                $headers | foreach {
-                    $headerOutput[$_] = $_
-                }
-            }
-        }
-
-        [PSCustomObject] (
-            [ordered] @{
-                AfterTimeLocal = $afterTimeLocal
-                AfterTimeUtc = $afterTimeUtc
-                PSErrorRecord = $errorValue
-                Response = [PSCustomObject] $errorValue.Exception.Response
-                ResponseHeaders = [PSCustomObject] $headerOutput
-                ResponseStream = $_.ResponseStream
-                StatusCode = $errorValue.Exception.Response.StatusCode
-                StatusDescription = $errorValue.Exception.Response.StatusDescription
-            }
-        )
-    }
-
 <#
 .SYNOPSIS
 Retrieves the error response from Graph for the last failed REST call invoked by one of this module's commands.
@@ -116,4 +66,53 @@ Get-GraphItem
 Invoke-GraphRequest
 Remove-GraphItem
 #>
+function Get-GraphError {
+    [cmdletbinding()]
+    param()
+    Enable-ScriptClassVerbosePreference
+
+    $graphErrors = $::.GraphErrorRecorder |=> GetLastRecordedErrors
+
+    $afterTimeUtc = $graphErrors.AfterTimeUtc
+    $afterTimeLocal = $graphErrors.AfterTimeLocal
+
+    $graphErrors.ErrorRecords | foreach {
+        $headerOutput = @{}
+        $errorValue = $_.ErrorRecord
+        $responseStream = $_.ResponseStream
+        $headers = try {
+            $errorValue.exception.response.headers
+        } catch {
+        }
+
+        # Headers at times are a dictionary, and in other
+        # cases an array. In the latter case, each element
+        # seems to be simply the name of the header and
+        # not its value, which is regrettable from a diagnostic
+        # standpoint.
+        if ( $headers -ne $null ) {
+            if ( $headers | gm keys ) {
+                $headers.keys | foreach {
+                    $headerOutput[$_] = $headers[$_]
+                }
+            } else {
+                $headers | foreach {
+                    $headerOutput[$_] = $_
+                }
+            }
+        }
+
+        [PSCustomObject] (
+            [ordered] @{
+                AfterTimeLocal = $afterTimeLocal
+                AfterTimeUtc = $afterTimeUtc
+                PSErrorRecord = $errorValue
+                Response = [PSCustomObject] $errorValue.Exception.Response
+                ResponseHeaders = [PSCustomObject] $headerOutput
+                ResponseStream = $_.ResponseStream
+                StatusCode = $errorValue.Exception.Response.StatusCode
+                StatusDescription = $errorValue.Exception.Response.StatusDescription
+            }
+        )
+    }
 }
