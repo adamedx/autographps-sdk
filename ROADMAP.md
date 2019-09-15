@@ -7,7 +7,6 @@
 * Make token caches per app-per cloud.
 * Make comments start at beginning of command
 * Add useragent to connection commands
-* Add support for test endpoints by allowing alternate resource for endpoint uri
 * Add view to get-grapherror
 * Add throttling
 * Update build tools to not change path in order to use nuget
@@ -356,6 +355,7 @@
 * make connect-graph and new-graphconnection have same arguments or make an alias
 * Set-GraphApplicationConsent, New-GraphApplication parameter renaming to clarify permissions, public vs. confidential: -AppPermissions, -DelegatedUserPermissions, -NoConsent -ConsentUser -ConfidentialClient -PublicClient
 * Remove-GraphApplicationConsent should remove approleassignments
+* Add support for test endpoints by allowing alternate resource for endpoint uri
 
 ### Postponed
 

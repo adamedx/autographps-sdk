@@ -93,6 +93,12 @@ function Connect-Graph {
         [parameter(parametersetname='certpath')]
         [Uri] $AuthenticationEndpointUri = $null,
 
+        [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [Uri] $GraphResourceUri = $null,
+
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='secret')]
         [parameter(parametersetname='cert')]

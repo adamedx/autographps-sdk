@@ -106,6 +106,7 @@ ScriptClass GraphEndpoint {
     $Type = ([GraphType]::MSGraph)
     $Cloud = ([GraphCloud]::Custom)
     $AuthProtocol = $null
+    $GraphResourceUri = $null
 
     function __initialize {
         [cmdletbinding()]
@@ -114,7 +115,8 @@ ScriptClass GraphEndpoint {
             [GraphType] $graphType = [GraphType]::MSGraph,
             [Uri] $GraphEndpoint,
             [Uri] $AuthenticationEndpoint,
-            $authProtocol = $null
+            $authProtocol = $null,
+            [Uri] $graphResourceUri
         )
 
         $this.Type = $GraphType
@@ -136,6 +138,7 @@ ScriptClass GraphEndpoint {
         $this.Authentication = new-object Uri $endpointData.Authentication
         $this.Graph = new-object Uri $endpointData.Graph
         $this.AuthProtocol = $endpointData.AuthProtocol
+        $this.GraphResourceUri = if ( $graphResourceUri ) { $graphResourceUri } else { $this.Graph }
     }
 
     function GetAuthUri($tenantName) {

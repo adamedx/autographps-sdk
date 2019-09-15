@@ -61,7 +61,7 @@ ScriptClass GraphIdentity {
             write-verbose ("Found existing token with {0} minutes left before expiration" -f $tokenTimeLeft.TotalMinutes)
         }
 
-        write-verbose ("Getting token for resource {0} from auth endpoint: {1} with protocol {2}" -f $this.graphEndpoint.Graph, $this.graphEndpoint.Authentication, $this.graphEndpoint.AuthProtocol)
+        write-verbose ("Getting token for resource {0} from auth endpoint: {1} with protocol {2}" -f $this.graphEndpoint.GraphResourceUri, $this.graphEndpoint.Authentication, $this.graphEndpoint.AuthProtocol)
 
         $this.Token = getGraphToken $this.graphEndpoint $scopes $noBrowserUI
 
@@ -77,7 +77,7 @@ ScriptClass GraphIdentity {
             $authUri = $this.graphEndpoint |=> GetAuthUri $this.TenantName
 
             $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
-            $authContext = $providerInstance |=> GetAuthContext $this.app $this.graphEndpoint.Graph $authUri
+            $authContext = $providerInstance |=> GetAuthContext $this.app $this.graphEndpoint.GraphResourceUri $authUri
             $providerInstance |=> ClearToken $authContext $this.token
         }
 
@@ -85,7 +85,7 @@ ScriptClass GraphIdentity {
     }
 
     function getGraphToken($graphEndpoint, $scopes, $noBrowserUI) {
-        write-verbose "Attempting to get token in tenant '$($this.tenantName)' for '$($graphEndpoint.Graph)' ..."
+        write-verbose "Attempting to get token in tenant '$($this.tenantName)' for '$($graphEndpoint.GraphResourceUri)' ..."
         write-verbose "Using app id '$($this.App.AppId)'"
         $isConfidential = ($this.app |=> IsConfidential)
         write-verbose ("Is confidential client: '{0}'" -f $isConfidential)
@@ -102,7 +102,7 @@ ScriptClass GraphIdentity {
 
         $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
 
-        $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.Graph $authUri
+        $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.GraphResourceUri $authUri
 
         $authResult = if ( $this.token ) {
             $providerInstance |=> AcquireRefreshedToken $authContext $this.token
@@ -121,7 +121,7 @@ ScriptClass GraphIdentity {
         write-verbose ("`nToken request status: {0}" -f $authResult.Status)
 
         if ( $authResult.Status -eq 'Faulted' ) {
-            throw "Failed to acquire token for uri '$($graphEndpoint.Graph)' for AppID '$($this.App.AppId)'`n" + $authResult.exception, $authResult.exception
+            throw "Failed to acquire token for uri '$($graphEndpoint.GraphResourceUri)' for AppID '$($this.App.AppId)'`n" + $authResult.exception, $authResult.exception
         }
 
         $result = $authResult.Result
