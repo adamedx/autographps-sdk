@@ -109,9 +109,7 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Get-GraphConnectionInfo           | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline` |
 | Get-GraphError (gge)              | Retrieves detailed errors returned from Graph in execution of the last command                  |
 | Get-GraphItem  (ggi)              | Given a relative (to the Graph or current location) Uri gets information about the entity       |
-| Get-GraphSchema                   | Returns the [Entity Data Model](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/entity-data-model) for a part of the graph as expressed through [CSDL](http://www.odata.org/documentation/odata-version-3-0/common-schema-definition-language-csdl/)       |
 | Get-GraphToken                    | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)  |
-| Get-GraphVersion                  | Returns the set of workloads and their associated schemas for a given Graph API version         |
 | Invoke-GraphRequest               | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri           |
 | New-GraphApplication              | Creates an Azure AD application configured to authenticate to Microsoft Graph                   |
 | New-GraphApplicationCertificate   | Creates a new certificate in the local certificate store and configures its public key on an application |

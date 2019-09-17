@@ -2,9 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Remove enums
-* Remove Get-GraphSchema
-* Simplify Get-GraphVersion
 * Add more command help
 * Add client-side correlationid
 * Make token caches per app-per cloud.
@@ -370,6 +367,9 @@
 * Add hint of additional records
 * Add continue feature?
 * Test Release
+* Remove enums
+* Remove Get-GraphSchema
+* Remove Get-GraphVersion
 
 ### Abandoned
 
