@@ -173,7 +173,7 @@ function Connect-Graph {
 
                 $conditionalArguments = @{}
 
-                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconect', 'ErrorAction') } | foreach {
+                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction') } | foreach {
                     $conditionalArguments[$_] = $PSBoundParameters[$_]
                 }
 

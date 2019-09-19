@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set-strictmode -version 5
+
 . (import-script cmdlets)
 . (import-script aliases)
 
