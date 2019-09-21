@@ -23,6 +23,18 @@ $PowerShellExecutable = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
     'pwsh'
 }
 
+$OSPathSeparator = ';'
+
+try {
+    if ( $PSVersionTable.PSEdition -eq 'Core' ) {
+        if ( $PSVersionTable.Platform -ne 'Windows' -and $PSVersionTable.Platform -ne 'Win32NT' ) {
+            $OSPathSeparator = ':'
+        }
+    }
+} catch {
+}
+
+
 function new-directory {
     param(
         [Parameter(mandatory=$true)]
@@ -353,13 +365,13 @@ function publish-modulebuild {
         $optionalArguments += " -nugetapikey $repositoryKey"
     }
 
-    Invoke-CommandWithModulePath "publish-module -path '$moduleSourceDirectory' -repository '$destinationRepositoryName' -verbose $optionalArguments" $moduleRootDirectory
+    Invoke-CommandWithModulePath "`$env:PSModulePath;publish-module -path '$moduleSourceDirectory' -repository '$destinationRepositoryName' -verbose $optionalArguments" $moduleRootDirectory
 }
 
 function Invoke-CommandWithModulePath($command, $modulePath) {
     # Note that the path must be augmented rather than replaced
     # in order for modules related to package management to be loade
-    $commandScript = [Scriptblock]::Create("import-module -verbose PowerShellGet;si env:PSModulePath `"`$env:PSModulePath;$modulePath`";$command")
+    $commandScript = [Scriptblock]::Create("import-module -verbose PowerShellGet;si env:PSModulePath `"$env:PSModulePath$OSPathSeparato$rmodulePath`";$command")
 
     write-verbose "Executing command '$commandScript'"
     $result = if ( $PSVersionTable.PSEdition -ne 'Desktop' -and $PSVersionTable.Platform -eq 'Win32NT' ) {
@@ -755,7 +767,7 @@ function Normalize-LibraryDirectory($packageConfigPath, $libraryRoot) {
             if ( ! ( test-path $normalizedName ) ) {
                 $alternateName = join-path $libraryRoot (join-path $_.id $_.version)
                 if ( ! ( test-path $alternateName ) ) {
-                    throw "Unable to find directory for assembly '$($_.id)' with version '$($_.version)' at either '$normalizedName' or '$alternatName'"
+                    throw "Unable to find directory for assembly '$($_.id)' with version '$($_.version)' at either '$normalizedName' or '$alternateName'"
                 }
                 move-item  $alternateName $normalizedName
             }
