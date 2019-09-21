@@ -13,6 +13,7 @@
 # limitations under the License.
 
 Describe "ParameterCompleter class" {
+
     Context "FindMatchesStartingWith method" {
         $matchatstart = @('first')
         for ( $i = 0; $i -lt 10; $i++ ) { $matchatstart += @("everythingelse$($i)") }
