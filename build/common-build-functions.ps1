@@ -365,13 +365,13 @@ function publish-modulebuild {
         $optionalArguments += " -nugetapikey $repositoryKey"
     }
 
-    Invoke-CommandWithModulePath "`$env:PSModulePath;publish-module -path '$moduleSourceDirectory' -repository '$destinationRepositoryName' -verbose $optionalArguments" $moduleRootDirectory
+    Invoke-CommandWithModulePath "publish-module -path '$moduleSourceDirectory' -repository '$destinationRepositoryName' -verbose $optionalArguments" $moduleRootDirectory
 }
 
 function Invoke-CommandWithModulePath($command, $modulePath) {
     # Note that the path must be augmented rather than replaced
     # in order for modules related to package management to be loade
-    $commandScript = [Scriptblock]::Create("import-module -verbose PowerShellGet;si env:PSModulePath `"$env:PSModulePath$OSPathSeparato$rmodulePath`";$command")
+    $commandScript = [Scriptblock]::Create("import-module -verbose PowerShellGet;si env:PSModulePath `"$env:PSModulePath$OSPathSeparator$modulePath`";$command")
 
     write-verbose "Executing command '$commandScript'"
     $result = if ( $PSVersionTable.PSEdition -ne 'Desktop' -and $PSVersionTable.Platform -eq 'Win32NT' ) {
