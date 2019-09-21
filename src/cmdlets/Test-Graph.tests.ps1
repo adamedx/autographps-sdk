@@ -14,7 +14,7 @@
 
 Describe "The Test-Graph cmdlet" {
     Context "when receiving a successful response from Graph" {
-        $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\testassets\graphping200.json"
+        $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\testassets\GraphPing200.json"
 
         Add-MockInScriptClassScope RESTRequest Invoke-WebRequest -MockContext $graphPing200Response {
             $result = $MockContext | convertfrom-json

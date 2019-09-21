@@ -16,7 +16,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Describe "Poshgraph application" {
-    $manifestLocation = Join-Path $here 'autographps-sdk.psd1'
+    $manifestLocation = Join-Path $here 'AutoGraphPS-SDK.psd1'
 
     function Get-ModuleMetadataFromManifest ( $moduleName, $manifestPath ) {
         # Load the module contents and deserialize it by evaluating
