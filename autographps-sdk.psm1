@@ -15,32 +15,32 @@
 . (join-path $psscriptroot src/graph-sdk.ps1)
 
 $cmdlets = @(
-    'Connect-Graph',
-    'Disconnect-Graph',
-    'Find-GraphLocalCertificate',
-    'Get-GraphApplication',
-    'Get-GraphApplicationCertificate',
-    'Get-GraphApplicationConsent',
-    'Get-GraphApplicationServicePrincipal',
-    'Get-GraphConnectionInfo',
-    'Get-GraphError',
-    'Get-GraphItem',
-    'Get-GraphSchema',
-    'Get-GraphToken',
-    'Get-GraphVersion',
-    'Invoke-GraphRequest',
-    'New-GraphApplication',
-    'New-GraphApplicationCertificate',
-    'New-GraphConnection',
-    'New-GraphLocalCertificate',
-    'Register-GraphApplication',
-    'Remove-GraphApplication',
-    'Remove-GraphApplicationCertificate',
-    'Remove-GraphApplicationConsent',
-    'Remove-GraphItem',
-    'Set-GraphApplicationConsent',
-    'Set-GraphConnectionStatus',
-    'Test-Graph',
+    'Connect-Graph'
+    'Disconnect-Graph'
+    'Find-GraphLocalCertificate'
+    'Get-GraphApplication'
+    'Get-GraphApplicationCertificate'
+    'Get-GraphApplicationConsent'
+    'Get-GraphApplicationServicePrincipal'
+    'Get-GraphConnectionInfo'
+    'Get-GraphError'
+    'Get-GraphItem'
+    'Get-GraphSchema'
+    'Get-GraphToken'
+    'Get-GraphVersion'
+    'Invoke-GraphRequest'
+    'New-GraphApplication'
+    'New-GraphApplicationCertificate'
+    'New-GraphConnection'
+    'New-GraphLocalCertificate'
+    'Register-GraphApplication'
+    'Remove-GraphApplication'
+    'Remove-GraphApplicationCertificate'
+    'Remove-GraphApplicationConsent'
+    'Remove-GraphItem'
+    'Set-GraphApplicationConsent'
+    'Set-GraphConnectionStatus'
+    'Test-Graph'
     'Unregister-GraphApplication'
 )
 

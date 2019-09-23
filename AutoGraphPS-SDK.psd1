@@ -70,30 +70,30 @@ NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f55
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Connect-Graph',
-    'Disconnect-Graph',
-    'Find-GraphLocalCertificate',
-    'Get-GraphApplication',
-    'Get-GraphApplicationCertificate',
-    'Get-GraphApplicationConsent',
-    'Get-GraphApplicationServicePrincipal',
-    'Get-GraphConnectionInfo',
-    'Get-GraphError',
-    'Get-GraphItem',
-    'Get-GraphToken',
-    'Invoke-GraphRequest',
-    'New-GraphApplication',
-    'New-GraphApplicationCertificate',
-    'New-GraphConnection',
-    'New-GraphLocalCertificate',
-    'Register-GraphApplication',
-    'Remove-GraphApplication',
-    'Remove-GraphApplicationCertificate',
-    'Remove-GraphApplicationConsent',
-    'Remove-GraphItem',
-    'Set-GraphApplicationConsent',
-    'Set-GraphConnectionStatus',
-    'Test-Graph',
+    'Connect-Graph'
+    'Disconnect-Graph'
+    'Find-GraphLocalCertificate'
+    'Get-GraphApplication'
+    'Get-GraphApplicationCertificate'
+    'Get-GraphApplicationConsent'
+    'Get-GraphApplicationServicePrincipal'
+    'Get-GraphConnectionInfo'
+    'Get-GraphError'
+    'Get-GraphItem'
+    'Get-GraphToken'
+    'Invoke-GraphRequest'
+    'New-GraphApplication'
+    'New-GraphApplicationCertificate'
+    'New-GraphConnection'
+    'New-GraphLocalCertificate'
+    'Register-GraphApplication'
+    'Remove-GraphApplication'
+    'Remove-GraphApplicationCertificate'
+    'Remove-GraphApplicationConsent'
+    'Remove-GraphItem'
+    'Set-GraphApplicationConsent'
+    'Set-GraphConnectionStatus'
+    'Test-Graph'
     'Unregister-GraphApplication'
 )
 
@@ -102,7 +102,7 @@ CmdletsToExport = @()
 
 # Variables to export from this module
 VariablesToExport = @(
-    'GraphVerboseOutputPreference',
+    'GraphVerboseOutputPreference'
     'LastGraphItems'
 )
 
@@ -117,72 +117,72 @@ AliasesToExport = @('gge', 'ggi')
 
 # List of all files packaged with this module
     FileList = @(
-        '.\AutoGraphPS-SDK.psd1',
-        '.\autographps-sdk.psm1',
-        '.\src\aliases.ps1',
-        '.\src\cmdlets.ps1',
-        '.\src\graph-sdk.ps1',
-        '.\src\auth\AuthProvider.ps1',
-        '.\src\auth\CompiledDeviceCodeAuthenticator.ps1',
-        '.\src\auth\DeviceCodeAuthenticator.ps1',
-        '.\src\auth\V1AuthProvider.ps1',
-        '.\src\auth\V2AuthProvider.ps1',
-        '.\src\client\Application.ps1',
-        '.\src\client\GraphApplication.ps1',
-        '.\src\client\GraphConnection.ps1',
-        '.\src\client\GraphContext.ps1',
-        '.\src\client\GraphIdentity.ps1',
-        '.\src\client\LogicalGraphManager.ps1',
-        '.\src\cmdlets\Connect-Graph.ps1',
-        '.\src\cmdlets\Disconnect-Graph.ps1',
-        '.\src\cmdlets\Find-GraphLocalCertificate.ps1',
-        '.\src\cmdlets\Get-GraphApplication.ps1',
-        '.\src\cmdlets\Get-GraphApplicationCertificate.ps1',
-        '.\src\cmdlets\Get-GraphApplicationConsent.ps1',
-        '.\src\cmdlets\Get-GraphApplicationServicePrincipal.ps1',
-        '.\src\cmdlets\Get-GraphConnectionInfo.ps1',
-        '.\src\cmdlets\Get-GraphError.ps1',
-        '.\src\cmdlets\Get-GraphItem.ps1',
-        '.\src\cmdlets\Get-GraphToken.ps1',
-        '.\src\cmdlets\Invoke-GraphRequest.ps1',
-        '.\src\cmdlets\New-GraphApplication.ps1',
-        '.\src\cmdlets\New-GraphApplicationCertificate.ps1',
-        '.\src\cmdlets\New-GraphConnection.ps1',
-        '.\src\cmdlets\New-GraphLocalCertificate.ps1',
-        '.\src\cmdlets\Register-GraphApplication.ps1',
-        '.\src\cmdlets\Remove-GraphApplication.ps1',
-        '.\src\cmdlets\Remove-GraphApplicationCertificate.ps1',
-        '.\src\cmdlets\Remove-GraphApplicationConsent.ps1',
-        '.\src\cmdlets\Remove-GraphItem.ps1',
-        '.\src\cmdlets\Set-GraphApplicationConsent.ps1',
-        '.\src\cmdlets\Set-GraphConnectionStatus.ps1',
-        '.\src\cmdlets\Test-Graph.ps1',
-        '.\src\cmdlets\Unregister-GraphApplication.ps1',
-        '.\src\cmdlets\common\ApplicationHelper.ps1',
-        '.\src\cmdlets\common\CommandContext.ps1',
-        '.\src\cmdlets\common\ConsentHelper.ps1',
-        '.\src\cmdlets\common\DisplayTypeFormatter.ps1',
-        '.\src\cmdlets\common\DynamicParamHelper.ps1',
-        '.\src\cmdlets\common\GraphOutputFile.ps1',
-        '.\src\cmdlets\common\ItemResultHelper.ps1',
-        '.\src\cmdlets\common\ParameterCompleter.ps1',
-        '.\src\cmdlets\common\PermissionParameterCompleter.ps1',
-        '.\src\cmdlets\common\QueryHelper.ps1',
-        '.\src\common\DefaultScopeData.ps1',
-        '.\src\common\GraphAccessDeniedException.ps1',
-        '.\src\common\GraphApplicationCertificate.ps1',
-        '.\src\common\GraphUtilities.ps1',
-        '.\src\common\PreferenceHelper.ps1',
-        '.\src\common\ProgressWriter.ps1',
-        '.\src\common\ScopeHelper.ps1',
-        '.\src\common\Secret.ps1',
-        '.\src\graphservice\ApplicationAPI.ps1',
+        '.\AutoGraphPS-SDK.psd1'
+        '.\autographps-sdk.psm1'
+        '.\src\aliases.ps1'
+        '.\src\cmdlets.ps1'
+        '.\src\graph-sdk.ps1'
+        '.\src\auth\AuthProvider.ps1'
+        '.\src\auth\CompiledDeviceCodeAuthenticator.ps1'
+        '.\src\auth\DeviceCodeAuthenticator.ps1'
+        '.\src\auth\V1AuthProvider.ps1'
+        '.\src\auth\V2AuthProvider.ps1'
+        '.\src\client\Application.ps1'
+        '.\src\client\GraphApplication.ps1'
+        '.\src\client\GraphConnection.ps1'
+        '.\src\client\GraphContext.ps1'
+        '.\src\client\GraphIdentity.ps1'
+        '.\src\client\LogicalGraphManager.ps1'
+        '.\src\cmdlets\Connect-Graph.ps1'
+        '.\src\cmdlets\Disconnect-Graph.ps1'
+        '.\src\cmdlets\Find-GraphLocalCertificate.ps1'
+        '.\src\cmdlets\Get-GraphApplication.ps1'
+        '.\src\cmdlets\Get-GraphApplicationCertificate.ps1'
+        '.\src\cmdlets\Get-GraphApplicationConsent.ps1'
+        '.\src\cmdlets\Get-GraphApplicationServicePrincipal.ps1'
+        '.\src\cmdlets\Get-GraphConnectionInfo.ps1'
+        '.\src\cmdlets\Get-GraphError.ps1'
+        '.\src\cmdlets\Get-GraphItem.ps1'
+        '.\src\cmdlets\Get-GraphToken.ps1'
+        '.\src\cmdlets\Invoke-GraphRequest.ps1'
+        '.\src\cmdlets\New-GraphApplication.ps1'
+        '.\src\cmdlets\New-GraphApplicationCertificate.ps1'
+        '.\src\cmdlets\New-GraphConnection.ps1'
+        '.\src\cmdlets\New-GraphLocalCertificate.ps1'
+        '.\src\cmdlets\Register-GraphApplication.ps1'
+        '.\src\cmdlets\Remove-GraphApplication.ps1'
+        '.\src\cmdlets\Remove-GraphApplicationCertificate.ps1'
+        '.\src\cmdlets\Remove-GraphApplicationConsent.ps1'
+        '.\src\cmdlets\Remove-GraphItem.ps1'
+        '.\src\cmdlets\Set-GraphApplicationConsent.ps1'
+        '.\src\cmdlets\Set-GraphConnectionStatus.ps1'
+        '.\src\cmdlets\Test-Graph.ps1'
+        '.\src\cmdlets\Unregister-GraphApplication.ps1'
+        '.\src\cmdlets\common\ApplicationHelper.ps1'
+        '.\src\cmdlets\common\CommandContext.ps1'
+        '.\src\cmdlets\common\ConsentHelper.ps1'
+        '.\src\cmdlets\common\DisplayTypeFormatter.ps1'
+        '.\src\cmdlets\common\DynamicParamHelper.ps1'
+        '.\src\cmdlets\common\GraphOutputFile.ps1'
+        '.\src\cmdlets\common\ItemResultHelper.ps1'
+        '.\src\cmdlets\common\ParameterCompleter.ps1'
+        '.\src\cmdlets\common\PermissionParameterCompleter.ps1'
+        '.\src\cmdlets\common\QueryHelper.ps1'
+        '.\src\common\DefaultScopeData.ps1'
+        '.\src\common\GraphAccessDeniedException.ps1'
+        '.\src\common\GraphApplicationCertificate.ps1'
+        '.\src\common\GraphUtilities.ps1'
+        '.\src\common\PreferenceHelper.ps1'
+        '.\src\common\ProgressWriter.ps1'
+        '.\src\common\ScopeHelper.ps1'
+        '.\src\common\Secret.ps1'
+        '.\src\graphservice\ApplicationAPI.ps1'
         '.\src\graphservice\ApplicationObject.ps1'
         '.\src\graphservice\GraphEndpoint.ps1'
-        '.\src\REST\GraphErrorRecorder.ps1',
-        '.\src\REST\GraphRequest.ps1',
-        '.\src\REST\GraphResponse.ps1',
-        '.\src\REST\RESTRequest.ps1',
+        '.\src\REST\GraphErrorRecorder.ps1'
+        '.\src\REST\GraphRequest.ps1'
+        '.\src\REST\GraphResponse.ps1'
+        '.\src\REST\RESTRequest.ps1'
         '.\src\REST\RESTResponse.ps1'
     )
 
@@ -192,7 +192,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure', 'MicrosoftGraph', 'Microsoft-Graph', 'MS-Graph', 'AAD-Graph', 'REST', 'CRUD', 'GraphAPI', 'poshgraph', 'poshgraph-sdk', 'autograph', 'PSEdition_Core', 'PSEdition_Desktop')
+        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure', 'MicrosoftGraph', 'Microsoft-Graph', 'MS-Graph', 'AAD-Graph', 'REST', 'CRUD', 'GraphAPI', 'poshgraph', 'poshgraph-sdk', 'autograph', 'PSEdition_Core', 'PSEdition_Desktop', 'Windows', 'Linux', 'MacOS')
 
         # A URL to the license for this module.
         LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
