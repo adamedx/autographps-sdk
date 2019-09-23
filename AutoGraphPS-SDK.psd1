@@ -208,18 +208,58 @@ PrivateData = @{
         # Prerelease = '-preview'
 
         # ReleaseNotes of this module
-        ReleaseNotes = @"
-# AutoGraphPS-SDK 0.11.0 Release Notes
+        ReleaseNotes = @'
+# AutoGraphPS-SDK 0.11.1 Release Notes
+
+This release addresses breaking changes caused by major changes in all 3 dependencies: ScriptClass,
+ADAL, and MSAL. Additionally, improvements in app management commands, new app consent features, and
+general command consistency cleanup is included in the release.
 
 ## New dependencies
 
-None.
+* ScriptClass 0.20.1
+* ADAL 5.2
+* MSAL 4.3
+
+## Breaking changes
+
+* The `Connect-Graph`, `New-GraphConnection`, and `Get-GraphToken` commands now have the same parameter names where
+  the parameters represent the same thing.
+* Some command parameter names have been changed for clarity
+* The `GrantedPermissions` parameter has been replaced with two new parameters in several commands that
+  could take both app-only permissions and delegated permissions: `ApplicationPermisisons`
+  and `DelegatedUserPermissions`
+* The `Permissions` parameter in several commands auto-completed to both app-only and delegated
+  permissions, but since only delegated permissions can be specified at runtime for these
+  commands, auto-complete now only completes delegated permissions
+* The `NoninteractiveAppOnlyAuth` parameter of several commands is no longer necessary -- the presence of
+  `Confidential` and `ApplicationPermissions` parameters indicates the state this parameter represented
+* The `ConsentForTenant` flag had an ambiguous meaning and was replaced by `ConsentAllUsers` for
+  application management and consent-related commands
 
 ## New features
 
+* App-only consent: The code defect in the MS Graph REST API blocking app-only consent was addressed,
+  so now `New-GraphApplication`, `Set-GraphApplicationConsent`, `Get-GraphApplicationConsent`,
+  and `Remove-GraphApplicationConsent` have been updated to support it
+* In particular `New-GraphApplication` automatically consents confidential app-only apps because the
+  Graph API for doing so is now fixed. Therefore the command o longer displays a warning when creating
+  instructing the user to manually consent the app.
+* `Connect-Graph` now returns `GraphConnectionInfo` object
+* `Connect-Graph`, `New-GraphConnection`, and `Get-GraphToken` now support the new `GraphResourceUri`
+  parameter which allows the caller to use a resource URI that is not the same as the actual
+  graph endpoint used for REST. This is useful for test scenarios, such as those where a proxy
+  is used to get to Graph -- the resource URI for token acquisition can be set to `https://graph.microsoft.com`
+  using the `GraphResourceUri` parameter, and the endpoint can be the proxy in front of Graph.
+
 ## Fixed defects
 
-"@
+* Used `ErrorAction Ignore` instead of `SilentlyContinue` in numerous places throughout the code
+  to avoid error stream pollution
+* General error stream pollution cleanup
+
+
+'@
 
     } # End of PSData hashtable
 
