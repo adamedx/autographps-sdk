@@ -15,9 +15,9 @@
 . (import-script New-GraphConnection)
 
 function Get-GraphToken {
-    [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='msgraph')]
+    [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='public')]
     param(
-        [parameter(parametersetname='msgraph', position=0)]
+        [parameter(parametersetname='public', position=0)]
         [parameter(parametersetname='cloud', position=0)]
         [parameter(parametersetname='customendpoint', position=0)]
         [parameter(parametersetname='cert', position=0)]
@@ -26,11 +26,43 @@ function Get-GraphToken {
         [parameter(parametersetname='secret', position=0)]
         [String[]] $Permissions = $null,
 
-        [parameter(parametersetname='aadgraph', mandatory=$true)]
+        [parameter(parametersetname='cloud')]
+        [parameter(parametersetname='public')]
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='secret', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
-        [switch] $AADGraph,
+        [parameter(parametersetname='autocert', mandatory=$true)]
+        [string] $AppId = $null,
 
         [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='autocert', mandatory=$true)]
+        [Switch] $NoninteractiveAppOnlyAuth,
+
+        [string] $TenantId,
+
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
+        [string] $CertificatePath,
+
+        [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate = $null,
+
+        [switch] $Confidential,
+
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
+        [Switch] $Secret,
+
+        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
+        [SecureString] $Password,
+
+        [parameter(parametersetname='public')]
         [parameter(parametersetname='cloud', mandatory=$true)]
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
@@ -39,51 +71,21 @@ function Get-GraphToken {
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='cloud')]
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [parameter(parametersetname='customendpoint', mandatory=$true)]
-        [parameter(parametersetname='autocert', mandatory=$true)]
-        $AppId = $null,
-
-        [switch] $Confidential,
-
         [Uri] $AppRedirectUri,
 
-        [parameter(parametersetname='msgraph')]
         [Switch] $NoBrowserSigninUI,
-
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [parameter(parametersetname='autocert', mandatory=$true)]
-        [Switch] $NoninteractiveAppOnlyAuth,
-
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [Switch] $Secret,
-
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [SecureString] $Password,
-
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [string] $CertificatePath = $null,
-
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate = $null,
-
-        [parameter(parametersetname='customendpoint', mandatory=$true)]
-        [parameter(parametersetname='secret')]
-        [parameter(parametersetname='cert')]
-        [parameter(parametersetname='certpath')]
-        [Uri] $GraphEndpointUri = $null,
 
         [parameter(parametersetname='customendpoint', mandatory=$true)]
         [parameter(parametersetname='secret')]
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
         [Uri] $AuthenticationEndpointUri = $null,
+
+        [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [Uri] $GraphResourceUri = $null,
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='secret')]
@@ -92,14 +94,19 @@ function Get-GraphToken {
         [parameter(parametersetname='customendpoint')]
         [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
 
-        [String] $TenantId = $null,
+        [parameter(parametersetname='aadgraph', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
+        [switch] $AADGraph,
 
         [parameter(parametersetname='current')]
         [Switch] $Current,
 
         [parameter(parametersetname='existingconnection', mandatory=$true)]
-        $Connection
+        $Connection,
+
+        [Switch] $AsObject
     )
+    Enable-ScriptClassVerbosePreference
 
     $targetConnection = if ( $connection ) {
         $connection
@@ -107,7 +114,11 @@ function Get-GraphToken {
         ($::.GraphContext |=> GetCurrent).connection
     } else {
         $connectionArguments = @{}
-        $psboundparameters.keys | foreach {
+
+        if ( $GraphEndpointUri ) {
+            $connectionArguments['GraphEndpointUri'] = $GraphResourceUri
+        }
+        $psboundparameters.keys | where { $psboundparameters[$_] -and @('Current', 'Connection', 'AsObject') -notcontains $_ } | foreach {
             $connectionArguments[$_] = $psboundparameters[$_]
         }
 
@@ -116,7 +127,12 @@ function Get-GraphToken {
 
     $targetConnection |=> Connect
 
-    $targetConnection.Identity.Token.AccessToken
+    $tokenObject = $targetConnection.Identity.Token
+    if ( $AsObject.IsPresent ) {
+        $tokenObject
+    } else {
+        $tokenObject.AccessToken
+    }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphToken Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphToken Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))

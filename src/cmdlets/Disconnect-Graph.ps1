@@ -14,17 +14,6 @@
 
 . (import-script ../client/GraphContext)
 
-function Disconnect-Graph {
-    [cmdletbinding()]
-    param(
-        [PSTypeName('GraphConnection')] $Connection
-    )
-    if ( $Connection ) {
-        $Connection |=> Disconnect
-    } else {
-        $::.GraphContext |=> DisconnectCurrentConnection
-    }
-
 <#
 .SYNOPSIS
 Removes cached access token credential information from the Connection object of the current Graph so that a new token must be acquired to access the Graph through the Connection
@@ -50,5 +39,16 @@ Connect-Graph
 New-GraphConnection
 Get-GraphConnectionInfo
 #>
-}
+function Disconnect-Graph {
+    [cmdletbinding()]
+    param(
+        [PSTypeName('GraphConnection')] $Connection
+    )
+    Enable-ScriptClassVerbosePreference
 
+    if ( $Connection ) {
+        $Connection |=> Disconnect
+    } else {
+        $::.GraphContext |=> DisconnectCurrentConnection
+    }
+}

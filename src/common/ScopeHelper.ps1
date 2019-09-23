@@ -15,7 +15,9 @@
 . (import-script DefaultScopeData)
 . (import-script ../REST/GraphRequest)
 
-ScriptClass ScopeHelper {
+ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
+    param($scopeData)
+
     static {
         const GraphApplicationId 00000003-0000-0000-c000-000000000000
         const DefaultScopeQualifier ([Uri] 'https://graph.microsoft.com')
@@ -27,6 +29,7 @@ ScriptClass ScopeHelper {
         $sortedGraphPermissions = $null
         $sortedGraphDelegatedPermissions = $null
         $sortedGraphAppOnlyPermissions = $null
+        $defaultScopeData = $scopeData
 
         function __AddConnectionScopeData($graphSP, $permissionsByIds, $sortedPermissionsList, $sortedScopeList, $sortedRoleList) {
             if ( $this.graphSP -and $this.retrievedScopesFromGraphService ) {
@@ -194,17 +197,19 @@ ScriptClass ScopeHelper {
             $permission
         }
 
-        function GraphPermissionIdToName($permissionId, $type, $connection) {
+        function GraphPermissionIdToName($permissionId, $type, $connection, [bool] $ignoreUnknownIds) {
             __InitializeGraphScopes $connection
 
             $permission = $this.permissionsByIds[$permissionId]
 
-            if ( ! $permission ) {
-                throw "Specified permission '$permissionId' could not be mapped to a permission name"
-            }
+            if ( ! $ignoreUnknownIds ) {
+                if ( ! $permission ) {
+                    throw "Specified permission '$permissionId' could not be mapped to a permission name"
+                }
 
-            if ( $type -and ! (__IsPermissionType $permission.id $type) ) {
-                throw "Specified permission '$permissionId' was not of specified type '$type'"
+                if ( $type -and ! (__IsPermissionType $permission.id $type) ) {
+                    throw "Specified permission '$permissionId' was not of specified type '$type'"
+                }
             }
 
             $permission.value
@@ -265,7 +270,7 @@ ScriptClass ScopeHelper {
             }
 
             if ( ! $graphSP ) {
-                $graphSP = $__DefaultScopeData
+                $graphSP = $this.defaultScopeData
             }
 
             if ( $graphSP ) {
@@ -285,10 +290,10 @@ ScriptClass ScopeHelper {
                 }
 
                 $graphSP.appRoles | foreach {
-                    try {
+                    if ( ! $sortedPermissionsList.ContainsKey($_.value) ) {
                         $sortedPermissionsList.Add($_.value, $_.id)
-                    } catch {
                     }
+
                     $sortedRoleList.Add($_.value, $_.id)
                     $permissionsByIds[$_.id] = $_
                 }

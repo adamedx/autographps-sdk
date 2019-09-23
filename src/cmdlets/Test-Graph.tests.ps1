@@ -12,29 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
-. "$here\$sut"
-
 Describe "The Test-Graph cmdlet" {
-    $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\testassets\graphping200.json"
-
-    Mock Invoke-WebRequest {
-        $result = $graphPing200Response | convertfrom-json
-        $result.headers = @{}
-        $result
-    }
 
     Context "when receiving a successful response from Graph" {
+        $graphPing200Response = get-content -encoding utf8 -path "$psscriptroot\..\TestAssets\GraphPing200.json"
+
+        Add-MockInScriptClassScope RESTRequest Invoke-WebRequest -MockContext $graphPing200Response {
+            $result = $MockContext | convertfrom-json
+            $result.headers = @{}
+            $result
+        }
+
         It "should succeed when given no parameters" {
             { Test-Graph | out-null } | Should Not Throw
         }
 
         It "should succeed when given a cloud parameter" {
-            { Test-Graph -cloud ([GraphCloud]::Public) | out-null } | Should Not Throw
-            { Test-Graph -cloud ([GraphCloud]::ChinaCloud) | out-null } | Should Not Throw
-            { Test-Graph -cloud ([GraphCloud]::GermanyCloud) | out-null } | Should Not Throw
-            { Test-Graph -cloud ([GraphCloud]::USGovernmentCloud) | out-null } | Should Not Throw
+            { Test-Graph -cloud Public | out-null } | Should Not Throw
+            { Test-Graph -cloud ChinaCloud | out-null } | Should Not Throw
+            { Test-Graph -cloud GermanyCloud | out-null } | Should Not Throw
+            { Test-Graph -cloud USGovernmentCloud | out-null } | Should Not Throw
         }
 
         It "should succeed when given a custom graph URI parameter" {

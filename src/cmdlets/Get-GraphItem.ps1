@@ -16,92 +16,6 @@
 . (import-script common/ItemResultHelper)
 . (import-script common/PermissionParameterCompleter)
 
-function Get-GraphItem {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
-    param(
-        [parameter(position=0,mandatory=$true)]
-        [Uri[]] $ItemRelativeUri,
-
-        [parameter(position=1)]
-        [String] $ODataFilter = $null,
-
-        [String[]] $Select = $null,
-
-        [String] $Search = $null,
-
-        [String[]] $Expand = $null,
-
-        [Alias('Sort')]
-        $OrderBy = $null,
-
-        [Switch] $Descending,
-
-        [Switch] $Value,
-
-        $OutputFilePrefix,
-
-        [String] $Query = $null,
-
-        [HashTable] $Headers = $null,
-
-        [String] $Version = $null,
-
-        [parameter(parametersetname='ExistingConnection', mandatory=$true)]
-        [PSCustomObject] $Connection = $null,
-
-        [parameter(parametersetname='MSGraphNewConnection')]
-        [GraphCloud] $Cloud = [GraphCloud]::Public,
-
-        [parameter(parametersetname='MSGraphNewConnection')]
-        [String[]] $Permissions = $null,
-
-        [switch] $AbsoluteUri,
-
-        [switch] $RawContent,
-
-        [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
-        [switch] $AADGraph,
-
-        [string] $ResultVariable = $null
-    )
-
-    $requestArguments = @{
-        RelativeUri=$ItemRelativeUri
-        Query = $Query
-        ODataFilter = $ODataFilter
-        Search = $Search
-        Select = $Select
-        Expand = $Expand
-        OrderBy = $OrderBy
-        Descending = $Descending
-        OutputFilePrefix = $OutputFilePrefix
-        Value = $Value
-        Version=$Version
-        RawContent=$RawContent
-        AbsoluteUri=$AbsoluteUri
-        Headers=$Headers
-        First=$pscmdlet.pagingparameters.first
-        Skip=$pscmdlet.pagingparameters.skip
-        IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
-    }
-
-    if ( $AADGraph.ispresent ) {
-        $requestArguments['AADGraph'] = $AADGraph
-    } elseif ($Permissions -ne $null) {
-        $requestArguments['Permissions'] = $Permissions
-    }
-
-    if ( $Connection -ne $null ) {
-        $requestArguments['Connection'] = $Connection
-    }
-
-    $localResult = $null
-    $targetResultVariable = __GetResultVariable $ResultVariable
-
-    Invoke-GraphRequest @requestArguments | tee-object -variable localResult
-
-    $targetResultVariable.value = $localResult
-
 <#
 .SYNOPSIS
 Issues a REST HTTP request with the GET method for a URI on a Graph endpoint
@@ -228,6 +142,99 @@ New-GraphConnection
 ConvertTo-JSON
 ConvertFrom-JSON
 #>
+function Get-GraphItem {
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
+    param(
+        [parameter(position=0,mandatory=$true)]
+        [Uri[]] $ItemRelativeUri,
+
+        [parameter(position=1)]
+        [String] $ODataFilter = $null,
+
+        [String[]] $Select = $null,
+
+        [String] $Search = $null,
+
+        [String[]] $Expand = $null,
+
+        [Alias('Sort')]
+        $OrderBy = $null,
+
+        [Switch] $Descending,
+
+        [Switch] $Value,
+
+        $OutputFilePrefix,
+
+        [String] $Query = $null,
+
+        [HashTable] $Headers = $null,
+
+        [String] $Version = $null,
+
+        [parameter(parametersetname='ExistingConnection', mandatory=$true)]
+        [PSCustomObject] $Connection = $null,
+
+        [parameter(parametersetname='MSGraphNewConnection')]
+        [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
+        [string] $Cloud,
+
+        [parameter(parametersetname='MSGraphNewConnection')]
+        [String[]] $Permissions = $null,
+
+        [switch] $AbsoluteUri,
+
+        [switch] $RawContent,
+
+        [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
+        [switch] $AADGraph,
+
+        [string] $ResultVariable = $null
+    )
+
+    Enable-ScriptClassVerbosePreference
+
+    $requestArguments = @{
+        RelativeUri=$ItemRelativeUri
+        Query = $Query
+        ODataFilter = $ODataFilter
+        Search = $Search
+        Select = $Select
+        Expand = $Expand
+        OrderBy = $OrderBy
+        Descending = $Descending
+        OutputFilePrefix = $OutputFilePrefix
+        Value = $Value
+        Version=$Version
+        RawContent=$RawContent
+        AbsoluteUri=$AbsoluteUri
+        Headers=$Headers
+        First=$pscmdlet.pagingparameters.first
+        Skip=$pscmdlet.pagingparameters.skip
+        IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
+    }
+
+    if ( $Cloud ) {
+        $requestArguments['Cloud'] = $Cloud
+    }
+
+    if ( $AADGraph.ispresent ) {
+        $requestArguments['AADGraph'] = $AADGraph
+    } elseif ($Permissions -ne $null) {
+        $requestArguments['Permissions'] = $Permissions
+    }
+
+    if ( $Connection -ne $null ) {
+        $requestArguments['Connection'] = $Connection
+    }
+
+    $localResult = $null
+
+    $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
+
+    Invoke-GraphRequest @requestArguments | tee-object -variable localResult
+
+    $targetResultVariable.value = $localResult
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphItem Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))

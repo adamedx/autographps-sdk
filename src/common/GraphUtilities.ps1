@@ -203,7 +203,7 @@ ScriptClass GraphUtilities {
                 GraphVersion = $version
                 EndpointMatchesContext = $sameEndpoint
                 VersionMatchesContext = $sameVersion
-                IsContextCompatible = $sameEndpoint -and $sameVersion
+                IsContextCompatible = $sameEndpoint -and ($isAbsolute -or $sameVersion)
                 MatchedContext = $matchedContext
                 IsAbsolute = $isAbsolute
             }

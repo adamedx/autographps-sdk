@@ -17,18 +17,26 @@
 . (import-script common/PermissionParameterCompleter)
 
 function Remove-GraphApplicationConsent {
-    [cmdletbinding(positionalbinding=$false)]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='delegated')]
     param(
-        [parameter(position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, mandatory=$true)]
         [Guid[]] $AppId,
 
-        [string[]] $RemovedPermissions,
+        [parameter(position=1,parametersetname='application', mandatory=$true)]
+        [string[]] $ApplicationPermissions,
 
-        [switch] $ConsentForTenant,
+        [parameter(position=1,parametersetname='delegated', mandatory=$true)]
+        [parameter(position=1,parametersetname='delegatedallusers', mandatory=$true)]
+        [string[]] $DelegatedUserPermissions,
 
-        [switch] $AllConsent,
+        [parameter(parametersetname='delegatedallusers', mandatory=$true)]
+        [switch] $AllTenantUsers,
 
-        $ConsentForPrincipal,
+        [parameter(parametersetname='delegated')]
+        $Principal,
+
+        [parameter(parametersetname='allapppermissions', mandatory=$true)]
+        [switch] $AllApplicationPermissions,
 
         $Connection,
 
@@ -38,11 +46,9 @@ function Remove-GraphApplicationConsent {
     begin {}
 
     process {
-        if ( $ConsentForTenant.IsPresent ) {
-            if ( $ConsentForPrincipal ) {
-                throw [ArgumentException]::new("The 'ConsentForTenant' option may not be specified when 'ConsentForTenant' is specified'")
-            }
-        }
+        Enable-ScriptClassVerbosePreference
+
+        $isAppOnly = $AllApplicationPermissions.IsPresent -or $ApplicationPermissions.length -gt 0
 
         $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
@@ -53,11 +59,11 @@ function Remove-GraphApplicationConsent {
         $appFilter = "clientId eq '$appSPId'"
         $filterClauses = @($appFilter)
 
-        if ( ! $AllConsent.IsPresent ) {
+        if ( ! $AllTenantUsers.IsPresent ) {
             $grantFilter = if ( $ConsentForTenant.IsPresent ) {
                 "consentType eq 'AllPrincipals'"
-            } elseif ( $ConsentForPrincipal ) {
-                "consentType eq 'Principal' and principalId eq '$ConsentForPrincipal'"
+            } elseif ( $Principal ) {
+                "consentType eq 'Principal' and principalId eq '$Principal'"
             }
 
             $filterClauses += $grantFilter
@@ -65,22 +71,41 @@ function Remove-GraphApplicationConsent {
 
         $filter = $filterClauses -join ' and '
 
-        $filterArgument = @{ ODataFilter = $filter }
+        if ( ! $isAppOnly ) {
+            $grants = $commandContext |=> InvokeRequest -uri oauth2PermissionGrants -RESTmethod GET -ODataFilter $filter
 
-        $grants = $commandContext |=> InvokeRequest -uri oauth2PermissionGrants -RESTmethod GET -ODataFilter $filter
-
-        if ( $grants -and ( $grants | gm id ) ) {
-            $grants | foreach {
-                if ( ! $RemovedPermissions ) {
-                    $commandContext |=> InvokeRequest -uri "/oauth2PermissionGrants/$($_.id)" -RESTmethod DELETE | out-null
-                } else {
-                    $reducedPermissions = GetReducedPermissionsString $_.scope $RemovedPermissions
-                    if ( $reducedPermissions ) {
-                        $updatedScope = @{scope = $reducedPermissions}
-                        $commandContext |=> InvokeRequest "/oauht2PermissionGrants/$($_.id)" -RESTmethod PATCH -body $updatedScope | out-null
+            if ( $grants -and ( $grants | gm id ) ) {
+                $grants | foreach {
+                    if ( ! $DelegatedUserPermissions ) {
+                        $commandContext |=> InvokeRequest -uri "/oauth2PermissionGrants/$($_.id)" -RESTmethod DELETE | out-null
                     } else {
-                        write-verbose "Requested permissions were not present in existing grant, no change is necessary, skipping update for grant id='$($_.id)'"
+                        $reducedPermissions = $appAPI |=> GetReducedPermissionsString $_.scope $DelegatedUserPermissions
+                        if ( $reducedPermissions ) {
+                            $updatedScope = @{scope = $reducedPermissions}
+                            $commandContext |=> InvokeRequest "/oauth2PermissionGrants/$($_.id)" -RESTmethod PATCH -body $updatedScope | out-null
+                        } else {
+                            write-verbose "Requested permissions were not present in existing grant, no change is necessary, skipping update for grant id='$($_.id)'"
+                        }
                     }
+                }
+            }
+        } else {
+            $targetPermissions = if ( $ApplicationPermissions ) {
+                foreach ( $permission in $ApplicationPermissions ) {
+                    $::.ScopeHelper |=> GraphPermissionNameToId $permission 'Role' $CommandContext.connection $true
+                }
+            }
+
+            $roleAssignments = $commandContext |=> InvokeRequest -uri servicePrincipals/$appSPId/appRoleAssignedTo -RESTMethod GET
+
+            if ( $roleAssignments -and ( $roleAssignments | gm id ) ) {
+                $assignmentsToDelete = $roleAssignments | where {
+                    $AllApplicationPermissions.IsPresent -or
+                    $targetPermissions -contains $_.appRoleId
+                }
+
+                foreach ( $roleAssignment in $assignmentsToDelete ) {
+                    $commandContext |=> InvokeRequest -uri "/servicePrincipals/$appSPId/appRoleAssignments/$($roleAssignment.Id)" -RESTmethod DELETE | out-null
                 }
             }
         }
@@ -89,5 +114,6 @@ function Remove-GraphApplicationConsent {
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphApplicationConsent RemovedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphApplicationConsent ApplicationPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AppOnlyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphApplicationConsent DelegatedUserPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
 

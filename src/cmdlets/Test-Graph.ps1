@@ -22,63 +22,6 @@ $AlternatePropertyMapping = @{
     'Time-UTC'=@('TimeUtc', {param($val) [DateTime]::new(([DateTime] $val).ticks, [DateTimeKind]::Utc)})
 }
 
-function Test-Graph {
-    [cmdletbinding()]
-    param(
-        [parameter(parametersetname='KnownClouds')]
-        [GraphCloud] $Cloud,
-
-        [parameter(parametersetname='Connection', mandatory=$true)]
-        [PSCustomObject] $Connection,
-
-        [parameter(parametersetname='CustomEndpoint', mandatory=$true)]
-        [Uri] $EndpointUri,
-
-        [switch] $RawContent
-    )
-
-    $graphEndpointUri = if ( $Connection -ne $null ) {
-        $Connection.GraphEndpoint.Graph
-    } elseif ( $Cloud -ne $null ) {
-        (new-so GraphEndpoint $Cloud).Graph
-    } elseif ( $endpointUri -ne $null ) {
-        $endpointUri
-    } else {
-        ($::.GraphContext |=> GetConnection).GraphEndpoint.Graph
-    }
-
-    $pingUri = [Uri]::new($graphEndpointUri, 'ping')
-    $request = new-so RESTRequest $pingUri
-    $response = $request |=> Invoke
-
-    if ( ! $RawContent.ispresent ) {
-        # The [ordered] type adapter will ensure that enumeration of items in a hashtable
-        # is sorted by insertion order
-        $result = [ordered] @{}
-
-        $content = $response.content | convertfrom-json
-        $content | add-member -notepropertyname PingUri -notepropertyvalue $pinguri
-
-        # Sort by name to get consistent sort formatting
-        $content | gm -membertype noteproperty | sort-object name | foreach {
-            $value = ($content | select -expandproperty $_.name)
-            $mapping = $alternatePropertyMapping[$_.name]
-
-            $destination = if ($mapping -eq $null) {
-                $_.name
-            } else {
-                $value = invoke-command -scriptblock $mapping[1] -argumentlist $value
-                $mapping[0]
-            }
-
-            $result[$destination] = $value
-        }
-
-        [PSCustomObject] $result
-    } else {
-        $response.content
-    }
-
 <#
 .SYNOPSIS
 Determines without authentication whether a Graph endpoint is accessible over the network.
@@ -146,4 +89,62 @@ Get-GraphConnectionInfo
 New-GraphConnection
 Connect-Graph
 #>
+function Test-Graph {
+    [cmdletbinding()]
+    param(
+        [parameter(parametersetname='KnownClouds')]
+        [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
+        [string] $Cloud = 'Public',
+
+        [parameter(parametersetname='Connection', mandatory=$true)]
+        [PSCustomObject] $Connection,
+
+        [parameter(parametersetname='CustomEndpoint', mandatory=$true)]
+        [Uri] $EndpointUri,
+
+        [switch] $RawContent
+    )
+    Enable-ScriptClassVerbosePreference
+
+    $graphEndpointUri = if ( $Connection -ne $null ) {
+        $Connection.GraphEndpoint.Graph
+    } elseif ( $Cloud -ne $null ) {
+        (new-so GraphEndpoint $Cloud).Graph
+    } elseif ( $endpointUri -ne $null ) {
+        $endpointUri
+    } else {
+        ($::.GraphContext |=> GetConnection).GraphEndpoint.Graph
+    }
+
+    $pingUri = [Uri]::new($graphEndpointUri, 'ping')
+    $request = new-so RESTRequest $pingUri
+    $response = $request |=> Invoke
+
+    if ( ! $RawContent.ispresent ) {
+        # The [ordered] type adapter will ensure that enumeration of items in a hashtable
+        # is sorted by insertion order
+        $result = [ordered] @{}
+
+        $content = $response.content | convertfrom-json
+        $content | add-member -notepropertyname PingUri -notepropertyvalue $pinguri
+
+        # Sort by name to get consistent sort formatting
+        $content | gm -membertype noteproperty | sort-object name | foreach {
+            $value = ($content | select -expandproperty $_.name)
+            $mapping = $alternatePropertyMapping[$_.name]
+
+            $destination = if ($mapping -eq $null) {
+                $_.name
+            } else {
+                $value = invoke-command -scriptblock $mapping[1] -argumentlist $value
+                $mapping[0]
+            }
+
+            $result[$destination] = $value
+        }
+
+        [PSCustomObject] $result
+    } else {
+        $response.content
+    }
 }

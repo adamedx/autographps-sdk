@@ -19,13 +19,54 @@ ScriptClass ConsentHelper {
         $formatter = $null
 
         function __initialize {
-            $this.formatter = new-so DisplayTypeFormatter GraphConsentDisplayType 'ClientId', 'PrincipalId', 'StartTime', 'Scope'
+            $this.formatter = new-so DisplayTypeFormatter GraphConsentDisplayType 'PermissionType', 'StartTime', 'GrantedTo', 'Permission'
         }
 
         function ToDisplayableObject($object) {
-            $object.startTime = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.startTime $true
-            $object.expiryTime = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.expiryTime $true
-            $this.formatter |=> DeserializedGraphObjectToDisplayableObject $object
+            $consentEntries = @()
+            $isOAuth2PermissionGrant = !(!($object | gm -erroraction ignore clientid))
+
+            if ( $isOAuth2PermissionGrant ) {
+                $startTime = $object | gm startTime -erroraction ignore
+                $expiryTime = $object | gm expiryTime -erroraction ignore
+                $startTimeOffset = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $startTime $true
+                $expiryTimeOffset = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $expiryTime $true
+                $grantedTo = if ( $object.consentType -eq 'AllPrincipals' ) { 'AllUsers' } else { $object.PrincipalId }
+                $scopes = $object.scope -split ' '
+
+                foreach ( $scope in $scopes ) {
+                    if ( $scope ) {
+                        $consentEntries += @{
+                            PermissionType = 'DelegatedUser'
+                            StartTime = $startTimeOffset
+                            Permission = $scope
+                            GrantedTo = $grantedTo
+                            GraphResource = $object
+                        }
+                    }
+                }
+            } else {
+                $roleName = $::.ScopeHelper |=> GraphPermissionIdToName $object.appRoleId role $null $true
+                $permissionDisplayName = if ( $roleName ) {
+                    $roleName
+                } else {
+                    $appRoleId
+                }
+
+                $creationTimeOffset = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.creationTimestamp $true
+
+                $consentEntries += @{
+                    PermissionType = 'Application'
+                    StartTime = $creationTimeOffset
+                    Permission = $permissionDisplayName
+                    GrantedTo = $object.PrincipalId
+                    GraphResource = $object
+                }
+            }
+
+            foreach ( $consentEntry in $consentEntries ) {
+                $this.formatter |=> DeserializedGraphObjectToDisplayableObject ([PSCustomObject] $consentEntry)
+            }
         }
     }
 }

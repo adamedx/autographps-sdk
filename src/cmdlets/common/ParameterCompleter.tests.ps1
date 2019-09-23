@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
-. "$here\$sut"
-
 Describe "ParameterCompleter class" {
+
     Context "FindMatchesStartingWith method" {
         $matchatstart = @('first')
         for ( $i = 0; $i -lt 10; $i++ ) { $matchatstart += @("everythingelse$($i)") }
@@ -41,8 +38,8 @@ Describe "ParameterCompleter class" {
         }
 
         function GetExpectedMatches($target, $candidates) {
-            $normalized = $target.tolower()
-            $candidates | where { $_.tolower().startswith($normalized) } | sort-object
+            $normalized = $target.tolowerinvariant()
+            $candidates | where { $_.tolowerinvariant().startswith($normalized) } | sort-object
         }
 
         function CompareResults($target, $candidates, $truncationLength) {
@@ -52,8 +49,11 @@ Describe "ParameterCompleter class" {
                 $target.substring(0, $truncationLength)
             }
 
-            $expected = GetExpectedMatches $adjustedTarget @($candidates)
-            $actual = $::.ParameterCompleter |=> FindMatchesStartingWith $adjustedTarget @($candidates | sort-object)
+            # Need to ensure case insensitive sort on Linux
+            $sortedInsensitiveCandidates = $candidates | foreach { $_.tolowerinvariant() } | sort-object
+
+            $expected = GetExpectedMatches $adjustedTarget @($sortedInsensitiveCandidates)
+            $actual = $::.ParameterCompleter |=> FindMatchesStartingWith $adjustedTarget @($sortedInsensitiveCandidates)
             if ( ! $expected ) {
                 $actual
             } else {
@@ -79,7 +79,10 @@ Describe "ParameterCompleter class" {
                 $currentList = $testlists[$_] | sort-object
                 $currentList | foreach {
                     CompareResults $_ $currentList | Should Be $null
-                    $_ | Should BeIn ($::.ParameterCompleter |=> FindMatchesStartingWith $_ $currentList)
+                    # When checking results, make comparisons insensitive via tolowerinvariant()
+                    # to deal with with case sensitivity on Linux
+                    $matchResults = $::.ParameterCompleter |=> FindMatchesStartingWith $_.tolowerinvariant() ($currentList | foreach { $_.tolowerinvariant() } | sort-object )
+                    $_.tolowerinvariant() | Should BeIn $matchResults
                 }
             }
         }

@@ -37,6 +37,8 @@ function Get-GraphApplicationConsent {
     begin {}
 
     process {
+        Enable-ScriptClassVerbosePreference
+
         $commandContext = new-so CommandContext $null $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
@@ -88,6 +90,20 @@ function Get-GraphApplicationConsent {
                     }
                 } else {
                     $response
+                }
+            }
+
+            $roleResponse = Invoke-GraphRequest /servicePrincipals/$appSPId/appRoleAssignedTo -method GET -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
+
+            if ( $roleResponse ) {
+                if ( ! $RawContent.IsPresent ) {
+                    if ( $roleResponse | gm id -erroraction ignore ) {
+                        $roleResponse | foreach {
+                            $::.ConsentHelper |=> ToDisplayableObject $_
+                        }
+                    }
+                } else {
+                    $roleResponse
                 }
             }
         }

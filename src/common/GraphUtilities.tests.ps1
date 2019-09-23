@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
-. "$here\$sut"
-
 Describe 'GraphUtilities methods' {
     Context 'When Parsing the relative Uri with the ParseGraphRelativeUri static method' {
         $relativeUri = 'teams/74268ac2-b550-4d36-99a9-34988bab4cf5/channels/43:32872541-732c-4a76-81ea-d1881cc9e290@thread.skype'
@@ -26,7 +22,7 @@ Describe 'GraphUtilities methods' {
         $contextTable = @{'v1.0'=@{Context=$context1};'v2.0'=@{Context=$context2}}
 
         $mockGraphManager = New-ScriptObjectMock LogicalGraphManager -propertyvalues @{contexts = $contextTable}
-        Mock-ScriptClassMethod -static LogicalGraphManager Get { $mockGraphManager }
+        Mock-ScriptClassMethod -static LogicalGraphManager Get { $MockContext } -MockContext $mockGraphManager
 
         It 'Should return the default context as the context, and exactly the uri as the relativeUri preceded by "/" if the path does not start with "/"' {
             $testUri = $relativeUri

@@ -38,6 +38,8 @@ function Remove-GraphApplication {
     begin {}
 
     process {
+        Enable-ScriptClassVerbosePreference
+
         $commandContext = new-so CommandContext $connection $version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 

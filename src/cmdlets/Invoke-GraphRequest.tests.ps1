@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
-. "$here\$sut"
-
 Describe 'Invoke-GraphRequest cmdlet' {
     $expectedUserPrincipalName = 'searchman@megarock.org'
     $meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName
@@ -28,11 +24,15 @@ Describe 'Invoke-GraphRequest cmdlet' {
 
         Mock-ScriptClassMethod GraphConnection GetToken {new-so MockToken}
 
-        Mock Invoke-WebRequest {
+        Add-MockInScriptClassScope RESTRequest Invoke-WebRequest -MockContext @{
+            expectedUserPrincipalName = $expectedUserPrincipalName
+            meResponseDataExpected = $meResponseDataExpected
+            meResponseExpected = $meResponseExpected
+        } {
             [PSCustomObject] @{
-                RawContent = $meResponseExpected
-                RawContentLength = $meResponseExpected.length
-                Content = $meResponseExpected
+                RawContent = $MockContext.meResponseExpected
+                RawContentLength = $MockContext.meResponseExpected.length
+                Content = $MockContext.meResponseExpected
                 StatusCode = 200
                 StatusDescription = 'OK'
                 Headers = @{'Content-Type'='application/json'}

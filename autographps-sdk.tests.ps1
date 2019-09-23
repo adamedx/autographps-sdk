@@ -16,7 +16,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Describe "Poshgraph application" {
-    $manifestLocation = Join-Path $here 'autographps-sdk.psd1'
+    $manifestLocation = Join-Path $here 'AutoGraphPS-SDK.psd1'
 
     function Get-ModuleMetadataFromManifest ( $moduleName, $manifestPath ) {
         # Load the module contents and deserialize it by evaluating
@@ -42,9 +42,7 @@ Describe "Poshgraph application" {
                 'Get-GraphConnectionInfo',
                 'Get-GraphError',
                 'Get-GraphItem',
-                'Get-GraphSchema',
                 'Get-GraphToken',
-                'Get-GraphVersion',
                 'Invoke-GraphRequest',
                 'New-GraphApplication',
                 'New-GraphApplicationCertificate',
@@ -60,23 +58,32 @@ Describe "Poshgraph application" {
                 'Test-Graph',
                 'Unregister-GraphApplication')
 
-            $manifest.CmdletsToExport.count | Should BeExactly $expectedFunctions.length
+            $manifest.FunctionsToExport.count | Should BeExactly $expectedFunctions.length
 
             $verifiedExportsCount = 0
 
             $expectedFunctions | foreach {
-                if ( $manifest.CmdletsToExport -contains $_ ) {
+                if ( $manifest.FunctionsToExport -contains $_ ) {
                     $verifiedExportsCount++
                 }
             }
 
             $verifiedExportsCount | Should BeExactly $expectedFunctions.length
         }
+
+        It "Should export the exact same set of variables that are in the set of expected variables" {
+            $expectedVariables = @(
+                'GraphVerboseOutputPreference'
+                'LastGraphItems'
+            )
+
+            Compare-Object ($manifest.VariablesToExport | sort) ($expectedVariables | sort) | Should Be $null
+        }
     }
 
     Context "When invoking the autographps-sdk application" {
         It "Should be able to create a connection object" {
-            $connection = New-GraphConnection
+            { $connection = New-GraphConnection } | Should Not Throw
         }
     }
 }

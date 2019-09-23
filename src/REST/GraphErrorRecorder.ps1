@@ -21,10 +21,11 @@ ScriptClass GraphErrorRecorder {
         $recordingTimeLocal = $null
 
         function StartRecording() {
+            $errorList = $global:error
             $this.errorObjectCheckpoint = if ( $error.count -gt 0 ) {
-                $error[0].gethashcode()
+                $errorList[0].gethashcode()
             } else {
-                $error.gethashcode()
+                $errorList.gethashcode()
             }
 
             write-verbose "Setting error checkpoint to object hash $($this.errorObjectCheckpoint)"
@@ -40,18 +41,20 @@ ScriptClass GraphErrorRecorder {
                 ErrorRecords = @()
             }
 
+            $errorList = $global:error
+
             if ( $this.errorObjectCheckpoint -eq 0 ) {
                 return @()
             }
 
             write-verbose "Searching for errors until checkpoint $($this.errorObjectCheckpoint)"
 
-            $errorCount = $error.count
+            $errorCount = $errorList.count
             $currentError = 0
             $errorsProcessed = 0
 
             while ( $currentError -lt $errorCount ) {
-                $errorValue = $error[$currentError]
+                $errorValue = $errorList[$currentError]
                 $errorsProcessed++
                 if ( $errorValue.Gethashcode() -eq $this.errorObjectCheckpoint ) {
                     write-verbose  "Found error checkpoint -- terminating error search at error index $currentError"
@@ -70,12 +73,8 @@ ScriptClass GraphErrorRecorder {
                 $currentError++
             }
 
-
-
             write-verbose "Processed $errorsProcessed errors out of $errorCount total errors."
             $result
         }
     }
-
-
 }

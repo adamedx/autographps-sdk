@@ -30,6 +30,7 @@ function New-GraphLocalCertificate {
 
         $CertStoreLocation = 'cert:/currentuser/my'
     )
+    Enable-ScriptClassVerbosePreference
 
     $certificate = new-so GraphApplicationCertificate $AppId $null $ApplicationName $CertValidityTimeSpan $CertValidityStart $CertStoreLocation
 

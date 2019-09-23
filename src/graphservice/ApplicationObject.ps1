@@ -22,7 +22,7 @@ ScriptClass ApplicationObject {
     $AppId = $null
     $AppAPI = $null
 
-    function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isAppOnly, $redirectUris, $isDelegatedConfidential) {
+    function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isConfidential, $redirectUris) {
         $this.AppAPI = $appAPI
 
         $appParameters = @{
@@ -37,7 +37,7 @@ ScriptClass ApplicationObject {
 
         $newApp = __NewApp @appParameters
 
-        if ( ! $isAppOnly -and ! $isDelegatedConfidential ) {
+        if ( ! $isConfidential ) {
             __SetPublicApp $newApp $redirectUris
         } else {
             __SetConfidentialApp $newApp $redirectUris
@@ -60,18 +60,12 @@ ScriptClass ApplicationObject {
         $newApp
     }
 
-    function Register($skipRequiredResourcePermissions, $tenantConsent, $userConsentRequired, $userIdToConsent, $permissions) {
+    function Register($skipRequiredResourcePermissions, $ConsentRequired, $userIdToConsent, $consentAllUsers, $scopes, $roles) {
         $app = $this.AppAPI |=> RegisterApplication $this.AppId
 
-        $scopes = $permissions
-        $roles = $null
-
-        if ( ! $userConsentRequired ) {
-            $roles = $permissions
-            $scopes = $null
+        if ( $ConsentRequired ) {
+            $this.AppAPI |=> SetConsent $app.appId $scopes $roles (! $skipRequiredResourcePermissions) $userIdToConsent $consentAllUsers $app
         }
-
-        $this.AppAPI |=> SetConsent $app.appId $scopes $roles (! $skipRequiredResourcePermissions) $tenantConsent $userConsentRequired $userIdToConsent $app
 
         $app
     }

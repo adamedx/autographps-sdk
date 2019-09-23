@@ -12,10 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set-strictmode -version 5
 
-. (import-script cmdlets)
-. (import-script aliases)
+# Some .psd1 modules fail to load on Linux only when loaded for tests
+# executed outside of the import-devmodule environment
+# during CI runs (no repro on dev workstations :)). This
+# mode of execution is itself a workaround for a Linux-only
+# hang when the pester tests are run with import-devmodule.
+# So until that's fixed, the workaround is to import the psm1
+# directly. Once import-devmodule is fixed, this workaround
+# shoudl be removed.
 
-. (import-script common/ProgressWriter)
-
+import-module scriptclass
+import-module (Get-ModulePSMPath AutoGraphPS-SDK)

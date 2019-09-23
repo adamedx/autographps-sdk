@@ -38,6 +38,8 @@ function Get-GraphApplication {
         [parameter(parametersetname='ExistingConnectionName')]
         [PSCustomObject] $Connection = $null
     )
+    Enable-ScriptClassVerbosePreference
+
     $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $OdataFilter $Name $RawContent $Version $null $null $connection
 
     $displayableResult = if ( $result ) {

@@ -25,7 +25,7 @@ function Set-GraphApplicationConsent {
         [Guid[]] $AppId,
 
         [parameter(parametersetname='explicitscopes')]
-        [string[]] $DelegatedPermissions,
+        [string[]] $DelegatedUserPermissions,
 
         [parameter(parametersetname='explicitscopes')]
         [string[]] $AppOnlyPermissions,
@@ -33,7 +33,7 @@ function Set-GraphApplicationConsent {
         [parameter(parametersetname='allconfiguredpermissions', mandatory=$true)]
         [switch] $AllPermissions,
 
-        [switch] $ConsentForTenant,
+        [switch] $ConsentAllUsers,
 
         $UserIdToConsent,
 
@@ -45,18 +45,20 @@ function Set-GraphApplicationConsent {
     begin {}
 
     process {
+        Enable-ScriptClassVerbosePreference
+
         $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
         $app = $appAPI |=> GetApplicationByAppId $AppId
 
-        $appAPI |=> SetConsent $app.appid $DelegatedPermissions $AppOnlyPermissions $AllPermissions.IsPresent $ConsentForTenant.IsPresent ($UserIdToConsent -ne $null) $UserIdToConsent $app
+        $appAPI |=> SetConsent $app.appid $DelegatedUserPermissions $AppOnlyPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentAllUsers.IsPresent $app
     }
 
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent DelegatedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent DelegatedUserPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent AppOnlyPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AppOnlyPermission))
 

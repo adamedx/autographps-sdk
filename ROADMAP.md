@@ -2,19 +2,31 @@
 
 ## To-do items -- prioritized
 
-* Update build tools to not change path in order to use nuget
-* Add support for test endpoints
-* Add $ref?
+* Add more command help
+* Add client-side correlationid
 * Make token caches per app-per cloud.
+* Add useragent to connection commands
+* Add view to get-grapherror
+* Add throttling
+* Update build tools to not change path in order to use nuget
+* Add equivalent of -Token option to new-graphconnection and connect-graph -- this sets token from external source
+* Make verbose output more readable
+* Document strange splatting behavior with noteproperty
+* Rename New-GraphApplicationCertificate to Set-GraphApplicationCertificate?
+
+
+* Add $ref?
+
 * Create interface for certificate store, make it not implemented outside of Windows
-* Add -value parameter
+
 * Output data based on content-type
 * Add request linked data to obtain odata references such as file download uri's
 * Allow for requests to be dumped into a directory
+* Add help support via write-information?
 
 * ------------------------------------
+* Use argumentcompleter advanced parameter rather than registerparametercompleter
 * Change get-graphconnection to take a connection or a graph
-* Add -Token option to new-graphconnection and connect-graph
 * Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
 * Convert some verbose statements to debug
 * Set-GraphApplication
@@ -30,7 +42,6 @@
 * Add return types to cmdlets
 * Change autographps to use dynamic scope implementation
 * Add logging implementation and cmdlets
-* Add show-scope command
 * Emit header object in get-graphchilditem ?
 * Rename DisplayFormatter to OutputFormatter
 * Change relativeuri parameter to 'uri' to match invoke-webrequest and invoke-restmethod
@@ -70,8 +81,6 @@
 * fix -expand issues
 * fix parent issues in public segment
 
-* Add auto-complete for scopes
-
 * Release
 
 * Samples
@@ -95,8 +104,6 @@
 * Unauthenticated functional tests
 * Parse odata context
 * Background runspace jobs
-
-* Add CI
 
 * Release
 
@@ -150,7 +157,6 @@
 * set-graphconfig
 * invoke-graphaction
 * generate nuspec
-* Find a better name!
 * README
 * Extended Samples
 * More tests
@@ -341,6 +347,15 @@
 * Fix bug in scopehelper where we return all scopes when asked only for delegated
 * Get module to install and function on Linux
 * Fix output for remote ps sessions in device code login
+* Add -value parameter
+* clean error stream
+* Update to latest msal / adal
+* make connect-graph and new-graphconnection have same arguments or make an alias
+* Set-GraphApplicationConsent, New-GraphApplication parameter renaming to clarify permissions, public vs. confidential: -AppPermissions, -DelegatedUserPermissions, -NoConsent -ConsentUser -ConfidentialClient -PublicClient
+* Remove-GraphApplicationConsent should remove approleassignments
+* Add support for test endpoints by allowing alternate resource for endpoint uri
+* Make comments start at beginning of command
+* Make Get-GraphToken take all params from new-graphconnection and get-graphconnection
 
 ### Postponed
 
@@ -352,6 +367,9 @@
 * Add hint of additional records
 * Add continue feature?
 * Test Release
+* Remove enums
+* Remove Get-GraphSchema
+* Remove Get-GraphVersion
 
 ### Abandoned
 

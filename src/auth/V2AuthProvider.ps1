@@ -17,22 +17,42 @@
 
 ScriptClass V2AuthProvider {
     $base = $null
+    $publicAppContexts = $null
+    $confidentialAppContexts = $null
+
     function __initialize( $base ) {
         $this.base = $base
+        $this.publicAppContexts = @{}
+        $this.confidentialAppContexts = @{}
     }
 
     function GetAuthContext($app, $authUri) {
-        if ( $app |=> IsConfidential ) {
-            $credential = New-Object Microsoft.Identity.Client.ClientCredential -ArgumentList ($app.secret |=> GetSecretData)
-            New-Object "Microsoft.Identity.Client.ConfidentialClientApplication" -ArgumentList @(
-                $App.AppId,
-                $authUri,
-                $app.RedirectUri,
-                $credential,
-                ($this.scriptclass |=> GetTokenCacheForApp $app.AppId ([GraphAppAuthType]::AppOnly)),
-                ($this.scriptclass |=> GetTokenCacheForApp $app.AppId ([GraphAppAuthType]::AppOnly)))
+        $isConfidential = $app |=> IsConfidential
+        write-verbose "Searching for app context for appid '$($app.AppId)' and uri '$authUri' -- confidential:$isConfidential"
+        $existingApp = $this |=> __GetAppContext $isConfidential $app.AppId $authUri
+        if ( $existingApp ) {
+            write-verbose "Found existing app context"
+            $existingApp
+        } elseif ( $isConfidential ) {
+            write-verbose "App context not found -- will create new context"
+            $confidentialAppBuilder = [Microsoft.Identity.Client.ConfidentialClientApplicationBuilder]::Create($app.appid).WithAuthority($authUri).WithRedirectUri($app.RedirectUri)
+            $secretCredential = ($app.secret |=> GetSecretData)
+
+            $confidentialApp = if ( $app.secret.type -eq [SecretType]::Certificate ) {
+                $confidentialAppBuilder.WithCertificate($secretCredential).Build()
+            } else {
+                $confidentialAppBuilder.WithClientSecret($secretCredential).Build()
+            }
+
+            $this |=> __AddAppContext $true $app.AppId $authUri $confidentialApp
+
+            $confidentialApp
         } else {
-            New-Object "Microsoft.Identity.Client.PublicClientApplication" -ArgumentList $App.AppId, $authUri, ($this.scriptclass |=> GetTokenCacheForApp $app.AppId ([GraphAppAuthType]::Delegated))
+            $publicApp = [Microsoft.Identity.Client.PublicClientApplicationBuilder]::Create($App.AppId).WithAuthority($authUri, $true).Build()
+
+            $this |=> __AddAppContext $false $app.AppId $authUri $publicApp
+
+            $publicApp
         }
     }
 
@@ -56,13 +76,7 @@ ScriptClass V2AuthProvider {
 
     function AcquireFirstUserToken($authContext, $scopes) {
         write-verbose 'V2 auth provider acquiring initial user token'
-        if ( $scopes -eq $null -or $scopes.length -eq 0 ) {
-            throw [ArgumentException]::new('No scopes specified for v2 auth protocol, at least one scope is required')
-        }
-
-        $scopeList = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri
-
-        $authContext.protocolContext.AcquireTokenAsync([System.Collections.Generic.List[string]] $scopeList)
+        __AcquireTokenInteractive $authContext $scopes
     }
 
     function AcquireFirstUserTokenFromDeviceCode($authContext, $scopes) {
@@ -74,12 +88,11 @@ ScriptClass V2AuthProvider {
         write-verbose 'V2 auth provider acquiring initial app token'
         $defaultScopeList = $this |=> __GetDefaultScopeList $authContext
 
-        $authContext.protocolContext.AcquireTokenForClientAsync([System.Collections.Generic.List[string]] $defaultScopeList)
+        $authContext.protocolContext.AcquireTokenForClient([System.Collections.Generic.List[string]] $defaultScopeList).ExecuteAsync()
     }
 
     function AcquireFirstUserTokenConfidential($authContext, $scopes) {
         write-verbose 'V2 auth provider acquiring user token via confidential client'
-
         $scopeList = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri
 
         # Confidential user flow uses an authcode flow with a confidential rather than public client.
@@ -90,7 +103,7 @@ ScriptClass V2AuthProvider {
         # client that must present its credentials.
 
         # 1. Get the auth code URI
-        $uriResult = $authContext.protocolContext.GetAuthorizationRequestUrlAsync($scopeList, $null, $null)
+        $uriResult = $authContext.protocolContext.GetAuthorizationRequestUrl([string[]]$scopeList).ExecuteAsync()
         $authCodeUxUri = $uriResult.Result
 
         # 2. Use the URI to present a UX to the user via the URI to obtain credentials that
@@ -98,7 +111,7 @@ ScriptClass V2AuthProvider {
         $authCodeInfo = GetAuthCodeFromURIUserInteraction $authCodeUxUri
 
         # 3. Now use MSAL's confidential client to obtain the token from the auth code
-        $authContext.protocolContext.AcquireTokenByAuthorizationCodeAsync($authCodeInfo.ResponseParameters.Code, [System.Collections.Generic.List[string]] $scopeList)
+        $authContext.protocolContext.AcquireTokenByAuthorizationCode([System.Collections.Generic.List[string]] $scopeList, $authCodeInfo.ResponseParameters.Code).ExecuteAsync()
     }
 
     function AcquireRefreshedToken($authContext, $token) {
@@ -106,11 +119,25 @@ ScriptClass V2AuthProvider {
 
         if ( $authContext.app.authtype -eq ([GraphAppAuthType]::AppOnly) ) {
             $defaultScopeList = $this |=> __GetDefaultScopeList $authContext @()
-            $authContext.protocolContext.AcquireTokenForClientAsync([System.Collections.Generic.List[string]] $defaultScopeList)
+            $authContext.protocolContext.AcquireTokenForClient([System.Collections.Generic.List[string]] $defaultScopeList).ExecuteAsync()
         } else {
-            $requestedScopesFromToken = $::.ScopeHelper |=> QualifyScopes $token.scopes $authContext.GraphEndpointUri |
+            $cachedAccount = $authContext.protocolContext.GetAccountsAsync().Result | select -first 1
+
+            $scopes = if ( $token ) {
+                $token.scopes
+            } else {
+                @('.default')
+            }
+            $requestedScopesFromToken = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri |
               where { $_ -notin @('openid', 'profile', 'offline_access') }
-            $authContext.protocolContext.AcquireTokenSilentAsync([System.Collections.Generic.List[string]] $requestedScopesFromToken, $token.account)
+
+            $cachedAccount = $authContext.protocolContext.GetAccountsAsync().Result | select -first 1
+
+            try {
+                $authContext.protocolContext.AcquireTokenSilent([System.Collections.Generic.List[string]] $requestedScopesFromToken, $cachedAccount).ExecuteAsync()
+            } catch [MsalUiRequiredException] {
+                __AcquireTokenInteractive $authContext @('.default')
+            }
         }
     }
 
@@ -121,6 +148,64 @@ ScriptClass V2AuthProvider {
         write-verbose "Clearing token for user '$userUpn'"
         $asyncRemoveResult = $authContext.protocolContext.RemoveAsync($user)
         $asyncRemoveResult.Wait()
+    }
+
+    function __AcquireTokenInteractive($authContext, $scopes) {
+        write-verbose 'V2 auth provider acquiring interactive user token'
+        if ( $scopes -eq $null -or $scopes.length -eq 0 ) {
+            throw [ArgumentException]::new('No scopes specified for v2 auth protocol, at least one scope is required')
+        }
+
+        $scopeList = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri
+        $authContext.protocolContext.AcquireTokenInteractive([System.Collections.Generic.List[string]] $scopeList).ExecuteAsync()
+    }
+
+    function __AddAppContext([bool] $isConfidential, [Guid] $appId, [Uri] $authUri, $appContext) {
+        $authorities = if ( $isConfidential ) {
+            $this.confidentialAppContexts
+        } else {
+            $this.publicAppContexts
+        }
+
+        if ( ! $authorities[$authUri] ) {
+            $authorities[$authUri] = @{}
+        }
+
+        $authorities[$authUri].Add($appId, $appContext)
+    }
+
+    function __GetAppContext([bool] $isConfidential, [Guid] $appId, [Uri] $authUri) {
+        $authorities = if ( $isConfidential ) {
+            $this.confidentialAppContexts
+        } else {
+            $this.publicAppContexts
+        }
+
+        $authority = $authorities[$authUri]
+
+        if ( $authority ) {
+            $authority[$appId]
+        }
+    }
+
+    function __RemoveAppContext([bool] $isConfidential, [Guid] $appId, [Uri] $authUri) {
+        $authorities = if ( $isConfidential ) {
+            $this.confidentialAppContexts
+        } else {
+            $this.publicAppContexts
+        }
+
+        $authority = $authorities[$authUri]
+
+        if ( $authority ) {
+            if ( $authority[$appId] ) {
+                $authority.Remove($appId)
+
+                if ( $authority[$appId].count -eq 0 ) {
+                    $authorities[$authUri].Remove
+                }
+            }
+        }
     }
 
     function __GetDefaultScopeList($authContext) {
@@ -181,31 +266,17 @@ ScriptClass V2AuthProvider {
 
     static {
         $__AuthLibraryLoaded = $false
-        $__UserTokenCache = @{}
-        $__AppTokenCache = @{}
+        $scriptRoot = $null
+
+        function __initialize($scriptRoot) {
+            $this.scriptRoot = $scriptRoot
+        }
 
         function InitializeProvider {
             if ( ! $this.__AuthLibraryLoaded ) {
-                Import-Assembly Microsoft.Identity.Client ../../lib | out-null
+                $libPath = join-path $this.scriptRoot ../../lib
+                Import-Assembly Microsoft.Identity.Client -AssemblyRoot $libPath | out-null
                 $this.__AuthLibraryLoaded = $true
-            }
-        }
-
-        function GetTokenCacheForApp($appId, [GraphAppAuthType] $authType) {
-            $cacheTable = if ( $authType -eq ([GraphAppAuthType]::Delegated) ) {
-                $this.__UserTokenCache
-            } else {
-                $this.__AppTokenCache
-            }
-
-            $existingCache = $cacheTable[$appId]
-
-            if ( $existingCache ) {
-                $existingCache
-            } else {
-                $newCache = New-Object Microsoft.Identity.Client.TokenCache
-                $cacheTable.Add($appId, $newCache)
-                $newCache
             }
         }
 
@@ -214,3 +285,5 @@ ScriptClass V2AuthProvider {
         }
     }
 }
+
+$::.V2AuthProvider |=> __initialize $psscriptroot

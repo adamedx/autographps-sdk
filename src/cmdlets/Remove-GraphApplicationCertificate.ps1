@@ -55,6 +55,8 @@ function Remove-GraphApplicationCertificate {
     }
 
     process {
+        Enable-ScriptClassVerbosePreference
+
         $keyClientFilter = if ( $AllCertificates.IsPresent ) {
             { $true }
         } elseif ( $KeyId ) {

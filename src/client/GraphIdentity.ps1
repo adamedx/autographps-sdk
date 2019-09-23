@@ -39,11 +39,11 @@ ScriptClass GraphIdentity {
         $this.GraphEndpoint = $graphEndpoint
         $this.TenantName = $tenantName
 
-        __UpdateTenantDisplayInfo
+        $this |=> __UpdateTenantDisplayInfo
     }
 
     function GetUserInformation {
-        if ( $this.App.AuthType -eq ([GraphAppAuthType]::Delegated) ) {
+        if ( $this.App.AuthType -eq 'Delegated' ) {
                  $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
                  $providerInstance |=> GetUserInformation $this.token
         } else {
@@ -61,7 +61,7 @@ ScriptClass GraphIdentity {
             write-verbose ("Found existing token with {0} minutes left before expiration" -f $tokenTimeLeft.TotalMinutes)
         }
 
-        write-verbose ("Getting token for resource {0} from auth endpoint: {1} with protocol {2}" -f $this.graphEndpoint.Graph, $this.graphEndpoint.Authentication, $this.graphEndpoint.AuthProtocol)
+        write-verbose ("Getting token for resource {0} from auth endpoint: {1} with protocol {2}" -f $this.graphEndpoint.GraphResourceUri, $this.graphEndpoint.Authentication, $this.graphEndpoint.AuthProtocol)
 
         $this.Token = getGraphToken $this.graphEndpoint $scopes $noBrowserUI
 
@@ -69,15 +69,15 @@ ScriptClass GraphIdentity {
             throw "Failed to acquire token, no additional error information"
         }
 
-        __UpdateTenantDisplayInfo
+        $this |=> __UpdateTenantDisplayInfo
     }
 
     function ClearAuthentication {
-        if ( $this.token -and $this.app.AuthType -eq ([GraphAppAuthType]::Delegated) ) {
-            $authUri = $this.graphEndpoint |=> GetAuthUri (GetTenantId $this.TenantName)
+        if ( $this.token -and $this.app.AuthType -eq 'Delegated' ) {
+            $authUri = $this.graphEndpoint |=> GetAuthUri $this.TenantName
 
             $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
-            $authContext = $providerInstance |=> GetAuthContext $this.app $this.graphEndpoint.Graph $authUri
+            $authContext = $providerInstance |=> GetAuthContext $this.app $this.graphEndpoint.GraphResourceUri $authUri
             $providerInstance |=> ClearToken $authContext $this.token
         }
 
@@ -85,14 +85,14 @@ ScriptClass GraphIdentity {
     }
 
     function getGraphToken($graphEndpoint, $scopes, $noBrowserUI) {
-        write-verbose "Attempting to get token for '$($graphEndpoint.Graph)' ..."
+        write-verbose "Attempting to get token in tenant '$($this.tenantName)' for '$($graphEndpoint.GraphResourceUri)' ..."
         write-verbose "Using app id '$($this.App.AppId)'"
         $isConfidential = ($this.app |=> IsConfidential)
         write-verbose ("Is confidential client: '{0}'" -f $isConfidential)
 
         write-verbose ("Adding scopes to request: {0}" -f ($scopes -join ';'))
 
-        $authUri = $graphEndpoint |=> GetAuthUri (GetTenantId $this.TenantName)
+        $authUri = $graphEndpoint |=> GetAuthUri $this.TenantName
         write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
 
         if ( ! $this.scriptclass.AuthProvidersInitialized ) {
@@ -102,12 +102,12 @@ ScriptClass GraphIdentity {
 
         $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
 
-        $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.Graph $authUri
+        $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.GraphResourceUri $authUri
 
         $authResult = if ( $this.token ) {
             $providerInstance |=> AcquireRefreshedToken $authContext $this.token
         } else {
-            if ( $this.App.AuthType -eq ([GraphAppAuthType]::Apponly) ) {
+            if ( $this.App.AuthType -eq 'Apponly' ) {
                 $providerInstance |=> AcquireFirstAppToken $authContext
             } else {
                 if ( $isConfidential ) {
@@ -121,7 +121,7 @@ ScriptClass GraphIdentity {
         write-verbose ("`nToken request status: {0}" -f $authResult.Status)
 
         if ( $authResult.Status -eq 'Faulted' ) {
-            throw "Failed to acquire token for uri '$($graphEndpoint.Graph)' for AppID '$($this.App.AppId)'`n" + $authResult.exception, $authResult.exception
+            throw "Failed to acquire token for uri '$($graphEndpoint.GraphResourceUri)' for AppID '$($this.App.AppId)'`n" + $authResult.exception, $authResult.exception
         }
 
         $result = $authResult.Result
@@ -131,11 +131,10 @@ ScriptClass GraphIdentity {
             throw [Exception]::new(("An authentication error occurred: '{0}'. See verbose output for additional details" -f $authResult.Exception.message), $authResult.Exception)
         }
 
-        try {
-            if ( ! $this.tenantId -and $result.tenantid ) {
-                $this.tenantid = $result.tenantid
+        if ( ! $this.tenantDisplayId -and ( $result | gm -erroraction ignore tenantid ) ) {
+            if ( $result.tenantid ) {
+                $this.tenantDisplayId = $result.tenantid
             }
-        } catch {
         }
 
         $result
@@ -145,23 +144,21 @@ ScriptClass GraphIdentity {
         if ( $specifiedTenantId ) {
             $specifiedTenantId
         } else {
-            __UpdateTenantDisplayInfo
+            $this |=> __UpdateTenantDisplayInfo
             $this.tenantDisplayId
         }
     }
 
     function __UpdateTenantDisplayInfo {
-        $tenant = try {
-            if ( $this.token ) {
-                (([uri] $this.token.authority).segments | select -last 1).trimend('/')
-            }
-        } catch {
+        $tenant = if ( $this.token -and ( $this.token | gm authority -erroraction ignore ) ) {
+            (([uri] $this.token.authority).segments | select -last 1).trimend('/')
         }
 
         if ( ! $tenant ) {
-            $tenant = try {
-                (([uri] $this.token.user.identityprovider).segments | select -first 2 | select -last 1).trimend('/')
-            } catch {
+            $tenant = if ( $this.token -and ( $this.token | gm user -erroraction ignore ) ) {
+                if ( $this.token.user | gm identityprovider -erroraction ignore ) {
+                    (([uri] $this.token.user.identityprovider).segments | select -first 2 | select -last 1).trimend('/')
+                }
             }
         }
 
@@ -173,11 +170,18 @@ ScriptClass GraphIdentity {
         } catch {
         }
 
-        $parsedTenantId = try {
-            if ( $tenant ) {
-                [guid] $tenant
+        $isGuid = $false
+        $parsedTenantId = $null
+
+        if ( $tenant ) {
+            $outputGuid = (new-guid).guid
+            $isGuid = [guid]::TryParse($tenant, [ref] $outputguid)
+            if ( $isGuid ) {
+                $parsedTenantid = $outputguid
             }
-        } catch {
+        }
+
+        if ( ! $isGuid ) {
             $tenantName = $tenant
         }
 

@@ -25,6 +25,7 @@ function Set-GraphConnectionStatus {
         [parameter(valuefrompipeline=$true)]
         $Graph
     )
+    Enable-ScriptClassVerbosePreference
 
     $context = if ( $Graph ) {
         if ( $Graph -is [String] ) {
