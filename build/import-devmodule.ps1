@@ -70,7 +70,15 @@ $scriptBlock = @"
         write-verbose "Using updated module path to import module '$moduleName': '`$(`$env:PSModulePath)'"
         write-verbose "Will import module by name '`$moduleName'"
         `$moduleExpectedParent = split-path -parent '$moduleManifestPath'
-        `$moduleInfo = import-module '$moduleName' -force -verbose -passthru
+
+        # Be careful about using '-force' here -- force doesn't just reload
+        # the module you specify it reloads its dependecies as well. If those deps
+        # have state that your target module depends on, you can hit strange falures.
+        # So for now, we assume its not already loaded -- maybe we can add a check
+        # for that and fail in the future to avoid situations where one runs with
+        # pre-existing state rather than the latest version of the module
+        `$moduleInfo = import-module '$moduleName' -verbose -passthru # No '-force' -- see above!
+
         `$moduleBase = `$moduleInfo.moduleBase
         if ( `$moduleBase -ne `$moduleExpectedParent ) {
             throw "Module loaded from '`$moduleBase',  expected location to be '`$moduleExpectedParent'"
