@@ -219,7 +219,7 @@ general command consistency cleanup is included in the release.
 
 * ScriptClass 0.20.1
 * ADAL 5.2
-* MSAL 4.3
+* MSAL 4.4
 
 ## Breaking changes
 
@@ -257,7 +257,6 @@ general command consistency cleanup is included in the release.
 * Used `ErrorAction Ignore` instead of `SilentlyContinue` in numerous places throughout the code
   to avoid error stream pollution
 * General error stream pollution cleanup
-
 
 '@
 
