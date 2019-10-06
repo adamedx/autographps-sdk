@@ -33,17 +33,18 @@ function New-GraphConnection {
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud')]
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='secret')]
         [parameter(parametersetname='customendpoint')]
-        [parameter(parametersetname='autocert', mandatory=$true)]
+        [parameter(parametersetname='autocert')]
         $AppId = $null,
 
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [parameter(parametersetname='autocert', mandatory=$true)]
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='autocert')]
         [Switch] $NoninteractiveAppOnlyAuth,
 
         [String] $TenantId = $null,
