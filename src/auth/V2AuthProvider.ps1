@@ -17,6 +17,11 @@
 
 ScriptClass V2AuthProvider {
     $base = $null
+
+    # TODO: Consider removing this store of app contexts, and making auth context
+    # a part of the connection itself, since for v2 auth at least this is actually
+    # what has been done through group id. At the very least we could move to
+    # making group id the only key and do away with the multi-level hash table.
     $publicAppContexts = $null
     $confidentialAppContexts = $null
 
@@ -26,6 +31,10 @@ ScriptClass V2AuthProvider {
         $this.confidentialAppContexts = @{}
     }
 
+    # The group id concept is really about associating auth context with a connnection so
+    # we can look up the right authcontext for a connection. A better approach may be
+    # to simply make the auth context part of the connection itself rather than part of
+    # a store maintained here.
     function GetAuthContext($app, $authUri, $groupId) {
         $isConfidential = $app |=> IsConfidential
         write-verbose "Searching for app context for appid '$($app.AppId)' and uri '$authUri' -- confidential:$isConfidential, groupid '$groupId'"
