@@ -221,7 +221,7 @@ None.
 
 ## New features
 
-* Added the `ReplyUrl` alias to the `AppRedirectUri` parameter of `Connect-Graph` and `New-GraphConnection`
+* Added the `ReplyUrl` alias to the `AppRedirectUri` parameter of `Get-GraphToken`, `Connect-Graph` and `New-GraphConnection`
 * `Get-GraphConnectionInfo` now includes a connection id guid property in its output to identify each unique connection
 
 ## Fixed defects
