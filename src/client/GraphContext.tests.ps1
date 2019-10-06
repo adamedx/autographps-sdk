@@ -69,6 +69,16 @@ Describe 'GraphContext class' {
             $mockAuthResult
         }
 
+        # Need to handle this case for PowerShell Core -- here at least
+        # we don't need to work around the scriptclass bug and can
+        # directly use mockcontext
+        Mock-ScriptClassMethod DeviceCodeAuthenticator Authenticate -static {
+            $mockAuthResult = $mockContext.mockAuthResult
+            $newToken = new-so MockToken
+            $mockAuthResult.Result = $newToken
+            $mockAuthResult
+        } -MockContext $mockData
+
         # Since the scriptclass mockcontext defect does not occur
         # when mocking via class as we are here (rather than object)
         # we can save the mockcontext in the authcontext so that it can
