@@ -50,17 +50,21 @@ function New-GraphConnection {
         [String] $TenantId = $null,
 
         [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [string] $CertificatePath = $null,
 
         [parameter(parametersetname='cert', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate = $null,
 
         [switch] $Confidential,
 
         [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [Switch] $Secret,
 
         [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [SecureString] $Password,
 
         [parameter(parametersetname='msgraph')]
@@ -75,7 +79,6 @@ function New-GraphConnection {
         [alias('ReplyUrl')]
         [Uri] $AppRedirectUri,
 
-        [parameter(parametersetname='msgraph')]
         [Switch] $NoBrowserSigninUI,
 
         [parameter(parametersetname='customendpoint', mandatory=$true)]
@@ -90,7 +93,7 @@ function New-GraphConnection {
         [parameter(parametersetname='certpath')]
         [Uri] $AuthenticationEndpointUri = $null,
 
-        [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [parameter(parametersetname='secret')]
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]

@@ -94,7 +94,7 @@ function Connect-Graph {
         [parameter(parametersetname='certpath')]
         [Uri] $AuthenticationEndpointUri = $null,
 
-        [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [parameter(parametersetname='secret')]
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]

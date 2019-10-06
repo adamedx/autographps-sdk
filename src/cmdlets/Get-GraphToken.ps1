@@ -15,9 +15,9 @@
 . (import-script New-GraphConnection)
 
 function Get-GraphToken {
-    [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='public')]
+    [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='msgraph')]
     param(
-        [parameter(parametersetname='public', position=0)]
+        [parameter(parametersetname='msgraph', position=0)]
         [parameter(parametersetname='cloud', position=0)]
         [parameter(parametersetname='customendpoint', position=0)]
         [parameter(parametersetname='cert', position=0)]
@@ -26,20 +26,21 @@ function Get-GraphToken {
         [parameter(parametersetname='secret', position=0)]
         [String[]] $Permissions = $null,
 
+
+        [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud')]
-        [parameter(parametersetname='public')]
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='secret')]
         [parameter(parametersetname='customendpoint')]
-        [parameter(parametersetname='autocert', mandatory=$true)]
+        [parameter(parametersetname='autocert')]
         [string] $AppId = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [parameter(parametersetname='autocert', mandatory=$true)]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='autocert')]
         [Switch] $NoninteractiveAppOnlyAuth,
 
         [string] $TenantId,
@@ -62,7 +63,7 @@ function Get-GraphToken {
         [parameter(parametersetname='customendpoint')]
         [SecureString] $Password,
 
-        [parameter(parametersetname='public')]
+        [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud', mandatory=$true)]
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
@@ -71,6 +72,7 @@ function Get-GraphToken {
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
+        [alias('ReplyUrl')]
         [Uri] $AppRedirectUri,
 
         [Switch] $NoBrowserSigninUI,
@@ -81,7 +83,8 @@ function Get-GraphToken {
         [parameter(parametersetname='certpath')]
         [Uri] $AuthenticationEndpointUri = $null,
 
-        [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='customendpoint')]
         [parameter(parametersetname='secret')]
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
@@ -115,9 +118,29 @@ function Get-GraphToken {
     } else {
         $connectionArguments = @{}
 
-        if ( $GraphEndpointUri ) {
+        # New-GraphConnection only allows specification of a resource uri if we also
+        # specify an endpoint to which we will communicate. Iin this case, however,
+        # we're not necessarily communicating with any particular endpoint,
+        # just getting a token. So make the 'endpoint' the same as the resource uri if
+        # one is specified as by default they are the same
+        if ( $GraphResourceUri ) {
             $connectionArguments['GraphEndpointUri'] = $GraphResourceUri
+
+            # Note that we do some things for UX that should theoretically be handled
+            # with parameter sets. We customize the behavior here in order to keep the
+            # parametersets identical to those for New-GraphConnection and Connect-Graph,
+            # which makes it easy to maintain symmetry with those related commands.
+            if ( ! $AuthenticationEndpointUri ) {
+                # Add this automatically if it wasn't specified so callers don't need to
+                # figure out the right value for this parameter
+                $connectionArguments['AuthenticationEndpointUri'] = 'https://login.microsoftonline.com/common'
+            }
         }
+
+        if ( $AuthenticationEndpointUri -and ! $connectionArguments['GraphEndpoint'] ) {
+            $connectionArguments['GraphEndpoint'] = 'https://graph.microsoft.com'
+        }
+
         $psboundparameters.keys | where { $psboundparameters[$_] -and @('Current', 'Connection', 'AsObject') -notcontains $_ } | foreach {
             $connectionArguments[$_] = $psboundparameters[$_]
         }

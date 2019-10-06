@@ -227,9 +227,10 @@ None.
 ## Fixed defects
 
 * `Test-Graph` command regression prevented targeting clouds other than `Public`
-* `Connect-Graph` and `New-GraphConnection` regressions caused certain parameter sets to require all parameters
+* `Get-GraphToken`, `Connect-Graph` and `New-GraphConnection` regressions caused certain parameter sets to require all parameters
 * Fix race condition with `Connect-Graph` due to MSAL changes with integrated token cache: `Connect-Graph` created
   a new token, which was immediately invalidated, requiring a reconnect when used with a command.
+* Fix error output from `Get-GraphToken` due to missing `GraphResourceUri` parameter, which also blocked alternate resource uri functionality
 
 ### Miscellaneous implementation notes
 

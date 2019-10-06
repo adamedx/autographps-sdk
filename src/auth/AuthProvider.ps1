@@ -22,7 +22,7 @@ ScriptClass AuthProvider {
     }
 
     function GetAuthContext($app, $graphEndpointUri, $authUri, $groupId) {
-        write-verbose ( 'Auth context requested for auth uri {0}, resource uri {1} appid {2}, groupid {3}' -f $app.appid, $authUri, $graphEndpointUri, $groupId )
+        write-verbose ( 'Auth context requested for auth uri {0}, resource uri {1} appid {2}, groupid {3}' -f $authUri, $graphEndpointUri, $app.appid, $groupId )
         $result = [PSCustomObject]@{
             App = $app
             GraphEndpointUri = $graphEndpointUri
