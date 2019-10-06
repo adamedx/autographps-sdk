@@ -211,7 +211,7 @@ PrivateData = @{
         ReleaseNotes = @'
 # AutoGraphPS-SDK 0.12.0 Release Notes
 
-This release fixes defects introduced by the previous `0.11.1` release.
+This release fixes defects introduced by the previous `0.11.1` release and includes some minor feature updates.
 
 ## New dependencies
 None.
