@@ -77,6 +77,7 @@ function Connect-Graph {
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
+        [alias('ReplyUrl')]
         [Uri] $AppRedirectUri,
 
         [Switch] $NoBrowserSigninUI,

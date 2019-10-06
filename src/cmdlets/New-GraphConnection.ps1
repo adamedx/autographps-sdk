@@ -72,6 +72,7 @@ function New-GraphConnection {
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
+        [alias('ReplyUrl')]
         [Uri] $AppRedirectUri,
 
         [parameter(parametersetname='msgraph')]
