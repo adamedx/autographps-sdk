@@ -26,15 +26,15 @@ ScriptClass V2AuthProvider {
         $this.confidentialAppContexts = @{}
     }
 
-    function GetAuthContext($app, $authUri) {
+    function GetAuthContext($app, $authUri, $groupId) {
         $isConfidential = $app |=> IsConfidential
-        write-verbose "Searching for app context for appid '$($app.AppId)' and uri '$authUri' -- confidential:$isConfidential"
-        $existingApp = $this |=> __GetAppContext $isConfidential $app.AppId $authUri
+        write-verbose "Searching for app context for appid '$($app.AppId)' and uri '$authUri' -- confidential:$isConfidential, groupid '$groupId'"
+        $existingApp = $this |=> __GetAppContext $isConfidential $app.AppId $authUri $groupId
         if ( $existingApp ) {
-            write-verbose "Found existing app context"
+            write-verbose ("Found existing app context with hashcode {0}" -f $existingApp.GetHashCode())
             $existingApp
         } elseif ( $isConfidential ) {
-            write-verbose "App context not found -- will create new context"
+            write-verbose "Confidential app context not found -- will create new context"
             $confidentialAppBuilder = [Microsoft.Identity.Client.ConfidentialClientApplicationBuilder]::Create($app.appid).WithAuthority($authUri).WithRedirectUri($app.RedirectUri)
             $secretCredential = ($app.secret |=> GetSecretData)
 
@@ -44,13 +44,14 @@ ScriptClass V2AuthProvider {
                 $confidentialAppBuilder.WithClientSecret($secretCredential).Build()
             }
 
-            $this |=> __AddAppContext $true $app.AppId $authUri $confidentialApp
+            $this |=> __AddAppContext $true $app.AppId $authUri $confidentialApp $groupId
 
             $confidentialApp
         } else {
+            write-verbose "Public app context not found -- will create new context"
             $publicApp = [Microsoft.Identity.Client.PublicClientApplicationBuilder]::Create($App.AppId).WithAuthority($authUri, $true).Build()
 
-            $this |=> __AddAppContext $false $app.AppId $authUri $publicApp
+            $this |=> __AddAppContext $false $app.AppId $authUri $publicApp $groupId
 
             $publicApp
         }
@@ -76,7 +77,7 @@ ScriptClass V2AuthProvider {
 
     function AcquireFirstUserToken($authContext, $scopes) {
         write-verbose 'V2 auth provider acquiring initial user token'
-        __AcquireTokenInteractive $authContext $scopes
+        $this |=> __AcquireTokenInteractive $authContext $scopes
     }
 
     function AcquireFirstUserTokenFromDeviceCode($authContext, $scopes) {
@@ -135,8 +136,9 @@ ScriptClass V2AuthProvider {
 
             try {
                 $authContext.protocolContext.AcquireTokenSilent([System.Collections.Generic.List[string]] $requestedScopesFromToken, $cachedAccount).ExecuteAsync()
-            } catch [MsalUiRequiredException] {
-                __AcquireTokenInteractive $authContext @('.default')
+            } catch [Microsoft.Identity.Client.MsalUiRequiredException] {
+                write-verbose 'Acquire silent failed, retrying interactive'
+                $this |=> __AcquireTokenInteractive $authContext @('.default')
             }
         }
     }
@@ -146,6 +148,11 @@ ScriptClass V2AuthProvider {
         $user = $token.account
         $userUpn = $token.account.username
         write-verbose "Clearing token for user '$userUpn'"
+        $this |=> __RemoveCachedtoken $authContext $user
+        $this |=> __RemoveAppContext ($authContext.app |=> IsConfidential) $authContext.app.appId $authContext.GraphEndpointUri $authContext.GroupId
+    }
+
+    function __RemoveCachedToken($authContext, $user) {
         $asyncRemoveResult = $authContext.protocolContext.RemoveAsync($user)
         $asyncRemoveResult.Wait()
     }
@@ -160,7 +167,15 @@ ScriptClass V2AuthProvider {
         $authContext.protocolContext.AcquireTokenInteractive([System.Collections.Generic.List[string]] $scopeList).ExecuteAsync()
     }
 
-    function __AddAppContext([bool] $isConfidential, [Guid] $appId, [Uri] $authUri, $appContext) {
+    function __GetContextKey($appId, $groupId) {
+        $key = $appId.tostring()
+        if ( $groupId ) {
+            $key += ':' + $groupId.tostring()
+        }
+        $key
+    }
+
+    function __AddAppContext([bool] $isConfidential, [Guid] $appId, [Uri] $authUri, $appContext, $groupId) {
         $authorities = if ( $isConfidential ) {
             $this.confidentialAppContexts
         } else {
@@ -171,10 +186,13 @@ ScriptClass V2AuthProvider {
             $authorities[$authUri] = @{}
         }
 
-        $authorities[$authUri].Add($appId, $appContext)
+        $contextKey = __GetContextKey $appId $groupId
+
+        write-verbose "Adding app context with key '$contextKey'"
+        $authorities[$authUri].Add($contextKey, $appContext)
     }
 
-    function __GetAppContext([bool] $isConfidential, [Guid] $appId, [Uri] $authUri) {
+    function __GetAppContext([bool] $isConfidential, [Guid] $appId, [Uri] $authUri, $groupId) {
         $authorities = if ( $isConfidential ) {
             $this.confidentialAppContexts
         } else {
@@ -184,11 +202,13 @@ ScriptClass V2AuthProvider {
         $authority = $authorities[$authUri]
 
         if ( $authority ) {
-            $authority[$appId]
+            $contextKey = __GetContextKey $appId $groupId
+            write-verbose "Looking up app context with key '$contextKey'"
+            $authority[$contextKey]
         }
     }
 
-    function __RemoveAppContext([bool] $isConfidential, [Guid] $appId, [Uri] $authUri) {
+    function __RemoveAppContext([bool] $isConfidential, [Guid] $appId, [Uri] $authUri, $groupId) {
         $authorities = if ( $isConfidential ) {
             $this.confidentialAppContexts
         } else {
@@ -198,10 +218,12 @@ ScriptClass V2AuthProvider {
         $authority = $authorities[$authUri]
 
         if ( $authority ) {
-            if ( $authority[$appId] ) {
-                $authority.Remove($appId)
-
-                if ( $authority[$appId].count -eq 0 ) {
+            $contextKey = __GetContextKey $appId $groupId
+            write-verbose "Attempting to remove app context with contextid '$contextkey'"
+            if ( $authority[$contextKey] ) {
+                write-verbose "Context key '$contextkey' exists, removing app context for it"
+                $authority.Remove($contextKey)
+                if ( $authority.count -eq 0 ) {
                     $authorities[$authUri].Remove
                 }
             }

@@ -165,7 +165,7 @@ ScriptClass GraphContext {
                 $chosenContext = $context
                 $context.connection
             } elseif ( $currentContext ) {
-                write-verbose ("Found existing connection from current context '$($currentcontext.name)'. Requested cloud: '{0}'" -f $cloud)
+                write-verbose ("Found existing connection $($currentContext.connection.id) from current context '$($currentcontext.name)'. Requested cloud: '{0}'" -f $cloud)
                 $isSameEndpoint = ! $cloud -or ( ( $cloud -ne 'Custom' ) -and $cloud -eq $currentContext.connection.GraphEndpoint.cloud )
                 if ( $isSameEndpoint -and
                      (!$scopenames -or ($scopenames -is [String] -and $scopenames -eq 'User.Read') -or ($scopenames -is [String[]] -and $scopenames.length -eq 1 -and $scopenames[0] -eq 'User.Read' )) -and
@@ -187,7 +187,7 @@ ScriptClass GraphContext {
             }
 
             if ( $existingConnection ) {
-                write-verbose "Using an existing connection supplied directly or obtained through a context"
+                write-verbose "Using existing connection $($existingConnection.Id) supplied directly or obtained through a context"
                 $existingConnection
             } else {
                 write-verbose "No connection supplied and no compatible connection found from a context"
@@ -197,6 +197,7 @@ ScriptClass GraphContext {
 
                 write-verbose "Custom arguments or no current context -- getting a new connection"
                 $newConnection = $::.GraphConnection |=> NewSimpleConnection MSGraph @namedArguments
+                write-verbose "Created new connection $($newConnection.Id)"
                 if ( $chosenContext ) {
                     write-verbose ("Adding new connection to context '{0}'" -f $chosenContext.name)
                     $chosenContext.connection = $newConnection

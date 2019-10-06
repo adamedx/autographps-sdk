@@ -21,6 +21,7 @@ enum GraphConnectionStatus {
 }
 
 ScriptClass GraphConnection {
+    $Id = $null
     $Identity = $null
     $GraphEndpoint = $null
     $Scopes = $null
@@ -29,6 +30,7 @@ ScriptClass GraphConnection {
     $NoBrowserUI = $false
 
     function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes, $noBrowserUI = $false) {
+        $this.Id = new-guid
         $this.GraphEndpoint = $graphEndpoint
         $this.Identity = $Identity
         $this.Connected = $false
@@ -48,9 +50,10 @@ ScriptClass GraphConnection {
     }
 
     function Connect {
+        write-verbose ( 'Request to connect connection id {0}' -f $this.id )
         if ( ($this.Status -eq [GraphConnectionStatus]::Online) -and (! $this.connected) ) {
             if ($this.Identity) {
-                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI
+                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id
             }
             $this.connected = $true
         }
@@ -64,7 +67,7 @@ ScriptClass GraphConnection {
         if ( $this.Status -eq [GraphConnectionStatus]::Online ) {
             if ( $this.GraphEndpoint.Type -eq 'MSGraph' ) {
                 # Trust the library's token cache to get a new token if necessary
-                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI
+                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id
                 $this.connected = $true
             } else {
                 Connect
@@ -83,9 +86,10 @@ ScriptClass GraphConnection {
     }
 
     function Disconnect {
+        write-verbose ( 'Request to disconnect connection id {0}' -f $this.id )
         if ( $this.connected ) {
             if ( $this.identity ) {
-                $this.identity |=> ClearAuthentication
+                $this.identity |=> ClearAuthentication $this.id
             }
             $this.connected = $false
         } else {
@@ -110,6 +114,7 @@ ScriptClass GraphConnection {
 
         function ToConnectionInfo([PSCustomObject] $connection) {
             [PSCustomObject] @{
+                Id = $connection.id
                 AppId = $connection.identity.app.appid
                 Endpoint = $connection.graphendpoint.graph
                 User = $connection.identity.GetUserInformation().UserId

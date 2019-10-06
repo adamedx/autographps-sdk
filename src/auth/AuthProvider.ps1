@@ -21,12 +21,17 @@ ScriptClass AuthProvider {
         $this.derivedProvider = new-so $derivedProviderClass.ClassName $this
     }
 
-    function GetAuthContext($app, $graphEndpointUri, $authUri) {
-        [PSCustomObject]@{
+    function GetAuthContext($app, $graphEndpointUri, $authUri, $groupId) {
+        write-verbose ( 'Auth context requested for auth uri {0}, resource uri {1} appid {2}, groupid {3}' -f $app.appid, $authUri, $graphEndpointUri, $groupId )
+        $result = [PSCustomObject]@{
             App = $app
             GraphEndpointUri = $graphEndpointUri
-            ProtocolContext = $this.derivedProvider |=> GetAuthContext $app $authUri
+            ProtocolContext = $this.derivedProvider |=> GetAuthContext $app $authUri $groupId
+            GroupId = $groupId
         }
+
+        write-verbose ( 'Returning auth context with hash code {0}' -f $result.ProtocolContext.GetHashCode() )
+        $result
     }
 
     function GetUserInformation($token) {
