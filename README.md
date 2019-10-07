@@ -4,7 +4,7 @@ AutoGraphPS-SDK
 <img src="https://raw.githubusercontent.com/adamedx/autographps-sdk/master/assets/PoshGraphIcon.png" width="100">
 
 ----
-[![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-SDK-CI?branchName=adamedx/azure-pipelines)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=4&branchName=adamedx/azure-pipelines)
+[![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-SDK-CI?branchName=adamedx%2Fazure-pipelines)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=4&branchName=adamedx%2Fazure-pipelines)
 
 * [Overview](#Overview)
 * [Installation](#Installation)

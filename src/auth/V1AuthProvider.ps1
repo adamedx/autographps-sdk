@@ -20,7 +20,7 @@ ScriptClass V1AuthProvider {
         $this.base = $base
     }
 
-    function GetAuthContext($app, $authUri) {
+    function GetAuthContext($app, $authUri, $groupId) {
         New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $authUri, $this.scriptclass.__TokenCache
     }
 

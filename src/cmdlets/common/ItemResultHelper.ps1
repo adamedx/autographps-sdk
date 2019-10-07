@@ -13,7 +13,7 @@
 # limitations under the License.
 
 $__DefaultResultVariableName = 'LastGraphItems'
-$__DefaultResultVariable = new-variable $__DefaultResultVariableName -scope script -passthru -force
+$__DefaultResultVariable = new-variable $__DefaultResultVariableName -passthru -force
 
 ScriptClass ItemResultHelper -ArgumentList $__DefaultResultVariable {
     param($defaultResultVariableParameter)

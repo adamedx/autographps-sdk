@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-write-host -foregroundcolor cyan "`nWelcome to Posh Graph!`n"
+write-host -foregroundcolor cyan "`nWelcome to AutoGraphPS-SDK!`n"
 write-host "To get started, try executing any of the following commands:"
 @(
     [PSCustomObject]@{Command="    Test-Graph";Purpose="# Retrieves diagnostic information from a Microsoft Graph Service endpoint"}
     [PSCustomObject]@{Command="    Connect-Graph";Purpose="# Establishes a convenient connection context; no need to re-auth for each command"}
     [PSCustomObject]@{Command="    Get-GraphItem me";Purpose="# Gets the user profile of the authenticated user"}
-    [PSCustomObject]@{Command="    Get-GraphVersion v1.0";Purpose="# Gets information about Graph API versions such as v1.0, beta, etc."}
+    [PSCustomObject]@{Command="    Get-GraphToken";Purpose="# Gets information about Graph API versions such as v1.0, beta, etc."}
 ) | format-table -wrap -hidetableheaders | out-host
 write-host ''

@@ -21,9 +21,9 @@
 . (import-script common/PermissionParameterCompleter)
 
 function Connect-Graph {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='public')]
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='msgraph')]
     param(
-        [parameter(parametersetname='public', position=0)]
+        [parameter(parametersetname='msgraph', position=0)]
         [parameter(parametersetname='cloud', position=0)]
         [parameter(parametersetname='customendpoint', position=0)]
         [parameter(parametersetname='cert', position=0)]
@@ -33,19 +33,19 @@ function Connect-Graph {
         [String[]] $Permissions = $null,
 
         [parameter(parametersetname='cloud')]
-        [parameter(parametersetname='public')]
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [parameter(parametersetname='secret', mandatory=$true)]
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='secret')]
         [parameter(parametersetname='customendpoint')]
-        [parameter(parametersetname='autocert', mandatory=$true)]
+        [parameter(parametersetname='autocert')]
         [string] $AppId = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='secret', mandatory=$true)]
-        [parameter(parametersetname='cert', mandatory=$true)]
-        [parameter(parametersetname='certpath', mandatory=$true)]
-        [parameter(parametersetname='autocert', mandatory=$true)]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='autocert')]
         [Switch] $NoninteractiveAppOnlyAuth,
 
         [string] $TenantId,
@@ -68,7 +68,7 @@ function Connect-Graph {
         [parameter(parametersetname='customendpoint')]
         [SecureString] $Password,
 
-        [parameter(parametersetname='public')]
+        [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='cloud', mandatory=$true)]
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
@@ -77,6 +77,7 @@ function Connect-Graph {
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
         [string] $Cloud = $null,
 
+        [alias('ReplyUrl')]
         [Uri] $AppRedirectUri,
 
         [Switch] $NoBrowserSigninUI,
@@ -93,7 +94,7 @@ function Connect-Graph {
         [parameter(parametersetname='certpath')]
         [Uri] $AuthenticationEndpointUri = $null,
 
-        [parameter(parametersetname='customendpoint', mandatory=$true)]
+        [parameter(parametersetname='customendpoint')]
         [parameter(parametersetname='secret')]
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]

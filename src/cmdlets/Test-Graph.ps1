@@ -90,11 +90,11 @@ New-GraphConnection
 Connect-Graph
 #>
 function Test-Graph {
-    [cmdletbinding()]
+    [cmdletbinding(defaultparametersetname='currentconnection')]
     param(
         [parameter(parametersetname='KnownClouds')]
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
-        [string] $Cloud = 'Public',
+        [string] $Cloud,
 
         [parameter(parametersetname='Connection', mandatory=$true)]
         [PSCustomObject] $Connection,
@@ -106,11 +106,11 @@ function Test-Graph {
     )
     Enable-ScriptClassVerbosePreference
 
-    $graphEndpointUri = if ( $Connection -ne $null ) {
+    $graphEndpointUri = if ( $Connection ) {
         $Connection.GraphEndpoint.Graph
-    } elseif ( $Cloud -ne $null ) {
+    } elseif ( $Cloud ) {
         (new-so GraphEndpoint $Cloud).Graph
-    } elseif ( $endpointUri -ne $null ) {
+    } elseif ( $endpointUri ) {
         $endpointUri
     } else {
         ($::.GraphContext |=> GetConnection).GraphEndpoint.Graph
