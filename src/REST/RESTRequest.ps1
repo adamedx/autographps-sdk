@@ -55,8 +55,8 @@ ScriptClass RESTRequest {
             $body | convertto-json -depth 6
         }
 
-        $this.userAgent = if ( $userAgent -ne $null ) {
-            $this.userAgent = $userAgent
+        $this.userAgent = if ( $userAgent ) {
+            $userAgent
         } else {
             $this.scriptclass.PoshGraphUserAgent
         }

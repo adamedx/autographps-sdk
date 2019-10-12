@@ -227,6 +227,9 @@ None.
        specified GUID value
      * `NoClientRequestId`: switch overrides the behavior of supplying an auto-generated `client-request-id` header
        and instead does not specify the header at all
+* `UserAgent` parameter added to `New-GraphConnection` and `Connect-Graph`: By default, AutoGraphPS specifies a particular
+   user agent when sending requests. The `UserAgent` parameter allows these commands to set a specific user agent string
+   used by all requests made through the resulting connection.
 
 ## Fixed defects
 
