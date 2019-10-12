@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.12.0'
+ModuleVersion = '0.13.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -209,9 +209,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-# AutoGraphPS-SDK 0.12.0 Release Notes
+# AutoGraphPS-SDK 0.13.0 Release Notes
 
-This release fixes defects introduced by the previous `0.11.1` release and includes some minor feature updates.
+This release adds features for additional API request customization.
 
 ## New dependencies
 None.
@@ -221,24 +221,16 @@ None.
 
 ## New features
 
-* Added the `ReplyUrl` alias to the `AppRedirectUri` parameter of `Get-GraphToken`, `Connect-Graph` and `New-GraphConnection`
-* `Get-GraphConnectionInfo` now includes a connection id guid property in its output to identify each unique connection
+* By default, any request to Graph sets the `client-request-id` header with a unique GUID per request
+* The `Get-GraphItem` and `Invoke-GraphRequest` commands support the following new parameters:
+     * `ClientRequestId`: overrides the auto-generated value of the `client-request-id` header with the
+       specified GUID value
+     * `NoClientRequestId`: switch overrides the behavior of supplying an auto-generated `client-request-id` header
+       and instead does not specify the header at all
 
 ## Fixed defects
 
-* `Test-Graph` command regression prevented targeting clouds other than `Public`
-* `Get-GraphToken`, `Connect-Graph` and `New-GraphConnection` regressions caused certain parameter sets to require all parameters
-* Fix race condition with `Connect-Graph` due to MSAL changes with integrated token cache: `Connect-Graph` created
-  a new token, which was immediately invalidated, requiring a reconnect when used with a command.
-* Fix error output from `Get-GraphToken` due to missing `GraphResourceUri` parameter, which also blocked alternate resource uri functionality
-
 ### Miscellaneous implementation notes
-
-The most involved fix was to address a defect introduced when the `MSAL` library version was updated to `4.4.0`. Prior to this release, token caches were maintained independently from the `PublicClientApplication` or `ConfidentialClientApplication` authentication context.
-
-With `MSAL` `4.4.0`, token caches were part of the authentication context. When `4.4.0` was integrated into `AutoGraphPS-SDK`, this change was accounted for, but there was still an assumption that the authentication context could be shared across the `AutoGraphPS-SDK` notion of `Connection` without the cache being affected by the sharing. Since cache had become part of the auth context, sharing the auth context as `AutoGraphPS-SDK` had always done for a given connection meant sharing caches; this introduced race conditions where a token could be added to a cache only to have it immediately removed by an operation that was assumed to be independent of that cache but wasn't. The result was that users would someitmes be requested to sign-in again immediately after a sign-in prompted by `Connect-Graph` or any command that affected connection management.
-
-The fix was to ensure each connection used a separate authentication context by associating each auth context with a connection in a store of auth contexts. A better fix may be to remove the store of auth contexts altogether, and make the auth context part of the connection itself, or at least simplify the lookup logic to use only the connection id.
 
 '@
 
