@@ -17,49 +17,65 @@
 . (import-script common/CommandContext)
 
 function Register-GraphApplication {
-    [cmdletbinding(defaultparametersetname='delegated', positionalbinding=$false)]
+    [cmdletbinding(defaultparametersetname='simple', positionalbinding = $false)]
     param(
-        [parameter(position=0, mandatory=$true)]
+        [parameter(position=0, parametersetname='simple', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='explicitscopes', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='consentall', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [string] $AppId,
 
-        [String[]] $GrantedPermissions,
+        [parameter(parametersetname='explicitscopes')]
+        [string[]] $DelegatedUserPermissions,
 
+        [parameter(parametersetname='explicitscopes')]
+        [string[]] $ApplicationPermissions,
+
+        [parameter(parametersetname='explicitscopes')]
         [switch] $SkipPermissionNameCheck,
-
-        [switch] $NoninteractiveAppOnlyAuth,
 
         [switch] $ImportFromOtherTenant,
 
-        [switch] $ConsentForTenant,
+        [parameter(parametersetname='consentall', mandatory=$true)]
+        [switch] $AllPermissions,
 
-        [parameter(parametersetname='delegated')]
-        [string] $ConsentForPrincipal,
+        [parameter(parametersetname='explicitscopes')]
+        [parameter(parametersetname='consentall')]
+        [switch] $ConsentAllUsers,
+
+        [parameter(parametersetname='explicitscopes')]
+        [parameter(parametersetname='consentall')]
+        [string] $UserIdToConsent,
 
         [String] $Version = $null,
 
-        [parameter(parametersetname='ExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null
     )
     Enable-ScriptClassVerbosePreference
 
     $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
 
-    $::.ScopeHelper |=> ValidatePermissions $GrantedPermissions $NoninteractiveAppOnlyAuth.IsPresent $SkipPermissionNameCheck.IsPresent $commandContext.connection
+    if ( $ApplicationPermissions ) {
+        $::.ScopeHelper |=> ValidatePermissions $ApplicationPermissions $true $SkipPermissionNameCheck.IsPresent $commandContext.connection
+    }
 
-    $appOnlyPermissions = if ( $NoninteractiveAppOnlyAuth.IsPresent -and $GrantedPermissions ) { $::.ScopeHelper |=> GetAppOnlyResourceAccessPermissions $GrantedPermissions $commandContext.Connection }
-    $delegatedPermissions = if ( ! $NoninteractiveAppOnlyAuth.IsPresent -and $GrantedPermissions ) { $::.ScopeHelper |=> GetDelegatedResourceAccessPermissions $GrantedPermissions $commandContext.Connection }
-
-    $appOnlyPermissionIds = if ( $appOnlyPermissions ) { $appOnlyPermissions.id }
-    $delegatedPermissionIds = if ( $delegatedPermissions ) { $delegatedPermissions.id }
+    if ( $DelegatedUserPermissions ) {
+        $::.ScopeHelper |=> ValidatePermissions $DelegatedUserPermissions $false $SkipPermissionNameCheck.IsPresent $commandContext.connection
+    }
 
     $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
 
     $newAppSP = $appAPI |=> RegisterApplication $AppId $ImportFromOtherTenant.IsPresent
 
-    $appAPI |=> SetConsent $appId $delegatedPermissionIds $appOnlyPermissionIds $false $ConsentForTenant.IsPresent ($ConsentForPrincipal -ne $null) $ConsentForPrincipal $null $newAppSP | out-null
+    $appWithAppPermissionsData = if ( $AllPermissions.IsPresent ) {
+        $appAPI |=> GetApplicationByAppId $AppId
+    }
+
+    $appAPI |=> SetConsent $appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentAllUsers.IsPresent $appWithAppPermissionsData
 
     $newAppSP
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Register-GraphApplication GrantedPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Register-GraphApplication DelegatedUserPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
+
+$::.ParameterCompleter |=> RegisterParameterCompleter Register-GraphApplication ApplicationPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AppOnlyPermission))
 

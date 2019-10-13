@@ -92,8 +92,8 @@ function New-GraphApplication {
     }
 
     if ( $SkipTenantRegistration.IsPresent ) {
-        if ( $UserIdToConsent -or $ConsentForTenant.IsPresent ) {
-            throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'UserIdToConsent' or 'ConsentForTenant' is specified")
+        if ( $UserIdToConsent -or $ConsentAllUsers.IsPresent ) {
+            throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'UserIdToConsent' or 'ConsentAllUsers' is specified")
         }
     }
     $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion

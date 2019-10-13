@@ -61,13 +61,13 @@ ScriptClass ApplicationObject {
     }
 
     function Register($skipRequiredResourcePermissions, $ConsentRequired, $userIdToConsent, $consentAllUsers, $scopes, $roles) {
-        $app = $this.AppAPI |=> RegisterApplication $this.AppId
+        $appSP = $this.AppAPI |=> RegisterApplication $this.AppId
 
         if ( $ConsentRequired ) {
-            $this.AppAPI |=> SetConsent $app.appId $scopes $roles (! $skipRequiredResourcePermissions) $userIdToConsent $consentAllUsers $app
+            $this.AppAPI |=> SetConsent $appSP.appId $scopes $roles (! $skipRequiredResourcePermissions) $userIdToConsent $consentAllUsers $appSP
         }
 
-        $app
+        $appSP
     }
 
     function __SetPublicApp($app, $redirectUris) {

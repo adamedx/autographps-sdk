@@ -217,7 +217,10 @@ This release adds features for additional API request customization.
 None.
 
 ## Breaking changes
-None.
+
+The `Set-GraphApplicationConsent` parameter `AppOnlyPermissions` has been changed to `ApplicationPermissions` to for
+consistency with the changes made in `0.11.1` made to other commands with the same parameter. This change was intended
+to be part of the `0.11.1` release but was missed.
 
 ## New features
 
@@ -227,13 +230,20 @@ None.
        specified GUID value
      * `NoClientRequestId`: switch overrides the behavior of supplying an auto-generated `client-request-id` header
        and instead does not specify the header at all
-* `UserAgent` parameter added to `New-GraphConnection` and `Connect-Graph`: By default, AutoGraphPS specifies a particular
+* `UserAgent` parameter now added to `New-GraphConnection` and `Connect-Graph`: By default, AutoGraphPS specifies a particular
    user agent when sending requests. The `UserAgent` parameter allows these commands to set a specific user agent string
    used by all requests made through the resulting connection.
+* As noted in the breaking changes section, the `ApplicationPermissions` parameter has replaced `AppOnlyPermissions` in
+  `Set-GraphApplicationConsent`.
 
 ## Fixed defects
 
-### Miscellaneous implementation notes
+* `New-GraphApplication` did not honor the `ConsentAllUsers` parameter and wrote an error about an undefined variable to
+  the error stream. The incorret variable usage has been corrected and the parameter is now honored.
+* `Register-GraphApplication`'s consent functionality explicitly or silently failed due to regression from breaking changes
+  to other parts of the module in version 0.11.1. The command has been fixed to be compatible with the changes.
+* `Get-GraphApplication` output extra words / characters in the `StartTime` field -- this formatting issue is now fixed.
+* `Set-GraphAllicationConsent` was ignoring `ConsentAllUsers` and was not adding `AllPrincipals` consent grants -- this is fixed.
 
 '@
 

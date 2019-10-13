@@ -28,7 +28,7 @@ function Set-GraphApplicationConsent {
         [string[]] $DelegatedUserPermissions,
 
         [parameter(parametersetname='explicitscopes')]
-        [string[]] $AppOnlyPermissions,
+        [string[]] $ApplicationPermissions,
 
         [parameter(parametersetname='allconfiguredpermissions', mandatory=$true)]
         [switch] $AllPermissions,
@@ -52,7 +52,7 @@ function Set-GraphApplicationConsent {
 
         $app = $appAPI |=> GetApplicationByAppId $AppId
 
-        $appAPI |=> SetConsent $app.appid $DelegatedUserPermissions $AppOnlyPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentAllUsers.IsPresent $app
+        $appAPI |=> SetConsent $app.appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentAllUsers.IsPresent $app
     }
 
     end {}
@@ -60,5 +60,5 @@ function Set-GraphApplicationConsent {
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent DelegatedUserPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent AppOnlyPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AppOnlyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent ApplicationPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AppOnlyPermission))
 

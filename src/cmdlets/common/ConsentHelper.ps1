@@ -27,8 +27,8 @@ ScriptClass ConsentHelper {
             $isOAuth2PermissionGrant = !(!($object | gm -erroraction ignore clientid))
 
             if ( $isOAuth2PermissionGrant ) {
-                $startTime = $object | gm startTime -erroraction ignore
-                $expiryTime = $object | gm expiryTime -erroraction ignore
+                $startTime = if ( $object | gm startTime -erroraction ignore ) { $object.startTime }
+                $expiryTime = if ( $object | gm expiryTime -erroraction ignore ) { $object.expiryTime }
                 $startTimeOffset = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $startTime $true
                 $expiryTimeOffset = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $expiryTime $true
                 $grantedTo = if ( $object.consentType -eq 'AllPrincipals' ) { 'AllUsers' } else { $object.PrincipalId }
