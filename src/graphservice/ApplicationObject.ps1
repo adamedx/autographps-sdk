@@ -123,7 +123,7 @@ ScriptClass ApplicationObject {
         # a token is requested for the app
         if ( ! $hasScope ) {
             $resourceAccess += @{
-                id = '7427e0e9-2fba-42fe-b0c0-848c9e6a8182' # offline_access
+                id = $::.ScopeHelper.OfflineAccessScopeId
                 type = 'Scope'
             }
         }
@@ -133,7 +133,7 @@ ScriptClass ApplicationObject {
             signinAudience = $signInAudience
             requiredResourceAccess = @(
                 @{
-                    resourceAppId = '00000003-0000-0000-c000-000000000000'
+                    resourceAppId = $::.ScopeHelper.GraphApplicationId
                     resourceAccess = $resourceAccess
                 }
             )

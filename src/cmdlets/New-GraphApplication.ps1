@@ -138,17 +138,7 @@ function New-GraphApplication {
     }
 
     if ( ! $SkipTenantRegistration.IsPresent ) {
-        $delegatedPermissionsToConsent = if ( ! $Confidential.IsPresent -and ! $ApplicationPermissions -and ! $DelegatedUserPermissions ) {
-            # If at least one delegated permission is not consented, it seems the STS will not grant access when
-            # a request is made for the token, so for apps we know to be accessed only as public client apps we
-            # consent to offline_access
-            write-verbose "No delegated permissions specified for public application, will add 'offline_access' for consent"
-            @('offline_access')
-            $DelegatedUserPermissions
-        } else {
-            $DelegatedUserPermissions
-        }
-        $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $ConsentAllUsers.IsPresent $UserIdToConsent $delegatedPermissionsToConsent $ApplicationPermissions | out-null
+        $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $ConsentAllUsers.IsPresent $UserIdToConsent $DelegatedUserPermissions $ApplicationPermissions | out-null
     }
 
     $newApp
