@@ -21,6 +21,7 @@ ScriptClass ApplicationObject {
     $ObjectId = $null
     $AppId = $null
     $AppAPI = $null
+    $isConfidential = $false
 
     function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isConfidential, $redirectUris) {
         $this.AppAPI = $appAPI
@@ -71,6 +72,7 @@ ScriptClass ApplicationObject {
     }
 
     function __SetPublicApp($app, $redirectUris) {
+        $this.isConfidential = $false
         $publicClientRedirectUris = if ( $redirectUris -ne $null ) {
             $redirectUris
         } else {
@@ -85,6 +87,7 @@ ScriptClass ApplicationObject {
     }
 
     function __SetConfidentialApp($app, $redirectUris) {
+        $this.isConfidential = $true
         $appRedirectUris = if ( $redirectUris ) {
             $redirectUris
         } else {
@@ -109,8 +112,21 @@ ScriptClass ApplicationObject {
 
         $resourceAccess = @()
 
+        $hasScope = $false
+
         if ( $appOnlyPermissions ) { $appOnlyPermissions | foreach { $accessEntry = @{id=$_.id;type=$_.type}; $resourceAccess += $accessEntry } }
-        if ( $delegatedPermissions ) { $delegatedPermissions | foreach { $accessEntry = @{id=$_.id;type=$_.type}; $resourceAccess += $accessEntry } }
+        if ( $delegatedPermissions ) { $delegatedPermissions | foreach { $hasScope = $true; $accessEntry = @{id=$_.id;type=$_.type}; $resourceAccess += $accessEntry } }
+
+        # Add in default required resource access of offline_access if there are no
+        # required delegated permission scopes specified. If resource access for scopes
+        # is completely absent, the STS behavior is to behave as if the app is not registered at the time
+        # a token is requested for the app
+        if ( ! $hasScope ) {
+            $resourceAccess += @{
+                id = '7427e0e9-2fba-42fe-b0c0-848c9e6a8182' # offline_access
+                type = 'Scope'
+            }
+        }
 
         $app = @{
             displayName = $displayName

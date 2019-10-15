@@ -83,12 +83,7 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
             if ( $scopes ) {
                 GetPermissionsByName $scopes Role $connection
             } else {
-                @(
-                    @{
-                        id = 'df021288-bdef-4463-88db-98f22de89214'
-                        type = 'Role'
-                    }
-                )
+                @()
             }
         }
 
@@ -96,10 +91,7 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
             if ( $scopes ) {
                 GetPermissionsByName $scopes Scope $connection
             } else {
-                @{
-                    id = 'e1fe6dd8-ba31-4d61-89e7-88639da4683d'
-                    type = 'Scope'
-                }
+                @()
             }
         }
 

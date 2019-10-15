@@ -10,7 +10,8 @@
 * Add equivalent of -Token option to new-graphconnection and connect-graph -- this sets token from external source
 * Make verbose output more readable
 * Document strange splatting behavior with noteproperty
-* Rename New-GraphApplicationCertificate to Set-GraphApplicationCertificate?
+* New-GraphApplicationCertificate with -noupload option
+* Set-GraphApplicationCertificate to set to an existing certificate
 
 
 * Add $ref?

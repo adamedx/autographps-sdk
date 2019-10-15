@@ -48,7 +48,7 @@ function Remove-GraphApplicationConsent {
     process {
         Enable-ScriptClassVerbosePreference
 
-        $isAppOnly = $AllApplicationPermissions.IsPresent -or $ApplicationPermissions.length -gt 0
+        $isAppOnly = $AllApplicationPermissions.IsPresent -or ($ApplicationPermissions -and $ApplicationPermissions.length -gt 0)
 
         $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
@@ -59,13 +59,13 @@ function Remove-GraphApplicationConsent {
         $appFilter = "clientId eq '$appSPId'"
         $filterClauses = @($appFilter)
 
-        if ( ! $AllTenantUsers.IsPresent ) {
-            $grantFilter = if ( $ConsentForTenant.IsPresent ) {
-                "consentType eq 'AllPrincipals'"
-            } elseif ( $Principal ) {
-                "consentType eq 'Principal' and principalId eq '$Principal'"
-            }
+        $grantFilter = if ( $AllTenantUsers.IsPresent ) {
+            "consentType eq 'AllPrincipals'"
+        } elseif ( $Principal ) {
+            "consentType eq 'Principal' and principalId eq '$Principal'"
+        }
 
+        if ( $grantFilter ) {
             $filterClauses += $grantFilter
         }
 

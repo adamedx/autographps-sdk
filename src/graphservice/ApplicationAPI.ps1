@@ -159,10 +159,12 @@ ScriptClass ApplicationAPI {
             if ( $userObjectId ) {
                 $isUserConsentNeeded = $true
                 write-verbose "Attempting to grant consent to app '$appId' for current user '$userObjectId'"
+            } else {
+                write-verbose "Unable to determine current user and all users consent not specified, so no consent for the user will be attempted; the current user is likely an app-only identity"
             }
             $userObjectId
         } else {
-            write-verbose "User consent was not specified, and tenant consent was specified, will attempt to consent all app permissions for the tenant"
+            write-verbose "User consent was not specified, and consent for required delegated permissions was specified, will attempt to consent those permissions for all users in the tenant"
             $isUserConsentNeeded = $true
         }
 
@@ -223,7 +225,7 @@ ScriptClass ApplicationAPI {
             }
         } else {
             $permissions = @()
-            if ( $appWithRequiredResource -and $appWithRequiredResource | gm requiredResourceAccess ) {
+            if ( $appWithRequiredResource -and ( $appWithRequiredResource | gm requiredResourceAccess -erroraction ignore ) ) {
                 $graphResourceAccess = $appWithRequiredResource.requiredResourceAccess | where resourceAppid -eq 00000003-0000-0000-c000-000000000000
                 $graphResourceAccess.resourceAccess | foreach {
                     if ( $_.type -eq 'Scope') {

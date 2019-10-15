@@ -211,7 +211,8 @@ PrivateData = @{
         ReleaseNotes = @'
 # AutoGraphPS-SDK 0.13.0 Release Notes
 
-This release adds features for additional API request customization.
+This release adds features for additional API request customization and includes fixes for defects
+related to AAD application management commands.
 
 ## New dependencies
 None.
@@ -238,12 +239,16 @@ to be part of the `0.11.1` release but was missed.
 
 ## Fixed defects
 
+* `Remove-GraphItem` unusable without explicitly specifying `Cloud` parameter because of parameter binding issue in the default case.
 * `New-GraphApplication` did not honor the `ConsentAllUsers` parameter and wrote an error about an undefined variable to
   the error stream. The incorret variable usage has been corrected and the parameter is now honored.
 * `Register-GraphApplication`'s consent functionality explicitly or silently failed due to regression from breaking changes
   to other parts of the module in version 0.11.1. The command has been fixed to be compatible with the changes.
 * `Get-GraphApplication` output extra words / characters in the `StartTime` field -- this formatting issue is now fixed.
 * `Set-GraphAllicationConsent` was ignoring `ConsentAllUsers` and was not adding `AllPrincipals` consent grants -- this is fixed.
+* `Remove-GraphConsent` syntax error due to reference to non-existent parameter, broken *All Users* consent removal
+* `New-GraphApplication` adds minimal required permissions to the application object when permissions are not specified --
+   only delegated permissions are added for public client apps, and only offline_access instead of `User.Read`.
 
 '@
 
