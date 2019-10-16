@@ -209,15 +209,15 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-# AutoGraphPS-SDK 0.13.0 Release Notes
+## AutoGraphPS-SDK 0.13.0 Release Notes
 
 This release adds features for additional API request customization and includes fixes for defects
 related to AAD application management commands.
 
-## New dependencies
+### New dependencies
 None.
 
-## Breaking changes
+### Breaking changes
 
 * The `Set-GraphApplicationConsent` parameter `AppOnlyPermissions` has been changed to `ApplicationPermissions` to for
   consistency with the changes made in `0.11.1` made to other commands with the same parameter. This change was intended
@@ -225,7 +225,7 @@ None.
 * The `AllApplicationPermissions` parameter of `Remove-GraphApplicationConsent` is renamed `AllPermissions`.
 * The `AllTenantUsers` parameter of `Remove-GraphApplicationConsent` is renamed `ConsentForAllUsers`.
 
-## New features
+### New features
 
 * By default, any request to Graph sets the `client-request-id` header with a unique GUID per request
 * The `Get-GraphItem` and `Invoke-GraphRequest` commands support the following new parameters:
@@ -241,7 +241,7 @@ None.
 * `Remove-GraphApplicationConsent` now accepts pipeline input from output of `Get-GraphApplicationConsent` via
    `$ConsentGrant` parameter.
 
-## Fixed defects
+### Fixed defects
 
 * `Remove-GraphItem` unusable without explicitly specifying `Cloud` parameter because of parameter binding issue in the default case.
 * `New-GraphApplication` did not honor the `ConsentAllUsers` parameter and wrote an error about an undefined variable to
