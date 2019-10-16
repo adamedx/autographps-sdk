@@ -23,12 +23,21 @@ ScriptClass GraphRequest {
     $Body = strict-val [String]
     $Query = $null
     $Headers = $null
+    $ClientRequestId = $null
 
-    function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null) {
+    function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null, $clientRequestId, [bool] $noRequestId) {
         $uriString = if ( $uri.scheme -ne $null ) {
             $uri.AbsoluteUri
         } else {
             $graphConnection.GraphEndpoint.Graph.tostring() + $uri.originalstring
+        }
+
+        if ( ! $noRequestId ) {
+            $this.ClientRequestId = if ( $clientRequestId ) {
+                [guid] ($clientRequestId)
+            } else {
+                new-guid
+            }
         }
 
         $uriQueryLength = if ( $uri.Query -ne $null ) { $uri.Query.length } else { 0 }
@@ -52,6 +61,10 @@ ScriptClass GraphRequest {
         if ($graphConnection.Identity) {
             $token = $graphConnection |=> GetToken
             $this.Headers['Authorization'] = $token.CreateAuthorizationHeader()
+        }
+
+        if ( $this.ClientRequestId ) {
+            $this.Headers['client-request-id'] = $this.ClientRequestId.tostring()
         }
     }
 
@@ -82,6 +95,10 @@ ScriptClass GraphRequest {
 
         $query = __AddQueryParameters $queryParameters
 
+        if ( $this.ClientRequestId ) {
+            write-verbose "Invoking Graph request with request id: '$($this.ClientRequestId)'"
+        }
+
         $response = __InvokeRequest $this.verb $this.uri $query
         new-so GraphResponse $response
     }
@@ -97,7 +114,7 @@ ScriptClass GraphRequest {
     function __InvokeRequest($verb, $uri, $query) {
         $uriPath = __UriWithQuery $uri $query
         $uri = new-object Uri $uriPath
-        $restRequest = new-so RESTRequest $uri $verb $this.headers $this.body
+        $restRequest = new-so RESTRequest $uri $verb $this.headers $this.body $this.Connection.UserAgent
         $restRequest |=> Invoke
     }
 

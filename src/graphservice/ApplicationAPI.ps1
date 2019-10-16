@@ -148,21 +148,27 @@ ScriptClass ApplicationAPI {
         $appWithRequiredResource,
         $appSP
     ) {
-        $consentUser = if ( $userIdToConsent ) {
+        $isUserConsentNeeded = $false
+        $consentUserId = if ( $userIdToConsent ) {
             write-verbose "User '$userIdToConsent' specified for consent"
+            $isUserConsentNeeded = $true
             $userIdToConsent
         } elseif ( ! $consentAllUsers ) {
             write-verbose "No user was specified for consent, but all user consent was not specified, so consent will be made for the user making this Graph API call"
             $userObjectId = $this.connection.Identity.GetUserInformation().userObjectId
             if ( $userObjectId ) {
+                $isUserConsentNeeded = $true
                 write-verbose "Attempting to grant consent to app '$appId' for current user '$userObjectId'"
+            } else {
+                write-verbose "Unable to determine current user and all users consent not specified, so no consent for the user will be attempted; the current user is likely an app-only identity"
             }
             $userObjectId
         } else {
-            write-verbose "User consent was not specified, and tenant consent was specified, will attempt to consent all app permissions for the tenant"
+            write-verbose "User consent was not specified, and consent for required delegated permissions was specified, will attempt to consent those permissions for all users in the tenant"
+            $isUserConsentNeeded = $true
         }
 
-        if ( ! $consentUser -and ! $ConsentAllUsers -and ! $appOnlyPermissions ) {
+        if ( ! $isUserConsentNeeded -and ! $ConsentAllUsers -and ! $appOnlyPermissions ) {
             write-verbose "Consent for all users was not required and no specific user consent was required and no app only permissions were specified, so skipping consent completely"
             return
         }
@@ -177,9 +183,9 @@ ScriptClass ApplicationAPI {
             throw "Application '$AppId' was not found"
         }
 
-        if ( $consentUser ) {
+        if ( $isUserConsentNeeded ) {
             write-verbose 'Processing user consent...'
-            $grant = GetConsentGrantForApp $appId $consentUser $DelegatedPermissions $consentRequiredPermissions $appWithRequiredResource
+            $grant = GetConsentGrantForApp $appId $consentUserId $DelegatedPermissions $consentRequiredPermissions $appWithRequiredResource
             if ( $grant ) {
                 Invoke-GraphRequest /oauth2PermissionGrants -method POST -body $grant -version $this.version -connection $this.connection | out-null
             } else {
@@ -219,7 +225,7 @@ ScriptClass ApplicationAPI {
             }
         } else {
             $permissions = @()
-            if ( $appWithRequiredResource -and $appWithRequiredResource | gm requiredResourceAccess ) {
+            if ( $appWithRequiredResource -and ( $appWithRequiredResource | gm requiredResourceAccess -erroraction ignore ) ) {
                 $graphResourceAccess = $appWithRequiredResource.requiredResourceAccess | where resourceAppid -eq 00000003-0000-0000-c000-000000000000
                 $graphResourceAccess.resourceAccess | foreach {
                     if ( $_.type -eq 'Scope') {

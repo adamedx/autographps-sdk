@@ -28,13 +28,15 @@ ScriptClass GraphConnection {
     $Connected = $false
     $Status = [GraphConnectionStatus]::Online
     $NoBrowserUI = $false
+    $UserAgent = $null
 
-    function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes, $noBrowserUI = $false) {
+    function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes, $noBrowserUI = $false, $userAgent = $null) {
         $this.Id = new-guid
         $this.GraphEndpoint = $graphEndpoint
         $this.Identity = $Identity
         $this.Connected = $false
         $this.Status = [GraphConnectionStatus]::Online
+        $this.UserAgent = $userAgent
 
         $isRemotePSSession = (get-variable PSSenderInfo -erroraction ignore) -ne $null
         write-verbose ("Browser supported: {0}, NoBrowserUISpecified {1}, IsRemotePSSession: {2}" -f $::.Application.SupportsBrowserSignin, $noBrowserUI, $isRemotePSSession)
@@ -102,14 +104,14 @@ ScriptClass GraphConnection {
     }
 
     static {
-        function NewSimpleConnection([string] $graphType = 'MSGraph', [string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null ) {
+        function NewSimpleConnection([string] $graphType = 'MSGraph', [string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null, $userAgent = $null ) {
             $endpoint = new-so GraphEndpoint $cloud $graphType $null $null $authProtocol
             $app = new-so GraphApplication $::.Application.DefaultAppId
             $identity = if ( ! $anonymous ) {
                 new-so GraphIdentity $app $endpoint $tenantName
             }
 
-            new-so GraphConnection $endpoint $identity $ScopeNames
+            new-so GraphConnection $endpoint $identity $ScopeNames $false $userAgent
         }
 
         function ToConnectionInfo([PSCustomObject] $connection) {

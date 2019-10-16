@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.12.0'
+ModuleVersion = '0.13.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -209,36 +209,50 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-# AutoGraphPS-SDK 0.12.0 Release Notes
+## AutoGraphPS-SDK 0.13.0 Release Notes
 
-This release fixes defects introduced by the previous `0.11.1` release and includes some minor feature updates.
+This release adds features for additional API request customization and includes fixes for defects
+related to AAD application management commands.
 
-## New dependencies
+### New dependencies
 None.
 
-## Breaking changes
-None.
+### Breaking changes
 
-## New features
+* The `Set-GraphApplicationConsent` parameter `AppOnlyPermissions` has been changed to `ApplicationPermissions` to for
+  consistency with the changes made in `0.11.1` made to other commands with the same parameter. This change was intended
+  to be part of the `0.11.1` release but was missed.
+* The `AllApplicationPermissions` parameter of `Remove-GraphApplicationConsent` is renamed `AllPermissions`.
+* The `AllTenantUsers` parameter of `Remove-GraphApplicationConsent` is renamed `ConsentForAllUsers`.
 
-* Added the `ReplyUrl` alias to the `AppRedirectUri` parameter of `Get-GraphToken`, `Connect-Graph` and `New-GraphConnection`
-* `Get-GraphConnectionInfo` now includes a connection id guid property in its output to identify each unique connection
+### New features
 
-## Fixed defects
+* By default, any request to Graph sets the `client-request-id` header with a unique GUID per request
+* The `Get-GraphItem` and `Invoke-GraphRequest` commands support the following new parameters:
+     * `ClientRequestId`: overrides the auto-generated value of the `client-request-id` header with the
+       specified GUID value
+     * `NoClientRequestId`: switch overrides the behavior of supplying an auto-generated `client-request-id` header
+       and instead does not specify the header at all
+* `UserAgent` parameter now added to `New-GraphConnection` and `Connect-Graph`: By default, AutoGraphPS specifies a particular
+   user agent when sending requests. The `UserAgent` parameter allows these commands to set a specific user agent string
+   used by all requests made through the resulting connection.
+* As noted in the breaking changes section, the `ApplicationPermissions` parameter has replaced `AppOnlyPermissions` in
+  `Set-GraphApplicationConsent`.
+* `Remove-GraphApplicationConsent` now accepts pipeline input from output of `Get-GraphApplicationConsent` via
+   `$ConsentGrant` parameter.
 
-* `Test-Graph` command regression prevented targeting clouds other than `Public`
-* `Get-GraphToken`, `Connect-Graph` and `New-GraphConnection` regressions caused certain parameter sets to require all parameters
-* Fix race condition with `Connect-Graph` due to MSAL changes with integrated token cache: `Connect-Graph` created
-  a new token, which was immediately invalidated, requiring a reconnect when used with a command.
-* Fix error output from `Get-GraphToken` due to missing `GraphResourceUri` parameter, which also blocked alternate resource uri functionality
+### Fixed defects
 
-### Miscellaneous implementation notes
-
-The most involved fix was to address a defect introduced when the `MSAL` library version was updated to `4.4.0`. Prior to this release, token caches were maintained independently from the `PublicClientApplication` or `ConfidentialClientApplication` authentication context.
-
-With `MSAL` `4.4.0`, token caches were part of the authentication context. When `4.4.0` was integrated into `AutoGraphPS-SDK`, this change was accounted for, but there was still an assumption that the authentication context could be shared across the `AutoGraphPS-SDK` notion of `Connection` without the cache being affected by the sharing. Since cache had become part of the auth context, sharing the auth context as `AutoGraphPS-SDK` had always done for a given connection meant sharing caches; this introduced race conditions where a token could be added to a cache only to have it immediately removed by an operation that was assumed to be independent of that cache but wasn't. The result was that users would someitmes be requested to sign-in again immediately after a sign-in prompted by `Connect-Graph` or any command that affected connection management.
-
-The fix was to ensure each connection used a separate authentication context by associating each auth context with a connection in a store of auth contexts. A better fix may be to remove the store of auth contexts altogether, and make the auth context part of the connection itself, or at least simplify the lookup logic to use only the connection id.
+* `Remove-GraphItem` unusable without explicitly specifying `Cloud` parameter because of parameter binding issue in the default case.
+* `New-GraphApplication` did not honor the `ConsentAllUsers` parameter and wrote an error about an undefined variable to
+  the error stream. The incorret variable usage has been corrected and the parameter is now honored.
+* `Register-GraphApplication`'s consent functionality explicitly or silently failed due to regression from breaking changes
+  to other parts of the module in version 0.11.1. The command has been fixed to be compatible with the changes.
+* `Get-GraphApplication` output extra words / characters in the `StartTime` field -- this formatting issue is now fixed.
+* `Set-GraphAllicationConsent` was ignoring `ConsentAllUsers` and was not adding `AllPrincipals` consent grants -- this is fixed.
+* `Remove-GraphConsent` syntax error due to reference to non-existent parameter, broken *All Users* consent removal
+* `New-GraphApplication` adds minimal required permissions to the application object when permissions are not specified --
+   only delegated permissions are added for public client apps, and only offline_access instead of `User.Read`.
 
 '@
 

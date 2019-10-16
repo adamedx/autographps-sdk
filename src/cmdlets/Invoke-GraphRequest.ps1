@@ -96,6 +96,9 @@ Specifies optional HTTP headers to include in the request to Graph, which some p
 .PARAMETER Version
 Specifies the Graph API version that this command should target when making Graph requests. When not specified, the API version of the current Graph is used, which is v1.0 for the default Graph.
 
+.PARAMETER ClientRequestId
+Specifies the client request in the form of a GUID id that should be passed in the 'client-request-id' request header to the Graph API. This can be used to correlate verbose output regarding the request made by this command with request logs accessible to the operator of the Graph API service. Such correlation speeds up diagnosis of errors in service support scenarios. By default, this command automatically generates a request id and sends it in the header and also logs it in the command's verbose output, so this parameter does not need to be specified unless there is a particular reason to customize the id, such as using an id generated from another tool or API as a prerequisite for issuing this command that makes it easy to correlate the request from this command with that tool output for troubleshooting and log analysis. It is possible to prevent the generation of a client request id altogether by specifying the NoClientRequestId parameter.
+
 .PARAMETER Connection
 Specifies a Connection object returned by the New-GraphConnection command whose Graph endpoint will be accessed when making Graph requests with this command.
 
@@ -116,6 +119,9 @@ This parameter specifies that the output of this command should be structured as
 
 .PARAMETER AADGraph
 This parameter specifies that instead of accessing Microsoft Graph, the command should make requests against Azure Active Directory Graph (AAD Graph). Note that most functionality of this command and other commands in the module is not compatible with AAD Graph; this parameter may be deprecated in the future.
+
+.PARAMETER NoClientRequestId
+This parameter suppresses the automatic generation and submission of the 'client-request-id' header in the request used for troubleshooting with service-side request logs. This parameter is included only to enable complete control over the protocol as there would be very few use cases for not sending the request id.
 
 .OUTPUTS
 TThe command returns the content of the HTTP response from the Graph endpoint. The result will depend on the documented response for the specified HTTP method parameter for the Graph URI. The results are formatted as either deserialized PowerShell objects, or, if the RawContent parameter is also specified, the literal content of the HTTP response. Because Graph responds to requests with JSON except in cases where content types such as images or other media are requested, use of the RawContent parameter will usually result in JSON output.
@@ -257,6 +263,8 @@ function Invoke-GraphRequest {
 
         [String] $Version = $null,
 
+        [Guid] $ClientRequestId,
+
         [parameter(parametersetname='ExistingConnection', mandatory=$true)]
         [PSCustomObject] $Connection = $null,
 
@@ -274,7 +282,9 @@ function Invoke-GraphRequest {
         [switch] $IncludeFullResponse,
 
         [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
-        [switch] $AADGraph
+        [switch] $AADGraph,
+
+        [switch] $NoClientRequestId
     )
 
     Enable-ScriptClassVerbosePreference
@@ -500,7 +510,7 @@ function Invoke-GraphRequest {
                 $null
             }
 
-            $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery
+            $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent
             $request |=> SetBody $Body
             try {
                 $request |=> Invoke $skipCount

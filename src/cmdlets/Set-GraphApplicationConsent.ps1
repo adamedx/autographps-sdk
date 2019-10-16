@@ -28,12 +28,12 @@ function Set-GraphApplicationConsent {
         [string[]] $DelegatedUserPermissions,
 
         [parameter(parametersetname='explicitscopes')]
-        [string[]] $AppOnlyPermissions,
+        [string[]] $ApplicationPermissions,
 
         [parameter(parametersetname='allconfiguredpermissions', mandatory=$true)]
         [switch] $AllPermissions,
 
-        [switch] $ConsentAllUsers,
+        [switch] $ConsentForAllUsers,
 
         $UserIdToConsent,
 
@@ -52,7 +52,11 @@ function Set-GraphApplicationConsent {
 
         $app = $appAPI |=> GetApplicationByAppId $AppId
 
-        $appAPI |=> SetConsent $app.appid $DelegatedUserPermissions $AppOnlyPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentAllUsers.IsPresent $app
+        if ( ! $app ) {
+            throw "Unable to find application with id '$AppId'"
+        }
+
+        $appAPI |=> SetConsent $app.appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentForAllUsers.IsPresent $app
     }
 
     end {}
@@ -60,5 +64,5 @@ function Set-GraphApplicationConsent {
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent DelegatedUserPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent AppOnlyPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AppOnlyPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Set-GraphApplicationConsent ApplicationPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AppOnlyPermission))
 

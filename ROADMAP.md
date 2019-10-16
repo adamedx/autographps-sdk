@@ -3,8 +3,6 @@
 ## To-do items -- prioritized
 
 * Add more command help
-* Add client-side correlationid
-* Make token caches per app-per cloud.
 * Add useragent to connection commands
 * Add view to get-grapherror
 * Add throttling
@@ -12,7 +10,8 @@
 * Add equivalent of -Token option to new-graphconnection and connect-graph -- this sets token from external source
 * Make verbose output more readable
 * Document strange splatting behavior with noteproperty
-* Rename New-GraphApplicationCertificate to Set-GraphApplicationCertificate?
+* New-GraphApplicationCertificate with -noupload option
+* Set-GraphApplicationCertificate to set to an existing certificate
 
 
 * Add $ref?
@@ -356,6 +355,7 @@
 * Add support for test endpoints by allowing alternate resource for endpoint uri
 * Make comments start at beginning of command
 * Make Get-GraphToken take all params from new-graphconnection and get-graphconnection
+* Add client-side correlationid
 
 ### Postponed
 
@@ -381,6 +381,7 @@
 * Make public graph items have id instead of name
 * switch to 3 columns by default -- remove class
 * Move some data to info, possibly show rwx
+* Make token caches per app-per cloud.
 
 #### Stdposh improvements
 

@@ -21,6 +21,7 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
     static {
         const GraphApplicationId 00000003-0000-0000-c000-000000000000
         const DefaultScopeQualifier ([Uri] 'https://graph.microsoft.com')
+        const OfflineAccessScopeId 7427e0e9-2fba-42fe-b0c0-848c9e6a8182
         $graphSP = $null
         $permissionsByIds = $null
         $appOnlyPermissionsByName = $null
@@ -79,16 +80,11 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
             }
         }
 
-        function GetAppOnlyResourceAccessPermissions($scopes, $connection) {
-            if ( $scopes ) {
-                GetPermissionsByName $scopes Role $connection
+        function GetAppOnlyResourceAccessPermissions($roles, $connection) {
+            if ( $roles ) {
+                GetPermissionsByName $roles Role $connection
             } else {
-                @(
-                    @{
-                        id = 'df021288-bdef-4463-88db-98f22de89214'
-                        type = 'Role'
-                    }
-                )
+                @()
             }
         }
 
@@ -96,10 +92,7 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
             if ( $scopes ) {
                 GetPermissionsByName $scopes Scope $connection
             } else {
-                @{
-                    id = 'e1fe6dd8-ba31-4d61-89e7-88639da4683d'
-                    type = 'Scope'
-                }
+                @()
             }
         }
 

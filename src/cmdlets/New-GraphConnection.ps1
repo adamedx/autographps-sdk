@@ -108,7 +108,9 @@ function New-GraphConnection {
 
         [parameter(parametersetname='aadgraph', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
-        [switch] $AADGraph
+        [switch] $AADGraph,
+
+        [String] $UserAgent = $null
     )
 
     begin {
@@ -146,7 +148,7 @@ function New-GraphConnection {
 
         if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
             write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'
-            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $computedAuthProtocol
+            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $computedAuthProtocol -useragent $UserAgent
         } else {
             $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
                 write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
@@ -196,7 +198,7 @@ function New-GraphConnection {
 
             $app = new-so GraphApplication $newAppId $AppRedirectUri $appSecret $NoninteractiveAppOnlyAuth.IsPresent
             $identity = new-so GraphIdentity $app $graphEndpoint $adjustedTenantId
-            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent
+            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent
         }
     }
 }

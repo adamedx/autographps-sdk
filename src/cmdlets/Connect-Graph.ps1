@@ -112,6 +112,8 @@ function Connect-Graph {
         [parameter(parametersetname='customendpoint')]
         [switch] $AADGraph,
 
+        [string] $UserAgent = $null,
+
         [parameter(parametersetname='reconnect', mandatory=$true)]
         [Switch] $Reconnect,
 
