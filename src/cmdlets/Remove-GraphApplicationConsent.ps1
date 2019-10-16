@@ -19,17 +19,20 @@
 function Remove-GraphApplicationConsent {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='delegated')]
     param(
-        [parameter(position=0, mandatory=$true)]
+        [parameter(position=0, parametersetname='application', mandatory=$true)]
+        [parameter(position=0, parametersetname='delegated', mandatory=$true)]
+        [parameter(position=0, parametersetname='delegatedallusers', mandatory=$true)]
+        [parameter(position=0, parametersetname='allpermissions', mandatory=$true)]
         [Guid[]] $AppId,
 
         [parameter(parametersetname='consentgrant', valuefrompipeline=$true, mandatory=$true)]
         $ConsentGrant,
 
-        [parameter(position=1,parametersetname='application', mandatory=$true)]
+        [parameter(parametersetname='application', mandatory=$true)]
         [string[]] $ApplicationPermissions,
 
-        [parameter(position=1,parametersetname='delegated', mandatory=$true)]
-        [parameter(position=1,parametersetname='delegatedallusers', mandatory=$true)]
+        [parameter(parametersetname='delegated', mandatory=$true)]
+        [parameter(parametersetname='delegatedallusers', mandatory=$true)]
         [string[]] $DelegatedUserPermissions,
 
         [parameter(parametersetname='delegatedallusers', mandatory=$true)]
@@ -79,8 +82,20 @@ function Remove-GraphApplicationConsent {
         $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
-        $appSP = $appAPI |=> GetAppServicePrincipal $AppId
-        $appSPId = $appSP.id
+        $appSPId = if ( $consentObject ) {
+            if ( $isAppOnly ) {
+                # appRoleAssignment objects have a service principal id
+                # in the principalId property
+                $consentObject.principalId
+            } else {
+                # oauth2PermissionGrant objects have a service principal id
+                # in the clientId property
+                $consentObject.clientId
+            }
+        } else {
+            $appSP = $appAPI |=> GetAppServicePrincipal $AppId
+            $appSP.id
+        }
 
         $appFilter = "clientId eq '$appSPId'"
         $filterClauses = @($appFilter)
