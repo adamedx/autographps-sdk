@@ -33,7 +33,7 @@ function Set-GraphApplicationConsent {
         [parameter(parametersetname='allconfiguredpermissions', mandatory=$true)]
         [switch] $AllPermissions,
 
-        [switch] $ConsentAllUsers,
+        [switch] $ConsentForAllUsers,
 
         $UserIdToConsent,
 
@@ -52,7 +52,11 @@ function Set-GraphApplicationConsent {
 
         $app = $appAPI |=> GetApplicationByAppId $AppId
 
-        $appAPI |=> SetConsent $app.appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentAllUsers.IsPresent $app
+        if ( ! $app ) {
+            throw "Unable to find application with id '$AppId'"
+        }
+
+        $appAPI |=> SetConsent $app.appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentForAllUsers.IsPresent $app
     }
 
     end {}

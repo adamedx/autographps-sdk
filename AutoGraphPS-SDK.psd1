@@ -219,9 +219,11 @@ None.
 
 ## Breaking changes
 
-The `Set-GraphApplicationConsent` parameter `AppOnlyPermissions` has been changed to `ApplicationPermissions` to for
-consistency with the changes made in `0.11.1` made to other commands with the same parameter. This change was intended
-to be part of the `0.11.1` release but was missed.
+* The `Set-GraphApplicationConsent` parameter `AppOnlyPermissions` has been changed to `ApplicationPermissions` to for
+  consistency with the changes made in `0.11.1` made to other commands with the same parameter. This change was intended
+  to be part of the `0.11.1` release but was missed.
+* The `AllApplicationPermissions` parameter of `Remove-GraphApplicationConsent` is renamed `AllPermissions`.
+* The `AllTenantUsers` parameter of `Remove-GraphApplicationConsent` is renamed `ConsentForAllUsers`.
 
 ## New features
 
@@ -236,6 +238,8 @@ to be part of the `0.11.1` release but was missed.
    used by all requests made through the resulting connection.
 * As noted in the breaking changes section, the `ApplicationPermissions` parameter has replaced `AppOnlyPermissions` in
   `Set-GraphApplicationConsent`.
+* `Remove-GraphApplicationConsent` now accepts pipeline input from output of `Get-GraphApplicationConsent` via
+   `$ConsentGrant` parameter.
 
 ## Fixed defects
 

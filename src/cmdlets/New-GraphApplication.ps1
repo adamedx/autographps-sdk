@@ -53,7 +53,7 @@ function New-GraphApplication {
         [parameter(parametersetname='confidentialappexistingcert')]
         [switch] $NoCredential,
 
-        [switch] $ConsentAllUsers,
+        [switch] $ConsentForAllUsers,
 
         [switch] $NoConsent,
 
@@ -92,8 +92,8 @@ function New-GraphApplication {
     }
 
     if ( $SkipTenantRegistration.IsPresent ) {
-        if ( $UserIdToConsent -or $ConsentAllUsers.IsPresent ) {
-            throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'UserIdToConsent' or 'ConsentAllUsers' is specified")
+        if ( $UserIdToConsent -or $ConsentForAllUsers.IsPresent ) {
+            throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'UserIdToConsent' or 'ConsentForAllUsers' is specified")
         }
     }
     $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
@@ -138,7 +138,7 @@ function New-GraphApplication {
     }
 
     if ( ! $SkipTenantRegistration.IsPresent ) {
-        $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $ConsentAllUsers.IsPresent $UserIdToConsent $DelegatedUserPermissions $ApplicationPermissions | out-null
+        $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $ConsentForAllUsers.IsPresent $UserIdToConsent $DelegatedUserPermissions $ApplicationPermissions | out-null
     }
 
     $newApp
