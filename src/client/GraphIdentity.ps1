@@ -51,6 +51,7 @@ ScriptClass GraphIdentity {
                 AppId = $this.App.AppId
                 userId = $null
                 scopes = $null
+                userObjectId = $null
             }
         }
     }

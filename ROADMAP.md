@@ -3,7 +3,6 @@
 ## To-do items -- prioritized
 
 * Add more command help
-* Add useragent to connection commands
 * Add view to get-grapherror
 * Add throttling
 * Update build tools to not change path in order to use nuget
@@ -40,7 +39,6 @@
 * Add ScriptProperty computed fields to displayformatter?
 * Add return types to cmdlets
 * Change autographps to use dynamic scope implementation
-* Add logging implementation and cmdlets
 * Emit header object in get-graphchilditem ?
 * Rename DisplayFormatter to OutputFormatter
 * Change relativeuri parameter to 'uri' to match invoke-webrequest and invoke-restmethod
@@ -356,6 +354,7 @@
 * Make comments start at beginning of command
 * Make Get-GraphToken take all params from new-graphconnection and get-graphconnection
 * Add client-side correlationid
+* Add logging implementation
 
 ### Postponed
 
@@ -370,6 +369,7 @@
 * Remove enums
 * Remove Get-GraphSchema
 * Remove Get-GraphVersion
+* Add useragent to connection commands
 
 ### Abandoned
 

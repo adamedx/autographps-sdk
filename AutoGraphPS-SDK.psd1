@@ -182,6 +182,8 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\REST\GraphErrorRecorder.ps1'
         '.\src\REST\GraphRequest.ps1'
         '.\src\REST\GraphResponse.ps1'
+        '.\src\REST\RequestLog.ps1'
+        '.\src\REST\RequestLogEntry.ps1'
         '.\src\REST\RESTRequest.ps1'
         '.\src\REST\RESTResponse.ps1'
     )
