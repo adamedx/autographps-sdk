@@ -25,6 +25,7 @@ $cmdlets = @(
     'Get-GraphConnectionInfo'
     'Get-GraphError'
     'Get-GraphItem'
+    'Get-GraphLog'
     'Get-GraphSchema'
     'Get-GraphToken'
     'Get-GraphVersion'

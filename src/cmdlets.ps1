@@ -22,6 +22,7 @@
 . (import-script cmdlets\Get-GraphConnectionInfo)
 . (import-script cmdlets\Get-GraphError)
 . (import-script cmdlets\Get-GraphItem)
+. (import-script cmdlets\Get-GraphLog)
 . (import-script cmdlets\Get-GraphToken)
 . (import-script cmdlets\Invoke-GraphRequest)
 . (import-script cmdlets\New-GraphApplication)

@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.13.0'
+ModuleVersion = '0.14.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -80,6 +80,7 @@ FunctionsToExport = @(
     'Get-GraphConnectionInfo'
     'Get-GraphError'
     'Get-GraphItem'
+    'Get-GraphLog'
     'Get-GraphToken'
     'Invoke-GraphRequest'
     'New-GraphApplication'
@@ -143,6 +144,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Get-GraphConnectionInfo.ps1'
         '.\src\cmdlets\Get-GraphError.ps1'
         '.\src\cmdlets\Get-GraphItem.ps1'
+        '.\src\cmdlets\Get-GraphLog.ps1'
         '.\src\cmdlets\Get-GraphToken.ps1'
         '.\src\cmdlets\Invoke-GraphRequest.ps1'
         '.\src\cmdlets\New-GraphApplication.ps1'
@@ -211,50 +213,20 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.13.0 Release Notes
+## AutoGraphPS-SDK 0.14.0 Release Notes
 
-This release adds features for additional API request customization and includes fixes for defects
-related to AAD application management commands.
+This release adds features for logging requests and responses.
 
 ### New dependencies
 None.
 
 ### Breaking changes
 
-* The `Set-GraphApplicationConsent` parameter `AppOnlyPermissions` has been changed to `ApplicationPermissions` to for
-  consistency with the changes made in `0.11.1` made to other commands with the same parameter. This change was intended
-  to be part of the `0.11.1` release but was missed.
-* The `AllApplicationPermissions` parameter of `Remove-GraphApplicationConsent` is renamed `AllPermissions`.
-* The `AllTenantUsers` parameter of `Remove-GraphApplicationConsent` is renamed `ConsentForAllUsers`.
-
 ### New features
 
-* By default, any request to Graph sets the `client-request-id` header with a unique GUID per request
-* The `Get-GraphItem` and `Invoke-GraphRequest` commands support the following new parameters:
-     * `ClientRequestId`: overrides the auto-generated value of the `client-request-id` header with the
-       specified GUID value
-     * `NoClientRequestId`: switch overrides the behavior of supplying an auto-generated `client-request-id` header
-       and instead does not specify the header at all
-* `UserAgent` parameter now added to `New-GraphConnection` and `Connect-Graph`: By default, AutoGraphPS specifies a particular
-   user agent when sending requests. The `UserAgent` parameter allows these commands to set a specific user agent string
-   used by all requests made through the resulting connection.
-* As noted in the breaking changes section, the `ApplicationPermissions` parameter has replaced `AppOnlyPermissions` in
-  `Set-GraphApplicationConsent`.
-* `Remove-GraphApplicationConsent` now accepts pipeline input from output of `Get-GraphApplicationConsent` via
-   `$ConsentGrant` parameter.
+* The `Get-GraphLog` command enables retrieval of records of each request and response to the Graph
 
 ### Fixed defects
-
-* `Remove-GraphItem` unusable without explicitly specifying `Cloud` parameter because of parameter binding issue in the default case.
-* `New-GraphApplication` did not honor the `ConsentAllUsers` parameter and wrote an error about an undefined variable to
-  the error stream. The incorret variable usage has been corrected and the parameter is now honored.
-* `Register-GraphApplication`'s consent functionality explicitly or silently failed due to regression from breaking changes
-  to other parts of the module in version 0.11.1. The command has been fixed to be compatible with the changes.
-* `Get-GraphApplication` output extra words / characters in the `StartTime` field -- this formatting issue is now fixed.
-* `Set-GraphAllicationConsent` was ignoring `ConsentAllUsers` and was not adding `AllPrincipals` consent grants -- this is fixed.
-* `Remove-GraphConsent` syntax error due to reference to non-existent parameter, broken *All Users* consent removal
-* `New-GraphApplication` adds minimal required permissions to the application object when permissions are not specified --
-   only delegated permissions are added for public client apps, and only offline_access instead of `User.Read`.
 
 '@
 

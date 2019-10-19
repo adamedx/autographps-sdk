@@ -42,6 +42,7 @@ Describe "Poshgraph application" {
                 'Get-GraphConnectionInfo',
                 'Get-GraphError',
                 'Get-GraphItem',
+                'Get-GraphLog',
                 'Get-GraphToken',
                 'Invoke-GraphRequest',
                 'New-GraphApplication',

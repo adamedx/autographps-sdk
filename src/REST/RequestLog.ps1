@@ -65,7 +65,7 @@ ScriptClass RequestLog {
         }
     }
 
-    function GetLogEntries($start, $count, $startFromOldest) {
+    function GetLogEntries($start, $count, $startFromOldest, $allEntries) {
         $startIndex = 0;
         $endIndex = 0;
 
@@ -81,8 +81,15 @@ ScriptClass RequestLog {
 
         $current = $startIndex
 
-        while ( $entryCount -lt $count -and $entryCount -lt $this.entries.count ) {
+        $targetCount = if ( $allEntries ) {
+            $this.entries.count
+        } else {
+            $count
+        }
+
+        while ( $entryCount -lt $targetCount -and $entryCount -lt $this.entries.count ) {
             $this.entries[$current] |=> ToDisplayableObject
+
             $currentUnbounded = $current + $increment
 
             $current = if ( $currentUnbounded -lt 0 ) {

@@ -18,7 +18,7 @@ ScriptClass RequestLogEntry {
     $logLevel = $null
 
     static {
-        $logFormatter = new-so DisplayTypeFormatter GraphLogEntryDisplayType 'RequestTimestamp', 'RequestUri', 'Method', 'ResponseStatusCode'
+        $logFormatter = new-so DisplayTypeFormatter GraphLogEntryDisplayType 'RequestTimestamp', 'Uri', 'Method', 'StatusCode'
     }
 
     function __initialize($requestIndex, $connection, $restRequest, $logLevel) {
@@ -50,7 +50,7 @@ ScriptClass RequestLogEntry {
         $this.displayProperties = if ( $logLevel -ne 'None' ) {
             [ordered] @{
                 RequestTimestamp = $null
-                RequestUri = $restRequest.uri
+                Uri = $restRequest.uri
                 Method = $restRequest.method
                 ClientRequestId = $restRequest.headers['client-request-id']
                 RequestHeaders = $scrubbedRequestHeaders
@@ -63,11 +63,11 @@ ScriptClass RequestLogEntry {
                 TenantId = $tenantId
                 Scopes = $scopes
                 ResourceUri = $resourceUri
-                RequestUriQuery = $query
+                Query = $query
                 Version = $version
-                ResponseStatusCode = 0
+                StatusCode = 0
                 ResponseTimestamp = $null
-                ResponseErrorMessage = $null
+                ErrorMessage = $null
                 ResponseClientRequestId = $null
                 ResponseHeaders = $null
                 ResponseBody = $null
@@ -87,12 +87,12 @@ ScriptClass RequestLogEntry {
             $scrubbedHeaders = __GetScrubbedHeaders $response.headers
 
             if ( $this.logLevel -ne 'None' ) {
-                $this.displayProperties.ResponseStatusCode = $response.statuscode
+                $this.displayProperties.StatusCode = $response.statuscode
                 $this.displayProperties.ResponseTimestamp = [DateTimeOffset]::now
-                $this.displayProperties.responseTimestamp = $responseTimestamp
-                $this.displayProperties.clientRequestId = $scrubbedHeaders['client-request-id']
-                $this.displayProperties.responseHeaders = $scrubbedHeaders
-                $this.displayProperties.clientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
+                $this.displayProperties.ResponseTimestamp = $responseTimestamp
+                $this.displayProperties.ClientRequestId = $scrubbedHeaders['client-request-id']
+                $this.displayProperties.ResponseHeaders = $scrubbedHeaders
+                $this.displayProperties.ClientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
             }
         } catch {
             $_ | write-debug
@@ -102,7 +102,7 @@ ScriptClass RequestLogEntry {
     function LogError([System.Net.WebResponse] $response, $responseMessage ) {
         try {
             $responseTimeStamp = [DateTimeOffset]::now
-            $this.displayProperties.responseStatusCode = $response.statuscode.value__
+            $this.displayProperties.StatusCode = $response.statuscode.value__
             $this.displayProperties.ResponseClientRequestId = $response.headers['client-request-id']
             $this.displayProperties.Headers = $response.headers
             $this.displayProperties.ResponseTimestamp = $responseTimestamp
