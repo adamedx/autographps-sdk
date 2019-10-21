@@ -236,6 +236,7 @@ None.
 * The `Format-GraphLog` command allows optimized formatting of Graph request logs from `Get-GraphLog`
 * The `Clear-GraphLog` command removes all previous log entries from the log
 * The `Set-GraphLogOption` command allows customization of the logging level and other logging behaviors
+* The `Get-GraphLogOption` command returns information about the current request logging configuration
 
 ### Fixed defects
 
