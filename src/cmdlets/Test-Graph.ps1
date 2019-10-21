@@ -121,7 +121,12 @@ function Test-Graph {
     $pingUri = [Uri]::new($graphEndpointUri, 'ping')
     $request = new-so RESTRequest $pingUri
     $logEntry = if ( $logger ) { $logger |=> NewLogEntry $null $request }
-    $response = $request |=> Invoke -logEntry $logEntry
+
+    try {
+        $response = $request |=> Invoke -logEntry $logEntry
+    } finally {
+        if ( $logEntry ) { $logger |=> CommitLogEntry $logEntry }
+    }
 
     if ( ! $RawContent.ispresent ) {
         # The [ordered] type adapter will ensure that enumeration of items in a hashtable

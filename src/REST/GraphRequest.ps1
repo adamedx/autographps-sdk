@@ -116,8 +116,11 @@ ScriptClass GraphRequest {
         $uri = new-object Uri $uriPath
         $restRequest = new-so RESTRequest $uri $verb $this.headers $this.body $this.Connection.UserAgent
         $logEntry = if ( $logger ) { $logger |=> NewLogEntry $this.Connection $restRequest }
-        $restResponse = $restRequest |=> Invoke -logEntry $logEntry
-        if ( $logger ) { $logger |=> WriteLogEntry $restResponse }
+        try {
+            $restResponse = $restRequest |=> Invoke -logEntry $logEntry
+        } finally {
+            if ( $logEntry ) { $logger |=> CommitLogEntry $logEntry }
+        }
         $restResponse
     }
 

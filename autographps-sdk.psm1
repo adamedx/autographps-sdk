@@ -15,9 +15,11 @@
 . (join-path $psscriptroot src/graph-sdk.ps1)
 
 $cmdlets = @(
+    'Clear-GraphLog'
     'Connect-Graph'
     'Disconnect-Graph'
     'Find-GraphLocalCertificate'
+    'Format-GraphLog'
     'Get-GraphApplication'
     'Get-GraphApplicationCertificate'
     'Get-GraphApplicationConsent'
@@ -26,6 +28,7 @@ $cmdlets = @(
     'Get-GraphError'
     'Get-GraphItem'
     'Get-GraphLog'
+    'Get-GraphLogOption'
     'Get-GraphSchema'
     'Get-GraphToken'
     'Get-GraphVersion'
@@ -41,6 +44,7 @@ $cmdlets = @(
     'Remove-GraphItem'
     'Set-GraphApplicationConsent'
     'Set-GraphConnectionStatus'
+    'Set-GraphLogOption'
     'Test-Graph'
     'Unregister-GraphApplication'
 )

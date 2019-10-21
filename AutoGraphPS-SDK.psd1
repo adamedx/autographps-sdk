@@ -70,9 +70,11 @@ NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.20.1';Guid='9b0f55
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
+    'Clear-GraphLog'
     'Connect-Graph'
     'Disconnect-Graph'
     'Find-GraphLocalCertificate'
+    'Format-GraphLog'
     'Get-GraphApplication'
     'Get-GraphApplicationCertificate'
     'Get-GraphApplicationConsent'
@@ -81,6 +83,7 @@ FunctionsToExport = @(
     'Get-GraphError'
     'Get-GraphItem'
     'Get-GraphLog'
+    'Get-GraphLogOption'
     'Get-GraphToken'
     'Invoke-GraphRequest'
     'New-GraphApplication'
@@ -94,6 +97,7 @@ FunctionsToExport = @(
     'Remove-GraphItem'
     'Set-GraphApplicationConsent'
     'Set-GraphConnectionStatus'
+    'Set-GraphLogOption'
     'Test-Graph'
     'Unregister-GraphApplication'
 )
@@ -134,9 +138,11 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\client\GraphContext.ps1'
         '.\src\client\GraphIdentity.ps1'
         '.\src\client\LogicalGraphManager.ps1'
+        '.\src\cmdlets\Clear-GraphLog.ps1'
         '.\src\cmdlets\Connect-Graph.ps1'
         '.\src\cmdlets\Disconnect-Graph.ps1'
         '.\src\cmdlets\Find-GraphLocalCertificate.ps1'
+        '.\src\cmdlets\Format-GraphLog.ps1'
         '.\src\cmdlets\Get-GraphApplication.ps1'
         '.\src\cmdlets\Get-GraphApplicationCertificate.ps1'
         '.\src\cmdlets\Get-GraphApplicationConsent.ps1'
@@ -145,6 +151,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Get-GraphError.ps1'
         '.\src\cmdlets\Get-GraphItem.ps1'
         '.\src\cmdlets\Get-GraphLog.ps1'
+        '.\src\cmdlets\Get-GraphLogOption.ps1'
         '.\src\cmdlets\Get-GraphToken.ps1'
         '.\src\cmdlets\Invoke-GraphRequest.ps1'
         '.\src\cmdlets\New-GraphApplication.ps1'
@@ -158,6 +165,7 @@ AliasesToExport = @('gge', 'ggi')
         '.\src\cmdlets\Remove-GraphItem.ps1'
         '.\src\cmdlets\Set-GraphApplicationConsent.ps1'
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1'
+        '.\src\cmdlets\Set-GraphLogOption.ps1'
         '.\src\cmdlets\Test-Graph.ps1'
         '.\src\cmdlets\Unregister-GraphApplication.ps1'
         '.\src\cmdlets\common\ApplicationHelper.ps1'
@@ -225,6 +233,9 @@ None.
 ### New features
 
 * The `Get-GraphLog` command enables retrieval of records of each request and response to the Graph
+* The `Format-GraphLog` command allows optimized formatting of Graph request logs from `Get-GraphLog`
+* The `Clear-GraphLog` command removes all previous log entries from the log
+* The `Set-GraphLogOption` command allows customization of the logging level and other logging behaviors
 
 ### Fixed defects
 

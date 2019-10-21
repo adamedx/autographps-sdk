@@ -35,6 +35,7 @@ Describe "Poshgraph application" {
                 'Connect-Graph',
                 'Disconnect-Graph',
                 'Find-GraphLocalCertificate',
+                'Format-GraphLog',
                 'Get-GraphApplication',
                 'Get-GraphApplicationCertificate',
                 'Get-GraphApplicationConsent',
@@ -43,6 +44,7 @@ Describe "Poshgraph application" {
                 'Get-GraphError',
                 'Get-GraphItem',
                 'Get-GraphLog',
+                'Get-GraphLogOption',
                 'Get-GraphToken',
                 'Invoke-GraphRequest',
                 'New-GraphApplication',
@@ -56,6 +58,7 @@ Describe "Poshgraph application" {
                 'Remove-GraphItem',
                 'Set-GraphApplicationConsent',
                 'Set-GraphConnectionStatus',
+                'Set-GraphLogOption',
                 'Test-Graph',
                 'Unregister-GraphApplication')
 

@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script cmdlets\Clear-GraphLog)
 . (import-script cmdlets\Connect-Graph)
 . (import-script cmdlets\Disconnect-Graph)
 . (import-script cmdlets\Find-GraphLocalCertificate)
+. (import-script cmdlets\Format-GraphLog)
 . (import-script cmdlets\Get-GraphApplication)
 . (import-script cmdlets\Get-GraphApplicationCertificate)
 . (import-script cmdlets\Get-GraphApplicationConsent)
@@ -23,6 +25,7 @@
 . (import-script cmdlets\Get-GraphError)
 . (import-script cmdlets\Get-GraphItem)
 . (import-script cmdlets\Get-GraphLog)
+. (import-script cmdlets\Get-GraphLogOption)
 . (import-script cmdlets\Get-GraphToken)
 . (import-script cmdlets\Invoke-GraphRequest)
 . (import-script cmdlets\New-GraphApplication)
@@ -36,6 +39,7 @@
 . (import-script cmdlets\Remove-GraphItem)
 . (import-script cmdlets\Set-GraphApplicationConsent)
 . (import-script cmdlets\Set-GraphConnectionStatus)
+. (import-script cmdlets\Set-GraphLogOption)
 . (import-script cmdlets\Test-Graph)
 . (import-script cmdlets\Unregister-GraphApplication)
 

@@ -12,13 +12,70 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../cmdlets/common/DisplayTypeFormatter)
+
 ScriptClass RequestLogEntry {
     $requestIndex = 0
     $displayProperties = $null
     $logLevel = $null
+    $isError = $false
 
     static {
-        $logFormatter = new-so DisplayTypeFormatter GraphLogEntryDisplayType 'RequestTimestamp', 'Uri', 'Method', 'StatusCode'
+        const ERROR_RESPONSE_FIELD 'ErrorResponse'
+        const LOG_ENTRY_DISPLAY_TYPE 'GraphLogEntryDisplayType'
+        $logFormatter = new-so DisplayTypeFormatter $LOG_ENTRY_DISPLAY_TYPE 'RequestTimestamp', 'StatusCode', 'Method', 'Uri'
+        $Properties = @()
+
+        function __NewDisplayProperties($restRequest, $logLevel, $scrubbedRequestHeaders, $requestBody, $appId, $authType, $userObjectId, $userUpn, $tenantId, $scopes, $resourceUri, $query, $version ) {
+            $restRequesturi = if ( $restRequest ) { $restRequest.Uri }
+            $restRequestMethod = if ( $restRequest ) { $restRequest.Method }
+            $restRequestHeaders = if ( $restRequest ) { $restRequest.headers } else { @{} }
+            $restRequestBody = if ( $restRequest ) { $restRequest.body }
+            [ordered] @{
+                RequestTimestamp = $null
+                Uri = $restRequestUri
+                Method = $restRequestMethod
+                ClientRequestId = $restRequestHeaders['client-request-id']
+                RequestHeaders = $scrubbedRequestHeaders
+                RequestBody = $requestBody
+                HasRequestBody = $restRequestBody -ne $null
+                AppId = $appId
+                AuthType = $authType
+                UserObjectId = $userObjectId
+                UserUpn = $userUpn
+                TenantId = $tenantId
+                Scopes = $scopes
+                ResourceUri = $resourceUri
+                Query = $query
+                Version = $version
+                StatusCode = 0
+                ResponseTimestamp = $null
+                $ERROR_RESPONSE_FIELD = $null
+                ResponseClientRequestId = $null
+                ResponseHeaders = $null
+                ResponseContent = $null
+                ResponseRawContent = $null
+                ClientElapsedTime = $null
+                LogLevel = $logLevel
+            }
+        }
+
+        function __AddMembersToOutputType {
+            $displayProperties = (__NewDisplayProperties).keys
+            $propertyMembers = $displayProperties | foreach {
+                $typeArgs = @{
+                    TypeName = $LOG_ENTRY_DISPLAY_TYPE
+                    MemberType = 'NoteProperty'
+                    MemberName = $_
+                    Value = $null
+                }
+
+                Update-typedata @typeArgs -force
+            }
+            $displayProperties
+        }
+
+        $Properties = __AddMembersToOutputType
     }
 
     function __initialize($requestIndex, $connection, $restRequest, $logLevel) {
@@ -48,32 +105,7 @@ ScriptClass RequestLogEntry {
         $this.logLevel = $logLevel
         $this.requestIndex = $requestIndex
         $this.displayProperties = if ( $logLevel -ne 'None' ) {
-            [ordered] @{
-                RequestTimestamp = $null
-                Uri = $restRequest.uri
-                Method = $restRequest.method
-                ClientRequestId = $restRequest.headers['client-request-id']
-                RequestHeaders = $scrubbedRequestHeaders
-                RequestBody = $requestBody
-                HasRequestBody = $restRequest.body -ne $null
-                AppId = $appId
-                AuthType = $authType
-                UserObjectId = $userObjectId
-                UserUpn = $userUpn
-                TenantId = $tenantId
-                Scopes = $scopes
-                ResourceUri = $resourceUri
-                Query = $query
-                Version = $version
-                StatusCode = 0
-                ResponseTimestamp = $null
-                ErrorMessage = $null
-                ResponseClientRequestId = $null
-                ResponseHeaders = $null
-                ResponseBody = $null
-                ClientElapsedTime = $null
-                LogLevel = $logLevel
-            }
+            $this |::> __NewDisplayProperties $restRequest $logLevel $scrubbedRequestHeaders $requestBody $appId $authType $userObjectId $userUpn $tenantId $scopes $resourceUri $query $version
         }
     }
 
@@ -93,6 +125,10 @@ ScriptClass RequestLogEntry {
                 $this.displayProperties.ClientRequestId = $scrubbedHeaders['client-request-id']
                 $this.displayProperties.ResponseHeaders = $scrubbedHeaders
                 $this.displayProperties.ClientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
+                if ( $this.logLevel -eq 'Full' ) {
+                    $this.displayProperties.ResponseContent = $response.content
+                    $this.displayProperties.ResponseRawContent = $response.rawContent
+                }
             }
         } catch {
             $_ | write-debug
@@ -100,14 +136,19 @@ ScriptClass RequestLogEntry {
     }
 
     function LogError([System.Net.WebResponse] $response, $responseMessage ) {
+        $this.isError = $true
         try {
             $responseTimeStamp = [DateTimeOffset]::now
             $this.displayProperties.StatusCode = $response.statuscode.value__
             $this.displayProperties.ResponseClientRequestId = $response.headers['client-request-id']
             $this.displayProperties.Headers = $response.headers
             $this.displayProperties.ResponseTimestamp = $responseTimestamp
-            $this.displayProperties.ErrorMessage = $responseMessage
+            $this.displayProperties[$this.scriptclass.ERROR_RESPONSE_FIELD] = $responseMessage
             $this.displayProperties.ClientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
+            if ( $this.logLevel -eq 'Full' ) {
+                $this.displayProperties.ResponseContent = $response.content
+                $this.displayProperties.ResponseRawContent = $response.rawContent
+            }
         } catch {
             $_ | write-debug
         }
@@ -116,7 +157,9 @@ ScriptClass RequestLogEntry {
     function ToDisplayableObject {
         if ( $this.displayProperties ) {
             try {
-                $this.scriptclass.logFormatter |=> DeserializedGraphObjectToDisplayableObject ([PSCustomObject] $this.displayProperties)
+                $result = [PSCustomObject] $this.displayProperties
+                $result.psobject.typenames.add($this.scriptclass.LOG_ENTRY_DISPLAY_TYPE)
+                $result
             } catch {
                 $_ | write-debug
             }

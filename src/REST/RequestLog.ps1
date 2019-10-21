@@ -19,6 +19,7 @@
 
 enum RequestLogLevel {
     None
+    Error
     Basic
     Full
 }
@@ -27,7 +28,7 @@ ScriptClass RequestLog {
     const MAX_ENTRIES 131072
     $logPath = $null
     $logLevel = [RequestLogLevel]::Basic
-    $requestIndex = -1
+    $requestIndex = $null
     $entries = @{}
 
     static {
@@ -48,21 +49,33 @@ ScriptClass RequestLog {
     function __initialize([RequestLogLevel] $logLevel = [RequestLogLevel]::Basic, [string] $logPath) {
         $this.logPath = $logPath
         $this.logLevel = $logLevel
+        $this |=> Clear
     }
 
     function NewLogEntry(
         [PSTypeName('GraphConnection')] $connection,
         [PSTypeName('RESTRequest')] $request
     ) {
+        if ( $this.LogLevel -eq 'None' ) {
+            return
+        }
+
         try {
             $newIndex = __GetNextLogIndex
-            $newEntry = new-so RequestLogEntry $newIndex $connection $request $this.loglevel
-            $this.requestIndex = $newIndex
-            $this.entries[$newIndex] = $newEntry
-            $newEntry
+            new-so RequestLogEntry $newIndex $connection $request $this.loglevel
         } catch {
             $_ | write-debug
         }
+    }
+
+    function CommitLogEntry( [PSTypeName('RequestLogEntry')] $logEntry ) {
+        if ( ! $logEntry -or ( $this.logLevel -eq 'Error' -and ! $logEntry.isError ) ) {
+            return
+        }
+
+        $newIndex = __GetNextLogIndex
+        $this.requestIndex = $newIndex
+        $this.entries[$newIndex] = $logEntry
     }
 
     function GetLogEntries($start, $count, $startFromOldest, $allEntries) {
@@ -103,7 +116,10 @@ ScriptClass RequestLog {
         }
     }
 
-    function WriteLogEntry([PSTypeName('RESTResponse')] $response) {
+    function Clear {
+        $this.requestIndex = -1
+        $this.entries.clear()
+
     }
 
     function __GetNextLogIndex {

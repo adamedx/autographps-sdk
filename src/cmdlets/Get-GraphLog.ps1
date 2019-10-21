@@ -40,6 +40,7 @@ Invoke-GraphRequest
 #>
 function Get-GraphLog {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='newest')]
+    [OutputType('GraphLogEntryDisplayType')]
     param(
         [parameter(position=0, parametersetname='newest')]
         $Newest = 20,
@@ -54,7 +55,6 @@ function Get-GraphLog {
         [parameter(parametersetname='all', mandatory=$true)]
         [switch] $All
     )
-
     $fromOldest = $Oldest -ne $null
 
     $count = if ( $fromOldest ) {
@@ -68,7 +68,7 @@ function Get-GraphLog {
     # Results are sorted in reverse chronological order if enumerating from newest -- reverse this
     # so that we always return results in chronological order as part of a standard ux convention
     if ( $results ) {
-        if ( ! $fromOldest ) {
+        if ( ! $fromOldest -and ( $results -is [object[]] ) ) {
             $start = 0
             $end = $results.length - 1
             while ( $start -lt $end ) {
