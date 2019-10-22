@@ -23,7 +23,8 @@ ScriptClass RequestLogEntry {
     static {
         const ERROR_RESPONSE_FIELD 'ErrorResponse'
         const LOG_ENTRY_DISPLAY_TYPE 'GraphLogEntryDisplayType'
-        const EXTENDED_PROPERTIES @('ErrorMessage')
+        const ERROR_MESSAGE_EXTENDED_FIELD 'ErrorMessage'
+        const EXTENDED_PROPERTIES @($ERROR_MESSAGE_EXTENDED_FIELD)
         $logFormatter = new-so DisplayTypeFormatter $LOG_ENTRY_DISPLAY_TYPE 'RequestTimestamp', 'StatusCode', 'Method', 'Uri'
         $ExtendedPropertySet = $null
 
@@ -53,7 +54,7 @@ ScriptClass RequestLogEntry {
                 UserObjectId = $userObjectId
                 UserUpn = $userUpn
                 TenantId = $tenantId
-                Scopes = $scopes
+                Permissions = $scopes
                 ResourceUri = $resourceUri
                 Query = $query
                 Version = $version
