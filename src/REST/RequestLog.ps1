@@ -21,6 +21,8 @@ enum RequestLogLevel {
     None
     Error
     Basic
+    FullRequest
+    FullResponse
     Full
 }
 

@@ -229,6 +229,7 @@ This release adds features for logging requests and responses.
 None.
 
 ### Breaking changes
+None.
 
 ### New features
 
@@ -239,6 +240,7 @@ None.
 * The `Get-GraphLogOption` command returns information about the current request logging configuration
 
 ### Fixed defects
+None.
 
 '@
 

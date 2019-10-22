@@ -29,6 +29,8 @@ This command produces no output.
 .EXAMPLE
 Clear-GraphLog
 
+This clears all entries from the log. A subsequent invocation of Get-GraphLog will then return nothing.
+
 .LINK
 Format-GraphLog
 Set-GraphLog

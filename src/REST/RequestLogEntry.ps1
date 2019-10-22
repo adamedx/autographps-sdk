@@ -25,6 +25,7 @@ ScriptClass RequestLogEntry {
         const LOG_ENTRY_DISPLAY_TYPE 'GraphLogEntryDisplayType'
         const ERROR_MESSAGE_EXTENDED_FIELD 'ErrorMessage'
         const EXTENDED_PROPERTIES @($ERROR_MESSAGE_EXTENDED_FIELD)
+
         $logFormatter = new-so DisplayTypeFormatter $LOG_ENTRY_DISPLAY_TYPE 'RequestTimestamp', 'StatusCode', 'Method', 'Uri'
         $ExtendedPropertySet = $null
 
@@ -90,10 +91,12 @@ ScriptClass RequestLogEntry {
     }
 
     function __initialize($requestIndex, $connection, $restRequest, $logLevel) {
+        $this.logLevel = $logLevel
+
         $userInfo = if ( $connection ) { $connection.identity.GetUserInformation() }
         $scrubbedRequestHeaders = __GetScrubbedHeaders $restRequest.headers
 
-        $requestBody = if ( $loglevel -eq 'Full' ) { $restRequest.body }
+        $requestBody = if ( __ShouldLogFullRequest ) { $restRequest.body }
         $appId = if ( $connection ) { $connection.identity.app.appid }
         $authType = if ( $connection ) { $connection.identity.app.authtype }
         $userObjectId = if ( $userInfo ) { $userInfo.userObjectId }
@@ -113,7 +116,6 @@ ScriptClass RequestLogEntry {
 
         $resourceUri = $pathSegments -join ''
 
-        $this.logLevel = $logLevel
         $this.requestIndex = $requestIndex
         $this.displayProperties = if ( $logLevel -ne 'None' ) {
             $this |::> __NewDisplayProperties $restRequest $logLevel $scrubbedRequestHeaders $requestBody $appId $authType $userObjectId $userUpn $tenantId $scopes $resourceUri $query $version
@@ -136,7 +138,7 @@ ScriptClass RequestLogEntry {
                 $this.displayProperties.ClientRequestId = $scrubbedHeaders['client-request-id']
                 $this.displayProperties.ResponseHeaders = $scrubbedHeaders
                 $this.displayProperties.ClientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
-                if ( $this.logLevel -eq 'Full' ) {
+                if ( __ShouldLogFullResponse ) {
                     $this.displayProperties.ResponseContent = $response.content
                     $this.displayProperties.ResponseRawContent = $response.rawContent
                 }
@@ -156,7 +158,7 @@ ScriptClass RequestLogEntry {
             $this.displayProperties.ResponseTimestamp = $responseTimestamp
             $this.displayProperties[$this.scriptclass.ERROR_RESPONSE_FIELD] = $responseMessage
             $this.displayProperties.ClientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
-            if ( $this.logLevel -eq 'Full' ) {
+            if ( __ShouldLogFullResponse ) {
                 $this.displayProperties.ResponseContent = $response.content
                 $this.displayProperties.ResponseRawContent = $response.rawContent
             }
@@ -183,5 +185,13 @@ ScriptClass RequestLogEntry {
             $scrubbedHeaders[$_] = '<redacted>'
         }
         $scrubbedHeaders
+    }
+
+    function __ShouldLogFullRequest {
+        'FullRequest', 'Full' -contains $this.logLevel
+    }
+
+    function __ShouldLogFullResponse {
+        'FullResponse', 'Full' -contains $this.logLevel
     }
 }
