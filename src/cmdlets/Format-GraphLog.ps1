@@ -47,6 +47,18 @@ function Format-GraphLog {
         [object] $InputObject,
 
         [parameter(position=0)]
+        [ArgumentCompleter({
+                               param ( $commandName,
+                                       $parameterName,
+                                       $wordToComplete,
+                                       $commandAst,
+                                       $fakeBoundParameters )
+                               $possiblePropertyValues = ($::.RequestLogEntry |=> GetExtendedPropertySet)
+                               $lowerWordToComplete = $wordToComplete.tolower()
+                               $possiblePropertyValues | where {
+                                   $_.tolower().StartsWith($lowerWordToComplete)
+                               }
+                           })]
         [string[]] $Property,
 
         [switch] $DisplayError,

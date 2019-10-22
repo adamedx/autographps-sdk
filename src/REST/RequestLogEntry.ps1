@@ -23,8 +23,17 @@ ScriptClass RequestLogEntry {
     static {
         const ERROR_RESPONSE_FIELD 'ErrorResponse'
         const LOG_ENTRY_DISPLAY_TYPE 'GraphLogEntryDisplayType'
+        const EXTENDED_PROPERTIES @('ErrorMessage')
         $logFormatter = new-so DisplayTypeFormatter $LOG_ENTRY_DISPLAY_TYPE 'RequestTimestamp', 'StatusCode', 'Method', 'Uri'
-        $Properties = @()
+        $ExtendedPropertySet = $null
+
+        function GetExtendedPropertySet {
+            $this.ExtendedPropertySet
+        }
+
+        function GetExtendedProperties {
+            $this.EXTENDED_PROPERTIES
+        }
 
         function __NewDisplayProperties($restRequest, $logLevel, $scrubbedRequestHeaders, $requestBody, $appId, $authType, $userObjectId, $userUpn, $tenantId, $scopes, $resourceUri, $query, $version ) {
             $restRequesturi = if ( $restRequest ) { $restRequest.Uri }
@@ -75,7 +84,8 @@ ScriptClass RequestLogEntry {
             $displayProperties
         }
 
-        $Properties = __AddMembersToOutputType
+        $ExtendedPropertySet = @( $EXTENDED_PROPERTIES )
+        $ExtendedPropertySet += __AddMembersToOutputType
     }
 
     function __initialize($requestIndex, $connection, $restRequest, $logLevel) {
