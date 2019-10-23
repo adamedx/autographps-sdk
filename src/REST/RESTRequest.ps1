@@ -64,7 +64,7 @@ ScriptClass RESTRequest {
 
     function Invoke {
         [cmdletbinding(SupportsShouldProcess=$true)]
-        param($PSCmdletArgument)
+        param($PSCmdletArgument, $logEntry)
         if (! $PSCmdletArgument -or $PSCmdletArgument.shouldprocess($this.uri, $this.method)) {
             # Disable progress display
             $progresspreference = 'SilentlyContinue'
@@ -90,6 +90,7 @@ ScriptClass RESTRequest {
             write-verbose "Request Body: `n`n$($this.body)`n`n"
 
             $httpResponse = try {
+                if ( $logEntry ) { $logEntry |=> LogRequestStart }
                 Invoke-WebRequest -Uri $this.uri -headers $this.headers -method $this.method -useragent $this.userAgent -usebasicparsing @optionalArguments
             } catch [System.Net.WebException] {
                 $response = $_.exception.response
@@ -102,6 +103,8 @@ ScriptClass RESTRequest {
                     $_.ToString()
                 }
 
+                if ( $logEntry ) { $logEntry |=> LogError $response $responseOutput }
+
                 _write-responseverbose $response $responseOutput
                 write-error -message $responseStream -targetobject ([PSCustomObject] @{CustomTypeName='RESTException';PSErrorRecord=$_;ResponseStream=$responseStream}) -erroraction silentlycontinue
                 throw
@@ -109,7 +112,9 @@ ScriptClass RESTRequest {
 
             _write-responseverbose $httpResponse $httpResponse.rawContent
 
-            new-so RESTResponse $httpResponse
+            $restResponse = new-so RESTResponse $httpResponse
+            if ( $logEntry ) { $logEntry |=> LogSuccess $restResponse }
+            $restResponse
         } else {
             [PSCustomObject] @{PSTypeName='RESTResponse'}
         }

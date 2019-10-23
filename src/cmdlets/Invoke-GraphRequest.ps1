@@ -16,6 +16,7 @@
 . (import-script ../common/GraphAccessDeniedException)
 . (import-script common/QueryHelper)
 . (import-script ../REST/GraphRequest)
+. (import-script ../REST/RequestLog)
 . (import-script ../REST/GraphErrorRecorder)
 . (import-script common/GraphOutputFile)
 . (import-script common/PermissionParameterCompleter)
@@ -498,6 +499,8 @@ function Invoke-GraphRequest {
     $pageCount = 0
     $contentTypeData = $null
 
+    $logger = $::.RequestLog |=> GetDefault
+
     while ( $graphRelativeUri -ne $null -and ($graphRelativeUri.tostring().length -gt 0) -and ($maxResultCount -eq $null -or $results.length -lt $maxResultCount) ) {
         if ( $graphType -eq ([GraphType]::AADGraph) ) {
             $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
@@ -513,7 +516,7 @@ function Invoke-GraphRequest {
             $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent
             $request |=> SetBody $Body
             try {
-                $request |=> Invoke $skipCount
+                $request |=> Invoke $skipCount -logger $logger
             } catch [System.Net.WebException] {
                 $statusCode = if ( $_.exception.response | gm statuscode -erroraction ignore ) {
                     $_.exception.response.statuscode

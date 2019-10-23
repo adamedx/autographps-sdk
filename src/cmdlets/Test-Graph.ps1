@@ -106,6 +106,8 @@ function Test-Graph {
     )
     Enable-ScriptClassVerbosePreference
 
+    $logger = $::.RequestLog |=> GetDefault
+
     $graphEndpointUri = if ( $Connection ) {
         $Connection.GraphEndpoint.Graph
     } elseif ( $Cloud ) {
@@ -118,7 +120,13 @@ function Test-Graph {
 
     $pingUri = [Uri]::new($graphEndpointUri, 'ping')
     $request = new-so RESTRequest $pingUri
-    $response = $request |=> Invoke
+    $logEntry = if ( $logger ) { $logger |=> NewLogEntry $null $request }
+
+    try {
+        $response = $request |=> Invoke -logEntry $logEntry
+    } finally {
+        if ( $logEntry ) { $logger |=> CommitLogEntry $logEntry }
+    }
 
     if ( ! $RawContent.ispresent ) {
         # The [ordered] type adapter will ensure that enumeration of items in a hashtable

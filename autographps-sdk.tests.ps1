@@ -32,9 +32,11 @@ Describe "Poshgraph application" {
     Context "When loading the manifest" {
         It "should export the exact same set of functions as are in the set of expected functions" {
             $expectedFunctions = @(
+                'Clear-GraphLog',
                 'Connect-Graph',
                 'Disconnect-Graph',
                 'Find-GraphLocalCertificate',
+                'Format-GraphLog',
                 'Get-GraphApplication',
                 'Get-GraphApplicationCertificate',
                 'Get-GraphApplicationConsent',
@@ -42,6 +44,8 @@ Describe "Poshgraph application" {
                 'Get-GraphConnectionInfo',
                 'Get-GraphError',
                 'Get-GraphItem',
+                'Get-GraphLog',
+                'Get-GraphLogOption',
                 'Get-GraphToken',
                 'Invoke-GraphRequest',
                 'New-GraphApplication',
@@ -55,6 +59,7 @@ Describe "Poshgraph application" {
                 'Remove-GraphItem',
                 'Set-GraphApplicationConsent',
                 'Set-GraphConnectionStatus',
+                'Set-GraphLogOption',
                 'Test-Graph',
                 'Unregister-GraphApplication')
 

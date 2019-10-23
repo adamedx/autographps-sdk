@@ -68,7 +68,7 @@ ScriptClass GraphRequest {
         }
     }
 
-    function Invoke($pageStartIndex = $null, $maxResultCount = $null, $pageSize = $null) {
+    function Invoke($pageStartIndex = $null, $maxResultCount = $null, $pageSize = $null, $logger) {
         if ( $this.Connection.Status -eq ([GraphConnectionStatus]::Offline) ) {
             throw "Web request cannot proceed -- connection status is set to offline"
         }
@@ -99,7 +99,7 @@ ScriptClass GraphRequest {
             write-verbose "Invoking Graph request with request id: '$($this.ClientRequestId)'"
         }
 
-        $response = __InvokeRequest $this.verb $this.uri $query
+        $response = __InvokeRequest $this.verb $this.uri $query $logger
         new-so GraphResponse $response
     }
 
@@ -111,11 +111,17 @@ ScriptClass GraphRequest {
         }
     }
 
-    function __InvokeRequest($verb, $uri, $query) {
+    function __InvokeRequest($verb, $uri, $query, $logger) {
         $uriPath = __UriWithQuery $uri $query
         $uri = new-object Uri $uriPath
         $restRequest = new-so RESTRequest $uri $verb $this.headers $this.body $this.Connection.UserAgent
-        $restRequest |=> Invoke
+        $logEntry = if ( $logger ) { $logger |=> NewLogEntry $this.Connection $restRequest }
+        try {
+            $restResponse = $restRequest |=> Invoke -logEntry $logEntry
+        } finally {
+            if ( $logEntry ) { $logger |=> CommitLogEntry $logEntry }
+        }
+        $restResponse
     }
 
     function __AddQueryParameters($parameters) {
