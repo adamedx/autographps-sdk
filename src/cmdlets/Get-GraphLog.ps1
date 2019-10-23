@@ -24,8 +24,35 @@ URI, http method, headers, along with details of the response are recorded as en
 of log entries, where each request is a log entry. This command is useful for troubleshooting / diagnosis, analyzing performance, or
 simply exploring and understanding the Graph protocol.
 
+Entries are returned by this command in chronolgical order. The results of the command may be piped to other PowerShell commands such as
+Sort-Object to provide other sort orders, filtering, projected properties, or formatting of the log entries.
+
+The Clear-GraphLog command may be used to remove all entries from the log. The Set-GraphLogOption command may also be used
+to disable logging altogether.
+
+.PARAMETER Newest
+The Newest parameter specifies the maximum number of log entries to return from the command, and that those entries must be
+the newest such entries. This parameter may be specified as the first parameter without an explicit name, and its default
+value is 20.
+
+.PARAMETER Oldest
+This parameter is similar to Newest, except that the oldest set of entries of the size specified by this parameter are returned.
+
+.PARAMETER Skip
+This specifies the number of entries to skip.
+
+.PARAMETER All
+To retrieve all of the entries in the log without needing to know how many entries exist, specify the parameter.
+
 .OUTPUTS
-A collection of log entries where each entry contains request and response details.
+A collection of log entries sorted chronologically where each entry contains request and response details.
+
+.NOTES
+The request log is currently implemented as a circular, in-memory log. The log is configured with a maximum log size that determines the
+maximum number of log entries (one per request) stored in the log. This setting may be managed via the Get-GraphLogOption and
+Set-GraphLogOption commands.
+
+When the log has reached its maximum capacity, the next request that is logged will overwrite the earliest request in the log.
 
 .EXAMPLE
 Get-GraphLog
@@ -67,11 +94,12 @@ This shows the oldest 3 entries, and pipes the output to select to project speci
 
 .LINK
 Format-GraphLog
-Set-GraphLog
+Set-GraphLogOption
+Get-GraphLogOption
 Clear-GraphLog
-Write-GraphLog
 Get-GraphItem
 Invoke-GraphRequest
+Test-Graph
 #>
 function Get-GraphLog {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='newest')]
@@ -113,6 +141,8 @@ function Get-GraphLog {
             }
         }
 
-        $results
+        $results | foreach {
+            $_ |=> ToDisplayableObject
+        }
     }
 }

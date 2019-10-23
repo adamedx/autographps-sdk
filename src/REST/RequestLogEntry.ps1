@@ -15,7 +15,6 @@
 . (import-script ../cmdlets/common/DisplayTypeFormatter)
 
 ScriptClass RequestLogEntry {
-    $requestIndex = 0
     $displayProperties = $null
     $logLevel = $null
     $isError = $false
@@ -90,7 +89,7 @@ ScriptClass RequestLogEntry {
         $ExtendedPropertySet += __AddMembersToOutputType
     }
 
-    function __initialize($requestIndex, $connection, $restRequest, $logLevel) {
+    function __initialize($connection, $restRequest, $logLevel) {
         $this.logLevel = $logLevel
 
         $userInfo = if ( $connection ) { $connection.identity.GetUserInformation() }
@@ -116,7 +115,6 @@ ScriptClass RequestLogEntry {
 
         $resourceUri = $pathSegments -join ''
 
-        $this.requestIndex = $requestIndex
         $this.displayProperties = if ( $logLevel -ne 'None' ) {
             $this |::> __NewDisplayProperties $restRequest $logLevel $scrubbedRequestHeaders $requestBody $appId $authType $userObjectId $userUpn $tenantId $scopes $resourceUri $query $version
         }

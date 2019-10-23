@@ -27,13 +27,14 @@ enum RequestLogLevel {
 }
 
 ScriptClass RequestLog {
-    const MAX_ENTRIES 131072
+    $maxEntries = 0
     $logPath = $null
     $logLevel = [RequestLogLevel]::Basic
     $requestIndex = $null
     $entries = @{}
 
     static {
+        const MAX_ENTRIES_DEFAULT 131072
         $defaultLogger = $null
         function GetDefault {
             if ( ! $this.defaultLogger ) {
@@ -51,7 +52,7 @@ ScriptClass RequestLog {
     function __initialize([RequestLogLevel] $logLevel = [RequestLogLevel]::Basic, [string] $logPath) {
         $this.logPath = $logPath
         $this.logLevel = $logLevel
-        $this |=> Clear
+        $this |=> SetSize $this.scriptclass.MAX_ENTRIES_DEFAULT
     }
 
     function NewLogEntry(
@@ -64,7 +65,7 @@ ScriptClass RequestLog {
 
         try {
             $newIndex = __GetNextLogIndex
-            new-so RequestLogEntry $newIndex $connection $request $this.loglevel
+            new-so RequestLogEntry $connection $request $this.loglevel
         } catch {
             $_ | write-debug
         }
@@ -103,13 +104,13 @@ ScriptClass RequestLog {
         }
 
         while ( $entryCount -lt $targetCount -and $entryCount -lt $this.entries.count ) {
-            $this.entries[$current] |=> ToDisplayableObject
+            $this.entries[$current]
 
             $currentUnbounded = $current + $increment
 
             $current = if ( $currentUnbounded -lt 0 ) {
-                $this.MAX_ENTRIES - 1
-            } elseif ( $currentUnbounded -ge $this.MAX_ENTRIES ) {
+                $this.maxEntries - 1
+            } elseif ( $currentUnbounded -ge $this.maxEntries ) {
                 0
             } else {
                 $currentUnbounded
@@ -121,18 +122,27 @@ ScriptClass RequestLog {
     function Clear {
         $this.requestIndex = -1
         $this.entries.clear()
+    }
 
+    function SetSize([uint32] $newSize) {
+        $entriesToSave = [Math]::Min($this.entries.count, [int] $newSize)
+        $entries = GetLogEntries 0 $this.entries.count $false $true
+        $this.Clear()
+        $this.maxEntries = [int] $newSize
+        for ( $current = $entriesToSave - 1; $current -ge 0; $current-- ) {
+             CommitLogEntry $entries[$current]
+        }
     }
 
     function __GetNextLogIndex {
-        ( $this.requestIndex + 1 ) % $this.MAX_ENTRIES
+        ( $this.requestIndex + 1 ) % $this.maxEntries
     }
 
     function __GetOldestLogIndex {
         if ( $this.entries.count -eq 0 ) {
             -1
-        } elseif ( $this.entries.count -eq $this.MAX_ENTRIES ) {
-            $this.requestCount % $this.MAX_ENTRIES
+        } elseif ( $this.entries.count -eq $this.maxEntries ) {
+            $this.requestCount % $this.maxEntries
         } else {
             0
         }
@@ -143,6 +153,6 @@ ScriptClass RequestLog {
     }
 
     function __AdvanceIndex {
-        $this.requestIndex = ($this.requestIndex + 1) % $this.MAX_ENTRIES
+        $this.requestIndex = ($this.requestIndex + 1) % $this.maxEntries
     }
 }

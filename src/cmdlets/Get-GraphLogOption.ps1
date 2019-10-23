@@ -21,37 +21,40 @@ Sets options related to logging of the requests made by this module.
 .DESCRIPTION
 When a command such as Get-GraphItem or Invoke-GraphRequest issues a request to the Graph, the details of that request, including the
 URI, http method, headers, along with details of the response are recorded as entries in a log. The Get-GraphLogOption command
-returns information about the configfuration of the module's logging behavior.
-
-* None: Specifies that no logging at all should occur.
-* Error: Specifies that requests should only be logged if the request is unsuccessful.
-* Basic: Logs all requests, but logged data does not include the request body.
-* Full: Logs all requests and inlcudes the request body.
+returns information about the configfuration of the module's logging behavior including the level of logging and the maximum number
+of entries to record in the log.
 
 .OUTPUTS
 Returns an object with the following properties:
 
 * LogLevel: This is set to a string that represents the logging level. See the documentation for the
   Set-GraphLogOption command for valid values of this property
+* MaximumSize: Gets the currently configured maximum number of log entries that will be stored in the log.
 
 .EXAMPLE
 PS> Get-GraphLogOption
 
-Full
+LogLevel MaximumSize
+-------- -----------
+   Basic       32767
+
+This example shows how the logging configuration as an object is displayed.
 
 .LINK
-Format-GraphLog
+Get-GraphLog
 Set-GraphLogOption
 Clear-GraphLog
-Write-GraphLog
 Get-GraphItem
 Invoke-GraphRequest
 #>
 function Get-GraphLogOption {
     [cmdletbinding()]
     param()
-    $logLevel = ( $::.RequestLog |=> GetDefault ).LogLevel
+    $log = $::.RequestLog |=> GetDefault
+    $logLevel = $log.LogLevel
+    $maximumSize = $log.maxEntries
     [PSCustomObject] @{
         LogLevel = $logLevel
+        MaximumSize = $maximumSize
     }
 }
