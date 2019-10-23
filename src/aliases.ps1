@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set-alias gge Get-GraphError
-set-alias ggi Get-GraphItem
+set-alias ggl Get-GraphLog
+set-alias fgl Format-GraphLog
 

@@ -193,7 +193,7 @@ function Format-GraphLog {
 
         [switch] $ShowError,
 
-        [string] $Wrap,
+        [switch] $Wrap,
 
         [switch] $HideTableHeaders,
 
