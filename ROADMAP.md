@@ -23,7 +23,6 @@
 * Add help support via write-information?
 
 * ------------------------------------
-* Use argumentcompleter advanced parameter rather than registerparametercompleter
 * Change get-graphconnection to take a connection or a graph
 * Refactor applicationhelper, applicationapi, and applicationobject to move api calls out of applicationobject
 * Convert some verbose statements to debug
@@ -382,6 +381,7 @@
 * switch to 3 columns by default -- remove class
 * Move some data to info, possibly show rwx
 * Make token caches per app-per cloud.
+* Use argumentcompleter advanced parameter rather than registerparametercompleter
 
 #### Stdposh improvements
 

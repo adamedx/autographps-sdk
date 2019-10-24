@@ -101,7 +101,11 @@ ScriptClass RequestLogEntry {
         $userObjectId = if ( $userInfo ) { $userInfo.userObjectId }
         $userUpn = if ( $userInfo ) { $userInfo.userId }
         $tenantId = if ( $connection ) { $connection.identity.tenantdisplayid }
-        $scopes = if ( $connection ) { $connection.scopes }
+        $scopes = if ( $connection -and
+                       $connection.identity -and
+                       ( $connection.identity.token | gm scopes -erroraction ignore ) ) {
+                           $connection.identity.token.scopes
+                       }
         $version = if ( $restRequest.Uri.segments.length -ge 3 ) { $restRequest.Uri.segments[1].trimend('/') }
         $query = $restRequest.Uri.query
 

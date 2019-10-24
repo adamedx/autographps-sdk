@@ -238,7 +238,10 @@ None.
 
 ### Fixed defects
 
-* Format-GraphLog specified the 'Wrap' parameter as a string rather than as switch -- the parameter was unusable
+* `Format-GraphLog` specified the 'Wrap' parameter as a string rather than as switch -- the parameter was unusable
+* `Format-GraphLog`: `Authentication` value for `View` parameter broken due to invalid property
+* `Permissions` column from `Get-GraphLog` only included requested permissions, not actual token permissions -- fixed
+  to reflect the latter
 
 '@
 
