@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.14.0'
+ModuleVersion = '0.15.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -112,7 +112,7 @@ VariablesToExport = @(
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('gge', 'ggi')
+AliasesToExport = @('gge', 'ggi', 'ggl', 'fgl')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -221,9 +221,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.14.0 Release Notes
+## AutoGraphPS-SDK 0.15.0 Release Notes
 
-This release adds features for logging requests and responses.
+This release adds usability improvements and fixes.
 
 ### New dependencies
 None.
@@ -233,14 +233,15 @@ None.
 
 ### New features
 
-* The `Get-GraphLog` command enables retrieval of records of each request and response to the Graph
-* The `Format-GraphLog` command allows optimized formatting of Graph request logs from `Get-GraphLog`
-* The `Clear-GraphLog` command removes all previous log entries from the log
-* The `Set-GraphLogOption` command allows customization of the logging level and other logging behaviors
-* The `Get-GraphLogOption` command returns information about the current request logging configuration
+* The `ggl` alias for `Get-GraphLog` has been added
+* The `fgl` alias for `Format-GraphLog` has also been added
 
 ### Fixed defects
-None.
+
+* `Format-GraphLog` specified the 'Wrap' parameter as a string rather than as switch -- the parameter was unusable
+* `Format-GraphLog`: `Authentication` value for `View` parameter broken due to invalid property
+* `Permissions` column from `Get-GraphLog` only included requested permissions, not actual token permissions -- fixed
+  to reflect the latter
 
 '@
 

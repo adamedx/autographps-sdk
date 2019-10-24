@@ -39,7 +39,7 @@ $Views = @{
         'StatusCode'
         'Method'
         'ResourceUri'
-        'Scopes'
+        'Permissions'
     )
     Debug = @(
         'RequestTimestamp'
@@ -193,7 +193,7 @@ function Format-GraphLog {
 
         [switch] $ShowError,
 
-        [string] $Wrap,
+        [switch] $Wrap,
 
         [switch] $HideTableHeaders,
 
@@ -224,9 +224,12 @@ function Format-GraphLog {
     process {
         $propertyMap = @{}
 
-        $targetProperties | foreach {
-            if ( $_ -ne $::.RequestLogEntry.ERROR_MESSAGE_EXTENDED_FIELD ) {
-                $propertyValue = $InputObject | select -expandproperty $_
+        foreach ( $targetProperty in $targetProperties ) {
+            if ( $targetProperty -ne $::.RequestLogEntry.ERROR_MESSAGE_EXTENDED_FIELD ) {
+                $propertyValue = if ( $InputObject | gm  $targetProperty ) {
+                    $InputObject | select -expandproperty $targetProperty
+                }
+
                 $augmentedValue = if ( $propertyValue -is [DateTimeOffset] ) {
                     # DateTimeOffset has a very long format that includes the time
                     # zone offset -- use something shorter to save display space
@@ -234,7 +237,7 @@ function Format-GraphLog {
                 } else {
                     $propertyValue
                 }
-                $propertyMap[$_] = $augmentedValue
+                $propertyMap[$targetProperty] = $augmentedValue
             }
         }
 

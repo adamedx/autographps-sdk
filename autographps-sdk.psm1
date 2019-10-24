@@ -49,7 +49,7 @@ $cmdlets = @(
     'Unregister-GraphApplication'
 )
 
-$aliases = @('gge', 'ggi')
+$aliases = @('gge', 'ggi', 'ggl', 'fgl')
 
 $variables = @('GraphVerboseOutputPreference', 'LastGraphItems')
 
