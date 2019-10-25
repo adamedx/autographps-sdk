@@ -21,13 +21,13 @@
 
 $__DefaultScopeData = @'
 {
-    "id":  "a4b9d70c-d80b-4788-8f41-44569d619d10",
+    "id":  "2e0805e3-4dd1-46dc-bcb2-302f00f009e6",
     "deletedDateTime":  null,
     "accountEnabled":  true,
     "appDisplayName":  "Microsoft Graph",
     "appId":  "00000003-0000-0000-c000-000000000000",
     "applicationTemplateId":  null,
-    "appOwnerOrganizationId":  "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
+    "appOwnerOrganizationId":  "2b2ac5b3-67ed-4e66-82ca-65508361de47",
     "appRoleAssignmentRequired":  false,
     "displayName":  "Microsoft Graph",
     "errorUrl":  null,
