@@ -41,6 +41,12 @@ This parameter is similar to Newest, except that the oldest set of entries of th
 .PARAMETER Skip
 This specifies the number of entries to skip.
 
+.PARAMETER StatusFilter
+Filters the kinds of requests emitted by their status:
+  * None (default): there is no filter; requests of any status are emitted
+  * Error: only failed requests (e.g. 400s, 500s, etc.) are emitted
+  * Success: only successful requests are emitted
+
 .PARAMETER All
 To retrieve all of the entries in the log without needing to know how many entries exist, specify the parameter.
 
@@ -92,6 +98,18 @@ StatusCode Method ResourceUri
 
 This shows the oldest 3 entries, and pipes the output to select to project specific fields
 
+.EXAMPLE
+Get-GraphLog -StatusFilter Error
+
+2019.11.04 21:59:54> get-graphlog -StatusFilter Error
+
+RequestTimestamp            StatusCode Method Uri
+----------------            ---------- ------ ---
+11/4/2019 9:59:11 PM -08:00        404 GET    https://graph.microsoft.com/v1.0/me/applications
+11/4/2019 9:59:47 PM -08:00        400 GET    https://graph.microsoft.com/v1.0/me2
+
+In this example, the StatusFilter parameter is specified with the value Error so that only failed requests are returned by the command.
+
 .LINK
 Format-GraphLog
 Set-GraphLogOption
@@ -115,6 +133,9 @@ function Get-GraphLog {
         [parameter(parametersetname='newest')]
         $Skip = 0,
 
+        [ValidateSet('None', 'Error', 'Success')]
+        [string] $StatusFilter = 'None',
+
         [parameter(parametersetname='all', mandatory=$true)]
         [switch] $All
     )
@@ -126,7 +147,8 @@ function Get-GraphLog {
         $Newest
     }
 
-    $results = ($::.RequestLog |=> GetDefault) |=> GetLogEntries $Skip $count $fromOldest $All.IsPresent
+    $filterFlag = if ( $StatusFilter -ne 'None' ) { $StatusFilter -eq 'Error' }
+    $results = ($::.RequestLog |=> GetDefault) |=> GetLogEntries $Skip $count $fromOldest $All.IsPresent $filterFlag
 
     # Results are sorted in reverse chronological order if enumerating from newest -- reverse this
     # so that we always return results in chronological order as part of a standard ux convention
