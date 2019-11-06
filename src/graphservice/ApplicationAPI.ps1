@@ -41,7 +41,7 @@ ScriptClass ApplicationAPI {
     }
 
     function CreateApp($appObject) {
-         Invoke-GraphRequest applications -method POST -body $appObject -version $this.version -connection $this.connection
+         Invoke-GraphRequest /applications -method POST -body $appObject -version $this.version -connection $this.connection
     }
 
     function AddKeyCredentials($appObject, $appCertificate) {
@@ -63,7 +63,7 @@ ScriptClass ApplicationAPI {
             }
         ) | convertto-json -depth 6
 
-        Invoke-GraphRequest "applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.version -connection $this.connection
+        Invoke-GraphRequest "/applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.version -connection $this.connection
     }
 
     function SetKeyCredentials($appId, $keyCredentials) {
@@ -71,7 +71,7 @@ ScriptClass ApplicationAPI {
             keyCredentials = $keyCredentials
         }
 
-        Invoke-GraphRequest "applications/$appId" -method PATCH -Body $keyCredentialPatch -version $this.version -connection $this.connection | out-null
+        Invoke-GraphRequest "/applications/$appId" -method PATCH -Body $keyCredentialPatch -version $this.version -connection $this.connection | out-null
     }
 
     function RegisterApplication($appId, $isExternal) {
