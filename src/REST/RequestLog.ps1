@@ -81,7 +81,7 @@ ScriptClass RequestLog {
         $this.entries[$newIndex] = $logEntry
     }
 
-    function GetLogEntries($start, $count, $startFromOldest, $allEntries) {
+    function GetLogEntries($start, $count, $startFromOldest, $allEntries, $errorFilter) {
         $startIndex = 0;
         $endIndex = 0;
 
@@ -104,7 +104,15 @@ ScriptClass RequestLog {
         }
 
         while ( $entryCount -lt $targetCount -and $entryCount -lt $this.entries.count ) {
-            $this.entries[$current]
+            $currentEntry = $this.entries[$current]
+            $emitEntry = $errorFilter -eq $null -or (
+                ( $errorFilter -and $currentEntry.isError ) -or (
+                    ! $errorFilter -and ! $currentEntry.isError )
+            )
+
+            if ( $emitEntry ) {
+                $this.entries[$current]
+            }
 
             $currentUnbounded = $current + $increment
 

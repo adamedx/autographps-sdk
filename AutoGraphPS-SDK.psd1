@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.15.0'
+ModuleVersion = '0.16.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -210,7 +210,7 @@ PrivateData = @{
         LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
 
         # A URL to the main website for this project.
-        ProjectUri = 'https://github.com/adamedx/poshgraph-sdk'
+        ProjectUri = 'https://github.com/adamedx/autographps-sdk'
 
         # A URL to an icon representing this module.
         IconUri = 'https://raw.githubusercontent.com/adamedx/poshgraph-sdk/master/assets/PoshGraphIcon.png'
@@ -221,9 +221,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.15.0 Release Notes
+## AutoGraphPS-SDK 0.16.0 Release Notes
 
-This release adds usability improvements and fixes.
+This release includes minor improvements and bug fixes.
 
 ### New dependencies
 None.
@@ -233,15 +233,12 @@ None.
 
 ### New features
 
-* The `ggl` alias for `Get-GraphLog` has been added
-* The `fgl` alias for `Format-GraphLog` has also been added
+* The `Get-GraphLog` command has a new `StatusFilter` parameter that specifies that the command must return only log etnries with an error status, only those with a success status, or any status (the default).
 
 ### Fixed defects
 
-* `Format-GraphLog` specified the 'Wrap' parameter as a string rather than as switch -- the parameter was unusable
-* `Format-GraphLog`: `Authentication` value for `View` parameter broken due to invalid property
-* `Permissions` column from `Get-GraphLog` only included requested permissions, not actual token permissions -- fixed
-  to reflect the latter
+* Application management commands such as `New-GraphApplication` would fail due to a bad URI when used by a module like *AutoGraphPS* that allows the default base URI to be changed -- fixed so that URIs used by the application management commands are context invariant.
+* The `ScopeHelper` class has been updated with a new snapshot of known permissions metadata
 
 '@
 
