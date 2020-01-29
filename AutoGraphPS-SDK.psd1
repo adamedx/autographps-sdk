@@ -9,10 +9,10 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'autographps-sdk.psm1'
+RootModule = 'AutoGraphPS-SDK.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.16.0'
+ModuleVersion = '0.17.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -123,7 +123,7 @@ AliasesToExport = @('gge', 'ggi', 'ggl', 'fgl')
 # List of all files packaged with this module
     FileList = @(
         '.\AutoGraphPS-SDK.psd1'
-        '.\autographps-sdk.psm1'
+        '.\AutoGraphPS-SDK.psm1'
         '.\src\aliases.ps1'
         '.\src\cmdlets.ps1'
         '.\src\graph-sdk.ps1'
@@ -221,9 +221,11 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.16.0 Release Notes
+## AutoGraphPS-SDK 0.17.0 Release Notes
 
-This release includes minor improvements and bug fixes.
+This release contains no changes compared to the previous release except
+to correct casing in the module manifest and module files so that they match
+each other and address some module loading issues on Linux.
 
 ### New dependencies
 None.
@@ -233,13 +235,11 @@ None.
 
 ### New features
 
-* The `Get-GraphLog` command has a new `StatusFilter` parameter that specifies that the command must return only log etnries with an error status, only those with a success status, or any status (the default).
+None.
 
 ### Fixed defects
 
-* Application management commands such as `New-GraphApplication` would fail due to a bad URI when used by a module like *AutoGraphPS* that allows the default base URI to be changed -- fixed so that URIs used by the application management commands are context invariant.
-* The `ScopeHelper` class has been updated with a new snapshot of known permissions metadata
-
+None.
 '@
 
     } # End of PSData hashtable

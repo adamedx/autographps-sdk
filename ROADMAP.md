@@ -4,6 +4,8 @@
 
 * Add more command help
 * Add view to get-grapherror
+* Refactor auth providers
+* Enable module re-import
 * Add throttling
 * Update build tools to not change path in order to use nuget
 * Add equivalent of -Token option to new-graphconnection and connect-graph -- this sets token from external source
