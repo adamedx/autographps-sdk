@@ -184,7 +184,9 @@ ScriptClass RequestLogEntry {
     function __GetScrubbedHeaders([HashTable] $headers) {
         $scrubbedHeaders = $headers.clone()
         'Authorization', 'Workload-Authorization' | foreach {
-            $scrubbedHeaders[$_] = '<redacted>'
+            if ( $headers.ContainsKey($_) ) {
+                $scrubbedHeaders[$_] = '<redacted>'
+            }
         }
         $scrubbedHeaders
     }
