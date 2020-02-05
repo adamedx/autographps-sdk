@@ -9,7 +9,7 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'AutoGraphPS-SDK.psm1'
+RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
 ModuleVersion = '0.17.0'
@@ -122,8 +122,8 @@ AliasesToExport = @('gge', 'ggi', 'ggl', 'fgl')
 
 # List of all files packaged with this module
     FileList = @(
-        '.\AutoGraphPS-SDK.psd1'
-        '.\AutoGraphPS-SDK.psm1'
+        '.\autographps-sdk.psd1'
+        '.\autographps-sdk.psm1'
         '.\src\aliases.ps1'
         '.\src\cmdlets.ps1'
         '.\src\graph-sdk.ps1'
@@ -221,23 +221,26 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.17.0 Release Notes
+## AutoGraphPS-SDK 0.18.0 Release Notes
 
-This release contains no changes compared to the previous release except
-to correct casing in the module manifest and module files so that they match
-each other and address some module loading issues on Linux.
+This release contains bug fixes and a change to make all module manifest and psm1 files
+match the case of the module as it is named in PowerShell Gallery to eliminate issues
+with a mismatch of case in case sensitive file systems (i.e. Linux).
 
 ### New dependencies
 None.
 
 ### Breaking changes
-None.
+
+* Consumers of this module from other module manifests should use lower case when referring to the autographps-sdk module.
 
 ### New features
 
 None.
 
 ### Fixed defects
+
+* Get-GraphLog was returning results indicating that the request headers `Authorization` and `Workload-Authorization` were set even when they were not issued in the request. This has been changed to only log these headers if they were actually set.
 
 None.
 '@

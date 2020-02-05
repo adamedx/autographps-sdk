@@ -19,8 +19,8 @@
   <files>
     <file src="LICENSE.md" target="." />
     <file src="README.md" target="." />
-    <file src="AutoGraphPS-SDK.psd1" target="." />
-    <file src="AutoGraphPS-SDK.psm1" target="." />
+    <file src="autographps-sdk.psd1" target="." />
+    <file src="autographps-sdk.psm1" target="." />
     <file src="autographps-sdk.tests.ps1" target="." />
     <file src="src\**\*.ps1" target="src/" />
     <file src="build\**\*.ps1" target="build/" />
