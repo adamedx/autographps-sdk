@@ -223,12 +223,14 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS-SDK 0.18.0 Release Notes
 
-This release contains bug fixes and a change to make all module manifest and psm1 files
+This release contains auth library dependency updates, bug fixes, and a change to make all module manifest and psm1 files
 match the case of the module as it is named in PowerShell Gallery to eliminate issues
 with a mismatch of case in case sensitive file systems (i.e. Linux).
 
 ### New dependencies
-None.
+
+* ADAL 5.2.6
+* MSAL 4.8.1
 
 ### Breaking changes
 
