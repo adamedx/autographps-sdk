@@ -45,7 +45,7 @@ ScriptClass V1AuthProvider {
     function AcquireFirstUserToken($authContext, $scopes) {
         write-verbose 'V1 auth provider acquiring initial user token'
 
-        $promptBehaviorValue = ([Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]::Auto)
+        $promptBehaviorValue = ([Microsoft.IdentityModel.Clients.ActiveDirectory.PromptBehavior]::SelectAccount)
         $promptBehavior = new-object "Microsoft.IdentityModel.Clients.ActiveDirectory.PlatformParameters" -ArgumentList $promptBehaviorValue
 
         $authContext.protocolContext.AcquireTokenAsync(
