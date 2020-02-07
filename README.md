@@ -1,9 +1,9 @@
-# AutoGraphPS-SDK
-
-| <img src="https://raw.githubusercontent.com/adamedx/autographps-sdk/master/assets/PoshGraphIcon.png" width="50">  | [Documentation](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md) | [Installation](#Installation) | [Using AutoGraphPS-SDK](#using-autographps-sdk) | [Command inventory](#command-inventory) | [Contributing and development](#contributing-and-development) |
-|-------------|-------------|-------------|-------------|-------------|-------------|
+# <img src="https://raw.githubusercontent.com/adamedx/autographps-sdk/master/assets/PoshGraphIcon.png" width="50"> AutoGraphPS-SDK
 
 [![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-SDK-CI?branchName=master)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=4&branchName=master)
+
+| [Documentation](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md) | [Installation](#Installation) | [Using AutoGraphPS-SDK](#using-autographps-sdk) | [Command inventory](#command-inventory) | [Contributing and development](#contributing-and-development) |
+|-------------|-------------|-------------|-------------|-------------|
 
 ## Overview
 
