@@ -38,6 +38,12 @@ try {
 } catch {
 }
 
+$moduleArg = if ( $FromSource.IsPresent -or $Path ) {
+    $moduleManifestPath
+} else {
+    $moduleName
+}
+
 if (! $NoNewShell.ispresent ) {
     $newpsmodulepath = $devDirectory + $OSPathSeparator + $currentpsmodulepath.value
     write-verbose "Using updated module path in new process to import module '$moduleName' with psmodulepath '$newpsmodulepath'"
@@ -89,7 +95,7 @@ $scriptBlock = @"
         # So for now, we assume its not already loaded -- maybe we can add a check
         # for that and fail in the future to avoid situations where one runs with
         # pre-existing state rather than the latest version of the module
-        `$moduleInfo = import-module '$moduleName' -verbose -passthru # No '-force' -- see above!
+        `$moduleInfo = import-module '$moduleArg' -verbose -passthru # No '-force' -- see above!
 
         `$moduleBase = `$moduleInfo.moduleBase
         if ( `$moduleBase -ne `$moduleExpectedParent ) {
