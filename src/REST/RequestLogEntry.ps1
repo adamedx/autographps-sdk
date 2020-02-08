@@ -25,7 +25,8 @@ ScriptClass RequestLogEntry {
         const ERROR_MESSAGE_EXTENDED_FIELD 'ErrorMessage'
         const EXTENDED_PROPERTIES @($ERROR_MESSAGE_EXTENDED_FIELD)
 
-        $logFormatter = new-so DisplayTypeFormatter $LOG_ENTRY_DISPLAY_TYPE 'RequestTimestamp', 'StatusCode', 'Method', 'Uri'
+        $::.DisplayTypeFormatter |=> RegisterDisplayType $LOG_ENTRY_DISPLAY_TYPE 'RequestTimestamp', 'StatusCode', 'Method', 'Uri'
+
         $ExtendedPropertySet = $null
 
         function GetExtendedPropertySet {
