@@ -16,7 +16,7 @@ ScriptClass DisplayTypeFormatter {
     $displayTypeName = $null
 
     static {
-        function __RegisterDisplayType($displayTypeName, $displayProperties) {
+        function RegisterDisplayType($displayTypeName, $displayProperties) {
             remove-typedata -typename $displayTypeName -erroraction ignore
 
             $DisplayTypeArguments = @{
@@ -41,7 +41,7 @@ ScriptClass DisplayTypeFormatter {
 
     function __initialize($displayTypeName, $displayProperties) {
         $this.displayTypeName = $displayTypeName
-        $this.scriptclass |=> __RegisterDisplayType $displayTypeName $displayProperties
+        $this.scriptclass |=> RegisterDisplayType $displayTypeName $displayProperties
     }
 
     function DeserializedGraphObjectToDisplayableObject($object) {
@@ -55,7 +55,7 @@ ScriptClass DisplayTypeFormatter {
         $resultObject = [PSCustomObject] (__ToHashtable $object)
 
         # Now copy over all the scriptmethods -- this module adds some
-        # script script methods to objects deserialized from Graph, and those
+        # script methods to objects deserialized from Graph, and those
         # must be preserved in order to retain module functionality that
         # relies on them (e.g. '__ItemContext' method)
         $object | gm -membertype ScriptMethod | foreach {

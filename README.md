@@ -1,22 +1,9 @@
-AutoGraphPS-SDK
-===============
+# <img src="https://raw.githubusercontent.com/adamedx/autographps-sdk/master/assets/PoshGraphIcon.png" width="50"> AutoGraphPS-SDK
 
-<img src="https://raw.githubusercontent.com/adamedx/autographps-sdk/master/assets/PoshGraphIcon.png" width="100">
+| [Documentation](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md) | [Installation](#Installation) | [Using AutoGraphPS-SDK](#Usage) | [Command inventory](#Reference) | [Contributing and development](#contributing-and-development) |
+|-------------|-------------|-------------|-------------|-------------|
 
-----
 [![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-SDK-CI?branchName=master)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=4&branchName=master)
-
-* [Overview](#Overview)
-* [Installation](#Installation)
-* [Using AutoGraphPS-SDK](#using-autographps-sdk)
-* [Command inventory](#command-inventory)
-* [Developer installation from source](#developer-installation-from-source)
-* [Contributing and development](#contributing-and-development)
-* [License and authors](#license-and-authors)
-
-## Documentation
-
-*Full documentation is not yet implemented, please visit the **[AutographPS WALKTHROUGH](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md)** for the best detail currently available.*
 
 ## Overview
 
@@ -32,7 +19,7 @@ The project is in the earliest stages of development and almost but not quite ye
 
 ### System requirements
 
-On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are at a pre-release support level. MacOS has not been tested, but may work with PowerShell 6.1.2 and higher.
+On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are supported. MacOS has not been tested, but should work with PowerShell 6.1.2 and higher.
 
 ## Installation
 AutoGraphPS-SDK is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/autographps-sdk); run the following command to install the latest stable release of AutoGraphPSGraph-SDK into your user profile:
@@ -41,7 +28,7 @@ AutoGraphPS-SDK is available through the [PowerShell Gallery](https://www.powers
 Install-Module AutoGraphPS-SDK -scope currentuser
 ```
 
-## Using AutoGraphPS-SDK
+## Usage
 Once you've installed, you can use an AutoGraphPS-SDK cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
 
 ```powershell
@@ -93,7 +80,7 @@ If your application is packaged as a PowerShell module, simply include it in the
 
 If you're using a script module (`.psm1` file) or simply a plain PowerShell `ps1` script, you should ensure the module has been already been installed on the system using `Install-Module` or a similar deployment mechanism, then add a line `import-module autographps-sdk` to the beginning of your script or script module.
 
-## Command inventory
+## Reference
 
 The full list of cmdlets in this module is given below; note that `Invoke-GraphRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-Graph` to request additional permissions as described in the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference). Additional cmdlets will be added to this module as development matures.
 
@@ -157,7 +144,7 @@ cd autographps-sdk
 
 ## Contributing and development
 
-Read about our contribution process in [CONTRIBUTING.md](CONTRIBUTING.md). The project is not quite ready to handle source contributions; suggestions on features or other advice are welcome while we establish a baseline.
+Read about our contribution process in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 See the [Build README](build/README.md) for instructions on building and testing changes to AutoGraphPS-SDK.
 

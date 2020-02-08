@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>AutoGraphPS-SDK</id>
+    <id>autographps-sdk</id>
     <version>0.0.0</version>
     <authors>adamedx</authors>
     <owners>adamedx</owners>
@@ -19,14 +19,14 @@
   <files>
     <file src="LICENSE.md" target="." />
     <file src="README.md" target="." />
-    <file src="AutoGraphPS-SDK.psd1" target="." />
-    <file src="AutoGraphPS-SDK.psm1" target="." />
+    <file src="autographps-sdk.psd1" target="." />
+    <file src="autographps-sdk.psm1" target="." />
     <file src="autographps-sdk.tests.ps1" target="." />
     <file src="src\**\*.ps1" target="src/" />
     <file src="build\**\*.ps1" target="build/" />
-    <file src="lib\Microsoft.Identity.Client.4.4.0\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.4.4.0\lib\net45" />
-    <file src="lib\Microsoft.Identity.Client.4.4.0\lib\netstandard1.3\*.dll" target="lib/Microsoft.Identity.Client.4.4.0\lib\netstandard1.3" />
-    <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.0\lib\net45\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.0\lib\net45" />
-    <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.0\lib\netstandard1.3\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.0\lib\netstandard1.3" />
+    <file src="lib\Microsoft.Identity.Client.4.8.1\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.4.8.1\lib\net45" />
+    <file src="lib\Microsoft.Identity.Client.4.8.1\lib\netstandard1.3\*.dll" target="lib/Microsoft.Identity.Client.4.8.1\lib\netstandard1.3" />
+    <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.6\lib\net45\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.6\lib\net45" />
+    <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.6\lib\netstandard1.3\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.6\lib\netstandard1.3" />
   </files>
 </package>
