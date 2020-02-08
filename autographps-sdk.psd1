@@ -244,7 +244,6 @@ None.
 
 * Get-GraphLog was returning results indicating that the request headers `Authorization` and `Workload-Authorization` were set even when they were not issued in the request. This has been changed to only log these headers if they were actually set.
 
-None.
 '@
 
     } # End of PSData hashtable
