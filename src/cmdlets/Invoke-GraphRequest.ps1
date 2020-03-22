@@ -38,8 +38,8 @@ The command also supports paging, since the Graph endpoint can return large resu
 
 This command, like all commands in this module, uses the Connection object of the current graph by default to determine the Graph endpoint and credentials / permissions of an access token used to communicate to Graph. The current Graph's connection can be changed to use different credentials, permissions, or Graph endpoing by using the Connect-Graph command.
 
-.PARAMETER RelativeUri
-This parameter is required -- it is the URI relative to the current Graph of the Graph resource on which to invoke the REST method. For example, if the goal was to invoke a method on the resource URI https://graph.microsoft.com/v1.0/users/user1@mydomain.org, assuming that the current Graph endpoint was http://graph.microsoft.com and the API version was 'v1.0', this parameter would be specified as 'users/user1@mydomain.org'. If the AbsoluteUri parameter is specified, the RelativeUri parameter must be an absolute Uri (see the AbsoluteUri documentation below).
+.PARAMETER Uri
+This parameter is required -- it is the URI relative to the current Graph of the Graph resource on which to invoke the REST method. For example, if the goal was to invoke a method on the resource URI https://graph.microsoft.com/v1.0/users/user1@mydomain.org, assuming that the current Graph endpoint was http://graph.microsoft.com and the API version was 'v1.0', this parameter would be specified as 'users/user1@mydomain.org'. If the AbsoluteUri parameter is specified, the Uri parameter must be an absolute Uri (see the AbsoluteUri documentation below).
 
 .PARAMETER Method
 Specifies the method used for this request. If this parameter is not specified, the default value of 'GET' is used. Other acceptable values are
@@ -110,7 +110,7 @@ Specifies that for this command invocation, an access token with delegated permi
 Specifies that for this command invocation, an access token with the specified delegated permissions must be acquired and then used to make the call. This will result in a sign-in UX. This is useful when the permissions for the current Graph's Connection are not sufficient for the command to succeed. For more information on permissions, see documentation at https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference. When this permission is not specified (default), the current Graph's existing access token is used for requests, and if no such token exists, the Graph's existng Connection object is used to acquire one.
 
 .PARAMETER AbsoluteUri
-By default the URIs specified by the RelativeUri parameter are relative to the current Graph endpoint and API version (or the version specified by the Version parameter). If the AbsoluteUri parameter is specified, such URIs must be given as absolute URIs starting with the schema, e.g. instead of a URI such as 'me/messages', the Uri or TargetItem parameters must be https://graph.microsoft.com/v1.0/me/messages when the current Graph endpoint is graph.microsoft.com and the version is v1.0.
+By default the URIs specified by the Uri parameter are relative to the current Graph endpoint and API version (or the version specified by the Version parameter). If the AbsoluteUri parameter is specified, such URIs must be given as absolute URIs starting with the schema, e.g. instead of a URI such as 'me/messages', the Uri or TargetItem parameters must be https://graph.microsoft.com/v1.0/me/messages when the current Graph endpoint is graph.microsoft.com and the version is v1.0.
 
 .PARAMETER RawContent
 This parameter specifies that the command should return results exactly in the format of the HTTP response from the Graph endpoint, rather than the default behavior where the objects are deserialized into PowerShell objects. Graph returns objects as JSON except in cases where content types such as media are being requested, so use of this parameter will generally cause the command to return JSON output.
@@ -141,7 +141,7 @@ Invoke-GraphRequest me
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
-In this example a request is made to retrieve 'me', which stands for the user resource of the signed in user. The command is executed with only one parameter, the positional parameter RelativeUri specified as 'me.' In addition to the output, a sign-in UX that may execute outside of the PowerShell session might be triggered if the user had not previously signed in.
+In this example a request is made to retrieve 'me', which stands for the user resource of the signed in user. The command is executed with only one parameter, the positional parameter Uri specified as 'me.' In addition to the output, a sign-in UX that may execute outside of the PowerShell session might be triggered if the user had not previously signed in.
 
 The specification of the single parameter value 'me' in this case results in a request based on the current graph, which in this example was the endpoint https://graph.microsoft.com with API version 1.0. The request then is made against the URI https://graph.microsoft.com/v1.0/me.
 
@@ -232,7 +232,7 @@ function Invoke-GraphRequest {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
     param(
         [parameter(position=0, mandatory=$true)]
-        [Uri[]] $RelativeUri,
+        [Uri[]] $Uri,
 
         [parameter(position=1)]
         [ValidateSet('DELETE', 'GET', 'HEAD', 'MERGE', 'OPTIONS', 'PATCH', 'POST', 'PUT', 'TRACE')]
@@ -326,10 +326,10 @@ function Invoke-GraphRequest {
     }
 
     if ( $AbsoluteUri.IsPresent ) {
-        if ( $RelativeUri.length -gt 1 ) {
+        if ( $Uri.length -gt 1 ) {
             throw "More than one Uri was specified when AbsoluteUri was specified -- only one Uri is allowed when AbsoluteUri is configured"
         }
-    } elseif ( $RelativeUri[0].IsAbsoluteUri -and ! (! $RelativeUri[0].Host) ) {
+    } elseif ( $Uri[0].IsAbsoluteUri -and ! (! $Uri[0].Host) ) {
         throw "An absolute URI was specified -- specify a URI relative to the graph host and version, or specify -AbsoluteUri"
     }
 
@@ -411,13 +411,13 @@ function Invoke-GraphRequest {
     $uriInfo = if ( $AbsoluteUri.ispresent ) {
         write-verbose "Caller specified AbsoluteUri -- interpreting uri as absolute"
         $specificContext = new-so GraphContext $graphConnection $version 'local'
-        $info = $::.GraphUtilities |=> ParseGraphUri $RelativeUri[0] $specificContext
+        $info = $::.GraphUtilities |=> ParseGraphUri $Uri[0] $specificContext
         write-verbose "Absolute uri parsed as relative '$($info.GraphRelativeUri)' and version $($info.GraphVersion)"
         if ( ! $info.IsAbsolute ) {
-            throw "Absolute Uri was specified, but given Uri was not absolute: '$($RelativeUri[0])'"
+            throw "Absolute Uri was specified, but given Uri was not absolute: '$($Uri[0])'"
         }
         if ( ! $info.IsContextCompatible ) {
-            throw "The version '$($info.Graphversion)' and connection endpoint '$($specificcontext.Connection.GraphEndpoint.Graph)' is not compatible with the uri '$RelativeUri'"
+            throw "The version '$($info.Graphversion)' and connection endpoint '$($specificcontext.Connection.GraphEndpoint.Graph)' is not compatible with the uri '$Uri'"
         }
         $info
     } elseif ( $graphType -ne ([GraphType]::AADGraph) ) {
@@ -425,14 +425,14 @@ function Invoke-GraphRequest {
         # context is not tracked, so don't try to construct a context relative
         # AAD Graph path
         if ( ($::.GraphContext |=> GetCurrent).location ) {
-            $info = $::.GraphUtilities |=> ParseGraphRelativeLocation $RelativeUri[0]
+            $info = $::.GraphUtilities |=> ParseGraphRelativeLocation $Uri[0]
             @{
                 GraphRelativeUri = $info.GraphRelativeUri
                 GraphVersion = $info.Context.version
             }
         } else {
             @{
-                GraphRelativeUri = $RelativeUri[0]
+                GraphRelativeUri = $Uri[0]
                 GraphVersion = ($::.GraphContext |=> GetCurrent).version
             }
         }
@@ -477,7 +477,7 @@ function Invoke-GraphRequest {
     $results = @()
 
     $inputUriRelative = if ( ! $uriInfo ) {
-        $RelativeUri[0]
+        $Uri[0]
     } else {
         $uriInfo.GraphRelativeUri
     }

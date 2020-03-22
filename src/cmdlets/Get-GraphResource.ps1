@@ -33,8 +33,8 @@ The command also supports paging, since the Graph endpoint can return large resu
 
 This command, like all commands in this module, uses the Connection object of the current graph by default to determine the Graph endpoint and credentials / permissions of an access token used to communicate to Graph. The current Graph's connection can be changed to use different credentials, permissions, or Graph endpoing by using the Connect-Graph command.
 
-.PARAMETER ItemRelativeUri
-This parameter is required -- it is the URI relative to the current Graph of the graph resource on which to invoke the GET method. For example, if the goal was to issue a GET on the resource URI https://graph.microsoft.com/v1.0/users/user1@mydomain.org, assuming that the current Graph endpoint was http://graph.microsoft.com and the API version was 'v1.0', this parameter would be specified as 'users/user1@mydomain.org'. If the AbsoluteUri parameter is specified, the ItemRelativeUri parameter must be an absolute Uri (see the AbsoluteUri documentation below).
+.PARAMETER Uri
+This parameter is required -- it is the URI relative to the current Graph of the graph resource on which to invoke the GET method. For example, if the goal was to issue a GET on the resource URI https://graph.microsoft.com/v1.0/users/user1@mydomain.org, assuming that the current Graph endpoint was http://graph.microsoft.com and the API version was 'v1.0', this parameter would be specified as 'users/user1@mydomain.org'. If the AbsoluteUri parameter is specified, the Uri parameter must be an absolute Uri (see the AbsoluteUri documentation below).
 
 .PARAMETER Filter
 Specifies an optional OData query filter to reduce the number of results returned to those satisfying the query's criteria. Visit https://www.odata.org/ for details on the OData query syntax.
@@ -85,7 +85,7 @@ Specifies that for this command invocation, an access token with delegated permi
 Specifies that for this command invocation, an access token with the specified delegated permissions must be acquired and then used to make the call. This will result in a sign-in UX. This is useful when the permissions for the current Graph's Connection are not sufficient for the command to succeed. For more information on permissions, see documentation at https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference. When this permission is not specified (default), the current Graph's existing access token is used for requests, and if no such token exists, the Graph's existng Connection object is used to acquire one.
 
 .PARAMETER AbsoluteUri
-By default the URIs specified by the ItemRelativeUri parameter are relative to the current Graph endpoint and API version (or the version specified by the Version parameter). If the AbsoluteUri parameter is specified, such URIs must be given as absolute URIs starting with the schema, e.g. instead of a URI such as 'me/messages', the Uri or TargetItem parameters must be https://graph.microsoft.com/v1.0/me/messages when the current Graph endpoint is graph.microsoft.com and the version is v1.0.
+By default the URIs specified by the Uri parameter are relative to the current Graph endpoint and API version (or the version specified by the Version parameter). If the AbsoluteUri parameter is specified, such URIs must be given as absolute URIs starting with the schema, e.g. instead of a URI such as 'me/messages', the Uri or TargetItem parameters must be https://graph.microsoft.com/v1.0/me/messages when the current Graph endpoint is graph.microsoft.com and the version is v1.0.
 
 .PARAMETER RawContent
 This parameter specifies that the command should return results exactly in the format of the HTTP response from the Graph endpoint, rather than the default behavior where the objects are deserialized into PowerShell objects. Graph returns objects as JSON except in cases where content types such as media are being requested, so use of this parameter will generally cause the command to return JSON output.
@@ -113,7 +113,7 @@ Get-GraphResource me
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
-In this example a request is made to retrieve 'me', which stands for the user resource of the signed in user. The command is executed with only one parameter, the positional parameter ItemRelativeUri specified as 'me.' In addition to the output, a sign-in UX that may execute outside of the PowerShell session might be triggered if the user had not previously signed in.
+In this example a request is made to retrieve 'me', which stands for the user resource of the signed in user. The command is executed with only one parameter, the positional parameter Uri specified as 'me.' In addition to the output, a sign-in UX that may execute outside of the PowerShell session might be triggered if the user had not previously signed in.
 
 The specification of the single parameter value 'me' in this case results in a request based on the current graph, which in this example was the endpoint https://graph.microsoft.com with API version 1.0. The request then is made against the URI https://graph.microsoft.com/v1.0/me.
 
@@ -152,7 +152,7 @@ function Get-GraphResource {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
     param(
         [parameter(position=0,mandatory=$true)]
-        [Uri[]] $ItemRelativeUri,
+        [Uri[]] $Uri,
 
         [parameter(position=1)]
         [String] $Filter = $null,
@@ -205,7 +205,7 @@ function Get-GraphResource {
     Enable-ScriptClassVerbosePreference
 
     $requestArguments = @{
-        RelativeUri=$ItemRelativeUri
+        Uri = $Uri
         Query = $Query
         Filter = $Filter
         Search = $Search

@@ -66,17 +66,6 @@ ScriptClass CommandContext {
     }
 
     function __NormalizeParameters([HashTable] $parameterTable) {
-        # The method uses Uri instead of RelativeUri as the former
-        # may be deprecated in the Invoke-GraphRequest cmdlet
-        $uriParameterValue = $parameterTable['uri']
-
-        if ( ! $uriParameterValue ) {
-            throw [ArgumentException]::("Missing mandatory Uri parameter")
-        }
-
-        $parameterTable.Remove('uri')
-        $parameterTable['RelativeUri'] = $uriParameterValue
-
         # Another workaround for scriptclass -- method name collision with method
         $methodParameterValue = $parameterTable['RESTMethod']
 
