@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.18.0'
+ModuleVersion = '0.19.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -149,7 +149,7 @@ AliasesToExport = @('gge', 'ggi', 'ggl', 'fgl')
         '.\src\cmdlets\Get-GraphApplicationServicePrincipal.ps1'
         '.\src\cmdlets\Get-GraphConnectionInfo.ps1'
         '.\src\cmdlets\Get-GraphError.ps1'
-        '.\src\cmdlets\Get-GraphItem.ps1'
+        '.\src\cmdlets\Get-GraphResource.ps1'
         '.\src\cmdlets\Get-GraphLog.ps1'
         '.\src\cmdlets\Get-GraphLogOption.ps1'
         '.\src\cmdlets\Get-GraphToken.ps1'
@@ -162,7 +162,7 @@ AliasesToExport = @('gge', 'ggi', 'ggl', 'fgl')
         '.\src\cmdlets\Remove-GraphApplication.ps1'
         '.\src\cmdlets\Remove-GraphApplicationCertificate.ps1'
         '.\src\cmdlets\Remove-GraphApplicationConsent.ps1'
-        '.\src\cmdlets\Remove-GraphItem.ps1'
+        '.\src\cmdlets\Remove-GraphResource.ps1'
         '.\src\cmdlets\Set-GraphApplicationConsent.ps1'
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1'
         '.\src\cmdlets\Set-GraphLogOption.ps1'

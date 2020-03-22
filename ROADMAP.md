@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Change Get-GraphItem, Remove-GraphItem to Get-GraphResource, Remove-GraphResource
+* Add ToAbsoluteUri method GraphUtilities
 * Add more command help
 * Add view to get-grapherror
 * Refactor auth providers
@@ -13,9 +15,9 @@
 * Document strange splatting behavior with noteproperty
 * New-GraphApplicationCertificate with -noupload option
 * Set-GraphApplicationCertificate to set to an existing certificate
+* Add output types
 
-
-* Add $ref?
+* Add $ref? Is this New-GraphItemReference, or New-GraphItem with a reference option?
 
 * Create interface for certificate store, make it not implemented outside of Windows
 
