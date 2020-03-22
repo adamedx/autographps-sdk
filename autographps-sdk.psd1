@@ -27,7 +27,7 @@ Author = 'Adam Edwards'
 CompanyName = 'Modulus Group'
 
 # Copyright statement for this module
-Copyright = '(c) 2019 Adam Edwards.'
+Copyright = '(c) 2020 Adam Edwards.'
 
 # Description of the functionality provided by this module
 Description = 'PowerShell SDK for automating the Microsoft Graph'
@@ -235,6 +235,8 @@ None.
   * `Get-GraphItem` is renamed to `Get-GraphResource`
   * `Remove-GraphItem` is renamed to `Remove-GraphResource`
 * The `ggi` alias is renamed to `ggr` to reflect the change in the name of the command it originally aliased, `Get-GraphItem`
+* `ItemRelativeUri` and `RelativeUri` parameters for the commands `Get-GraphResource` and `Invoke-GraphRequest` have been renamed to `Uri`
+* The `ODataFilter` parameter on numerous commands including `Get-GraphResource` and `InvokeGraphRequest` has been renamed to `Filter`
 
 ### New features
 
