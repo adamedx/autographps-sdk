@@ -19,7 +19,7 @@
 Sets options related to logging of the requests made by this module.
 
 .DESCRIPTION
-When a command such as Get-GraphItem or Invoke-GraphRequest issues a request to the Graph, the details of that request, including the
+When a command such as Get-GraphResource or Invoke-GraphRequest issues a request to the Graph, the details of that request, including the
 URI, http method, headers, along with details of the response are recorded as entries in a log. The Get-GraphLogOption command
 returns information about the configfuration of the module's logging behavior including the level of logging and the maximum number
 of entries to record in the log.
@@ -44,7 +44,7 @@ This example shows how the logging configuration as an object is displayed.
 Get-GraphLog
 Set-GraphLogOption
 Clear-GraphLog
-Get-GraphItem
+Get-GraphResource
 Invoke-GraphRequest
 #>
 function Get-GraphLogOption {

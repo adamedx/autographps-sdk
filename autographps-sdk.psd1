@@ -81,7 +81,7 @@ FunctionsToExport = @(
     'Get-GraphApplicationServicePrincipal'
     'Get-GraphConnectionInfo'
     'Get-GraphError'
-    'Get-GraphItem'
+    'Get-GraphResource'
     'Get-GraphLog'
     'Get-GraphLogOption'
     'Get-GraphToken'
@@ -112,7 +112,7 @@ VariablesToExport = @(
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('gge', 'ggi', 'ggl', 'fgl')
+AliasesToExport = @('gge', 'ggr', 'ggl', 'fgl')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -221,20 +221,20 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.18.0 Release Notes
+## AutoGraphPS-SDK 0.19.0 Release Notes
 
-This release contains auth library dependency updates, bug fixes, and a change to make all module manifest and psm1 files
-match the case of the module as it is named in PowerShell Gallery to eliminate issues
-with a mismatch of case in case sensitive file systems (i.e. Linux).
+This release includes a significant breaking change -- two commands have been renamed.
 
 ### New dependencies
 
-* ADAL 5.2.6
-* MSAL 4.8.1
+None.
 
 ### Breaking changes
 
-* Consumers of this module from other module manifests should use lower case when referring to the autographps-sdk module.
+* Renamed commands: The following commands have been renamed:
+  * `Get-GraphItem` is renamed to `Get-GraphResource`
+  * `Remove-GraphItem` is renamed to `Remove-GraphResource`
+* The `ggi` alias is renamed to `ggr` to reflect the change in the name of the command it originally aliased, `Get-GraphItem`
 
 ### New features
 
@@ -242,7 +242,7 @@ None.
 
 ### Fixed defects
 
-* Get-GraphLog was returning results indicating that the request headers `Authorization` and `Workload-Authorization` were set even when they were not issued in the request. This has been changed to only log these headers if they were actually set.
+None.
 
 '@
 

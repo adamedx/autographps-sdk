@@ -29,10 +29,10 @@ Install-Module AutoGraphPS-SDK -scope currentuser
 ```
 
 ## Usage
-Once you've installed, you can use an AutoGraphPS-SDK cmdlet like `Get-GraphItem` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
+Once you've installed, you can use an AutoGraphPS-SDK cmdlet like `Get-GraphResource` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
 
 ```powershell
-PS> get-graphitem me
+PS> Get-GraphResource me
 ```
 
 After you've responded to the authentication prompt, you should see output that represents your user object similar to the following:
@@ -63,12 +63,12 @@ https://graph.microsoft.com/v1.0/users
 With the AutoGraphPS-SDK cmdlets, you can invoke REST methods from PowerShell and omit the common `https://graph.microsoft.com/v1.0` of the URI as follows:
 
 ```powershell
-Get-GraphItem me/calendars
-Get-GraphItem me/people
-Get-GraphItem users
+Get-GraphResource me/calendars
+Get-GraphResource me/people
+Get-GraphResource users
 ```
 
-These commands retrieve the same data as a `GET` for the full URIs given earlier. Of course, `Get-GraphItem` supports a `-AbsoluteUri` option to allow you to specify that full Uri if you so desire.
+These commands retrieve the same data as a `GET` for the full URIs given earlier. Of course, `Get-GraphResource` supports a `-AbsoluteUri` option to allow you to specify that full Uri if you so desire.
 
 As with any PowerShell cmdlet, you can use AutoGraphPS-SDK cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects.
 
@@ -97,7 +97,7 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                                                                            |
 | Get-GraphConnectionInfo              | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline`                                                  |
 | Get-GraphError (gge)                 | Retrieves detailed errors returned from Graph in execution of the last command                                                                          |
-| Get-GraphItem  (ggi)                 | Given a relative (to the Graph or current location) Uri gets information about the entity                                                               |
+| Get-GraphResource  (ggr)                 | Given a relative (to the Graph or current location) Uri gets information about the entity                                                               |
 | Get-GraphLog (ggl)                   | Gets the local log of all requests to Graph made by this module                                                                                         |
 | Get-GraphLogOption                   | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
 | Get-GraphToken                       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) |
@@ -122,7 +122,7 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 Some AutoGraphPS-SDK cmdlets also work with [Azure Active Directory Graph](https://msdn.microsoft.com/Library/Azure/Ad/Graph/howto/azure-ad-graph-api-operations-overview), simply by specifying the `-aadgraph` switch as in the following:
 
 ```powershell
-Get-GraphItem me -aadgraph
+Get-GraphResource me -aadgraph
 ```
 
 Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of AutoGraphPS-SDK.

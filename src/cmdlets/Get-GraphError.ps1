@@ -19,7 +19,7 @@
 Retrieves the error response from Graph for the last failed REST call invoked by one of this module's commands.
 
 .DESCRIPTION
-When a command such as Get-GraphItem or Invoke-GraphRequest fails due to an error response from Graph, i.e. a status code other than 2xx is returned, this command outputs the full response stream from the failed call to assist in troubleshooting the failure. This output may include details such as error messages on the specifics of an incorrectly specified parameter or unsupported scenario.
+When a command such as Get-GraphResource or Invoke-GraphRequest fails due to an error response from Graph, i.e. a status code other than 2xx is returned, this command outputs the full response stream from the failed call to assist in troubleshooting the failure. This output may include details such as error messages on the specifics of an incorrectly specified parameter or unsupported scenario.
 
 .OUTPUTS
 If the last Graph request from this module was successful, this command returns no output. If there was a failure, the result of this command is an object that contains a System.Net.HttpWebResponse object, and also important fields obtained from that object such as the response headers, the time at which the error occurred, and the deserialized response.
@@ -62,7 +62,7 @@ By executing the Get-GraphError command after the failed command, the operator i
 The operator can then correct the error in the original Invoke-GraphRequest command, replacing 'firstName' with 'givenName' in the Body parameter and the command will succeed.
 
 .LINK
-Get-GraphItem
+Get-GraphResource
 Invoke-GraphRequest
 Remove-GraphItem
 #>

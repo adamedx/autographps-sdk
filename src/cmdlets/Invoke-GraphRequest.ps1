@@ -222,7 +222,7 @@ mailNickname                 : AccessGroup7
 In this example a group is created and the body that defines the group is specified directly in JSON rather than PowerShell objects.
 
 .LINK
-Get-GraphItem
+Get-GraphResource
 Connect-Graph
 New-GraphConnection
 ConvertTo-JSON

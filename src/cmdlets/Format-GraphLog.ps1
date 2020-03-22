@@ -59,7 +59,7 @@ $Views = @{
 Formats the output of the Get-GraphLog command for readability and focus.
 
 .DESCRIPTION
-When a command such as Get-GraphItem or Invoke-GraphRequest issues a request to the Graph, the details of that request, including the
+When a command such as Get-GraphResource or Invoke-GraphRequest issues a request to the Graph, the details of that request, including the
 URI, http method, headers, along with details of the response are recorded as entries in a log. The Format-GraphLog command displays
 output returned by Get-GraphLog with additional columns optimized for relevance and readability by default. It also performs
 some formatting on fields that are difficult to read in a tabular format in their native representation.
@@ -154,7 +154,7 @@ with the request which can be used when obtaining support from the Graph Service
 Format-GraphLog
 Set-GraphLogOption
 Clear-GraphLog
-Get-GraphItem
+Get-GraphResource
 Invoke-GraphRequest
 Format-Table
 #>
