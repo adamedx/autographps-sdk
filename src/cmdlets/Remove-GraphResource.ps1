@@ -29,7 +29,7 @@ If this parameter is specified and the TargetItem parameter is not specified, th
 .PARAMETER TargetItem
 TargetItem may be any object returned by Get-GraphResource or Invoke-GraphRequest. Remove-GraphItem will attempt to delete that object from the Graph. If both Uri and TargetItem are specified, the Uri and TargetItem parameters are intepreted together as the path of the item to delete, i.e. for each specified TargetItem, a relative URI consisting of the Uri parameter succeeded with a segment named with the TargetItem object's id property. The TargetItem parameter accepts one or more objects from the pipeline as objects to delete.
 
-.PARAMETER ODataFilter
+.PARAMETER Filter
 Specifies a filter using the OData specification to filter the items to be deleted from the Uri or TargetItem that is specified. This parameter may not be supported by all Graph Uris.
 
 .PARAMETER Version
@@ -83,7 +83,7 @@ function Remove-GraphItem {
         [parameter(parametersetname='FromObjectsExistingConnection', valuefrompipeline=$true, mandatory=$true)]
         $TargetItem,
 
-        [String] $ODataFilter = $null,
+        [String] $Filter = $null,
 
         [String] $Version = $null,
 
@@ -154,7 +154,7 @@ function Remove-GraphItem {
         }
 
         $commonRequestArguments = @{
-            ODataFilter = $ODataFilter
+            Filter = $Filter
             Version = $Version
             Headers = $Headers
             Permissions = $Permissions

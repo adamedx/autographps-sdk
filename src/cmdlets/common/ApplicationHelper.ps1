@@ -68,7 +68,7 @@ ScriptClass ApplicationHelper {
 
             $requestArguments = @{
                 RawContent = $rawContent
-                ODataFilter = $filter
+                Filter = $filter
                 Permissions = $permissions
                 Select = $select
             }

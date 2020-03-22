@@ -75,11 +75,11 @@ function Get-GraphApplicationConsent {
 
             $filter = $filterClauses -join ' and '
 
-            $filterArgument = @{ ODataFilter = $filter }
+            $filterArgument = @{ Filter = $filter }
 
             $RawContentArgument = @{ RawContent = $RawContent }
 
-            $response = Invoke-GraphRequest /oauth2PermissionGrants -method GET -ODataFilter $filter -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
+            $response = Invoke-GraphRequest /oauth2PermissionGrants -method GET -Filter $filter -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
 
             if ( $response ) {
                 if ( ! $RawContent.IsPresent ) {

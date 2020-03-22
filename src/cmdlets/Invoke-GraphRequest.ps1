@@ -61,7 +61,7 @@ The body may be specified in one of two forms:
 
     - As a JSON string: A JSON string may be directly supplied here instead of PowerShell objects. This enables a one-to-one translation of the JSON-based documentation without the need to transfrom your understanding of the documentation into PowerShell representation and syntax. In general it enables direct re-use of samples from documentation or reproduction of Graph requests from other codebases and languages.
 
-.PARAMETER ODataFilter
+.PARAMETER Filter
 Specifies an optional OData query filter to reduce the number of results returned to those satisfying the query's criteria -- this is used primarily for GET requests. Visit https://www.odata.org/ for details on the OData query syntax.
 
 .PARAMETER Select
@@ -89,7 +89,7 @@ The Value parameter may be used when the result is itself metadata describing so
 The OutputFilePrefix parameter specifies that rather than emitting the results to the PowerShell pipeline, each result should be written to a file name prefixed with the value of the OutputFilePrefix. The parameter value may be a path to a directory, or simply a name with no path separator. If there is more than one item in the result, the base file name for that result will end with a unique integer identifier within the result set. The file extension will be 'json' unless the result is of another content type, in which case the command will attempt to determine the extension from the content type returned in the HTTP response. If the content type cannot be determined, then the file extension will be '.dat'.
 
 .PARAMETER Query
-The Query parameter specifies the URI query parameter of the REST request made by the command to Graph. Because the URI's query parameter is affected by the Select, ODataFilter, OrderBy, Search, and Expand options, the command's Query parameter may not be specified of any those parameters are specified. This parameter is most useful for advanced scenarios where the other command parameters are unable to express valid Graph protocol use of the URI query parameter.
+The Query parameter specifies the URI query parameter of the REST request made by the command to Graph. Because the URI's query parameter is affected by the Select, Filter, OrderBy, Search, and Expand options, the command's Query parameter may not be specified of any those parameters are specified. This parameter is most useful for advanced scenarios where the other command parameters are unable to express valid Graph protocol use of the URI query parameter.
 
 .PARAMETER Headers
 Specifies optional HTTP headers to include in the request to Graph, which some parts of the Graph API may support. The headers must be specified as a HashTable, where each key in the hash table is the name of the header, and the value for that key is the value of the header.
@@ -146,7 +146,7 @@ In this example a request is made to retrieve 'me', which stands for the user re
 The specification of the single parameter value 'me' in this case results in a request based on the current graph, which in this example was the endpoint https://graph.microsoft.com with API version 1.0. The request then is made against the URI https://graph.microsoft.com/v1.0/me.
 
 .EXAMPLE
-Invoke-GraphRequest users -ODataFilter "startsWith(displayName, 'Alan')" -Select userPrincipalName, displayName
+Invoke-GraphRequest users -Filter "startsWith(displayName, 'Alan')" -Select userPrincipalName, displayName
 
     userPrincipalName         displayName
     -----------------         -----------
@@ -154,7 +154,7 @@ Invoke-GraphRequest users -ODataFilter "startsWith(displayName, 'Alan')" -Select
     ralan@tron.org            Alan Rich
     alanajackson@tron.org     Alana Jackson
 
-This command issues a GET request to retrieve all users in the tenant whose displayName properties start with 'Alan' by specifying an OData query filter with the ODataFilter parameter. The output of the command consists of just those users, and only includes the userPrinicpal and displayName properties in the output because those properties were specified with the Select parameter.
+This command issues a GET request to retrieve all users in the tenant whose displayName properties start with 'Alan' by specifying an OData query filter with the Filter parameter. The output of the command consists of just those users, and only includes the userPrinicpal and displayName properties in the output because those properties were specified with the Select parameter.
 
 .EXAMPLE
 Invoke-GraphRequest me/messages -Search 'Michigan conference' -First 3 -Descending | Select-Object receivedDateTime, subject
@@ -241,7 +241,7 @@ function Invoke-GraphRequest {
         [parameter(position=2)]
         $Body = $null,
 
-        [String] $ODataFilter = $null,
+        [String] $Filter = $null,
 
         [String[]] $Select = $null,
 
@@ -308,8 +308,8 @@ function Invoke-GraphRequest {
     $::.GraphErrorRecorder |=> StartRecording
 
     if ( $Query ) {
-        if ( $Search -or $ODataFilter -or $Select -or $OrderBy ) {
-            throw [ArgumentException]::new("'ODataFilter', 'Search', 'OrderBy',  and 'Select' parameters may not specified when the 'Query' parameter is specified")
+        if ( $Search -or $Filter -or $Select -or $OrderBy ) {
+            throw [ArgumentException]::new("'Filter', 'Search', 'OrderBy',  and 'Select' parameters may not specified when the 'Query' parameter is specified")
         }
     }
 
@@ -368,8 +368,8 @@ function Invoke-GraphRequest {
             $queryParameters += @('$search={0}' -f $Search)
         }
 
-        if ( $ODataFilter ) {
-            $queryParameters += @('$filter={0}' -f $ODataFilter)
+        if ( $Filter ) {
+            $queryParameters += @('$filter={0}' -f $Filter)
         }
 
         if ( $orderQuery ) {

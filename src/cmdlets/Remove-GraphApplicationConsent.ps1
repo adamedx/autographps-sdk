@@ -111,7 +111,7 @@ function Remove-GraphApplicationConsent {
         }
 
         $filterArgument = if ( ! $consentObject ) {
-            @{ODataFilter = ($filterClauses -join ' and ')}
+            @{Filter = ($filterClauses -join ' and ')}
         } else {
             @{}
         }
