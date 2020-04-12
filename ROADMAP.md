@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Change Get-GraphItem, Remove-GraphItem to Get-GraphResource, Remove-GraphResource
 * Add ToAbsoluteUri method GraphUtilities
 * Add more command help
 * Add view to get-grapherror
@@ -358,6 +357,8 @@
 * Make Get-GraphToken take all params from new-graphconnection and get-graphconnection
 * Add client-side correlationid
 * Add logging implementation
+* Change Get-GraphItem, Remove-GraphItem to Get-GraphResource, Remove-GraphResource
+* Change name of ODataFilter parameter on several commands to Filter
 
 ### Postponed
 

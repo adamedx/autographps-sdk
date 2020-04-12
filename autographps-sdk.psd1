@@ -240,7 +240,7 @@ None.
 
 ### New features
 
-None.
+* The GraphContext class has a new public property, Id. Id is a guid that uniquely identifies the context and can be used for cases such as hashing.
 
 ### Fixed defects
 
