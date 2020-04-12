@@ -26,7 +26,7 @@ $cmdlets = @(
     'Get-GraphApplicationServicePrincipal'
     'Get-GraphConnectionInfo'
     'Get-GraphError'
-    'Get-GraphItem'
+    'Get-GraphResource'
     'Get-GraphLog'
     'Get-GraphLogOption'
     'Get-GraphSchema'
@@ -49,7 +49,7 @@ $cmdlets = @(
     'Unregister-GraphApplication'
 )
 
-$aliases = @('gge', 'ggi', 'ggl', 'fgl')
+$aliases = @('gge', 'ggr', 'ggl', 'fgl')
 
 $variables = @('GraphVerboseOutputPreference', 'LastGraphItems')
 

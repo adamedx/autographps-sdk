@@ -24,7 +24,7 @@ function Get-GraphApplication {
         $ObjectId,
 
         [parameter(parametersetname='odatafilter', mandatory=$true)]
-        $ODataFilter,
+        $Filter,
 
         [parameter(parametersetname='name', mandatory=$true)]
         $Name,
@@ -40,7 +40,7 @@ function Get-GraphApplication {
     )
     Enable-ScriptClassVerbosePreference
 
-    $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $OdataFilter $Name $RawContent $Version $null $null $connection
+    $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $Filter $Name $RawContent $Version $null $null $connection
 
     $displayableResult = if ( $result ) {
         if ( $RawContent.IsPresent ) {

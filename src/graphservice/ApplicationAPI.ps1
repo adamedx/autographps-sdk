@@ -109,12 +109,12 @@ ScriptClass ApplicationAPI {
         if ( $properties ) {
             $selectArguments['select'] = $properties
         }
-        $result = invoke-graphrequest /servicePrincipals -method GET -ODataFilter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction @selectArguments
+        $result = invoke-graphrequest /servicePrincipals -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction @selectArguments
         __NormalizeResult $result
     }
 
     function GetApplicationByAppId($appId, $errorAction = 'stop') {
-        $result = invoke-graphrequest /Applications -method GET -ODataFilter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction
+        $result = invoke-graphrequest /Applications -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction
         __NormalizeResult $result
     }
 

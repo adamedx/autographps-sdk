@@ -13,7 +13,7 @@
 # limitations under the License.
 
 set-alias gge Get-GraphError
-set-alias ggi Get-GraphItem
+set-alias ggr Get-GraphResource
 set-alias ggl Get-GraphLog
 set-alias fgl Format-GraphLog
 

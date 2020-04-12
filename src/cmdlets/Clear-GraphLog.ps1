@@ -19,7 +19,7 @@
 Clears the log maintained by this module of requests to and responses from the Graph.
 
 .DESCRIPTION
-When a command such as Get-GraphItem or Invoke-GraphRequest issues a request to the Graph, the details of that request, including the
+When a command such as Get-GraphResource or Invoke-GraphRequest issues a request to the Graph, the details of that request, including the
 URI, http method, headers, along with details of the response are recorded as entries in a log. To clear this data from the log
 so that it is no longer accessible from the Get-GraphLog command, invoke Clear-GraphLog.
 
@@ -34,7 +34,7 @@ This clears all entries from the log. A subsequent invocation of Get-GraphLog wi
 .LINK
 Get-GraphLogOption
 Set-GraphLogOption
-Get-GraphItem
+Get-GraphResource
 Invoke-GraphRequest
 #>
 function Clear-GraphLog {

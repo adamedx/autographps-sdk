@@ -21,6 +21,7 @@ ScriptClass GraphContext {
     $name = $null
     $location = $null
     $state = $null
+    $Id = $null
 
     function __initialize($connection, $apiversion, $name) {
         if ( ! $name ) {
@@ -28,6 +29,7 @@ ScriptClass GraphContext {
         }
 
         $this.state = @{}
+        $this.Id = new-guid
 
         $graphVersion = if ( $apiVersion ) { $apiVersion } else { $this.scriptclass |=> GetDefaultVersion }
 
@@ -45,11 +47,12 @@ ScriptClass GraphContext {
         $this.state.Add($stateKey, $value)
     }
 
-    function UpdateState($stateKey, $value) {
-        if ( ! $this.state.ContainsKey($stateKey) ) {
-            throw "State '$stateKey' does not exist"
-        }
+    function SetState($stateKey, $value) {
         $this.state[$stateKey] = $value
+    }
+
+    function RemoveState($stateKey) {
+        $this.state.Remove($stateKey)
     }
 
     function GetEndpoint {
@@ -82,6 +85,9 @@ ScriptClass GraphContext {
     }
 
     function SetLocation([PSCustomObject] $location) {
+        if ( ! $location ) {
+            throw 'nono'
+        }
         $this.location = $location
     }
 
@@ -101,6 +107,9 @@ ScriptClass GraphContext {
         }
 
         function SetDefaultLocation($location) {
+            if ( $location -eq $null ) {
+                throw 'angerdefault'
+            }
             $this.defaultLocation = $location
         }
 

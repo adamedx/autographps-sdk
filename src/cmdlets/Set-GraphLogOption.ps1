@@ -19,7 +19,7 @@
 Sets options related to logging of the requests made by this module.
 
 .DESCRIPTION
-When a command such as Get-GraphItem or Invoke-GraphRequest issues a request to the Graph, the details of that request, including the
+When a command such as Get-GraphResource or Invoke-GraphRequest issues a request to the Graph, the details of that request, including the
 URI, http method, headers, along with details of the response are recorded as entries in a log. The Set-GraphLogOption command
 configures the the log's settings such as the amount of detail logged for each request and the size of the log.
 
@@ -66,7 +66,7 @@ by this module.
 
 .EXAMPLE
 Set-GraphLogOption -LogLevel Full
-Get-GraphItem organization -Select createdDateTime
+Get-GraphResource organization -Select createdDateTime
 Get-GraphLog | Select -Last 1 -ExpandProperty ReponseContent
 
 {"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#organization(createdDateTime)","value":[{"createdDateTime":"2018-98-04T19:03:11Z"}]}
@@ -83,7 +83,7 @@ In this example, the maximum log size is set to 10 -- the latest 10 log entries 
 Get-GraphLog
 Get-GraphLogOption
 Clear-GraphLog
-Get-GraphItem
+Get-GraphResource
 Invoke-GraphRequest
 #>
 function Set-GraphLogOption {
