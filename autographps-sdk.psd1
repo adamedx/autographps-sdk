@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.19.0'
+ModuleVersion = '0.20.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -221,9 +221,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.19.0 Release Notes
+## AutoGraphPS-SDK 0.20.0 Release Notes
 
-This release includes a significant breaking change -- two commands have been renamed.
+This release includes improvements to existing commands.
 
 ### New dependencies
 
@@ -231,16 +231,9 @@ None.
 
 ### Breaking changes
 
-* Renamed commands: The following commands have been renamed:
-  * `Get-GraphItem` is renamed to `Get-GraphResource`
-  * `Remove-GraphItem` is renamed to `Remove-GraphResource`
-* The `ggi` alias is renamed to `ggr` to reflect the change in the name of the command it originally aliased, `Get-GraphItem`
-* `ItemRelativeUri` and `RelativeUri` parameters for the commands `Get-GraphResource` and `Invoke-GraphRequest` have been renamed to `Uri`
-* The `ODataFilter` parameter on numerous commands including `Get-GraphResource` and `InvokeGraphRequest` has been renamed to `Filter`
-
 ### New features
 
-* The GraphContext class has a new public property, Id. Id is a guid that uniquely identifies the context and can be used for cases such as hashing.
+* The `Get-GraphResource` command's `Select` parameter has been renamed to `Property` to be consistent with related commands in `AutoGraphPS`. However the command retains a `Select` alias for compatibility with the original parameter name and to support users accustomed to the Graph terminology for projection of a record's fields.
 
 ### Fixed defects
 

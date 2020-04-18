@@ -157,6 +157,7 @@ function Get-GraphResource {
         [parameter(position=1)]
         [String] $Filter = $null,
 
+        [Alias('Property')]
         [String[]] $Select = $null,
 
         [String] $Search = $null,
