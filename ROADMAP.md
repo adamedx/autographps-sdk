@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Add ToAbsoluteUri method GraphUtilities
 * Add more command help
 * Add view to get-grapherror
 * Refactor auth providers
@@ -359,6 +358,8 @@
 * Add logging implementation
 * Change Get-GraphItem, Remove-GraphItem to Get-GraphResource, Remove-GraphResource
 * Change name of ODataFilter parameter on several commands to Filter
+* Add ToAbsoluteUri method GraphUtilities
+* Make property parameter second positional parameter
 
 ### Postponed
 

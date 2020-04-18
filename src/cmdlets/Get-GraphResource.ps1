@@ -154,9 +154,9 @@ function Get-GraphResource {
         [parameter(position=0,mandatory=$true)]
         [Uri[]] $Uri,
 
-        [parameter(position=1)]
         [String] $Filter = $null,
 
+        [parameter(position=1)]
         [Alias('Property')]
         [String[]] $Select = $null,
 
