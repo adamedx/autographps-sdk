@@ -229,10 +229,10 @@ ConvertTo-JSON
 ConvertFrom-JSON
 #>
 function Invoke-GraphRequest {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true, defaultparametersetname='MSGraphDefaultConnection')]
     param(
-        [parameter(position=0, mandatory=$true)]
-        [Uri[]] $Uri,
+        [parameter(position=0, valuefrompipeline=$true, mandatory=$true)]
+        [Uri] $Uri,
 
         [parameter(position=1)]
         [ValidateSet('DELETE', 'GET', 'HEAD', 'MERGE', 'OPTIONS', 'PATCH', 'POST', 'PUT', 'TRACE')]
@@ -288,350 +288,350 @@ function Invoke-GraphRequest {
         [switch] $NoClientRequestId
     )
 
-    Enable-ScriptClassVerbosePreference
+    begin {
+        Enable-ScriptClassVerbosePreference
 
-    if ( $OutputFilePrefix ) {
-        $outputFileParent = split-path $OutputFilePrefix -parent
-        if ( $outputFileParent ) {
-            if ( ! (test-path $outputFileParent) ) {
-                throw "Specified OutputFilePrefix parameter value '$OutputFilePrefix' includes non-existent directories"
+        if ( $OutputFilePrefix ) {
+            $outputFileParent = split-path $OutputFilePrefix -parent
+            if ( $outputFileParent ) {
+                if ( ! (test-path $outputFileParent) ) {
+                    throw "Specified OutputFilePrefix parameter value '$OutputFilePrefix' includes non-existent directories"
+                }
             }
         }
-    }
 
-    if ( $Value.IsPresent -and $Method -ne 'GET' ) {
-        throw [ArgumentException]::new("The 'Value' parameter may not be specified when the 'Method' parameter has the value 'GET'")
-    }
-
-    $useRawContent = $RawContent.IsPresent -or $Value.IsPresent
-
-    $::.GraphErrorRecorder |=> StartRecording
-
-    if ( $Query ) {
-        if ( $Search -or $Filter -or $Select -or $OrderBy ) {
-            throw [ArgumentException]::new("'Filter', 'Search', 'OrderBy',  and 'Select' parameters may not specified when the 'Query' parameter is specified")
-        }
-    }
-
-    if ( $Descending.IsPresent -and ! $OrderBy ) {
-        throw [ArgumentException]::new("'Descending' option was specified without 'OrderBy'")
-    }
-
-    $orderQuery = if ( $OrderBy ) {
-        try {
-            $::.QueryHelper |=> GetOrderQueryFromOrderByParameters $OrderBy $Descending.IsPresent
-        } catch {
-            throw
-        }
-    }
-
-    if ( $AbsoluteUri.IsPresent ) {
-        if ( $Uri.length -gt 1 ) {
-            throw "More than one Uri was specified when AbsoluteUri was specified -- only one Uri is allowed when AbsoluteUri is configured"
-        }
-    } elseif ( $Uri[0].IsAbsoluteUri -and ! (! $Uri[0].Host) ) {
-        throw "An absolute URI was specified -- specify a URI relative to the graph host and version, or specify -AbsoluteUri"
-    }
-
-    $defaultVersion = $null
-    $graphType = if ($Connection -ne $null ) {
-        $Connection.GraphEndpoint.Type
-    } elseif ( $AADGraph.ispresent ) {
-        ([GraphType]::AADGraph)
-    } else {
-        ([GraphType]::MSGraph)
-    }
-
-    $MSGraphScopes = if ( $Permissions -ne $null ) {
-        if ( $Connection -ne $null ) {
-            throw "Permissions may not be specified via -Permissions if an existing connection is supplied with -Connection"
-        }
-        $Permissions
-    } else {
-        @('User.Read')
-    }
-
-    $requestQuery = if ( $Query ) {
-        @($Query)
-    } else {
-        $queryParameters = [string[]] @()
-
-        if ( $Select ) {
-            $queryParameters += @('$select={0}') -f ($Select -join ',')
+        if ( $Value.IsPresent -and $Method -ne 'GET' ) {
+            throw [ArgumentException]::new("The 'Value' parameter may not be specified when the 'Method' parameter has the value 'GET'")
         }
 
-        if ( $Expand ) {
-            $queryParameters += @('$expand={0}') -f ($Expand -join ',')
-        }
+        $useRawContent = $RawContent.IsPresent -or $Value.IsPresent
 
-        if ( $Search ) {
-            $queryParameters += @('$search={0}' -f $Search)
-        }
+        $::.GraphErrorRecorder |=> StartRecording
 
-        if ( $Filter ) {
-            $queryParameters += @('$filter={0}' -f $Filter)
-        }
-
-        if ( $orderQuery ) {
-            $queryParameters += @('$orderBy={0}' -f $orderQuery)
-        }
-
-        if ( $queryParameters.length -gt 0 ) {
-            $queryParameters
-        }
-    }
-
-    if ( $pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true ) {
-        write-verbose 'Including the total count of results'
-        $requestQuery += '$count'
-    }
-
-    # Cast it in case this is a deserialized object --
-    # workaround for a defect in ScriptClass
-    switch ([GraphType] $graphType) {
-        ([GraphType]::AADGraph) { $defaultVersion = '1.6' }
-        ([GraphType]::MSGraph) { $defaultVersion = 'GraphContext' |::> GetDefaultVersion }
-        default {
-            throw "Unexpected identity type '$graphType'"
-        }
-    }
-
-    $currentContext = $null
-
-    $graphConnection = if ( $Connection -eq $null ) {
-        if ( $graphType -eq ([GraphType]::AADGraph) ) {
-            $::.GraphConnection |=> NewSimpleConnection ([GraphType]::AADGraph) $cloud $MSGraphScopes
-        } else {
-            'GraphContext' |::> GetConnection $null $null $cloud $Permissions
-        }
-    } else {
-        $Connection
-    }
-
-    $uriInfo = if ( $AbsoluteUri.ispresent ) {
-        write-verbose "Caller specified AbsoluteUri -- interpreting uri as absolute"
-        $specificContext = new-so GraphContext $graphConnection $version 'local'
-        $info = $::.GraphUtilities |=> ParseGraphUri $Uri[0] $specificContext
-        write-verbose "Absolute uri parsed as relative '$($info.GraphRelativeUri)' and version $($info.GraphVersion)"
-        if ( ! $info.IsAbsolute ) {
-            throw "Absolute Uri was specified, but given Uri was not absolute: '$($Uri[0])'"
-        }
-        if ( ! $info.IsContextCompatible ) {
-            throw "The version '$($info.Graphversion)' and connection endpoint '$($specificcontext.Connection.GraphEndpoint.Graph)' is not compatible with the uri '$Uri'"
-        }
-        $info
-    } elseif ( $graphType -ne ([GraphType]::AADGraph) ) {
-        # We only parse URI's relative to context for MS Graph -- AADGraph
-        # context is not tracked, so don't try to construct a context relative
-        # AAD Graph path
-        if ( ($::.GraphContext |=> GetCurrent).location ) {
-            $info = $::.GraphUtilities |=> ParseGraphRelativeLocation $Uri[0]
-            @{
-                GraphRelativeUri = $info.GraphRelativeUri
-                GraphVersion = $info.Context.version
-            }
-        } else {
-            @{
-                GraphRelativeUri = $Uri[0]
-                GraphVersion = ($::.GraphContext |=> GetCurrent).version
+        if ( $Query ) {
+            if ( $Search -or $Filter -or $Select -or $OrderBy ) {
+                throw [ArgumentException]::new("'Filter', 'Search', 'OrderBy',  and 'Select' parameters may not specified when the 'Query' parameter is specified")
             }
         }
-    }
 
-    $apiVersion = if ( $Version -ne $null -and $version.length -ne 0 ) {
-        write-verbose "Using version specified by caller: '$Version'"
-        $Version
-    } elseif ( $uriInfo -and $uriInfo.GraphVersion -and $uriInfo ) {
-        write-verbose "Using version from implied relative uri: '$($uriInfo.GraphVersion)'"
-        $uriInfo.GraphVersion
-    } else {
-        if ( $currentContext ) {
-            write-verbose "Using context Graph version '$($currentContext.Version)'"
-            $currentContext.Version
-        } else {
-            write-verbose "Using default Graph version '$defaultVersion'"
-            $defaultVersion
-        }
-    }
-
-    $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph) ) {
-        $graphConnection |=> Connect
-        $graphConnection.Identity.Token.TenantId
-    } else {
-        $apiVersion
-    }
-
-    $firstIndex = if ( $pscmdlet.pagingparameters.Skip -ne $null -and $pscmdlet.pagingparameters.skip -ne 0 ) {
-        write-verbose "Skipping the first '$($pscmdlet.pagingparameters.skip)' parameters"
-        $pscmdlet.pagingparameters.Skip
-    }
-
-    $maxReturnedResults = $null
-    $maxResultCount = if ( $pscmdlet.pagingparameters.first -ne $null -and $pscmdlet.pagingparameters.first -lt [Uint64]::MaxValue ) {
-        $pscmdlet.pagingparameters.First | tee-object -variable maxReturnedResults
-    } else {
-        10
-    }
-
-    $skipCount = $firstIndex
-    $results = @()
-
-    $inputUriRelative = if ( ! $uriInfo ) {
-        $Uri[0]
-    } else {
-        $uriInfo.GraphRelativeUri
-    }
-
-    $contextUri = if ( ($::.GraphContext |=> GetCurrent).location ) {
-        $::.GraphUtilities |=> ToGraphRelativeUri $inputUriRelative
-    } else {
-        $inputUriRelative
-    }
-
-    if ( $Value.IsPresent ) {
-        $contextUri = $contextUri, '$value' -join '/'
-    }
-
-    $graphRelativeUri = $::.GraphUtilities |=> JoinRelativeUri $tenantQualifiedVersionSegment $contextUri
-
-    $countError = $false
-    $optionalCountResult = $null
-    $pageCount = 0
-    $contentTypeData = $null
-
-    $logger = $::.RequestLog |=> GetDefault
-
-    while ( $graphRelativeUri -ne $null -and ($graphRelativeUri.tostring().length -gt 0) -and ($maxResultCount -eq $null -or $results.length -lt $maxResultCount) ) {
-        if ( $graphType -eq ([GraphType]::AADGraph) ) {
-            $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
+        if ( $Descending.IsPresent -and ! $OrderBy ) {
+            throw [ArgumentException]::new("'Descending' option was specified without 'OrderBy'")
         }
 
-        $graphResponse = if ( $graphConnection.status -ne ([GraphConnectionStatus]::Offline) ) {
-            $currentPageQuery = if ( $pageCount -eq 0 ) {
-                $requestQuery
-            } else {
-                $null
-            }
-
-            $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent
-            $request |=> SetBody $Body
+        $orderQuery = if ( $OrderBy ) {
             try {
-                $request |=> Invoke $skipCount -logger $logger
-            } catch [System.Net.WebException] {
-                $statusCode = if ( $_.exception.response | gm statuscode -erroraction ignore ) {
-                    $_.exception.response.statuscode
-                }
-
-                if ( $statusCode -eq 'Unauthorized' -or $statusCode -eq 'Forbidden' ) {
-                    throw [GraphAccessDeniedException]::new($_.exception)
-                }
-
-                # Note that there may be other errors, such as 'BadRequest' that deserve a warning rather than failure,
-                # so we should consider adding others if the cases can be narrowed sufficiently to avoid other
-                # undesirable side effects of continuing on an error. An even better workaround may be command-completion,
-                # which would (and should!) be scoped to purely local operations -- this would give visibility as to
-                # the next segments without a request to Graph that could fail.
+                $::.QueryHelper |=> GetOrderQueryFromOrderByParameters $OrderBy $Descending.IsPresent
+            } catch {
                 throw
             }
         }
 
-        $skipCount = $null
+        $defaultVersion = $null
+        $graphType = if ($Connection -ne $null ) {
+            $Connection.GraphEndpoint.Type
+        } elseif ( $AADGraph.ispresent ) {
+            ([GraphType]::AADGraph)
+        } else {
+            ([GraphType]::MSGraph)
+        }
 
-        $content = if ( $graphResponse -and $graphResponse.Entities -ne $null ) {
-            if ( ! $contentTypeData ) {
-                $contentTypeData = $graphResponse.RestResponse.ContentTypeData
+        $MSGraphScopes = if ( $Permissions -ne $null ) {
+            if ( $Connection -ne $null ) {
+                throw "Permissions may not be specified via -Permissions if an existing connection is supplied with -Connection"
+            }
+            $Permissions
+        } else {
+            @('User.Read')
+        }
+
+        $requestQuery = if ( $Query ) {
+            @($Query)
+        } else {
+            $queryParameters = [string[]] @()
+
+            if ( $Select ) {
+                $queryParameters += @('$select={0}') -f ($Select -join ',')
             }
 
-            $graphRelativeUri = $graphResponse.Nextlink
+            if ( $Expand ) {
+                $queryParameters += @('$expand={0}') -f ($Expand -join ',')
+            }
 
-            if (! $useRawContent) {
-                $entities = if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
-                    @([PSCustomObject] $graphResponse.entities)
-                } elseif ($graphResponse.entities -is [HashTable]) {
-                    @([PSCustomObject] $graphResponse.Entities)
+            if ( $Search ) {
+                $queryParameters += @('$search={0}' -f $Search)
+            }
+
+            if ( $Filter ) {
+                $queryParameters += @('$filter={0}' -f $Filter)
+            }
+
+            if ( $orderQuery ) {
+                $queryParameters += @('$orderBy={0}' -f $orderQuery)
+            }
+
+            if ( $queryParameters.length -gt 0 ) {
+                $queryParameters
+            }
+        }
+
+        if ( $pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true ) {
+            write-verbose 'Including the total count of results'
+            $requestQuery += '$count'
+        }
+
+        # Cast it in case this is a deserialized object --
+        # workaround for a defect in ScriptClass
+        switch ([GraphType] $graphType) {
+            ([GraphType]::AADGraph) { $defaultVersion = '1.6' }
+            ([GraphType]::MSGraph) { $defaultVersion = 'GraphContext' |::> GetDefaultVersion }
+            default {
+                throw "Unexpected identity type '$graphType'"
+            }
+        }
+
+        $currentContext = $null
+
+        $graphConnection = if ( $Connection -eq $null ) {
+            if ( $graphType -eq ([GraphType]::AADGraph) ) {
+                $::.GraphConnection |=> NewSimpleConnection ([GraphType]::AADGraph) $cloud $MSGraphScopes
+            } else {
+                'GraphContext' |::> GetConnection $null $null $cloud $Permissions
+            }
+        } else {
+            $Connection
+        }
+
+        $firstIndex = if ( $pscmdlet.pagingparameters.Skip -ne $null -and $pscmdlet.pagingparameters.skip -ne 0 ) {
+            write-verbose "Skipping the first '$($pscmdlet.pagingparameters.skip)' parameters"
+            $pscmdlet.pagingparameters.Skip
+        }
+
+        $maxReturnedResults = $null
+        $maxResultCount = if ( $pscmdlet.pagingparameters.first -ne $null -and $pscmdlet.pagingparameters.first -lt [Uint64]::MaxValue ) {
+            $pscmdlet.pagingparameters.First | tee-object -variable maxReturnedResults
+        } else {
+            10
+        }
+
+        $skipCount = $firstIndex
+        $results = @()
+    }
+
+    process {
+        if ( ! $AbsoluteUri.IsPresent -and $Uri.IsAbsoluteUri -and ! (! $Uri.Host) ) {
+            throw "An absolute URI was specified -- specify a URI relative to the graph host and version, or specify -AbsoluteUri"
+        }
+
+        $uriInfo = if ( $AbsoluteUri.ispresent ) {
+            write-verbose "Caller specified AbsoluteUri -- interpreting uri as absolute"
+            $specificContext = new-so GraphContext $graphConnection $version 'local'
+            $info = $::.GraphUtilities |=> ParseGraphUri $Uri $specificContext
+            write-verbose "Absolute uri parsed as relative '$($info.GraphRelativeUri)' and version $($info.GraphVersion)"
+            if ( ! $info.IsAbsolute ) {
+                throw "Absolute Uri was specified, but given Uri was not absolute: '$($Uri)'"
+            }
+            if ( ! $info.IsContextCompatible ) {
+                throw "The version '$($info.Graphversion)' and connection endpoint '$($specificcontext.Connection.GraphEndpoint.Graph)' is not compatible with the uri '$Uri'"
+            }
+            $info
+        } elseif ( $graphType -ne ([GraphType]::AADGraph) ) {
+
+            if ( ($::.GraphContext |=> GetCurrent).location ) {
+                $info = $::.GraphUtilities |=> ParseGraphRelativeLocation $Uri
+                @{
+                    GraphRelativeUri = $info.GraphRelativeUri
+                    GraphVersion = $info.Context.version
+                }
+            } else {
+                @{
+                    GraphRelativeUri = $Uri
+                    GraphVersion = ($::.GraphContext |=> GetCurrent).version
+                }
+            }
+        }
+
+        $apiVersion = if ( $Version -ne $null -and $version.length -ne 0 ) {
+            write-verbose "Using version specified by caller: '$Version'"
+            $Version
+        } elseif ( $uriInfo -and $uriInfo.GraphVersion -and $uriInfo ) {
+            write-verbose "Using version from implied relative uri: '$($uriInfo.GraphVersion)'"
+            $uriInfo.GraphVersion
+        } else {
+            if ( $currentContext ) {
+                write-verbose "Using context Graph version '$($currentContext.Version)'"
+                $currentContext.Version
+            } else {
+                write-verbose "Using default Graph version '$defaultVersion'"
+                $defaultVersion
+            }
+        }
+
+        $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph) ) {
+            $graphConnection |=> Connect
+            $graphConnection.Identity.Token.TenantId
+        } else {
+            $apiVersion
+        }
+
+        $inputUriRelative = if ( ! $uriInfo ) {
+            $Uri
+        } else {
+            $uriInfo.GraphRelativeUri
+        }
+
+        $contextUri = if ( ($::.GraphContext |=> GetCurrent).location ) {
+            $::.GraphUtilities |=> ToGraphRelativeUri $inputUriRelative
+        } else {
+            $inputUriRelative
+        }
+
+        if ( $Value.IsPresent ) {
+            $contextUri = $contextUri, '$value' -join '/'
+        }
+
+        $graphRelativeUri = $::.GraphUtilities |=> JoinRelativeUri $tenantQualifiedVersionSegment $contextUri
+
+        $countError = $false
+        $optionalCountResult = $null
+        $pageCount = 0
+        $contentTypeData = $null
+
+        $logger = $::.RequestLog |=> GetDefault
+
+        while ( $graphRelativeUri -ne $null -and ($graphRelativeUri.tostring().length -gt 0) -and ($maxResultCount -eq $null -or $results.length -lt $maxResultCount) ) {
+            if ( $graphType -eq ([GraphType]::AADGraph) ) {
+                $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
+            }
+
+            $graphResponse = if ( $graphConnection.status -ne ([GraphConnectionStatus]::Offline) ) {
+                $currentPageQuery = if ( $pageCount -eq 0 ) {
+                    $requestQuery
                 } else {
-                    $graphResponse.Entities
+                    $null
                 }
 
-                if ( $pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true -and $results.length -eq 0 ) {
-                    try {
-                        $optionalCountResult = $graphResponse.RestResponse.value.count
-                    } catch {
-                        $countError = $true
+                $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent
+                $request |=> SetBody $Body
+                try {
+                    $request |=> Invoke $skipCount -logger $logger
+                } catch [System.Net.WebException] {
+                    $statusCode = if ( $_.exception.response | gm statuscode -erroraction ignore ) {
+                        $_.exception.response.statuscode
+                    }
+
+                    if ( $statusCode -eq 'Unauthorized' -or $statusCode -eq 'Forbidden' ) {
+                        throw [GraphAccessDeniedException]::new($_.exception)
+                    }
+
+                    # Note that there may be other errors, such as 'BadRequest' that deserve a warning rather than failure,
+                    # so we should consider adding others if the cases can be narrowed sufficiently to avoid other
+                    # undesirable side effects of continuing on an error. An even better workaround may be command-completion,
+                    # which would (and should!) be scoped to purely local operations -- this would give visibility as to
+                    # the next segments without a request to Graph that could fail.
+                    throw
+                }
+            }
+
+            $skipCount = $null
+
+            $content = if ( $graphResponse -and $graphResponse.Entities -ne $null ) {
+                if ( ! $contentTypeData ) {
+                    $contentTypeData = $graphResponse.RestResponse.ContentTypeData
+                }
+
+                $graphRelativeUri = $graphResponse.Nextlink
+
+                if (! $useRawContent) {
+                    $entities = if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
+                        @([PSCustomObject] $graphResponse.entities)
+                    } elseif ($graphResponse.entities -is [HashTable]) {
+                        @([PSCustomObject] $graphResponse.Entities)
+                    } else {
+                        $graphResponse.Entities
+                    }
+
+                    if ( $pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true -and $results.length -eq 0 ) {
+                        try {
+                            $optionalCountResult = $graphResponse.RestResponse.value.count
+                        } catch {
+                            $countError = $true
+                        }
+                    }
+                    $entities
+                } else {
+                    if ( $IncludeFullResponse.IsPresent -and ! $outputFilePrefix) {
+                        __ToResponseWithObject ($graphResponse |=> Content) $graphResponse
+                    } else {
+                        $graphResponse |=> Content
                     }
                 }
-                $entities
             } else {
-                if ( $IncludeFullResponse.IsPresent -and ! $outputFilePrefix) {
-                    __ToResponseWithObject ($graphResponse |=> Content) $graphResponse
-                } else {
+                $graphRelativeUri = $null
+                if ( $graphResponse ) {
                     $graphResponse |=> Content
                 }
             }
-        } else {
-            $graphRelativeUri = $null
-            if ( $graphResponse ) {
-                $graphResponse |=> Content
-            }
-        }
 
-        if ( $graphResponse -and ( ! $useRawContent ) ) {
-            # Add __ItemContext to decorate the object with its source uri.
-            # Do this as a script method to prevent deserialization
-            $requestUriNoQuery = $request.Uri.GetLeftPart([System.UriPartial]::Path)
-            $ItemContextScript = [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=`"$requestUriNoQuery`"}")
-            $content | foreach {
-                $_ | add-member -membertype scriptmethod -name __ItemContext -value $ItemContextScript
-            }
-        }
-
-        $results += $content
-
-        $pageCount++
-    }
-
-    if ($pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true) {
-        $accuracy = [double] 1.0
-        $count = if ( $optionalCountResult -eq $null ) {
-            $accuracy = [double] .1
-            $results.length
-        } else {
-            if ( $countError ) {
-                $accuracy = [double] .5
-            }
-            $optionalCountResult
-        }
-
-        $PSCmdlet.PagingParameters.NewTotalCount($count,  $accuracy)
-    }
-
-    $filteredResults = if ( $maxReturnedResults ) {
-        $results | select -first $maxReturnedResults
-    } else {
-        $results
-    }
-
-    if ( ! $OutputFilePrefix ) {
-        $filteredResults
-    } else {
-        $enumerableResults = if ( ! $contentTypeData['charset'] ) {
-            $byteResults = @($null, $null)
-            $byteResults[0] = $filteredResults
-            $byteResults
-        } else {
-            $filteredResults
-        }
-
-        $resultIndex = 0
-        $enumerableResults | foreach {
-            if ( $_ ) {
-                $baseName = $OutputFilePrefix
-                if ( $resultIndex -gt 0 ) {
-                    $baseName += $resultIndex.tostring()
+            if ( $graphResponse -and ( ! $useRawContent ) ) {
+                # Add __ItemContext to decorate the object with its source uri.
+                # Do this as a script method to prevent deserialization
+                $requestUriNoQuery = $request.Uri.GetLeftPart([System.UriPartial]::Path)
+                $ItemContextScript = [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=`"$requestUriNoQuery`"}")
+                $content | foreach {
+                    $_ | add-member -membertype scriptmethod -name __ItemContext -value $ItemContextScript
                 }
-                $resultIndex++
-                $outputFile = new-so GraphOutputFile $baseName $_ $contentTypeData
-                $outputFile |=> Save
+            }
+
+            $results += $content
+
+            $pageCount++
+        }
+
+        if ($pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true) {
+            $accuracy = [double] 1.0
+            $count = if ( $optionalCountResult -eq $null ) {
+                $accuracy = [double] .1
+                $results.length
+            } else {
+                if ( $countError ) {
+                    $accuracy = [double] .5
+                }
+                $optionalCountResult
+            }
+
+            $PSCmdlet.PagingParameters.NewTotalCount($count,  $accuracy)
+        }
+
+        $filteredResults = if ( $maxReturnedResults ) {
+            $results | select -first $maxReturnedResults
+        } else {
+            $results
+        }
+    }
+
+    end {
+        if ( ! $OutputFilePrefix ) {
+            $filteredResults
+        } else {
+            $enumerableResults = if ( ! $contentTypeData['charset'] ) {
+                $byteResults = @($null, $null)
+                $byteResults[0] = $filteredResults
+                $byteResults
+            } else {
+                $filteredResults
+            }
+
+            $resultIndex = 0
+            $enumerableResults | foreach {
+                if ( $_ ) {
+                    $baseName = $OutputFilePrefix
+                    if ( $resultIndex -gt 0 ) {
+                        $baseName += $resultIndex.tostring()
+                    }
+                    $resultIndex++
+                    $outputFile = new-so GraphOutputFile $baseName $_ $contentTypeData
+                    $outputFile |=> Save
+                }
             }
         }
     }

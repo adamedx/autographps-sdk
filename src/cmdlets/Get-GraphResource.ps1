@@ -149,10 +149,10 @@ ConvertTo-JSON
 ConvertFrom-JSON
 #>
 function Get-GraphResource {
-    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true)]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true, defaultparametersetname='MSGraphDefaultConnection')]
     param(
-        [parameter(position=0,mandatory=$true)]
-        [Uri[]] $Uri,
+        [parameter(position=0, valuefrompipeline=$true, mandatory=$true)]
+        [Uri] $Uri,
 
         [String] $Filter = $null,
 
@@ -203,54 +203,62 @@ function Get-GraphResource {
         [string] $ResultVariable = $null
     )
 
-    Enable-ScriptClassVerbosePreference
+    begin {
+        Enable-ScriptClassVerbosePreference
+        $uris = @()
 
-    $requestArguments = @{
-        Uri = $Uri
-        Query = $Query
-        Filter = $Filter
-        Search = $Search
-        Select = $Select
-        Expand = $Expand
-        OrderBy = $OrderBy
-        Descending = $Descending
-        OutputFilePrefix = $OutputFilePrefix
-        Value = $Value
-        Version=$Version
-        RawContent=$RawContent
-        AbsoluteUri=$AbsoluteUri
-        Headers=$Headers
-        NoClientRequestId=$NoClientRequestId
-        First=$pscmdlet.pagingparameters.first
-        Skip=$pscmdlet.pagingparameters.skip
-        IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
+        $requestArguments = @{
+            Query = $Query
+            Filter = $Filter
+            Search = $Search
+            Select = $Select
+            Expand = $Expand
+            OrderBy = $OrderBy
+            Descending = $Descending
+            OutputFilePrefix = $OutputFilePrefix
+            Value = $Value
+            Version=$Version
+            RawContent=$RawContent
+            AbsoluteUri=$AbsoluteUri
+            Headers=$Headers
+            NoClientRequestId=$NoClientRequestId
+            First=$pscmdlet.pagingparameters.first
+            Skip=$pscmdlet.pagingparameters.skip
+            IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
+        }
+
+        if ( $Cloud ) {
+            $requestArguments['Cloud'] = $Cloud
+        }
+
+        if ( $ClientRequestId ) {
+            $requestArguments['ClientRequestId'] = $ClientRequestId
+        }
+
+        if ( $AADGraph.ispresent ) {
+            $requestArguments['AADGraph'] = $AADGraph
+        } elseif ($Permissions -ne $null) {
+            $requestArguments['Permissions'] = $Permissions
+        }
+
+        if ( $Connection -ne $null ) {
+            $requestArguments['Connection'] = $Connection
+        }
     }
 
-    if ( $Cloud ) {
-        $requestArguments['Cloud'] = $Cloud
+    process {
+        $uris += $Uri
     }
 
-    if ( $ClientRequestId ) {
-        $requestArguments['ClientRequestId'] = $ClientRequestId
+    end {
+        $localResult = $null
+
+        $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
+
+        $uris | Invoke-GraphRequest @requestArguments | tee-object -variable localResult
+
+        $targetResultVariable.value = $localResult
     }
-
-    if ( $AADGraph.ispresent ) {
-        $requestArguments['AADGraph'] = $AADGraph
-    } elseif ($Permissions -ne $null) {
-        $requestArguments['Permissions'] = $Permissions
-    }
-
-    if ( $Connection -ne $null ) {
-        $requestArguments['Connection'] = $Connection
-    }
-
-    $localResult = $null
-
-    $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
-
-    Invoke-GraphRequest @requestArguments | tee-object -variable localResult
-
-    $targetResultVariable.value = $localResult
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
