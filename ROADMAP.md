@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Add 'NoRequest' mode to output what request would have been made.
+* Add batching support
 * Add more command help
 * Add view to get-grapherror
 * Refactor auth providers
@@ -360,6 +362,7 @@
 * Change name of ODataFilter parameter on several commands to Filter
 * Add ToAbsoluteUri method GraphUtilities
 * Make property parameter second positional parameter
+* Use begin / process / end for Invoke-GraphRequest and Get-GraphResource commands
 
 ### Postponed
 

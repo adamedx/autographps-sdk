@@ -73,10 +73,9 @@ ScriptClass GraphRequest {
             throw "Web request cannot proceed -- connection status is set to offline"
         }
 
-        $queryParameters = if ( $this.Query -is [object[]] ) {
-            $this.Query
-        } else {
-            @($this.Query)
+        $queryParameters = $this.query
+        if ( $this.Query -isnot [object[]] ) {
+            $queryParameters = , $this.Query
         }
 
         if ($pageStartIndex -ne $null) {
@@ -124,7 +123,7 @@ ScriptClass GraphRequest {
         $restResponse
     }
 
-    function __AddQueryParameters($parameters) {
+    function __AddQueryParameters([string[]] $parameters) {
         $components = @()
 
         $parameters | foreach {

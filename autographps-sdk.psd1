@@ -231,6 +231,8 @@ None.
 
 ### Breaking changes
 
+* The pipeline is now explicitly supported by the `Invoke-GraphRequest` and `Get-GraphResource` commands -- graph URI's may be supplied to the pipeline and the commands will retrieve results for each URI. This may have subtle behavior differences from the previous implementation which modeled the Uri parameter as an array -- it is now a scalar object with multiple URIs available only from the pipeline and not by passing an array of URIs for the URI parameter.
+
 ### New features
 
 * The `Get-GraphResource` command's `Select` parameter has been renamed to `Property` to be consistent with related commands in `AutoGraphPS`. However the command retains a `Select` alias for compatibility with the original parameter name and to support users accustomed to the Graph terminology for projection of a record's fields.
@@ -238,7 +240,9 @@ None.
 
 ### Fixed defects
 
-# The `Invoke-GraphRequest` and `Get-GraphResource` commands incorrectly handled the `Expand` parameter in cases where the syntax `-Expand:$false` was used -- instead of being correctly interpreted as the parameter not being specified, it was treated as if it had been expressed `-Expand`, resulting in invalid queries to Graph. This is now fixed.
+* The `Invoke-GraphRequest` and `Get-GraphResource` commands incorrectly handled the `Expand` parameter in cases where the syntax `-Expand:$false` was used -- instead of being correctly interpreted as the parameter not being specified, it was treated as if it had been expressed `-Expand`, resulting in invalid queries to Graph. This is now fixed.
+* The `Descending` parameter of `Invoke-GraphRequest` and `Get-GraphResource` was ignored in the mainstream case of the `OrderBy` parameter not being hash table. This has been fixed.
+* The `Skip` parameter on `Invoke-GraphRequest` and `Get-GraphResource` would generate an incorrect URI when used resulting in a `BadRequest` response from Graph -- `Skip` was unusable. This issue has been fixed.
 
 None.
 
