@@ -240,6 +240,21 @@ None.
 
 ### Fixed defects
 
+* The AAD Application-related commands including `Get-GraphApplication`, `New-GraphApplication`, and `Remove-GraphApplication` commands were unusable due to a breaking change to parameter names in the `0.19.0` release of this module for the `Invoke-GraphRequest` command. This release includes the fix. The affected commands were:
+
+    * `Get-GraphApplication`
+    * `Get-GraphApplicationCertificate`
+    * `Get-GraphApplicationConsent`
+    * `Get-GraphApplicationServicePrincipal`
+    * `New-GraphApplication`
+    * `New-GraphApplicationCertificate`
+    * `Register-GraphApplication`
+    * `Remove-GraphApplication`
+    * `Remove-GraphApplicationCertificate`
+    * `Remove-GraphApplicationConsent`
+    * `Set-GraphApplicationConsent`
+    * `Unregister-GraphApplication`
+
 * The `Invoke-GraphRequest` and `Get-GraphResource` commands incorrectly handled the `Expand` parameter in cases where the syntax `-Expand:$false` was used -- instead of being correctly interpreted as the parameter not being specified, it was treated as if it had been expressed `-Expand`, resulting in invalid queries to Graph. This is now fixed.
 * The `Descending` parameter of `Invoke-GraphRequest` and `Get-GraphResource` was ignored in the mainstream case of the `OrderBy` parameter not being hash table. This has been fixed.
 * The `Skip` parameter on `Invoke-GraphRequest` and `Get-GraphResource` would generate an incorrect URI when used resulting in a `BadRequest` response from Graph -- `Skip` was unusable. This issue has been fixed.

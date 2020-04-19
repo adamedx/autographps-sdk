@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Add Get-LastGraphResponse with view parameters, remove LASTGRAPHITEMS
+* Add output types to as many commands as possible
 * Add 'NoRequest' mode to output what request would have been made.
 * Add batching support
 * Add more command help
