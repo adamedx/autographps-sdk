@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ ScriptClass QueryHelper {
     static {
         function GetOrderQueryFromOrderByParameters($orderByParameters, [bool] $descendingDefault) {
             $sortColumns = switch($OrderByParameters.Gettype().name) {
-                'String' { @{$orderByParameters=$false} }
+                'String' { @{$orderByParameters = $descendingDefault} }
                 'HashTable' { $orderByParameters }
                 'object[]' {
                     $normalized = @{}
@@ -38,8 +38,11 @@ ScriptClass QueryHelper {
                 if ( $isDescending -isnot [bool] ) {
                     throw [ArgumentException]::new("Specified sort column '$($_.tostring())' was assigned invalid type '$($isDescending.gettype())' for direction -- it must be of type 'bool'")
                 }
-                $direction = if ( $isDescending ) { 'desc' } else { '' }
-                '{0} {1}' -f $_, $direction
+                if ( $isDescending ) {
+                    $_ + ' desc'
+                } else {
+                    $_
+                }
             }
 
             $columnEntries -join ','

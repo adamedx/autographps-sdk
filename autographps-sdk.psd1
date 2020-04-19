@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.19.0'
+ModuleVersion = '0.20.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -221,9 +221,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.19.0 Release Notes
+## AutoGraphPS-SDK 0.20.0 Release Notes
 
-This release includes a significant breaking change -- two commands have been renamed.
+This release includes improvements to existing commands and important fixes for major regressions in the previous release.
 
 ### New dependencies
 
@@ -231,18 +231,33 @@ None.
 
 ### Breaking changes
 
-* Renamed commands: The following commands have been renamed:
-  * `Get-GraphItem` is renamed to `Get-GraphResource`
-  * `Remove-GraphItem` is renamed to `Remove-GraphResource`
-* The `ggi` alias is renamed to `ggr` to reflect the change in the name of the command it originally aliased, `Get-GraphItem`
-* `ItemRelativeUri` and `RelativeUri` parameters for the commands `Get-GraphResource` and `Invoke-GraphRequest` have been renamed to `Uri`
-* The `ODataFilter` parameter on numerous commands including `Get-GraphResource` and `InvokeGraphRequest` has been renamed to `Filter`
+* The object pipeline is now explicitly supported by the `Invoke-GraphRequest` and `Get-GraphResource` commands -- graph URI's may be supplied to the pipeline and the commands will retrieve results for each URI. This may have subtle behavior differences from the previous implementation which modeled the Uri parameter as an array -- it is now a scalar object with multiple URIs available only from the pipeline and not by passing an array of URIs for the URI parameter.
 
 ### New features
 
-* The GraphContext class has a new public property, Id. Id is a guid that uniquely identifies the context and can be used for cases such as hashing.
+* The `Get-GraphResource` command's `Select` parameter has been renamed to `Property` to be consistent with related commands in `AutoGraphPS`. However the command retains a `Select` alias for compatibility with the original parameter name and to support users accustomed to the Graph terminology for projection of a record's fields.
+* The `Property` parameter (aka `Select` per above) is now the second positional parameter and `Filter` is no longer a positional parameter. Now you can use an invocation such as `Get-GraphResource me id, displayName` to get only specific properties. This change is made in part because `Filter` is seen as a less common and more advanced use case due to the need to know OData syntax. This is also consistent with other commands in related modules such as `AutoGraphPS` where `Property` is a positional parameter and `Filter` is not.
 
 ### Fixed defects
+
+* The AAD Application-related commands including `Get-GraphApplication`, `New-GraphApplication`, and `Remove-GraphApplication` commands were unusable due to a breaking change to parameter names in the `0.19.0` release of this module for the `Invoke-GraphRequest` command. This release includes the fix. The affected commands were:
+
+    * `Get-GraphApplication`
+    * `Get-GraphApplicationCertificate`
+    * `Get-GraphApplicationConsent`
+    * `Get-GraphApplicationServicePrincipal`
+    * `New-GraphApplication`
+    * `New-GraphApplicationCertificate`
+    * `Register-GraphApplication`
+    * `Remove-GraphApplication`
+    * `Remove-GraphApplicationCertificate`
+    * `Remove-GraphApplicationConsent`
+    * `Set-GraphApplicationConsent`
+    * `Unregister-GraphApplication`
+
+* The `Invoke-GraphRequest` and `Get-GraphResource` commands incorrectly handled the `Expand` parameter in cases where the syntax `-Expand:$false` was used -- instead of being correctly interpreted as the parameter not being specified, it was treated as if it had been expressed `-Expand`, resulting in invalid queries to Graph. This is now fixed.
+* The `Descending` parameter of `Invoke-GraphRequest` and `Get-GraphResource` was ignored in the mainstream case of the `OrderBy` parameter not being hash table. This has been fixed.
+* The `Skip` parameter on `Invoke-GraphRequest` and `Get-GraphResource` would generate an incorrect URI when used resulting in a `BadRequest` response from Graph -- `Skip` was unusable. This issue has been fixed.
 
 None.
 

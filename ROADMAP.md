@@ -2,7 +2,10 @@
 
 ## To-do items -- prioritized
 
-* Add ToAbsoluteUri method GraphUtilities
+* Add Get-LastGraphResponse with view parameters, remove LASTGRAPHITEMS
+* Add output types to as many commands as possible
+* Add 'NoRequest' mode to output what request would have been made.
+* Add batching support
 * Add more command help
 * Add view to get-grapherror
 * Refactor auth providers
@@ -359,6 +362,9 @@
 * Add logging implementation
 * Change Get-GraphItem, Remove-GraphItem to Get-GraphResource, Remove-GraphResource
 * Change name of ODataFilter parameter on several commands to Filter
+* Add ToAbsoluteUri method GraphUtilities
+* Make property parameter second positional parameter
+* Use begin / process / end for Invoke-GraphRequest and Get-GraphResource commands
 
 ### Postponed
 

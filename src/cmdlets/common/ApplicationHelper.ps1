@@ -78,7 +78,7 @@ ScriptClass ApplicationHelper {
             }
 
             write-verbose "Querying for applications at version $apiVersion' with uri '$uri, filter '$filter', select '$select'"
-            Invoke-GraphRequest -Method $queryMethod -RelativeUri $uri @requestArguments -version $apiVersion
+            Invoke-GraphRequest -Method $queryMethod -Uri $uri @requestArguments -version $apiVersion
         }
     }
 }
