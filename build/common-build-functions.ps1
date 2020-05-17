@@ -196,11 +196,13 @@ function Get-DocModulePath {
 function Install-DocTools {
     $settings = Get-ToolsSettings
 
+    $docToolVersion = 'latest'
     $requiredVersion = if ( $settings['platyps'] ) {
         $version = $settings['platyps'].version
         if ( ! $version ) {
             throw "Invalid tools settings for 'platyps' -- no version was found. Correct or remove tools settings file and retry."
         }
+        $docToolVersion = $version
         @{RequiredVersion=$version}
     } else {
         write-warning "No configuration found for 'platyps' in tools settings -- using latest version as a default"
@@ -212,7 +214,7 @@ function Install-DocTools {
     $docModulePath = Get-DocModulePath
 
     if ( ! $docModulePath ) {
-        write-verbose "Doc tool '$docModuleName' not found under path '$modulesPath', will download"
+        write-verbose "Doc tool '$docModuleName' not found under path '$modulesPath', will download version '$docToolVersion'"
         remove-item -r -force (join-path $modulesPath $docModuleName) -erroraction ignore
         Save-Module $docModuleName -path $modulesPath -repository psgallery @requiredversion
 
@@ -249,7 +251,7 @@ function Clean-BuildDirectories {
     $logsPath = Get-LogsDirectory
 
     if ( test-path $logsPath ) {
-        remote-item -r -force $logsPath
+        remove-item -r -force $logsPath
     }
 
     $outputDirectory = Get-OutputDirectory

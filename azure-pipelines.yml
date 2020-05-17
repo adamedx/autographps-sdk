@@ -74,6 +74,12 @@ jobs:
       script: './build/configure-tools.ps1; ./build/install.ps1'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
+    displayName: 'Generate command reference documentation'
+    inputs:
+      targetType: inline
+      script: './build/Build-Documentation.ps1'
+      pwsh: $(USE_POWERSHELL_CORE)
+  - task: powershell@2
     displayName: 'Build module package'
     inputs:
       targetType: inline
