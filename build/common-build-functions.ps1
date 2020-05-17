@@ -26,6 +26,8 @@ $PowerShellExecutable = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
 $OSPathSeparator = ';'
 $IsNonWindowsPlatform = $false
 
+$ToolsSettings = $null
+
 try {
     if ( $PSVersionTable.PSEdition -eq 'Core' ) {
         if ( $PSVersionTable.Platform -ne 'Windows' -and $PSVersionTable.Platform -ne 'Win32NT' ) {
@@ -139,6 +141,92 @@ function Validate-Prerequisites {
     }
 }
 
+function Get-ToolsDirectory {
+    join-path (split-path -parent $psscriptroot) bin
+}
+
+function Get-SettingsPath {
+    join-path $psscriptroot ToolsSettings.json
+}
+
+function Get-ToolsSettings {
+    $settingsPath = Get-SettingsPath
+    if ( $script:ToolsSettings -eq $null ) {
+        if ( test-path $settingsPath ) {
+            write-verbose "Reading tools settings from path '$settingsPath'"
+            $settings = get-content -raw (Get-SettingsPath) | convertfrom-json
+            $script:ToolsSettings = @{}
+            $settings | gm -membertype noteproperty | foreach {
+                $script:ToolsSettings.Add($_.name, $settings.$($_.name))
+            }
+        } else {
+            write-warning "Tools settings file '$settingsPath' not found -- default settings values will be used."
+            $script:ToolsSettings = @{}
+        }
+    }
+    $script:ToolsSettings
+}
+
+function Get-ToolsModulesDirectory {
+    join-path (Get-ToolsDirectory) modules
+}
+
+function Get-LogsDirectory {
+    join-path (split-path -parent $psscriptroot) .logs
+}
+
+function Get-DefaultDocsDirectory {
+    join-path (split-path -parent $psscriptroot) 'docs/CommandReference'
+}
+
+function Get-DocsLogPath {
+    join-path (Get-LogsDirectory) 'documentation-log.json'
+}
+
+function Get-DocModuleName {
+    'platyPS'
+}
+
+function Get-DocModulePath {
+    $docModuleName = Get-DocModuleName
+    $modulesPath = Get-ToolsModulesDirectory
+    get-childitem $modulesPath -r "$docModuleName.psd1"
+}
+
+function Install-DocTools {
+    $settings = Get-ToolsSettings
+
+    $requiredVersion = if ( $settings['platyps'] ) {
+        $version = $settings['platyps'].version
+        if ( ! $version ) {
+            throw "Invalid tools settings for 'platyps' -- no version was found. Correct or remove tools settings file and retry."
+        }
+        @{RequiredVersion=$version}
+    } else {
+        write-warning "No configuration found for 'platyps' in tools settings -- using latest version as a default"
+        @{}
+    }
+
+    $modulesPath = Get-ToolsModulesDirectory
+    $docModuleName = Get-DocModuleName
+    $docModulePath = Get-DocModulePath
+
+    if ( ! $docModulePath ) {
+        write-verbose "Doc tool '$docModuleName' not found under path '$modulesPath', will download"
+        remove-item -r -force (join-path $modulesPath $docModuleName) -erroraction ignore
+        Save-Module $docModuleName -path $modulesPath -repository psgallery @requiredversion
+
+        $moduleAtNewPath = Get-DocModulePath
+        if ( ! $moduleAtNewPath ) {
+            throw "Documentation module '$docModuleName' was installed, but the module manifest file '$docModuleName.psd1' could not be found under the directory $modulesPath"
+        }
+        $true
+    } else {
+        write-verbose "Doc tool was found at '$($docModulePath.fullname)', no update necessary"
+        $false
+    }
+}
+
 function Clean-Tools {
     $binPath = join-path $psscriptroot '../bin'
 
@@ -156,6 +244,12 @@ function Clean-BuildDirectories {
     $testResultsPath = join-path $psscriptroot '../test/results'
     if (test-path $testResultsPath) {
         remove-item -r -force $testResultsPath
+    }
+
+    $logsPath = Get-LogsDirectory
+
+    if ( test-path $logsPath ) {
+        remote-item -r -force $logsPath
     }
 
     $outputDirectory = Get-OutputDirectory
@@ -194,6 +288,16 @@ function New-ModuleOutputDirectory {
     }
 
     (gi $outputDirectory).fullname
+}
+
+function New-LogsDirectory {
+    $logsPath = Get-LogsDirectory
+
+    if ( test-path $logsPath ) {
+        (gi  $logsPath ).fullname
+    } else {
+        (psmkdir $logsPath).fullname
+    }
 }
 
 function build-module {
