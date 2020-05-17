@@ -90,7 +90,7 @@ jobs:
     displayName: 'Generate command reference documentation'
     inputs:
       targetType: inline
-      script: './build/Build-Documentation.ps1'
+      script: './build/build-documentation.ps1'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Create test output directory'
