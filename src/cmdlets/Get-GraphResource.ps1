@@ -200,6 +200,8 @@ function Get-GraphResource {
 
         [switch] $NoClientRequestId,
 
+        [switch] $NoRequest,
+
         [string] $ResultVariable = $null
     )
 
@@ -222,6 +224,7 @@ function Get-GraphResource {
             AbsoluteUri=$AbsoluteUri
             Headers=$Headers
             NoClientRequestId=$NoClientRequestId
+            NoRequest=$NoRequest
             First=$pscmdlet.pagingparameters.first
             Skip=$pscmdlet.pagingparameters.skip
             IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount

@@ -285,7 +285,9 @@ function Invoke-GraphRequest {
         [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
         [switch] $AADGraph,
 
-        [switch] $NoClientRequestId
+        [switch] $NoClientRequestId,
+
+        [switch] $NoRequest
     )
 
     begin {
@@ -510,7 +512,7 @@ function Invoke-GraphRequest {
                     $null
                 }
 
-                $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent
+                $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent $NoRequest.IsPresent
                 $request |=> SetBody $Body
                 try {
                     $request |=> Invoke $skipCount -logger $logger
