@@ -41,8 +41,10 @@ ScriptClass RESTRequest {
     $method = strict-val [String]
     $body = $null
     $userAgent = $null
+    $returnRequest = $false
 
-    function __initialize([Uri] $uri, $method = "GET", [HashTable] $headers = @{}, $body = $null, $userAgent = $null) {
+    function __initialize([Uri] $uri, $method = "GET", [HashTable] $headers = @{}, $body = $null, $userAgent = $null, [bool] $returnRequest) {
+        $this.returnRequest = $returnRequest
         $this.headers = $headers
         $this.method = $method
         $this.uri = $uri
@@ -65,7 +67,7 @@ ScriptClass RESTRequest {
     function Invoke {
         [cmdletbinding(SupportsShouldProcess=$true)]
         param($PSCmdletArgument, $logEntry)
-        if (! $PSCmdletArgument -or $PSCmdletArgument.shouldprocess($this.uri, $this.method)) {
+        if ( ! $this.returnRequest -and ( ! $PSCmdletArgument -or $PSCmdletArgument.shouldprocess($this.uri, $this.method) ) ) {
             # Disable progress display
             $progresspreference = 'SilentlyContinue'
 
@@ -116,7 +118,26 @@ ScriptClass RESTRequest {
             if ( $logEntry ) { $logEntry |=> LogSuccess $restResponse }
             $restResponse
         } else {
-            [PSCustomObject] @{PSTypeName='RESTResponse'}
+            if ( $this.returnRequest ) {
+                $headers = $this.headers.clone()
+                if ( $headers['Authorization'] ) {
+                    $headers['Authorization'] = '<authtoken>'
+                }
+
+                if ( $headers['client-request-id'] ) {
+                    $headers.remove('client-request-id')
+                }
+
+                $content = [ordered] @{}
+                $content['Method'] = $this.method
+                $content['Uri'] = $this.uri
+                $content['Body'] = $this.body
+                $content['Headers'] = $headers
+
+                new-so RESTResponse ([PSCustomObject] $content) $null $true
+            } else {
+                [PSCustomObject] @{PSTypeName='RESTResponse'}
+            }
         }
     }
 

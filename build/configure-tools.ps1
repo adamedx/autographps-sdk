@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,11 +24,20 @@ if ( $Force.IsPresent ) {
     Clean-Tools
 }
 
-$destinationPath = join-path (split-path -parent $psscriptroot) bin
+$settings = Get-ToolsSettings
+
+$destinationPath = Get-ToolsDirectory
 
 if ( ! ( test-path $destinationPath ) ) {
     write-verbose "Destination directory '$destinationPath' does not exist, creating it..."
     new-directory -name $destinationPath | out-null
+}
+
+$modulesPath = Get-ToolsModulesDirectory
+
+if ( ! ( test-path $modulesPath ) ) {
+    write-verbose "Tools modules directory '$modulesPath' does not exist, creating it..."
+    new-directory -name $modulesPath | out-null
 }
 
 if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
@@ -49,9 +58,20 @@ if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
     if ( ! $nugetPresent -or $Force.IsPresent ) {
         write-verbose "Tool configuration update required or Force was specified, updating tools..."
 
+        $nugetVersion = if ( $settings['nuget'] ) {
+            $version = $settings['nuget'].version
+            if ( ! $version ) {
+                throw "Invalid tools settings for 'nuget' -- no version was found. Correct or remove tools settings file and retry."
+            }
+            $version
+        } else {
+            write-warning "No configuration found for 'nuget' in tools settings -- using latest version as a default"
+            'latest'
+        }
+
         if ( ! ( test-path $nugetPath ) ) {
-            write-verbose "Downloading latest nuget executable to '$nugetPath'..."
-            Invoke-WebRequest -usebasicparsing https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -outfile $nugetPath
+            write-verbose "Downloading version '$nugetVersion' of nuget executable to '$nugetPath'..."
+            Invoke-WebRequest -usebasicparsing https://dist.nuget.org/win-x86-commandline/$nugetVersion/nuget.exe -outfile $nugetPath
             write-verbose "Download of nuget executable complete."
         }
 
@@ -71,7 +91,7 @@ if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
         }
     } else {
         $actionRequired = $false
-        write-verbose "Tool configuration validated successfully, no action necessary."
+        write-verbose "Nuget configuration validated successfully, no action necessary for nuget."
     }
 } else {
     write-verbose "Not running on Windows, explicitly checking for required 'dotnet' tool for .net runtime..."
@@ -163,6 +183,9 @@ if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
     }
 }
 
+$docToolChangesRequired = Install-DocTools
+
+$actionRequired = $actionRequired -or $docToolChangesRequired
 
 $changeDisplay = if ( $actionRequired ) {
     'Changes'

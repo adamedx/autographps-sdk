@@ -24,8 +24,9 @@ ScriptClass GraphRequest {
     $Query = $null
     $Headers = $null
     $ClientRequestId = $null
+    $ReturnRequest = $false
 
-    function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null, $clientRequestId, [bool] $noRequestId) {
+    function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null, $clientRequestId, [bool] $noRequestId, [bool] $returnRequest) {
         $uriString = if ( $uri.scheme -ne $null ) {
             $uri.AbsoluteUri
         } else {
@@ -43,6 +44,7 @@ ScriptClass GraphRequest {
         $uriQueryLength = if ( $uri.Query -ne $null ) { $uri.Query.length } else { 0 }
         $uriNoQuery = new-object Uri ($uriString.substring(0, $uriString.length - $uriQueryLength))
 
+        $this.ReturnRequest = $returnRequest
         $this.Connection = $GraphConnection
         $this.RelativeUri = $uri
         $this.Uri = $uriNoQuery
@@ -113,8 +115,8 @@ ScriptClass GraphRequest {
     function __InvokeRequest($verb, $uri, $query, $logger) {
         $uriPath = __UriWithQuery $uri $query
         $uri = new-object Uri $uriPath
-        $restRequest = new-so RESTRequest $uri $verb $this.headers $this.body $this.Connection.UserAgent
-        $logEntry = if ( $logger ) { $logger |=> NewLogEntry $this.Connection $restRequest }
+        $restRequest = new-so RESTRequest $uri $verb $this.headers $this.body $this.Connection.UserAgent $this.returnRequest
+        $logEntry = if ( $logger -and ! $this.returnRequest ) { $logger |=> NewLogEntry $this.Connection $restRequest }
         try {
             $restResponse = $restRequest |=> Invoke -logEntry $logEntry
         } finally {

@@ -25,19 +25,25 @@ ScriptClass RESTResponse {
     $contentTypeData = strict-val [HashTable] $null
     $RequiredContentType = $null
 
-    function __initialize ( $webResponse, [string] $requiredContentType = $null ) {
-        $this.statusCode = $webResponse.statusCode
-        $this.statusDescription = $webResponse.statusDescription
-        $this.rawContent = $webResponse.rawContent
-        $this.rawContentLength = $webResponse.rawContentLength
-        $this.headers = $webResponse.headers
-        $this.content = $webResponse.content
-        $this.images = if ( $webResponse | gm images -erroraction ignore ) { $webResponse.images } else { $null }
-        $this.inputFields = if ( $webResponse | gm inputfields -erroraction ignore ) { $webResponse.inputfields } else { $null }
-        $this.links = if ( $webResponse | gm links -erroraction ignore ) { $webResponse.links } else { $null }
-        $this.RequiredContentType = $requiredContentType
-
-        SetContentTypeData
+    function __initialize ( $webResponse, [string] $requiredContentType = $null, [bool] $isSyntheticResponse ) {
+        if ( $isSyntheticResponse ) {
+            $this.statusCode = 0
+            $this.content = $webResponse | convertto-json -depth 3
+            $this.rawcontent = $this.content
+            $this.rawcontentlength = $this.rawcontent.length
+        } else {
+            $this.statusCode = $webResponse.statusCode
+            $this.statusDescription = $webResponse.statusDescription
+            $this.rawContent = $webResponse.rawContent
+            $this.rawContentLength = $webResponse.rawContentLength
+            $this.headers = $webResponse.headers
+            $this.content = $webResponse.content
+            $this.images = if ( $webResponse | gm images -erroraction ignore ) { $webResponse.images } else { $null }
+            $this.inputFields = if ( $webResponse | gm inputfields -erroraction ignore ) { $webResponse.inputfields } else { $null }
+            $this.links = if ( $webResponse | gm links -erroraction ignore ) { $webResponse.links } else { $null }
+            $this.RequiredContentType = $requiredContentType
+        }
+        SetContentTypeData $isSyntheticResponse
     }
 
     static {
@@ -53,8 +59,13 @@ ScriptClass RESTResponse {
         }
     }
 
-    function SetContentTypeData {
+    function SetContentTypeData($isSyntheticResponse) {
         $this.contentTypeData = @{}
+
+        if ( $isSyntheticResponse ) {
+            $this.contentTypeData['application/json'] = $true
+            return
+        }
 
         if ( $this.headers -ne $null ) {
             $contentType = $this.headers['Content-Type']

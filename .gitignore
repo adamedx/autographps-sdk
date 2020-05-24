@@ -4,6 +4,7 @@ bin/*
 test/results/*
 .psrepo/*
 .devmodule/*
+.logs/*
 NuGet.Config
 localnuget.config
 poshgraph.psd1.tmp.psd1

@@ -97,7 +97,7 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                                                                            |
 | Get-GraphConnectionInfo              | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline`                                                  |
 | Get-GraphError (gge)                 | Retrieves detailed errors returned from Graph in execution of the last command                                                                          |
-| Get-GraphResource  (ggr)                 | Given a relative (to the Graph or current location) Uri gets information about the entity                                                               |
+| Get-GraphResource  (ggr, gcat, Get-GraphContent) | Given a relative (to the Graph or current location) Uri gets information about the entity                                                               |
 | Get-GraphLog (ggl)                   | Gets the local log of all requests to Graph made by this module                                                                                         |
 | Get-GraphLogOption                   | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
 | Get-GraphToken                       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) |

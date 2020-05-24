@@ -4,7 +4,6 @@
 
 * Add Get-LastGraphResponse with view parameters, remove LASTGRAPHITEMS
 * Add output types to as many commands as possible
-* Add 'NoRequest' mode to output what request would have been made.
 * Add batching support
 * Add more command help
 * Add view to get-grapherror
@@ -19,8 +18,6 @@
 * Set-GraphApplicationCertificate to set to an existing certificate
 * Add output types
 
-* Add $ref? Is this New-GraphItemReference, or New-GraphItem with a reference option?
-
 * Create interface for certificate store, make it not implemented outside of Windows
 
 * Output data based on content-type
@@ -34,7 +31,6 @@
 * Convert some verbose statements to debug
 * Set-GraphApplication
 * Rewrite names in scriptclass to make it easier to understand
-* Make Uri argument a non-array
 * Add default graph connection
 * Add named graph connections
 * Add connection enumeration
@@ -44,7 +40,6 @@
 * Add ScriptProperty computed fields to displayformatter?
 * Add return types to cmdlets
 * Change autographps to use dynamic scope implementation
-* Emit header object in get-graphchilditem ?
 * Rename DisplayFormatter to OutputFormatter
 * Change relativeuri parameter to 'uri' to match invoke-webrequest and invoke-restmethod
 * Use begin, and maybe end blocks in app cmdlets, also
@@ -365,6 +360,8 @@
 * Add ToAbsoluteUri method GraphUtilities
 * Make property parameter second positional parameter
 * Use begin / process / end for Invoke-GraphRequest and Get-GraphResource commands
+* Add 'NoRequest' mode to output what request would have been made.
+* Make Uri argument a non-array
 
 ### Postponed
 
@@ -393,6 +390,8 @@
 * Move some data to info, possibly show rwx
 * Make token caches per app-per cloud.
 * Use argumentcompleter advanced parameter rather than registerparametercompleter
+* Emit header object in get-graphchilditem ? -- handled with ps format xml
+* Add $ref? Is this New-GraphItemReference, or New-GraphItem with a reference option? -- handled with other commands in another module
 
 #### Stdposh improvements
 
