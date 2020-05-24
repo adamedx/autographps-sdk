@@ -227,7 +227,9 @@ This release includes improvements to existing commands and important fixes for 
 
 ### New dependencies
 
-None.
+* Microsoft.Identity.Client (MSAL) 4.14.0
+* Microsoft.IdentityModel.Clients.ActiveDirectory (ADAL) 5.2.7
+* `platyPS 0.14.0` (optional): Tool-only dependency. Currently only required during CI.
 
 ### Breaking changes
 
