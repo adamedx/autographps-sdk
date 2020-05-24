@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.20.0'
+ModuleVersion = '0.21.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -237,6 +237,7 @@ None.
 
 * The `Get-GraphResource` command's `Select` parameter has been renamed to `Property` to be consistent with related commands in `AutoGraphPS`. However the command retains a `Select` alias for compatibility with the original parameter name and to support users accustomed to the Graph terminology for projection of a record's fields.
 * The `Property` parameter (aka `Select` per above) is now the second positional parameter and `Filter` is no longer a positional parameter. Now you can use an invocation such as `Get-GraphResource me id, displayName` to get only specific properties. This change is made in part because `Filter` is seen as a less common and more advanced use case due to the need to know OData syntax. This is also consistent with other commands in related modules such as `AutoGraphPS` where `Property` is a positional parameter and `Filter` is not.
+# The `Invoke-GraphRequest` and `Get-GraphResource` commands have a `NoRequest` parameter that simply returns information about the request that would be made by the command rather than issuing the request.
 
 ### Fixed defects
 
