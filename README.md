@@ -1,9 +1,9 @@
-# <img src="https://raw.githubusercontent.com/adamedx/autographps-sdk/master/assets/PoshGraphIcon.png" width="50"> AutoGraphPS-SDK
+# <img src="https://raw.githubusercontent.com/adamedx/autographps-sdk/main/assets/PoshGraphIcon.png" width="50"> AutoGraphPS-SDK
 
-| [Documentation](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md) | [Installation](#Installation) | [Using AutoGraphPS-SDK](#Usage) | [Command inventory](#Reference) | [Contributing and development](#contributing-and-development) |
+| [Documentation](https://github.com/adamedx/autographps/blob/main/docs/WALKTHROUGH.md) | [Installation](#Installation) | [Using AutoGraphPS-SDK](#Usage) | [Command inventory](#Reference) | [Contributing and development](#contributing-and-development) |
 |-------------|-------------|-------------|-------------|-------------|
 
-[![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-SDK-CI?branchName=master)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=4&branchName=master)
+[![Build Status](https://adamedx.visualstudio.com/AutoGraphPS/_apis/build/status/AutoGraphPS-SDK-CI?branchName=main)](https://adamedx.visualstudio.com/AutoGraphPS/_build/latest?definitionId=4&branchName=main)
 
 ## Overview
 
@@ -48,7 +48,7 @@ After you've responded to the authentication prompt, you should see output that 
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
-Now you're ready to use any of AutoGraphPS-SDK's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
+Now you're ready to use any of AutoGraphPS-SDK's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/main/docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
 
 ### How do I use the cmdlets from the CLI?
 
@@ -72,7 +72,7 @@ These commands retrieve the same data as a `GET` for the full URIs given earlier
 
 As with any PowerShell cmdlet, you can use AutoGraphPS-SDK cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects.
 
-For more detailed information on how to use AutoGraphPS-SDK cmdlets, see the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/master/docs/WALKTHROUGH.md) for the separate AutoGraphPS module, which documents a superset of cmdlets contained in this SDK in additions to those found in that module.
+For more detailed information on how to use AutoGraphPS-SDK cmdlets, see the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/main/docs/WALKTHROUGH.md) for the separate AutoGraphPS module, which documents a superset of cmdlets contained in this SDK in additions to those found in that module.
 
 ### How do I use it in my PowerShell application?
 
@@ -151,7 +151,7 @@ See the [Build README](build/README.md) for instructions on building and testing
 ## Quickstart
 The Quickstart is a way to try out AutoGraphPS-SDK without installing the AutoGraphPS-SDK module. In the future it will feature an interactive tutorial. Additionally, it is useful for developers to quickly test out changes without modifying the state of the operating system or user profile. Just follow these steps on your workstation to start **AutoGraphPS-SDK**:
 
-* [Download](https://github.com/adamedx/autographps-sdkarchive/master.zip) and extract the zip file for this repository **OR** clone it with the following command:
+* [Download](https://github.com/adamedx/autographps-sdkarchive/main.zip) and extract the zip file for this repository **OR** clone it with the following command:
 
   `git clone https://github.com/adamedx/autographps-sdk`
 
