@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ ScriptClass GraphResponse {
     $Entities = $null
     $ODataContext = strict-val [Uri]
     $NextLink = strict-val [Uri]
+    $DeltaLink = strict-val [Uri]
     $Metadata = strict-val [HashTable] @{}
 
     function __initialize ( $restResponse ) {
@@ -30,6 +31,7 @@ ScriptClass GraphResponse {
 
         $this.ODataContext = $this.metadata['@odata.context']
         $this.NextLink = $this.metadata['@odata.nextLink']
+        $this.DeltaLink = $this.metadata['@odata.deltaLink']
     }
 
     function Content {
