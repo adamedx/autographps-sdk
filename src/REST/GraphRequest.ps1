@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,8 +25,10 @@ ScriptClass GraphRequest {
     $Headers = $null
     $ClientRequestId = $null
     $ReturnRequest = $false
+    $DeltaQuery = $false
+    $PageSizePreference = 0
 
-    function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null, $clientRequestId, [bool] $noRequestId, [bool] $returnRequest) {
+    function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null, $clientRequestId, [bool] $noRequestId, [bool] $returnRequest, [bool] $deltaQuery, $deltaToken, $pageSizePreference) {
         $uriString = if ( $uri.scheme -ne $null ) {
             $uri.AbsoluteUri
         } else {
@@ -42,15 +44,30 @@ ScriptClass GraphRequest {
         }
 
         $uriQueryLength = if ( $uri.Query -ne $null ) { $uri.Query.length } else { 0 }
-        $uriNoQuery = new-object Uri ($uriString.substring(0, $uriString.length - $uriQueryLength))
+        $uriString = $uriString.substring(0, $uriString.length - $uriQueryLength)
 
+        if ( $deltaQuery -or $deltaToken ) {
+            if ( ! ( $::.GraphUtilities |=> IsDeltaUri $uri ) ) {
+                $uriString = $uriString, 'microsoft.graph.delta' -join '/'
+            }
+        }
+
+        $uriNoQuery = [Uri]::new($uriString)
+
+        $this.PageSizePreference = $pageSizePreference
+        $this.DeltaQuery = $deltaQuery
         $this.ReturnRequest = $returnRequest
         $this.Connection = $GraphConnection
         $this.RelativeUri = $uri
         $this.Uri = $uriNoQuery
         $this.Verb = $verb
 
-        $queryParams = @($uri.query)
+        $queryParams = if ( ! $deltaToken ) {
+            @($uri.query)
+        } else {
+            @("deltaToken=$deltaToken")
+        }
+
         $queryParams += $query
         $this.Query = __AddQueryParameters $queryParams
 
@@ -68,9 +85,13 @@ ScriptClass GraphRequest {
         if ( $this.ClientRequestId ) {
             $this.Headers['client-request-id'] = $this.ClientRequestId.tostring()
         }
+
+        if ( $this.PageSizePreference ) {
+            $this.Headers['Prefer'] = "Prefer: odata.maxpagesize=$($this.PageSizePreference)"
+        }
     }
 
-    function Invoke($pageStartIndex = $null, $maxResultCount = $null, $pageSize = $null, $logger) {
+    function Invoke($pageStartIndex = $null, $maxResultCount = $null, $logger) {
         if ( $this.Connection.Status -eq ([GraphConnectionStatus]::Offline) ) {
             throw "Web request cannot proceed -- connection status is set to offline"
         }
@@ -84,14 +105,8 @@ ScriptClass GraphRequest {
             $queryParameters += (__NewODataParameter 'skip' $pageStartIndex)
         }
 
-        $adjustedPageSize = if ( $pageSize -ne $null -and $maxResultCount -ne $null -and $maxResultCount -lt $pageSize ) {
-            $maxResultCount
-        } else {
-            $pageSize
-        }
-
-        if ($adjustedPageSize -ne $null) {
-            $queryParameters += (__NewODataParameter 'top' $adjustedPageSize)
+        if ( $maxResultCount ) {
+            $queryParameters += (__NewODataParameter 'top' $maxResultCount)
         }
 
         $query = __AddQueryParameters $queryParameters

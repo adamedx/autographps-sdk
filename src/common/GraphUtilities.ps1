@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -242,6 +242,48 @@ ScriptClass GraphUtilities {
                     GraphRelativeUri = $::.GraphUtilities |=> ToGraphRelativeUri $relativeUri $context
                 }
             }
+        }
+
+        function IsDeltaUri([Uri] $uri) {
+            $uriString = GetUriNoQuery $uri
+
+            $lastSegment = ($uriString -split '/' | select -last 1).trimend('/')
+            $lastSegment -eq 'delta' -or $lastSegment -eq 'microsoft.graph.delta'
+        }
+
+        function ParseAbsoluteUri([Uri] $uri) {
+            $uriString = GetUriNoQuery $uri
+
+            $query = ( $uri.query -split '\?' )[1]
+            $parameters = $query -split '='
+
+            $deltaToken = for ( $parameterIndex = 0; $parameterIndex -lt $parameters.length; $parameterIndex++ ) {
+                if ( $parameters[$parameterIndex] -eq '$deltatoken' ) {
+                    if ( ( $parameterIndex + 1 ) -lt $parameters.length ) {
+                        $parameters[$parameterIndex + 1]
+                        break
+                    }
+                }
+            }
+
+            $graphUri = ($::.GraphUtilities |=> ParseGraphUri $uriString).GraphRelativeUri
+
+            [PSCustomObject] @{
+                AbsoluteUriString = $uriString
+                GraphUri = $graphUri
+                GraphUriAndQuery = $graphUri.tostring() + $uri.query
+                DeltaToken = $deltatoken
+            }
+        }
+
+        function GetUriNoQuery([Uri] $uri) {
+            $pathAndQuery = $uri.tostring() -split '\?'
+            if ( ! $pathAndQuery -or ( $pathAndQuery.length -lt 1 ) -or ( $pathAndQuery.length -gt 2 ) ) {
+                throw [ArgumentException]::new("The URI '$uri' is not a valid URI")
+            }
+
+            $uriQueryLength = if ( $pathAndQuery.length -gt 1 ) { $pathAndQuery[1].length + 1 } else { 0 }
+            $uri.OriginalString.substring(0, $uri.OriginalString.length - $uriQueryLength)
         }
     }
 }

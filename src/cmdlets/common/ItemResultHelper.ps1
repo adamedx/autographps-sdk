@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,13 +35,45 @@ ScriptClass ItemResultHelper -ArgumentList $__DefaultResultVariable {
                 }
             }
         }
-    }
-}
 
-function  __ToResponseWithObject($object, $response) {
-    [PSCustomObject] @{
-        Data = $object
-        ResponseContent = $response.RestResponse.Content
-        ResponseRawContent = $response.RestResponse.RawContent
+        function  GetResponseDetail($content, $contextUri, $nextLink, $deltaLink, $protocolResponses) {
+            $deltaInfo = if ( $deltaLink ) {
+                $::.GraphUtilities |=> ParseAbsoluteUri $deltaLink
+            }
+
+            $absoluteDeltaUriString = if ( $deltaInfo ) { $deltaInfo.AbsoluteUriString }
+            $deltaUri = if ( $deltaInfo ) { $deltaInfo.GraphUriAndQuery }
+            $deltaToken = if ( $deltaInfo ) { $deltaInfo.DeltaToken }
+            $nextUri = if ( $nextLink ) {
+                $nextLinkInfo = $::.GraphUtilities |=> ParseAbsoluteUri $nextLink
+                if ( $nextLinkInfo -and $nextLinkInfo.GraphUriAndQuery ) {
+                    $nextLinkInfo.GraphUriAndQuery
+                }
+            }
+
+            $normalizedContent = if ( $content -and $content.GetType().IsArray ) { $content } else { , $content }
+
+            $responses = foreach ( $response in $protocolResponses ) {
+                [PSCustomObject] @{
+                    Content = $response.RestResponse.Content
+                    RawContent = $response.RestResponse.RawContent
+                    RawContentLength = $response.RestResponse.RawContentLength
+                    Headers = $response.RestResponse.Headers
+                    StatusCode = $response.RestResponse.StatusCode
+                    StatusDescription = $response.RestResponse.StatusDescription
+                }
+            }
+
+            [PSCustomObject] @{
+                Content = $content
+                ContextUri = $contextUri
+                AbsoluteNextUri = $nextLink
+                NextUri = $nextUri
+                AbsoluteDeltaUri = $absoluteDeltaUriString
+                DeltaUri = $deltaUri
+                DeltaToken = $deltaToken
+                Responses = $responses
+            }
+        }
     }
 }

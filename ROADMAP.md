@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Add delta
+* Add Start-GraphDeltaJob
 * Add Get-LastGraphResponse with view parameters, remove LASTGRAPHITEMS
 * Add output types to as many commands as possible
 * Add batching support
