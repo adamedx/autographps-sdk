@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.21.1'
+ModuleVersion = '0.22.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -221,48 +221,30 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.20.0 Release Notes
+## AutoGraphPS-SDK 0.22.0 Release Notes
 
-This release includes improvements to existing commands and important fixes for major regressions in the previous release.
+This release adds the initial support for delta query and also improves and refines general result paging capabilities.
 
 ### New dependencies
 
-* Microsoft.Identity.Client (MSAL) 4.14.0
-* Microsoft.IdentityModel.Clients.ActiveDirectory (ADAL) 5.2.7
-* `platyPS 0.14.0` (optional): Tool-only dependency. Currently only required during CI.
+None.
 
 ### Breaking changes
 
-* The object pipeline is now explicitly supported by the `Invoke-GraphRequest` and `Get-GraphResource` commands -- graph URI's may be supplied to the pipeline and the commands will retrieve results for each URI. This may have subtle behavior differences from the previous implementation which modeled the Uri parameter as an array -- it is now a scalar object with multiple URIs available only from the pipeline and not by passing an array of URIs for the URI parameter.
+* The `IncludeFullResponse` parameter is no longer supported by the `Invoke-GraphRequest` command. It has been superseded by the `AsResponseDetail` parameter added in this release.
 
 ### New features
 
-* The `Get-GraphResource` command's `Select` parameter has been renamed to `Property` to be consistent with related commands in `AutoGraphPS`. However the command retains a `Select` alias for compatibility with the original parameter name and to support users accustomed to the Graph terminology for projection of a record's fields.
-* The `Property` parameter (aka `Select` per above) is now the second positional parameter and `Filter` is no longer a positional parameter. Now you can use an invocation such as `Get-GraphResource me id, displayName` to get only specific properties. This change is made in part because `Filter` is seen as a less common and more advanced use case due to the need to know OData syntax. This is also consistent with other commands in related modules such as `AutoGraphPS` where `Property` is a positional parameter and `Filter` is not.
-# The `Invoke-GraphRequest` and `Get-GraphResource` commands have a `NoRequest` parameter that simply returns information about the request that would be made by the command rather than issuing the request.
+* `Invoke-GraphRequest` has several new parameters to support delta query and improved control over result pagin:
+  * `AsResponseDetail`: when specified, the output of the command rather than directly returning the deserialized objects from the Graph response instead returns a structure that includes a `Content` field that contains those objects. The other fields of the structure include additional details about the response, including conditionally populated fields such as `DeltaUri` and `DeltaToken` returned from delta query responses. The `Responses` field contains all of the detailed protocol responses from the graph that were issued as the command paged through result sets that required multiple requests to process.
+  * `Delta`: when this is specified, the command issues a delta query to Graph, i.e. a query that in addition to returning the results specified in the query also returns additional metadata in the form of a "delta URI" or "delta token" that can be used in subsequent requests to return only the information that has changed since the original query. When this parameter is specified, the results are returned in the format used when `AsResponseDetail` is specified.
+  * `DeltaToken`: This parameter provides a way to request only the incremental changes that would be returned compared to a previous request issued by this command using the Delta parameter.
+  * `NoPaging`: This disables the default behavior of the command that issues multiple requests to Graph until all results for the initial request have been retrieved. When this command is specified, the results are returned using the `AsResponseDetail` format so that the caller has the additional information beyond the request results necessary to retrieve the additional results if desired.
+  * `PageSizePreference`: directs the command to issues requests that instruct the Graph API to return a specific maximum number of items in each page of results. This parameter will only take effect if Graph honors it for the particular request.
 
 ### Fixed defects
 
-* The AAD Application-related commands including `Get-GraphApplication`, `New-GraphApplication`, and `Remove-GraphApplication` commands were unusable due to a breaking change to parameter names in the `0.19.0` release of this module for the `Invoke-GraphRequest` command. This release includes the fix. The affected commands were:
-
-    * `Get-GraphApplication`
-    * `Get-GraphApplicationCertificate`
-    * `Get-GraphApplicationConsent`
-    * `Get-GraphApplicationServicePrincipal`
-    * `New-GraphApplication`
-    * `New-GraphApplicationCertificate`
-    * `Register-GraphApplication`
-    * `Remove-GraphApplication`
-    * `Remove-GraphApplicationCertificate`
-    * `Remove-GraphApplicationConsent`
-    * `Set-GraphApplicationConsent`
-    * `Unregister-GraphApplication`
-
-* The `Invoke-GraphRequest` and `Get-GraphResource` commands incorrectly handled the `Expand` parameter in cases where the syntax `-Expand:$false` was used -- instead of being correctly interpreted as the parameter not being specified, it was treated as if it had been expressed `-Expand`, resulting in invalid queries to Graph. This is now fixed.
-* The `Descending` parameter of `Invoke-GraphRequest` and `Get-GraphResource` was ignored in the mainstream case of the `OrderBy` parameter not being hash table. This has been fixed.
-* The `Skip` parameter on `Invoke-GraphRequest` and `Get-GraphResource` would generate an incorrect URI when used resulting in a `BadRequest` response from Graph -- `Skip` was unusable. This issue has been fixed.
-
-None.
+* The default maximum of 10 results was not honored by `Invoke-GraphRequest` and `Get-GraphResource`. This is now honored -- by default only 10 results are returned. To revert to the old behavior where paging was indefinite, a new parameter is probably needed.
 
 '@
 
