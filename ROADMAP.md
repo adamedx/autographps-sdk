@@ -2,7 +2,7 @@
 
 ## To-do items -- prioritized
 
-* Add delta
+* Add AllResults option to Get-GraphResource and Invoke-GraphRequest, and corresponding preference variable
 * Add Start-GraphDeltaJob
 * Add Get-LastGraphResponse with view parameters, remove LASTGRAPHITEMS
 * Add output types to as many commands as possible
@@ -364,6 +364,7 @@
 * Use begin / process / end for Invoke-GraphRequest and Get-GraphResource commands
 * Add 'NoRequest' mode to output what request would have been made.
 * Make Uri argument a non-array
+* Add delta
 
 ### Postponed
 

@@ -93,7 +93,7 @@ This parameter provides a way to request only the incremental changes that would
 
 .PARAMETER AsResponseDetail
 By default, unless the NoPaging, Delta, or DeltaToken parameters are specified, the ouptut of this command is simply the collection of objects returned from the Graph. Such default output is missing some additional information returned by Graph including the OData context or the next URI to use for incomplete results. The additional output which may include additional type information about the content can be useful for custom processing of incremental delta requests, customized result paging and indication of partial results, and interpretation of the content. The fields of this output are as follows:
-  * Content: contains the equivalent of the output emitted when the AsResponseDetail format is not used. The DeltaUri field contains
+  * Content: contains the equivalent of the output emitted when the AsResponseDetail format is not used.
   * ContextUri (optional): contains the OData context URI
   * DeltaUri (optional): a URI that can be used with this command to get only incremental changes from this response. Only returned once all data are processed for a request issued with the Delta parameter
   * AbsoluteDeltaUri (optional): Same as DeltaUri, but uses an absolute URI format that can only be used as the Invoke-GraphRequest Uri parameter when the AbsoluteUri parameter is specified
@@ -134,6 +134,9 @@ This parameter specifies that the command should return results exactly in the f
 
 .PARAMETER AADGraph
 This parameter specifies that instead of accessing Microsoft Graph, the command should make requests against Azure Active Directory Graph (AAD Graph). Note that most functionality of this command and other commands in the module is not compatible with AAD Graph; this parameter may be deprecated in the future.
+
+.PARAMETER PageSizePreference
+This parameter directs the command to issues requests that instruct the Graph API to return a specific maximum number of items in each page of results. This parameter will only take effect if Graph honors it for the particular request.
 
 .PARAMETER NoClientRequestId
 This parameter suppresses the automatic generation and submission of the 'client-request-id' header in the request used for troubleshooting with service-side request logs. This parameter is included only to enable complete control over the protocol as there would be very few use cases for not sending the request id.
