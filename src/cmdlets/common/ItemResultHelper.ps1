@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../../common/ResponseContext)
+
 $__DefaultResultVariableName = 'LastGraphItems'
 $__DefaultResultVariable = new-variable $__DefaultResultVariableName -passthru -force
 
@@ -73,6 +75,52 @@ ScriptClass ItemResultHelper -ArgumentList $__DefaultResultVariable {
                 DeltaUri = $deltaUri
                 DeltaToken = $deltaToken
                 Responses = $responses
+            }
+        }
+
+        function GetItemContext([Uri] $requestUri, $contextUri) {
+            $requestUriNoQuery = $requestUri.GetLeftPart([System.UriPartial]::Path)
+            $responseContext = new-so ResponseContext $requestUriNoQuery $contextUri |=> ToPublicContext
+
+            # Add __ItemContext to decorate the object with its source uri.
+            # Do this as a script method to prevent deserialization
+            $contextGraphUri = $responseContext.GraphUri
+            $contextTypelessGraphUri = $responseContext.TypelessGraphUri
+            $contextTypeCast = $responseContext.TypeCast
+            $contextIsEntity = $responseContext.IsEntity
+            $contextIsDeltaLink = $responseContext.IsNewLink -or $responseContext.IsDeletedLink
+            $contextIsDelta = $responseContext.IsDelta -or $responseContext.IsDeletedEntity -or $contextIsDeltaLink
+            $contextIsDeltaDeleted = $responseContext.IsDeletedLink -or $responseContext.IsDeletedEntity
+            $contextcontextUri = $contextUri
+
+            $contextGraphUriString = if ( $contextGraphUri ) { "'$contextGraphUri'" } else { '$null' }
+            $contextTypelessGraphUriString = if ( $contextTypelessGraphUri ) { "'$contextTypelessGraphUri'" } else { '$null' }
+            $contextTypeCastString = if ( $contextTypeCast ) { "'$contextTypeCast'" } else { '$null' }
+            $contextIsEntityString = if ( $contextIsEntity ) { '$true' } else { '$false' }
+            $contextIsDeltaLinkString = if ( $contextIsDeltaLink ) { '$true' } else { '$false' }
+            $contextIsDeltaString = if ( $contextIsDelta ) { '$true' } else { '$false' }
+            $contextIsDeltaDeletedString = if ( $contextIsDeltaDeleted ) { '$true' } else { '$false' }
+            $contextContextUriString = if ( $contextContextUri ) { "'$contextContextUri'" } else { '$null' }
+
+            $scriptText = @"
+                [PSCustomObject] @{
+                    RequestUri='$requestUriNoQuery'
+                    GraphUri=$contextGraphUriString
+                    ContextUri=$contextContextUriString
+                    TypelessGraphuri=$contextTypelessGraphUriString
+                    TypeCast=$contextTypeCastString
+                    IsEntity=$contextIsEntityString
+                    IsDelta=$contextIsDeltaString
+                    IsDeltaLink=$contextIsDeltaLinkString
+                    IsDeltaDeleted=$contextIsDeltaDeletedString
+                }
+"@
+            [ScriptBlock]::Create($scriptText)
+        }
+
+        function SetItemContext([object[]] $items, [ScriptBlock] $contextScript) {
+            $items | foreach {
+                $_ | add-member -membertype scriptmethod -name __ItemContext -value $contextScript
             }
         }
     }
