@@ -285,5 +285,55 @@ ScriptClass GraphUtilities {
             $uriQueryLength = if ( $pathAndQuery.length -gt 1 ) { $pathAndQuery[1].length + 1 } else { 0 }
             $uri.OriginalString.substring(0, $uri.OriginalString.length - $uriQueryLength)
         }
+
+        function GetAbstractUriFromItem($item, $assumeEntity, $explicitId) {
+            $itemContext = GetItemContext $item
+
+            if ( $itemContext ) {
+                $id = if ( $item | gm id -erroraction ignore ) {
+                    $item.id
+                }
+
+                $isEntity = $itemContext.IsEntity -or $itemContext.IsDelta
+                $idNotNeededOrInItem = $assumeEntity -or ! $isEntity
+
+                $targetId = if ( $id ) {
+                    $id
+                } else {
+                    $explicitId
+                }
+
+                $typelessUri = $itemContext.TypelessGraphUri
+
+                # If we have an id, we'll return something if it's known to be entity,
+                # if we were told to assume that its an entity
+                if ( $targetId ) {
+                    $result = $typelessUri
+                    if ( $result  ) {
+                        $normalizedUri = $result.trimend('/')
+                        if ( $normalizedUri.tolower().endswith($targetId.tolower()) ) {
+                            $result
+                        } elseif ( $assumeEntity -or $isEntity ) {
+                            $result.trimend('/'), $targetId -join '/'
+                        }
+                    }
+                    # If there is no typeless URI, we will return nothing
+                } elseif ( ! $idNotNeededOrInItem ) {
+                    $typelessUri
+                }
+
+                # If we return $null, it is because there was no typeless uri OR
+                # we needed an id and couldn't get one. The latter case happens
+                # because (1) we were instructed to assume this was an entity
+                # regardless even if the context does not mark it as such explicitly,
+                # or (2) we know for sure that the item is an entity
+            }
+        }
+
+        function GetItemContext($item) {
+            if ( $item | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
+                $item.__ItemContext()
+            }
+        }
     }
 }

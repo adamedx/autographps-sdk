@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -93,5 +93,203 @@ Describe 'GraphUtilities methods' {
             $result.Context.Version | Should Be 'v1.0'
             $result.GraphRelativeUri | Should Be "/$graphName"
         }
+    }
+
+    Context "When retrieving information about the request context from a response item returned by the Graph service through GetAbstractUriFromItem" {
+        function NewTestItemWithContext($requestUri, $contextUri, $id) {
+            # The id is used to populate the id field of the object,
+            # which must be present unless it is not selected or the object
+            # being returned is not an entity type (e.g. a complex type)
+            $itemContext = $::.ItemResultHelper |=> GetItemContext $requestUri $contextUri
+
+            $objectTable = @{}
+
+            if ( $id ) {
+                $objectTable.Add('id', $id)
+            }
+
+            $object = [PSCUstomObject] $objectTable
+
+            $::.ItemResultHelper |=> SetItemContext @($object) $itemContext
+
+            $object
+        }
+
+        It 'Should return a URI similar to the request URI when the request URI specified an id from an entity set' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/users/userid'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users/$entity'
+
+            $item = (NewTestItemWithContext $requestUri $contextUri userid)
+            $itemWithContext = $item.__ItemContext()
+
+            $itemWithContext.GraphUri | Should Be '/users'
+            $itemWithContext.TypelessGraphUri | Should Be '/users'
+            $itemWithContext.ContextUri | Should Be $contextUri
+            $itemWithContext.RequestUri | Should Be $requestUri
+            $itemWithContext.TypeCast | Should Be $null
+            $itemWithContext.IsEntity | Should Be $true
+
+            $::.GraphUtilities |=> GetAbstractUriFromItem $item | Should Be '/users/userid'
+        }
+
+        It 'Should return null when the request URI specified an id from an entity set and the assumeEntity option is true' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/users/userid'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users/$entity'
+
+            $item = (NewTestItemWithContext $requestUri $contextUri userid)
+            $itemWithContext = $item.__ItemContext()
+
+            $itemWithContext.GraphUri | Should Be '/users'
+            $itemWithContext.TypelessGraphUri | Should Be '/users'
+            $itemWithContext.ContextUri | Should Be $contextUri
+            $itemWithContext.RequestUri | Should Be $requestUri
+            $itemWithContext.TypeCast | Should Be $null
+            $itemWithContext.IsEntity | Should Be $true
+
+            $::.GraphUtilities |=> GetAbstractUriFromItem $item $true | Should Be '/users/userid'
+        }
+
+        It 'Should return a URI similar to the request URI with an additional id segment when the request URI specified an entity set and assumeEntity is true' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/users'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users'
+
+            $item = (NewTestItemWithContext $requestUri $contextUri userid)
+            $itemWithContext = $item.__ItemContext()
+
+            $itemWithContext.GraphUri | Should Be '/users'
+            $itemWithContext.TypelessGraphUri | Should Be '/users'
+            $itemWithContext.ContextUri | Should Be $contextUri
+            $itemWithContext.RequestUri | Should Be $requestUri
+            $itemWithContext.TypeCast | Should Be $null
+            $itemWithContext.IsEntity | Should Be $false
+
+            $::.GraphUtilities |=> GetAbstractUriFromItem $item $true | Should Be '/users/userid'
+        }
+
+        It 'Should return a URI similar to the request URI with an additional id segment when the request URI specified an entity set and assumeEntity is true and a default id is specified and the response object does not have an id' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/users?$select=displayName'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users(displayName)'
+
+            # No id since select did not include it
+            $item = (NewTestItemWithContext $requestUri $contextUri)
+            $itemWithContext = $item.__ItemContext()
+
+            $itemWithContext.GraphUri | Should Be '/users'
+            $itemWithContext.TypelessGraphUri | Should Be '/users'
+            $itemWithContext.ContextUri | Should Be $contextUri
+            $itemWithContext.RequestUri | Should Be ( $requestUri -split '\?' )[0]
+            $itemWithContext.TypeCast | Should Be $null
+            $itemWithContext.IsEntity | Should Be $false
+
+            $::.GraphUtilities |=> GetAbstractUriFromItem $item $true myoverrideid | Should Be '/users/myoverrideid'
+        }
+
+        It 'Should return null when the request URI specified an entity set and assumeEntity is false but a default id is specified because the response object does not have an id' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/users?$select=displayName'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users(displayName)'
+
+            # No id since select did not include it
+            $item = (NewTestItemWithContext $requestUri $contextUri)
+            $itemWithContext = $item.__ItemContext()
+
+            $itemWithContext.GraphUri | Should Be '/users'
+            $itemWithContext.TypelessGraphUri | Should Be '/users'
+            $itemWithContext.ContextUri | Should Be $contextUri
+            $itemWithContext.RequestUri | Should Be ( $requestUri -split '\?' )[0]
+            $itemWithContext.TypeCast | Should Be $null
+            $itemWithContext.IsEntity | Should Be $false
+
+            $::.GraphUtilities |=> GetAbstractUriFromItem $item $false myoverrideid | Should Be $null
+        }
+
+        It 'Should return null when the request URI specified an entity and assumeEntity is true but a default id is not specified and the response object does not have an id' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/users/userid?$select=displayName'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users(displayName)/$entity'
+
+            # no id since select did not include it
+            $item = (NewTestItemWithContext $requestUri $contextUri)
+            $itemWithContext = $item.__ItemContext()
+
+            $itemWithContext.GraphUri | Should Be '/users'
+            $itemWithContext.TypelessGraphUri | Should Be '/users'
+            $itemWithContext.ContextUri | Should Be $contextUri
+            $itemWithContext.RequestUri | Should Be ( $requestUri -split '\?' )[0]
+            $itemWithContext.TypeCast | Should Be $null
+            $itemWithContext.IsEntity | Should Be $true
+
+            $::.GraphUtilities |=> GetAbstractUriFromItem $item $true | Should Be $null
+        }
+
+        It 'Should return Should return a URI similar to the request URI when the request URI specified an id for an entity when and assumeEntity is $false and a default id is specified and the response object does not have an id and an explicit override id is supplied (this is used to complete the uri)' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/users/userid?$select=displayName'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users(displayName)/$entity'
+
+            # no id since select did not include it
+            $item = (NewTestItemWithContext $requestUri $contextUri)
+            $itemWithContext = $item.__ItemContext()
+
+            $itemWithContext.GraphUri | Should Be '/users'
+            $itemWithContext.TypelessGraphUri | Should Be '/users'
+            $itemWithContext.ContextUri | Should Be $contextUri
+            $itemWithContext.RequestUri | Should Be ( $requestUri -split '\?' )[0]
+            $itemWithContext.TypeCast | Should Be $null
+            $itemWithContext.IsEntity | Should Be $true
+
+            $::.GraphUtilities |=> GetAbstractUriFromItem $item $false userid | Should Be '/users/userid'
+        }
+
+        It 'Should return Should return a URI similar to the request URI when the request URI specified an id for an entity when and assumeEntity is $true and a default id is specified and the response object does not have an id and an explicit override id is supplied (this is used to complete the uri)' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/users/userid?$select=displayName'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users(displayName)/$entity'
+
+            # no id since select did not include it
+            $item = (NewTestItemWithContext $requestUri $contextUri)
+            $itemWithContext = $item.__ItemContext()
+
+            $itemWithContext.GraphUri | Should Be '/users'
+            $itemWithContext.TypelessGraphUri | Should Be '/users'
+            $itemWithContext.ContextUri | Should Be $contextUri
+            $itemWithContext.RequestUri | Should Be ( $requestUri -split '\?' )[0]
+            $itemWithContext.TypeCast | Should Be $null
+            $itemWithContext.IsEntity | Should Be $true
+
+            $::.GraphUtilities |=> GetAbstractUriFromItem $item $true userid | Should Be '/users/userid'
+        }
+
+        It 'Should return $null when the request URI specified an entity set and assumeEntity is set to false and no id override is specified' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/users'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users'
+
+            $item = (NewTestItemWithContext $requestUri $contextUri userid)
+            $itemWithContext = $item.__ItemContext()
+
+            $itemWithContext.GraphUri | Should Be '/users'
+            $itemWithContext.TypelessGraphUri | Should Be '/users'
+            $itemWithContext.ContextUri | Should Be $contextUri
+            $itemWithContext.RequestUri | Should Be $requestUri
+            $itemWithContext.TypeCast | Should Be $null
+            $itemWithContext.IsEntity | Should Be $false
+
+            $::.GraphUtilities |=> GetAbstractUriFromItem $item $false | Should Be $null
+        }
+
+        It 'Should return the entity set when the request URI specified an entity set and assumeEntity is true and the response object does not have an id and no override is specified' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/users?$select=displayName'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users(displayName)'
+
+            # no id since select did not include it
+            $item = (NewTestItemWithContext $requestUri $contextUri)
+            $itemWithContext = $item.__ItemContext()
+
+            $itemWithContext.GraphUri | Should Be '/users'
+            $itemWithContext.TypelessGraphUri | Should Be '/users'
+            $itemWithContext.ContextUri | Should Be $contextUri
+            $itemWithContext.RequestUri | Should Be ( $requestUri -split '\?' )[0]
+            $itemWithContext.TypeCast | Should Be $null
+            $itemWithContext.IsEntity | Should Be $false
+
+            $::.GraphUtilities |=> GetAbstractUriFromItem $item | Should Be $null
+        }
+
     }
 }
