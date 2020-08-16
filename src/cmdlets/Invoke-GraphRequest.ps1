@@ -584,6 +584,7 @@ function Invoke-GraphRequest {
             }
 
             $skipCount = $null
+            $maxResultCount = $null
 
             $content = if ( $graphResponse -and $graphResponse.Entities -ne $null ) {
                 if ( ! $contentTypeData ) {
