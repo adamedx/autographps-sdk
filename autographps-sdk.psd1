@@ -184,6 +184,7 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\src\common\GraphUtilities.ps1'
         '.\src\common\PreferenceHelper.ps1'
         '.\src\common\ProgressWriter.ps1'
+        '.\src\common\ResponseContext.ps1'
         '.\src\common\ScopeHelper.ps1'
         '.\src\common\Secret.ps1'
         '.\src\graphservice\ApplicationAPI.ps1'

@@ -15,6 +15,7 @@
 . (import-script ../common/GraphUtilities)
 . (import-script ../common/GraphAccessDeniedException)
 . (import-script common/QueryHelper)
+. (import-script common/ItemResultHelper)
 . (import-script ../REST/GraphRequest)
 . (import-script ../REST/RequestLog)
 . (import-script ../REST/GraphErrorRecorder)
@@ -632,10 +633,11 @@ function Invoke-GraphRequest {
             if ( $graphResponse -and ( ! $useRawContent ) ) {
                 # Add __ItemContext to decorate the object with its source uri.
                 # Do this as a script method to prevent deserialization
-                $requestUriNoQuery = $request.Uri.GetLeftPart([System.UriPartial]::Path)
-                $ItemContextScript = [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=`"$requestUriNoQuery`"}")
+
+                $itemContext = $::.ItemResultHelper |=> GetItemContext $request.Uri $graphResponse.ODataContext
+
                 $content | foreach {
-                    $_ | add-member -membertype scriptmethod -name __ItemContext -value $ItemContextScript
+                    $::.ItemResultHelper |=> SetItemContext $_ $itemContext
                 }
 
                 $responses += $graphResponse

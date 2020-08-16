@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
 * Add AllResults option to Get-GraphResource and Invoke-GraphRequest, and corresponding preference variable
 * Add Start-GraphDeltaJob
 * Add Get-LastGraphResponse with view parameters, remove LASTGRAPHITEMS
@@ -101,7 +102,7 @@
 
 * Test schema and basic tests offline
 * Unauthenticated functional tests
-* Parse odata context
+
 * Background runspace jobs
 
 * Release
@@ -365,6 +366,7 @@
 * Add 'NoRequest' mode to output what request would have been made.
 * Make Uri argument a non-array
 * Add delta
+* Parse odata context
 
 ### Postponed
 
