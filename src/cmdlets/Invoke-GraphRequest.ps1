@@ -634,10 +634,15 @@ function Invoke-GraphRequest {
                 # Add __ItemContext to decorate the object with its source uri.
                 # Do this as a script method to prevent deserialization
 
-                $itemContext = $::.ItemResultHelper |=> GetItemContext $request.Uri $graphResponse.ODataContext
+                $responseItemContext = $::.ItemResultHelper |=> GetItemContext $request.Uri $graphResponse.ODataContext
 
                 $content | foreach {
-                    $::.ItemResultHelper |=> SetItemContext $_ $itemContext
+                    $sourceContext = if ( $_ | gm '@odata.context' -erroraction ignore ) {
+                        $::.ItemResultHelper |=> GetItemContext $request.Uri $_.'@odata.context'
+                    } else {
+                        $responseItemContext
+                    }
+                    $::.ItemResultHelper |=> SetItemContext $_ $sourceContext
                 }
 
                 $responses += $graphResponse
