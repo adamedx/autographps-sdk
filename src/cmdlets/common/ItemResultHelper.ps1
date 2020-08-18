@@ -79,13 +79,13 @@ ScriptClass ItemResultHelper -ArgumentList $__DefaultResultVariable {
         }
 
         function GetItemContext([Uri] $requestUri, $contextUri) {
-            $requestUriNoQuery = $requestUri.GetLeftPart([System.UriPartial]::Path)
+            $requestUriNoQuery = $requestUri.GetLeftPart([System.UriPartial]::Path).replace("'", "''")
             $responseContext = new-so ResponseContext $requestUriNoQuery $contextUri |=> ToPublicContext
 
             # Add __ItemContext to decorate the object with its source uri.
             # Do this as a script method to prevent deserialization
-            $contextGraphUri = $responseContext.GraphUri
-            $contextTypelessGraphUri = $responseContext.TypelessGraphUri
+            $contextGraphUri = if ( $responseContext.GraphUri ) { $responseContext.GraphUri.replace("'", "''") }
+            $contextTypelessGraphUri = if ( $responseContext.TypelessGraphUri ) { $responseContext.TypelessGraphUri.replace("'", "''") }
             $contextTypeCast = $responseContext.TypeCast
             $contextIsEntity = $responseContext.IsEntity
             $contextIsDeltaLink = $responseContext.IsNewLink -or $responseContext.IsDeletedLink
