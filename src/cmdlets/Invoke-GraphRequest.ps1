@@ -35,7 +35,7 @@ The output of the command is typically the Content field of the response as dese
 
 Executing Invoke-GraphRequest will result in a sign-in UX if the Connection object of the current Graph or one explicitly supplied to the command through the Connection parameter does not already have a token associated with it. Once the token is acquired for the Connection object, it is used to issue the request to Graph. Subsequent invocations of this or any other commands in the module that use the same connection will silently use the previously acquired token without a UX, so there will be no additional sign-in UX.
 
-The command also supports paging, since the Graph endpoint can return large result sets in the thousands of objects over HTTP protocol. By default this command returns only the first 10 results in a request. The PowerShell standard paging parameters First and Skip can be used to control which subset of the results to return in a single invocation of Invoke-GraphRequest.
+The command also supports paging, since the Graph endpoint can return large result sets in the thousands of objects over HTTP protocol. By default this command returns only a limited number of results in the request depending on the particular request. The PowerShell standard paging parameters First and Skip can be used to control the number and overall subset of the results to return in a single invocation of Invoke-GraphRequest.
 
 This command, like all commands in this module, uses the Connection object of the current graph by default to determine the Graph endpoint and credentials / permissions of an access token used to communicate to Graph. The current Graph's connection can be changed to use different credentials, permissions, or Graph endpoing by using the Connect-Graph command.
 
@@ -447,8 +447,6 @@ function Invoke-GraphRequest {
         $maxReturnedResults = $null
         $maxResultCount = if ( $pscmdlet.pagingparameters.first -ne $null -and $pscmdlet.pagingparameters.first -lt [Uint64]::MaxValue ) {
             $pscmdlet.pagingparameters.First | tee-object -variable maxReturnedResults
-        } else {
-            10
         }
 
         $skipCount = $firstIndex
