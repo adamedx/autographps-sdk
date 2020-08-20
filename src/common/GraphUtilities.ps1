@@ -286,15 +286,21 @@ ScriptClass GraphUtilities {
             $uri.OriginalString.substring(0, $uri.OriginalString.length - $uriQueryLength)
         }
 
-        function GetAbstractUriFromItem($item, $assumeEntity, $explicitId) {
-            $itemContext = GetItemContext $item
+        function GetOptionalTypeFromResponseObject($object) {
+            if ( $object | gm '@odata.type' -erroraction ignore ) {
+                $object.'@odata.type'.trimstart('#')
+            }
+        }
 
-            if ( $itemContext ) {
-                $id = if ( $item | gm id -erroraction ignore ) {
-                    $item.id
+        function GetAbstractUriFromResponseObject($object, $assumeEntity, $explicitId) {
+            $objectContext = GetResponseObjectContext $object
+
+            if ( $objectContext ) {
+                $id = if ( $object | gm id -erroraction ignore ) {
+                    $object.id
                 }
 
-                $isEntity = $itemContext.IsEntity -or $itemContext.IsDelta
+                $isEntity = $objectContext.IsEntity -or $objectContext.IsDelta
                 $idNotNeededOrInItem = $assumeEntity -or ! $isEntity
 
                 $targetId = if ( $id ) {
@@ -303,7 +309,7 @@ ScriptClass GraphUtilities {
                     $explicitId
                 }
 
-                $typelessUri = $itemContext.TypelessGraphUri
+                $typelessUri = $objectContext.TypelessGraphUri
 
                 # If we have an id, we'll return something if it's known to be entity,
                 # if we were told to assume that its an entity
@@ -330,9 +336,9 @@ ScriptClass GraphUtilities {
             }
         }
 
-        function GetItemContext($item) {
-            if ( $item | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
-                $item.__ItemContext()
+        function GetResponseObjectContext($object) {
+            if ( $object | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
+                $object.__ItemContext()
             }
         }
     }

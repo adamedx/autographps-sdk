@@ -95,7 +95,7 @@ Describe 'GraphUtilities methods' {
         }
     }
 
-    Context "When retrieving information about the request context from a response item returned by the Graph service through GetAbstractUriFromItem" {
+    Context "When retrieving information about the request context from a response item returned by the Graph service through GetAbstractUriFromResponseObject" {
         function NewTestItemWithContext($requestUri, $contextUri, $id) {
             # The id is used to populate the id field of the object,
             # which must be present unless it is not selected or the object
@@ -129,7 +129,7 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $true
 
-            $::.GraphUtilities |=> GetAbstractUriFromItem $item | Should Be '/users/userid'
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item | Should Be '/users/userid'
         }
 
         It 'Should return null when the request URI specified an id from an entity set and the assumeEntity option is true' {
@@ -146,7 +146,7 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $true
 
-            $::.GraphUtilities |=> GetAbstractUriFromItem $item $true | Should Be '/users/userid'
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $true | Should Be '/users/userid'
         }
 
         It 'Should return a URI similar to the request URI with an additional id segment when the request URI specified an entity set and assumeEntity is true' {
@@ -163,7 +163,7 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $false
 
-            $::.GraphUtilities |=> GetAbstractUriFromItem $item $true | Should Be '/users/userid'
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $true | Should Be '/users/userid'
         }
 
         It 'Should return a URI similar to the request URI with an additional id segment when the request URI specified an entity set and assumeEntity is true and a default id is specified and the response object does not have an id' {
@@ -181,7 +181,7 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $false
 
-            $::.GraphUtilities |=> GetAbstractUriFromItem $item $true myoverrideid | Should Be '/users/myoverrideid'
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $true myoverrideid | Should Be '/users/myoverrideid'
         }
 
         It 'Should return null when the request URI specified an entity set and assumeEntity is false but a default id is specified because the response object does not have an id' {
@@ -199,7 +199,7 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $false
 
-            $::.GraphUtilities |=> GetAbstractUriFromItem $item $false myoverrideid | Should Be $null
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $false myoverrideid | Should Be $null
         }
 
         It 'Should return null when the request URI specified an entity and assumeEntity is true but a default id is not specified and the response object does not have an id' {
@@ -217,7 +217,7 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $true
 
-            $::.GraphUtilities |=> GetAbstractUriFromItem $item $true | Should Be $null
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $true | Should Be $null
         }
 
         It 'Should return Should return a URI similar to the request URI when the request URI specified an id for an entity when and assumeEntity is $false and a default id is specified and the response object does not have an id and an explicit override id is supplied (this is used to complete the uri)' {
@@ -235,7 +235,7 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $true
 
-            $::.GraphUtilities |=> GetAbstractUriFromItem $item $false userid | Should Be '/users/userid'
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $false userid | Should Be '/users/userid'
         }
 
         It 'Should return Should return a URI similar to the request URI when the request URI specified an id for an entity when and assumeEntity is $true and a default id is specified and the response object does not have an id and an explicit override id is supplied (this is used to complete the uri)' {
@@ -253,7 +253,7 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $true
 
-            $::.GraphUtilities |=> GetAbstractUriFromItem $item $true userid | Should Be '/users/userid'
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $true userid | Should Be '/users/userid'
         }
 
         It 'Should return $null when the request URI specified an entity set and assumeEntity is set to false and no id override is specified' {
@@ -270,7 +270,7 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $false
 
-            $::.GraphUtilities |=> GetAbstractUriFromItem $item $false | Should Be $null
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $false | Should Be $null
         }
 
         It 'Should return the entity set when the request URI specified an entity set and assumeEntity is true and the response object does not have an id and no override is specified' {
@@ -288,7 +288,7 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $false
 
-            $::.GraphUtilities |=> GetAbstractUriFromItem $item | Should Be $null
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item | Should Be $null
         }
 
     }
