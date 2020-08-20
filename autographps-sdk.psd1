@@ -242,10 +242,12 @@ None.
   * `DeltaToken`: This parameter provides a way to request only the incremental changes that would be returned compared to a previous request issued by this command using the Delta parameter.
   * `NoPaging`: This disables the default behavior of the command that issues multiple requests to Graph until all results for the initial request have been retrieved. When this command is specified, the results are returned using the `AsResponseDetail` format so that the caller has the additional information beyond the request results necessary to retrieve the additional results if desired.
   * `PageSizePreference`: directs the command to issues requests that instruct the Graph API to return a specific maximum number of items in each page of results. This parameter will only take effect if Graph honors it for the particular request.
+  * `ResponseContext` class: This class parses the `ODataContext` property, an [OData Context URL](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ContextURL) to return information about the type of the response and the URI used to make the request.
+  * New methods in `GraphUtilities`:
+    * `GetAbstractUriFromResponseObject` returns a close approximation of a URI that can be used to make a request for that response.
+    * `GetOptionalTypeFromResponseObject` returns the parsed type from `@odata.type` for a given object if it is present
 
 ### Fixed defects
-
-* The default maximum of 10 results was not honored by `Invoke-GraphRequest` and `Get-GraphResource`. This is now honored -- by default only 10 results are returned. To revert to the old behavior where paging was indefinite, a new parameter is probably needed.
 
 '@
 
