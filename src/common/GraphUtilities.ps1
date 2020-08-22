@@ -292,6 +292,19 @@ ScriptClass GraphUtilities {
             }
         }
 
+        function ParseTypeName([string] $typeName) {
+            $isCollection = $false
+
+            $scalarQualifiedTypeName = if ($typeName -match 'Collection\((?<typename>.+)\)') {
+                $isCollection = $true
+                $matches.typename
+            } else {
+                $typeName
+            }
+
+            [PSCustomObject]@{TypeName=$scalarQualifiedTypeName;IsCollection=$isCollection}
+        }
+
         function GetAbstractUriFromResponseObject($object, $assumeEntity, $explicitId) {
             $objectContext = GetResponseObjectContext $object
 
