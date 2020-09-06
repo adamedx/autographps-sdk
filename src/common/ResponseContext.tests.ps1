@@ -32,6 +32,7 @@ Describe 'ResponseContext class' {
             $responseContext.RequestUrl | Should Be $null
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsEntity | Should Be $true
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'users'
         }
 
@@ -47,6 +48,7 @@ Describe 'ResponseContext class' {
             $responseContext.RequestUrl | Should Be $requestUri
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsEntity | Should Be $false
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.Root | Should Be 'users'
         }
 
@@ -63,6 +65,7 @@ Describe 'ResponseContext class' {
             $responseContext.RequestUrl | Should Be $requestUri
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsEntity | Should Be $true
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'users'
         }
     }
@@ -81,6 +84,7 @@ Describe 'ResponseContext class' {
             $responseContext.RequestUrl | Should Be $null
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsEntity | Should Be $false
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.Root | Should Be $null
         }
 
@@ -96,10 +100,11 @@ Describe 'ResponseContext class' {
             $responseContext.RequestUrl | Should Be $null
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsEntity | Should Be $false
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.Root | Should Be $null
         }
 
-        It "Should correctly parse example 10.2 Collection of Entities - {context-url}#{entity=set}" {
+        It "Should correctly parse example 10.2 Collection of Entities - {context-url}#{entity-set}" {
             $requestUri = 'https://graph.microsoft.com/v1.0/users'
             $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users'
 
@@ -112,6 +117,7 @@ Describe 'ResponseContext class' {
             $responseContext.RequestUrl | Should Be $requestUri
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsEntity | Should Be $false
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'users'
         }
 
@@ -128,6 +134,7 @@ Describe 'ResponseContext class' {
             $responseContext.RequestUrl | Should Be $requestUri
             $responseContext.TypeCast | Should Be 'microsoft.graph.user'
             $responseContext.IsEntity | Should Be $false
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'users'
         }
 
@@ -144,6 +151,7 @@ Describe 'ResponseContext class' {
             $responseContext.RequestUrl | Should Be $requestUri
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsEntity | Should Be $true
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'users'
         }
 
@@ -160,23 +168,31 @@ Describe 'ResponseContext class' {
             $responseContext.RequestUrl | Should Be $requestUri
             $responseContext.TypeCast | Should Be 'graph.user'
             $responseContext.IsEntity | Should Be $false
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.Root | Should Be $null
         }
 
         It "Should correctly parse 10.4 Singleton - {context-url}#{singleton}" {
-            $requestUri = 'https://graph.microsoft.com/v1.0/me'
-            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#me'
+            # One issue with this case is that it turns out there is no way from the odata context and request uri
+            # alone to determine wither a context in this format is an entity set or a singleton -- you need to use
+            # the context to look up the item in the metadata document. This has implications for IsCollectionMember
+            # since we can't actually determine that this was returned as part of an entity set, which means it is a
+            # member of the entity set collection, or if it was just a singleton object that is not part of any
+            # collection.
+            $requestUri = 'https://graph.microsoft.com/v1.0/termStore'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#termStore'
 
             $responseContext = new-so ResponseContext $requestUri $contextUri |=> ToPublicContext
 
-            $responseContext.GraphUri | Should Be '/me'
-            $responseContext.TypelessGraphUri | Should Be '/me'
-            $responseContext.AbsoluteGraphUri | Should Be 'https://graph.microsoft.com/v1.0/me'
+            $responseContext.GraphUri | Should Be '/termStore'
+            $responseContext.TypelessGraphUri | Should Be '/termStore'
+            $responseContext.AbsoluteGraphUri | Should Be 'https://graph.microsoft.com/v1.0/termStore'
             $responseContext.ContextUrl | Should Be $contextUri
             $responseContext.RequestUrl | Should Be $requestUri
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsEntity | Should Be $false
-            $responseContext.Root | Should Be 'me'
+            $responseContext.IsCollectionMember | Should Be $true # This is not the desired behavior though, see above
+            $responseContext.Root | Should Be 'termStore'
         }
 
         It 'Should correctly parse 10.6 Derived Entity - {context-url}#{entity-set}{/type-name}/$entity' {
@@ -191,6 +207,7 @@ Describe 'ResponseContext class' {
             $responseContext.RequestUrl | Should Be $requestUri
             $responseContext.TypeCast | Should Be 'Mail.User'
             $responseContext.IsEntity | Should Be $true
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'users'
         }
 
@@ -207,6 +224,7 @@ Describe 'ResponseContext class' {
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsEntity | Should Be $false
             $responseContext.SelectedProperties | sort-object | Should Be ('displayName', 'mail' | sort-object)
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'users'
         }
 
@@ -223,6 +241,7 @@ Describe 'ResponseContext class' {
             $responseContext.TypeCast | Should Be 'microsoft.graph.group'
             $responseContext.IsEntity | Should Be $false
             $responseContext.SelectedProperties | sort-object | Should Be ('displayName', 'id' | sort-object)
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'groups'
         }
 
@@ -239,6 +258,7 @@ Describe 'ResponseContext class' {
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsEntity | Should Be $true
             $responseContext.SelectedProperties | sort-object | Should Be ('displayName', 'mail' | sort-object)
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'users'
         }
 
@@ -256,24 +276,26 @@ Describe 'ResponseContext class' {
             $responseContext.TypeCast | Should Be 'microsoft.graph.user'
             $responseContext.IsEntity | Should Be $true
             $responseContext.SelectedProperties | sort-object | Should Be ('displayName', 'mail' | sort-object)
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'users'
         }
 
         It 'Should correctly parse 10.8 Projected Entity - {context-url}#{singleton}{select-list}' {
-            $requestUri = 'https://graph.microsoft.com/v1.0/me?$select=displayName,mail'
-            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#me(displayName,mail)'
+            $requestUri = 'https://graph.microsoft.com/v1.0/termStore?$select=defaultLanguageTag,languageTags'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#termStore(defaultLanguageTag,languageTags)/$entity'
 
             $responseContext = new-so ResponseContext $requestUri $contextUri |=> ToPublicContext
 
-            $responseContext.GraphUri | Should Be '/me'
-            $responseContext.TypelessGraphUri | Should Be '/me'
-            $responseContext.AbsoluteGraphUri | Should Be 'https://graph.microsoft.com/v1.0/me'
+            $responseContext.GraphUri | Should Be '/termStore'
+            $responseContext.TypelessGraphUri | Should Be '/termStore'
+            $responseContext.AbsoluteGraphUri | Should Be 'https://graph.microsoft.com/v1.0/termStore'
             $responseContext.ContextUrl | Should Be $contextUri
             $responseContext.RequestUrl | Should Be $requestUri
             $responseContext.TypeCast | Should Be $null
-            $responseContext.IsEntity | Should Be $false
-            $responseContext.SelectedProperties | sort-object | Should Be ('displayName', 'mail' | sort-object)
-            $responseContext.Root | Should Be 'me'
+            $responseContext.IsEntity | Should Be $true
+            $responseContext.SelectedProperties | sort-object | Should Be ('defaultLanguageTag', 'languageTags' | sort-object)
+            $responseContext.IsCollectionMember | Should Be $true
+            $responseContext.Root | Should Be 'termStore'
         }
 
         It 'Should correctly parse 10.8 Projected Entity - {context-url}#{type-name}{select-list}' {
@@ -290,6 +312,7 @@ Describe 'ResponseContext class' {
             $responseContext.TypeCast | Should Be 'microsoft.graph.directoryObject'
             $responseContext.IsEntity | Should Be $false
             $responseContext.SelectedProperties | sort-object | Should Be ('displayName', 'mail' | sort-object)
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.Root | Should Be $null
         }
 
@@ -308,6 +331,7 @@ Describe 'ResponseContext class' {
             $responseContext.IsEntity | Should Be $false
             $responseContext.SelectedProperties | sort-object | Should Be ('Name', 'Company' | sort-object)
             $responseContext.ExpandedProperties | sort-object | Should Be ('Address', 'Office' | sort-object)
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'Customers'
         }
 
@@ -326,6 +350,7 @@ Describe 'ResponseContext class' {
             $responseContext.IsEntity | Should Be $false
             $responseContext.SelectedProperties | sort-object | Should Be ('Name', 'Company' | sort-object)
             $responseContext.ExpandedProperties | sort-object | Should Be ('Address', 'Office' | sort-object)
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.Root | Should Be 'Customers'
         }
 
@@ -344,6 +369,7 @@ Describe 'ResponseContext class' {
             $responseContext.IsEntity | Should Be $false
             $responseContext.SelectedProperties | Should Be @('Name')
             $responseContext.ExpandedProperties | Should Be @('Address')
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'Customers'
         }
 
@@ -377,6 +403,7 @@ Describe 'ResponseContext class' {
             $responseContext.IsEntity | Should Be $true
             $responseContext.SelectedProperties | sort-object | Should Be $null
             $responseContext.ExpandedProperties | sort-object | Should Be ('DirectReports' | sort-object)
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'Employees'
         }
 
@@ -395,25 +422,27 @@ Describe 'ResponseContext class' {
             $responseContext.IsEntity | Should Be $true
             $responseContext.SelectedProperties | sort-object | Should Be $null
             $responseContext.ExpandedProperties | sort-object | Should Be ('DirectReports' | sort-object)
+            $responseContext.IsCollectionMember | Should Be $true
             $responseContext.Root | Should Be 'Employees'
         }
 
         It 'Should correctly parse 10.10 Expanded Entity - {context-url}#{singleton}{select-list}' {
             $requestUri = 'https://host/service/me$expand=DirectReports($select=FirstName,LastName)'
-            $contextUri = 'https://host/service/$metadata#me(DirectReports+(FirstName,LastName))'
+            $contextUri = 'https://host/service/$metadata#users(DirectReports+(FirstName,LastName))/$entity'
 
             $responseContext = new-so ResponseContext $requestUri $contextUri |=> ToPublicContext
 
-            $responseContext.GraphUri | Should Be '/me'
-            $responseContext.TypelessGraphUri | Should Be '/me'
-            $responseContext.AbsoluteGraphUri | Should Be 'https://host/service/me'
+            $responseContext.GraphUri | Should Be '/users'
+            $responseContext.TypelessGraphUri | Should Be '/users'
+            $responseContext.AbsoluteGraphUri | Should Be 'https://host/service/users'
             $responseContext.ContextUrl | Should Be $contextUri
             $responseContext.RequestUrl | Should Be $requestUri
             $responseContext.TypeCast | Should Be $null
-            $responseContext.IsEntity | Should Be $false
+            $responseContext.IsEntity | Should Be $true
             $responseContext.SelectedProperties | sort-object | Should Be $null
             $responseContext.ExpandedProperties | sort-object | Should Be ('DirectReports' | sort-object)
-            $responseContext.Root | Should Be 'me'
+            $responseContext.IsCollectionMember | Should Be $true
+            $responseContext.Root | Should Be 'users'
         }
 
         It 'Should correctly parse 10.10 Expanded Entity - {context-url}#{type-name}{select-list}' {
@@ -431,6 +460,7 @@ Describe 'ResponseContext class' {
             $responseContext.IsEntity | Should Be $false
             $responseContext.SelectedProperties | sort-object | Should Be $null
             $responseContext.ExpandedProperties | sort-object | Should Be ('DirectReports' | sort-object)
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.Root | Should Be $null
         }
 
@@ -453,7 +483,7 @@ Describe 'ResponseContext class' {
             $responseContext.IsReference | Should Be $true
         }
 
-        It 'Should correctly parse a context URI for 10.12 a single entity reference of the form {context-url}#$ref -- this means the context URL does not contain the type of the referenced entitiy' {
+        It 'Should correctly parse a context URI for 10.12 a single entity reference of the form {context-url}#$ref -- this means the context URL does not contain the type of the referenced entity' {
             $requestUri = 'https://host/service/Orders(10643)/Customer/$ref'
             $contextUri = 'https://host/service/$metadata#$ref'
 
@@ -469,6 +499,7 @@ Describe 'ResponseContext class' {
             $responseContext.SelectedProperties | Should Be $null
             $responseContext.ExpandedProperties | Should Be $null
             $responseContext.Root | Should Be $null
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.IsReference | Should Be $true
         }
 
@@ -487,6 +518,7 @@ Describe 'ResponseContext class' {
             $responseContext.IsEntity | Should Be $false
             $responseContext.SelectedProperties | sort-object | Should Be ('City', 'State' | sort-object)
             $responseContext.ExpandedProperties | sort-object | Should Be $null
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.Root | Should Be 'Employees'
         }
 
@@ -512,6 +544,7 @@ Describe 'ResponseContext class' {
             $responseContext.SelectedProperties | sort-object | Should Be ( 'FirstName', 'LastName' | sort-object )
             $responseContext.ExpandedProperties | Should Be $null
             $responseContext.Root | Should Be 'Employees'
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.IsDelta | Should Be $true
         }
 
@@ -532,6 +565,7 @@ Describe 'ResponseContext class' {
             $responseContext.ExpandedProperties | Should Be $null
             $responseContext.Root | Should Be $null
             $responseContext.IsReference | Should Be $false
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.IsDelta | Should Be $true
         }
 
@@ -549,6 +583,7 @@ Describe 'ResponseContext class' {
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsDeletedEntity | Should Be $true
             $responseContext.IsEntity | Should Be $false
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.Root | Should Be 'users'
         }
 
@@ -566,6 +601,7 @@ Describe 'ResponseContext class' {
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsDeletedLink | Should Be $true
             $responseContext.IsEntity | Should Be $false
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.Root | Should Be 'groups'
         }
 
@@ -583,6 +619,7 @@ Describe 'ResponseContext class' {
             $responseContext.TypeCast | Should Be $null
             $responseContext.IsNewLink | Should Be $true
             $responseContext.IsEntity | Should Be $false
+            $responseContext.IsCollectionMember | Should Be $false
             $responseContext.Root | Should Be 'groups'
         }
     }

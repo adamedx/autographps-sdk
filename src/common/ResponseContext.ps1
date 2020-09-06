@@ -66,6 +66,7 @@ ScriptClass ResponseContext {
     $IsNewLink = $false
     $IsDeletedLink = $false
     $IsDeletedEntity = $false
+    $IsCollectionMember = $false
     $isParsed = $false
 
     $publicMap = @{
@@ -84,6 +85,7 @@ ScriptClass ResponseContext {
         IsNewLink = $false
         IsDeletedLink = $false
         IsDeletedEntity = $false
+        IsCollectionMember = $false
     }
 
     function __initialize([Uri] $requestUrl, [Uri] $contextUrl) {
@@ -104,6 +106,7 @@ ScriptClass ResponseContext {
         __Parse
 
         $result = @{}
+
         $this.publicMap.keys | foreach {
             $target = $this.publicMap[$_]
 
@@ -171,8 +174,11 @@ ScriptClass ResponseContext {
         $context['GraphUri'] = $null
         $context['TypelessGraphUri'] = $null
 
+        $previousSegmentIsRoot = $false
+
         for ($fragmentSegmentIndex = 0; $fragmentSegmentIndex -lt $fragmentSegments.length; $fragmentSegmentIndex++ ) {
             $segment = $fragmentSegments[$fragmentSegmentIndex]
+            $isTypeCastSegment = $false
 
             if ( $segment -eq '$ref' ) {
                 # Note that references are considered "unstable" -- we don't have type information
@@ -187,6 +193,9 @@ ScriptClass ResponseContext {
                 break
             } elseif ($segment -eq '$entity' ) {
                 $context['IsEntity'] = $true
+                if ( $previousSegmentIsRoot ) {
+                    $context['IsCollectionMember'] = $true
+                }
                 # anything after this is a property path
                 continue
             } elseif ( $segment -eq '$delta' ) {
@@ -201,6 +210,7 @@ ScriptClass ResponseContext {
                 $context['IsDeletedLink'] = $true
             } else {
                 $isLastSegment = $fragmentSegmentIndex -eq ( $fragmentSegments.length - 1 )
+                $isLastSegmentOfAnyKind = $isLastSegment
 
                 if ( ! $isLastSegment ) {
                     $isLastSegment = $fragmentSegments[$fragmentSegmentIndex + 1][0] -eq '$'
@@ -230,6 +240,7 @@ ScriptClass ResponseContext {
                         $context['TypeCast'] = $parsedSegment.TypeCast
                         if ( $parsedSegment.IsTypecastOnlySegment ) {
                             $hasTypecastOnlySegment = $true
+                            $isTypeCastSegment = $true
                         }
                     }
 
@@ -240,6 +251,21 @@ ScriptClass ResponseContext {
                     if ( $parsedSegment.ExpandedProperties ) {
                         $context['ExpandedProperties'] = $parsedSegment.ExpandedProperties
                     }
+
+                    if ( ! $parsedSegment.SelectedProperties -and ! $parsedSegment.ExpandedProperties ) {
+                        if ( $isLastSegment -and ( ! $previousSegmentIsRoot -and $parsedSegment.Id ) ) {
+                            $context['IsCollectionMember'] = $true
+                        }
+                    }
+
+                } else {
+                    $previousSegmentIsRoot = $false
+                }
+
+                if ( $fragmentSegmentIndex -eq 0 ) {
+                    $previousSegmentIsRoot = $true
+                } elseif ( $previousSegmentIsRoot -and ! $isTypeCastSegment ) {
+                    $previousSegmentIsRoot = $false
                 }
             }
         }
@@ -250,6 +276,7 @@ ScriptClass ResponseContext {
         }
 
         if ( $graphUri ) {
+            $graphUri = $graphUri -replace  "/'(?<name>[^']+)'/", '/${name}/'
             $context['TypelessGraphUri'] = "/$graphUri"
         }
 
@@ -257,6 +284,9 @@ ScriptClass ResponseContext {
             $context['GraphUri'] = if ( $hasTypeCastOnlySegment ) {
                 $context['TypelessGraphuri'], $context['TypeCast'] -join '/'
             } else {
+                if ( $fragmentSegments.length -eq 1 ) {
+                    $context['IsCollectionMember'] = $true
+                }
                 "/$graphUri"
             }
         }

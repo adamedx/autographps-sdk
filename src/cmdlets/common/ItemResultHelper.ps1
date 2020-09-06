@@ -91,7 +91,10 @@ ScriptClass ItemResultHelper -ArgumentList $__DefaultResultVariable {
             $contextIsDeltaLink = $responseContext.IsNewLink -or $responseContext.IsDeletedLink
             $contextIsDelta = $responseContext.IsDelta -or $responseContext.IsDeletedEntity -or $contextIsDeltaLink
             $contextIsDeltaDeleted = $responseContext.IsDeletedLink -or $responseContext.IsDeletedEntity
-            $contextcontextUri = $contextUri
+            $contextIsCollectionMember = $responseContext.IsCollectionMember
+            $contextcontextUri = if ( $contextUri ) {
+                $contextUri.tostring().replace("'", "''")
+            }
 
             $contextGraphUriString = if ( $contextGraphUri ) { "'$contextGraphUri'" } else { '$null' }
             $contextTypelessGraphUriString = if ( $contextTypelessGraphUri ) { "'$contextTypelessGraphUri'" } else { '$null' }
@@ -100,6 +103,7 @@ ScriptClass ItemResultHelper -ArgumentList $__DefaultResultVariable {
             $contextIsDeltaLinkString = if ( $contextIsDeltaLink ) { '$true' } else { '$false' }
             $contextIsDeltaString = if ( $contextIsDelta ) { '$true' } else { '$false' }
             $contextIsDeltaDeletedString = if ( $contextIsDeltaDeleted ) { '$true' } else { '$false' }
+            $contextIsCollectionMemberString = if ( $contextIsCollectionMember ) { '$true' } else { '$false' }
             $contextContextUriString = if ( $contextContextUri ) { "'$contextContextUri'" } else { '$null' }
 
             $scriptText = @"
@@ -113,8 +117,10 @@ ScriptClass ItemResultHelper -ArgumentList $__DefaultResultVariable {
                     IsDelta=$contextIsDeltaString
                     IsDeltaLink=$contextIsDeltaLinkString
                     IsDeltaDeleted=$contextIsDeltaDeletedString
+                    IsCollectionMember=$contextIsCollectionMemberString
                 }
 "@
+
             [ScriptBlock]::Create($scriptText)
         }
 
