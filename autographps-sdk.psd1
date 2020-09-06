@@ -224,7 +224,7 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS-SDK 0.22.0 Release Notes
 
-This release adds the initial support for delta query and also improves and refines general result paging capabilities.
+This release adds helper libraries for interpreting OData protocol response metadata, simplifies result paging capabilities, adds a detailed Graph response output format for applications building complex scenarios that require protocol awareness, and adds preview support for delta query.
 
 ### New dependencies
 
@@ -233,6 +233,7 @@ None.
 ### Breaking changes
 
 * The `IncludeFullResponse` parameter is no longer supported by the `Invoke-GraphRequest` command. It has been superseded by the `AsResponseDetail` parameter added in this release.
+* Applications created by New-GraphApplication no longer include 'http://localhost' and 'urn:ietf:wg:oauth:2.0:oob' by default. The only default URI specified for these application is 'https://login.microsoftonline.com/common/oauth2/nativeclient'.
 
 ### New features
 
@@ -248,6 +249,8 @@ None.
     * `GetOptionalTypeFromResponseObject` returns the parsed type from `@odata.type` for a given object if it is present
 
 ### Fixed defects
+
+* V2 public client authentication fails with mismatch reply URL when using a non-default app id unless localhost is configured as a reply url. The only workaround was to add localhost as a reply url to the app because no reply URL was specified by AutoGraphPS to the MSAL library when making the request. From an MSAL (and possibly from the protocol) standpoint, this is the equivalent of specifying no reply url. The fix is to specify whatever reply URL is configured in the local connection; by default, the app now uses 'https://login.microsoftonline.com/common/oauth2/nativeclient', which is now the default reply URL for applications created by New-GraphApplication.
 
 '@
 

@@ -103,6 +103,7 @@ ScriptClass GraphIdentity {
 
         $authUri = $graphEndpoint |=> GetAuthUri $this.TenantName
         write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
+        write-verbose ("Using redirect uri (reply url) '{0}'" -f $this.App.RedirectUri)
 
         if ( ! $this.scriptclass.AuthProvidersInitialized ) {
             $::.AuthProvider |=> InitializeProviders
