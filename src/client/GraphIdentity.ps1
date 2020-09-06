@@ -39,6 +39,14 @@ ScriptClass GraphIdentity {
         $this.GraphEndpoint = $graphEndpoint
         $this.TenantName = $tenantName
 
+        $defaultAppId = $::.Application.DefaultAppId.tostring()
+        $chinaEndpointUri = ( $::.GraphEndpoint |=> GetCloudEndpoint ChinaCloud MSGraph ).Graph.tostring().trimend('/')
+
+        if ( ( $graphEndpoint.Graph.tostring().trimend('/') -eq $chinaEndpointUri ) -and
+             ( $app.AppId.tostring() -eq $defaultAppId ) ) {
+             write-warning "Initializing connection to China cloud using the default application identifier '$defaultAppId', but this public cloud app may not be available in the China cloud, so authentication may fail. Consider creating a new public client application in a China cloud tenant and specify that application's application identifier (also known as client id) with Connect-Graph or related commands via their AppId parameter if you experience authentication failures and retry the failing command."
+        }
+
         $this |=> __UpdateTenantDisplayInfo
     }
 

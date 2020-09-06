@@ -47,7 +47,7 @@ ScriptClass GraphApplication {
     }
 
     function __GetDefaultRedirectUri($appId) {
-        'urn:ietf:wg:oauth:2.0:oob'
+        'https://login.microsoftonline.com/common/oauth2/nativeclient'
     }
 
     function IsConfidential {
