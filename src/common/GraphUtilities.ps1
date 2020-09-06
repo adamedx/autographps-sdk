@@ -316,10 +316,12 @@ ScriptClass GraphUtilities {
                 $isEntity = $objectContext.IsEntity -or $objectContext.IsDelta
                 $idNotNeededOrInItem = $assumeEntity -or ! $isEntity
 
-                $targetId = if ( $id ) {
-                    $id
-                } else {
-                    $explicitId
+                $targetId = if ( $objectContext.IsCollectionMember ) {
+                    if ( $id ) {
+                        $id
+                    } else {
+                        $explicitId
+                    }
                 }
 
                 $typelessUri = $objectContext.TypelessGraphUri
@@ -337,7 +339,7 @@ ScriptClass GraphUtilities {
                         }
                     }
                     # If there is no typeless URI, we will return nothing
-                } elseif ( ! $idNotNeededOrInItem ) {
+                } elseif ( ! $idNotNeededOrInItem -or ! $objectContext.IsCollectionMember ) {
                     $typelessUri
                 }
 
