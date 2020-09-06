@@ -148,6 +148,9 @@ By default, when Invoke-GraphRequest issues a request and receives a response in
 .PARAMETER NoRequest
 When NoRequest is specified, instead of the command issuing a request to the Graph and returning the response content as command output, no request is issued and the request URI including query parameters rather than the content is emitted as output. This parameter is a useful way to understnd the request URI that would be generated for a given set of parameter options including search filters, and could be used to supply a URI to other Graph clients that could issue the actual request.
 
+.PARAMETER NoSizeWarning
+Specify NoSizeWarning to suppress the warning emitted by the command if 1000 or more items are retrieved by the command and no paging parameters, i.e. First or Skip parameters, were specified. The warning is intended to communicate that returning such a large result set may not have been intended. Use this parameter to ensure that automated scripts do not output the warning when intentionally used on large result sets to return all results.
+
 .OUTPUTS
 TThe command returns the content of the HTTP response from the Graph endpoint. The result will depend on the documented response for the specified HTTP method parameter for the Graph URI. The results are formatted as either deserialized PowerShell objects, or, if the RawContent parameter is also specified, the literal content of the HTTP response. Because Graph responds to requests with JSON except in cases where content types such as images or other media are requested, use of the RawContent parameter will usually result in JSON output.
 
@@ -319,7 +322,9 @@ function Invoke-GraphRequest {
 
         [switch] $NoClientRequestId,
 
-        [switch] $NoRequest
+        [switch] $NoRequest,
+
+        [switch] $NoSizeWarning
     )
 
     begin {
@@ -547,6 +552,12 @@ function Invoke-GraphRequest {
 
         $isDeltaRequest = $Delta.IsPresent -or $DeltaToken -or $isDeltaUri
 
+        $skipSizeWarning = $NoSizeWarning.IsPresent -or $pscmdlet.pagingparameters.Skip -or $NoPaging.IsPresent -or (
+            ( $pscmdlet.pagingparameters.First -ne $null ) -and
+            ( $pscmdlet.pagingparameters.First -gt 0 ) -and
+            ( $pscmdlet.pagingparameters.First -lt [int32]::MaxValue )
+        )
+
         while ( $graphRelativeUri -ne $null -and ($graphRelativeUri.tostring().length -gt 0) -and ($maxResultCount -eq $null -or $results.length -lt $maxResultCount) ) {
             if ( $graphType -eq ([GraphType]::AADGraph) ) {
                 $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
@@ -562,7 +573,7 @@ function Invoke-GraphRequest {
                 $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent $NoRequest.IsPresent ( $startDelta -and ! $isDeltaUri ) $initialDeltaToken $PageSizePreference
                 $request |=> SetBody $Body
                 try {
-                    $request |=> Invoke $skipCount $maxResultCount -logger $logger
+                    $request |=> Invoke $skipCount $PageSizePreference -logger $logger
                 } catch [System.Net.WebException] {
                     $statusCode = if ( $_.exception.response | gm statuscode -erroraction ignore ) {
                         $_.exception.response.statuscode
@@ -582,7 +593,6 @@ function Invoke-GraphRequest {
             }
 
             $skipCount = $null
-            $maxResultCount = $null
 
             $content = if ( $graphResponse -and $graphResponse.Entities -ne $null ) {
                 if ( ! $contentTypeData ) {
@@ -650,6 +660,11 @@ function Invoke-GraphRequest {
             $results += $content
 
             $pageCount++
+
+            if ( $results.length -gt 1000 -and ! $skipSizeWarning ) {
+                write-warning "Graph is returning large result size of 1000 items or more; consider using filters or paging parameters to limit the amount of data returned."
+                $skipSizeWarning = $true
+            }
         }
 
         if ($pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true) {

@@ -96,6 +96,12 @@ This parameter specifies that instead of accessing Microsoft Graph, the command 
 .PARAMETER NoClientRequestId
 This parameter suppresses the automatic generation and submission of the 'client-request-id' header in the request used for troubleshooting with service-side request logs. This parameter is included only to enable complete control over the protocol as there would be very few use cases for not sending the request id.
 
+.PARAMETER NoRequest
+When NoRequest is specified, instead of the command issuing a request to the Graph and returning the response content as command output, no request is issued and the request URI including query parameters rather than the content is emitted as output. This parameter is a useful way to understnd the request URI that would be generated for a given set of parameter options including search filters, and could be used to supply a URI to other Graph clients that could issue the actual request.
+
+.PARAMETER NoSizeWarning
+Specify NoSizeWarning to suppress the warning emitted by the command if 1000 or more items are retrieved by the command and no paging parameters, i.e. First or Skip parameters, were specified. The warning is intended to communicate that returning such a large result set may not have been intended. Use this parameter to ensure that automated scripts do not output the warning when intentionally used on large result sets to return all results.
+
 .OUTPUTS
 The command returns the content of the HTTP response from the Graph endpoint. The result will depend on the documented response of GET requests for the Graph URI. The results are formatted as either deserialized PowerShell objects, or, if the RawContent parameter is also sp ecified, the literal content of the HTTP response. Because Graph responds to requests with JSON except in cases where content types such as images or other media are requested, use of the RawContent parameter will usually result in JSON output.
 
@@ -202,6 +208,8 @@ function Get-GraphResource {
 
         [switch] $NoRequest,
 
+        [switch] $NoSizeWarning,
+
         [string] $ResultVariable = $null
     )
 
@@ -225,6 +233,7 @@ function Get-GraphResource {
             Headers=$Headers
             NoClientRequestId=$NoClientRequestId
             NoRequest=$NoRequest
+            NoSizeWarning=$NoSizeWarning
             First=$pscmdlet.pagingparameters.first
             Skip=$pscmdlet.pagingparameters.skip
             IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
