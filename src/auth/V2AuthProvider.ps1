@@ -58,7 +58,7 @@ ScriptClass V2AuthProvider {
             $confidentialApp
         } else {
             write-verbose "Public app context not found -- will create new context"
-            $publicApp = [Microsoft.Identity.Client.PublicClientApplicationBuilder]::Create($App.AppId).WithAuthority($authUri, $true).Build()
+            $publicApp = [Microsoft.Identity.Client.PublicClientApplicationBuilder]::Create($App.AppId).WithAuthority($authUri, $true).WithRedirectUri($app.RedirectUri).Build()
 
             $this |=> __AddAppContext $false $app.AppId $authUri $publicApp $groupId
 

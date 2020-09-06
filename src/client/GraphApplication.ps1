@@ -42,12 +42,8 @@ ScriptClass GraphApplication {
         $this.RedirectUri = if ( $RedirectUri ) {
             $RedirectUri
         } else {
-            __GetDefaultRedirectUri $this.AppId
+            $::.Application.DefaultRedirectUri
         }
-    }
-
-    function __GetDefaultRedirectUri($appId) {
-        'https://login.microsoftonline.com/common/oauth2/nativeclient'
     }
 
     function IsConfidential {
