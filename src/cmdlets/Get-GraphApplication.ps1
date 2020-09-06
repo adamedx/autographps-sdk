@@ -29,6 +29,9 @@ function Get-GraphApplication {
         [parameter(parametersetname='name', mandatory=$true)]
         $Name,
 
+        [Alias('MaximumResultCount')]
+        [int32] $First = 0,
+
         [switch] $RawContent,
 
         [String] $Version = $null,
@@ -40,7 +43,7 @@ function Get-GraphApplication {
     )
     Enable-ScriptClassVerbosePreference
 
-    $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $Filter $Name $RawContent $Version $null $null $connection
+    $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $Filter $Name $RawContent $Version $null $null $connection $null $null $First
 
     $displayableResult = if ( $result ) {
         if ( $RawContent.IsPresent ) {
