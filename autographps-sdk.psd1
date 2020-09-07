@@ -193,6 +193,7 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\src\REST\GraphErrorRecorder.ps1'
         '.\src\REST\GraphRequest.ps1'
         '.\src\REST\GraphResponse.ps1'
+        '.\src\REST\HttpUtilities.ps1'
         '.\src\REST\RequestLog.ps1'
         '.\src\REST\RequestLogEntry.ps1'
         '.\src\REST\RESTRequest.ps1'
@@ -251,6 +252,8 @@ None.
 ### Fixed defects
 
 * V2 public client authentication fails with mismatch reply URL when using a non-default app id unless localhost is configured as a reply url. The only workaround was to add localhost as a reply url to the app because no reply URL was specified by AutoGraphPS to the MSAL library when making the request. From an MSAL (and possibly from the protocol) standpoint, this is the equivalent of specifying no reply url. The fix is to specify whatever reply URL is configured in the local connection; by default, the app now uses 'https://login.microsoftonline.com/common/oauth2/nativeclient', which is now the default reply URL for applications created by New-GraphApplication.
+* Get-GraphLog and related commands did not function correctly on PowerShell 7 -- error responses were logged with incomplete fields including an invalid http status code of 0. This was due to the underlying http client type being different on PowerShell 7 vs. PowerShell 5, and the methods and properties were different for this class, resulting in errors when trying to read data from the response. This seemed to only be an issue for error responses. The fix ensures that the type differences are accounted for on the different platforms and restores the error logging.
+* Fixed an error where apps created by New-GraphApplication were registered such that device code authentication flow could not be used to sign-in with the apps. They were missing the fallbackPublicClient property for the app, which is apparently required for that flow to work. This is now fixed, and this restores device code flow login for these apps, which is critical for PowerShell 7 and later since they do not support the web browser controls used to sign in on PowerShell 5.
 
 '@
 

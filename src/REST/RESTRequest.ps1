@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -94,11 +94,11 @@ ScriptClass RESTRequest {
             $httpResponse = try {
                 if ( $logEntry ) { $logEntry |=> LogRequestStart }
                 Invoke-WebRequest -Uri $this.uri -headers $this.headers -method $this.method -useragent $this.userAgent -usebasicparsing @optionalArguments
-            } catch [System.Net.WebException] {
+            } catch [System.Net.WebException], [System.Net.Http.HttpRequestException] {
                 $response = $_.exception.response
-                $responseStream = ($::.RestResponse |=> GetErrorResponseDetails $response)
-                $responseOutput = if ( $responseStream -ne $null -and $responseStream.length -gt 0 ) {
-                    $responseStream
+                $responseStreamOutput = ($::.RestResponse |=> GetErrorResponseDetails $response)
+                $responseOutput = if ( $responseStreamOutput -ne $null -and $responseStreamOutput.length -gt 0 ) {
+                    $responseStreamOutput
                 } else {
                     # Sometimes the response stream has already been read and the value
                     # can be obtained from the error record's ToString()
@@ -108,7 +108,7 @@ ScriptClass RESTRequest {
                 if ( $logEntry ) { $logEntry |=> LogError $response $responseOutput }
 
                 _write-responseverbose $response $responseOutput
-                write-error -message $responseStream -targetobject ([PSCustomObject] @{CustomTypeName='RESTException';PSErrorRecord=$_;ResponseStream=$responseStream}) -erroraction silentlycontinue
+                write-error -message $responseStreamOutput -targetobject ([PSCustomObject] @{CustomTypeName='RESTException';PSErrorRecord=$_;ResponseStream=$responseStreamOutput}) -erroraction silentlycontinue
                 throw
             }
 
@@ -199,8 +199,10 @@ ScriptClass RESTRequest {
         write-verbose "Response Headers:"
         write-verbose "****************`n"
 
+        $responseHeaders = $::.HttpUtilities |=> NormalizeHeaders $response.headers
+
         if ( $response -ne $null ) {
-            _write-headersverbose $response.headers
+            _write-headersverbose $responseHeaders
         }
     }
 }

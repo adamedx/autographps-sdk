@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
 * When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
 * Add AllResults option to Get-GraphResource and Invoke-GraphRequest, and corresponding preference variable
 * Add Start-GraphDeltaJob

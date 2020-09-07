@@ -47,9 +47,23 @@ ScriptClass RESTResponse {
     }
 
     static {
-        function GetErrorResponseDetails([System.Net.WebResponse] $response) {
+        function GetErrorResponseDetails($response) {
             if ( $response -ne $null ) {
-                $responseStream = $response.getresponsestream()
+                $responseType = $response.GetType()
+                $responseStream = switch ( $responseType ) {
+                    [System.Net.WebResponse] {
+                        $responseStream = $response.getresponsestream()
+                    }
+                    [System.Net.Http.HttpResponseMessage] {
+                        # No need to read the stream for this type, so
+                        # we won't return it
+                    }
+                    default {
+                        # Unknown error type, don't attempt to process it
+                        write-verbose "Http request returned as instance of unexpected type '$responseType'"
+                    }
+                }
+
                 if ( $responseStream -ne $null ) {
                     $reader = New-Object System.IO.StreamReader($responseStream)
                     $errorMessage = $reader.ReadToEnd()
