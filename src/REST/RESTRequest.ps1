@@ -14,6 +14,7 @@
 
 . (import-script RESTResponse)
 . (import-script ../common/PreferenceHelper)
+. (import-script HttpUtilities)
 
 ScriptClass RESTRequest {
     static {

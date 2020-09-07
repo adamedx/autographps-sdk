@@ -248,6 +248,7 @@ None.
   * New methods in `GraphUtilities`:
     * `GetAbstractUriFromResponseObject` returns a close approximation of a URI that can be used to make a request for that response.
     * `GetOptionalTypeFromResponseObject` returns the parsed type from `@odata.type` for a given object if it is present
+* AAD Application commands such as New-GraphApplication, Get-GraphApplication, Set-GraphApplicationConsent, etc., have been updated to use Graph API version v1.0 instead of beta since all application functionality is now present in v1.0.
 
 ### Fixed defects
 
