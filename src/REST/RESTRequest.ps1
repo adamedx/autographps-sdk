@@ -95,7 +95,15 @@ ScriptClass RESTRequest {
             $httpResponse = try {
                 if ( $logEntry ) { $logEntry |=> LogRequestStart }
                 Invoke-WebRequest -Uri $this.uri -headers $this.headers -method $this.method -useragent $this.userAgent -usebasicparsing @optionalArguments
-            } catch [System.Net.WebException], [System.Net.Http.HttpRequestException] {
+            } catch {
+                # There are a variety of exceptions that can be encountered depending on the underlying .NET http client implementation
+                # TODO: Abstract this to a class that has knowledge of the specifics of the http clients
+                $exceptionType = $_.exception.gettype()
+                if ( $exceptionType -notin [System.Net.WebException], [Microsoft.PowerShell.Commands.HttpResponseException] -and ! $exceptionType.fullname.startswith('System.Net.Http') ) {
+                    write-verbose "Encountered unexpected exception of type '$($exceptionType.FullName)'"
+                    throw
+                }
+
                 $response = $_.exception.response
                 $responseStreamOutput = ($::.RestResponse |=> GetErrorResponseDetails $response)
                 $responseOutput = if ( $responseStreamOutput -ne $null -and $responseStreamOutput.length -gt 0 ) {
@@ -144,6 +152,7 @@ ScriptClass RESTRequest {
 
     function _write-headersverbose( $headers, $substitutions = @{} ) {
         if ( $headers -ne $null ) {
+
             $headerOutput = @{}
             $headers.keys | foreach {
                 $headerOutput[$_] = if ( ! $substitutions.containskey($_) ) {
@@ -200,7 +209,7 @@ ScriptClass RESTRequest {
         write-verbose "Response Headers:"
         write-verbose "****************`n"
 
-        $responseHeaders = $::.HttpUtilities |=> NormalizeHeaders $response.headers
+        $responseHeaders = 'HttpUtilities' |::> NormalizeHeaders $response.headers
 
         if ( $response -ne $null ) {
             _write-headersverbose $responseHeaders
