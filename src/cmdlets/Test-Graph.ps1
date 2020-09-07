@@ -122,8 +122,10 @@ function Test-Graph {
     $request = new-so RESTRequest $pingUri
     $logEntry = if ( $logger ) { $logger |=> NewLogEntry $null $request }
 
-    try {
-        $response = $request |=> Invoke -logEntry $logEntry
+    $response = try {
+        $request |=> Invoke -logEntry $logEntry
+    } catch {
+        throw
     } finally {
         if ( $logEntry ) { $logger |=> CommitLogEntry $logEntry }
     }
