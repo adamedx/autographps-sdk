@@ -99,7 +99,7 @@ ScriptClass RESTRequest {
                 # There are a variety of exceptions that can be encountered depending on the underlying .NET http client implementation
                 # TODO: Abstract this to a class that has knowledge of the specifics of the http clients
                 $exceptionType = $_.exception.gettype()
-                if ( $exceptionType -notin [System.Net.WebException], [Microsoft.PowerShell.Commands.HttpResponseException] -and ! $exceptionType.fullname.startswith('System.Net.Http') ) {
+                if ( $exceptionType -ne [System.Net.WebException] -and $exceptionType.fullName -ne 'Microsoft.PowerShell.Commands.HttpResponseException' -and ! $exceptionType.fullname.startswith('System.Net.Http') ) {
                     write-verbose "Encountered unexpected exception of type '$($exceptionType.FullName)'"
                     throw
                 }
