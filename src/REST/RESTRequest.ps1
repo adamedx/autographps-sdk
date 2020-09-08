@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 . (import-script RESTResponse)
 . (import-script ../common/PreferenceHelper)
+. (import-script HttpUtilities)
 
 ScriptClass RESTRequest {
     static {
@@ -94,11 +95,19 @@ ScriptClass RESTRequest {
             $httpResponse = try {
                 if ( $logEntry ) { $logEntry |=> LogRequestStart }
                 Invoke-WebRequest -Uri $this.uri -headers $this.headers -method $this.method -useragent $this.userAgent -usebasicparsing @optionalArguments
-            } catch [System.Net.WebException] {
+            } catch {
+                # There are a variety of exceptions that can be encountered depending on the underlying .NET http client implementation
+                # TODO: Abstract this to a class that has knowledge of the specifics of the http clients
+                $exceptionType = $_.exception.gettype()
+                if ( $exceptionType -ne [System.Net.WebException] -and $exceptionType.fullName -ne 'Microsoft.PowerShell.Commands.HttpResponseException' -and ! $exceptionType.fullname.startswith('System.Net.Http') ) {
+                    write-verbose "Encountered unexpected exception of type '$($exceptionType.FullName)'"
+                    throw
+                }
+
                 $response = $_.exception.response
-                $responseStream = ($::.RestResponse |=> GetErrorResponseDetails $response)
-                $responseOutput = if ( $responseStream -ne $null -and $responseStream.length -gt 0 ) {
-                    $responseStream
+                $responseStreamOutput = ($::.RestResponse |=> GetErrorResponseDetails $response)
+                $responseOutput = if ( $responseStreamOutput -ne $null -and $responseStreamOutput.length -gt 0 ) {
+                    $responseStreamOutput
                 } else {
                     # Sometimes the response stream has already been read and the value
                     # can be obtained from the error record's ToString()
@@ -108,7 +117,7 @@ ScriptClass RESTRequest {
                 if ( $logEntry ) { $logEntry |=> LogError $response $responseOutput }
 
                 _write-responseverbose $response $responseOutput
-                write-error -message $responseStream -targetobject ([PSCustomObject] @{CustomTypeName='RESTException';PSErrorRecord=$_;ResponseStream=$responseStream}) -erroraction silentlycontinue
+                write-error -message $responseStreamOutput -targetobject ([PSCustomObject] @{CustomTypeName='RESTException';PSErrorRecord=$_;ResponseStream=$responseStreamOutput}) -erroraction silentlycontinue
                 throw
             }
 
@@ -143,6 +152,7 @@ ScriptClass RESTRequest {
 
     function _write-headersverbose( $headers, $substitutions = @{} ) {
         if ( $headers -ne $null ) {
+
             $headerOutput = @{}
             $headers.keys | foreach {
                 $headerOutput[$_] = if ( ! $substitutions.containskey($_) ) {
@@ -199,8 +209,10 @@ ScriptClass RESTRequest {
         write-verbose "Response Headers:"
         write-verbose "****************`n"
 
+        $responseHeaders = 'HttpUtilities' |::> NormalizeHeaders $response.headers
+
         if ( $response -ne $null ) {
-            _write-headersverbose $response.headers
+            _write-headersverbose $responseHeaders
         }
     }
 }

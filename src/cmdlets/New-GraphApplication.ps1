@@ -138,7 +138,7 @@ function New-GraphApplication {
     }
 
     if ( ! $SkipTenantRegistration.IsPresent ) {
-        $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $ConsentForAllUsers.IsPresent $UserIdToConsent $DelegatedUserPermissions $ApplicationPermissions | out-null
+        $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $UserIdToConsent $ConsentForAllUsers.IsPresent $DelegatedUserPermissions $ApplicationPermissions | out-null
     }
 
     $newApp

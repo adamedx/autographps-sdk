@@ -15,6 +15,7 @@
 ScriptClass Application {
     static {
         const DefaultAppId (strict-val [Guid] '9825d80c-5aa0-42ef-bf13-61e12116704c')
+        const DefaultRedirectUri 'https://login.microsoftonline.com/common/oauth2/nativeclient'
         $SupportsBrowserSignin = $PSVersionTable.PSEdition -eq 'Desktop'
     }
 }

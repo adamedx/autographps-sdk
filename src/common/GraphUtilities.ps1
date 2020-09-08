@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -241,6 +241,119 @@ ScriptClass GraphUtilities {
                     Context = $context
                     GraphRelativeUri = $::.GraphUtilities |=> ToGraphRelativeUri $relativeUri $context
                 }
+            }
+        }
+
+        function IsDeltaUri([Uri] $uri) {
+            $uriString = GetUriNoQuery $uri
+
+            $lastSegment = ($uriString -split '/' | select -last 1).trimend('/')
+            $lastSegment -eq 'delta' -or $lastSegment -eq 'microsoft.graph.delta'
+        }
+
+        function ParseAbsoluteUri([Uri] $uri) {
+            $uriString = GetUriNoQuery $uri
+
+            $query = ( $uri.query -split '\?' )[1]
+            $parameters = $query -split '='
+
+            $deltaToken = for ( $parameterIndex = 0; $parameterIndex -lt $parameters.length; $parameterIndex++ ) {
+                if ( $parameters[$parameterIndex] -eq '$deltatoken' ) {
+                    if ( ( $parameterIndex + 1 ) -lt $parameters.length ) {
+                        $parameters[$parameterIndex + 1]
+                        break
+                    }
+                }
+            }
+
+            $graphUri = ($::.GraphUtilities |=> ParseGraphUri $uriString).GraphRelativeUri
+
+            [PSCustomObject] @{
+                AbsoluteUriString = $uriString
+                GraphUri = $graphUri
+                GraphUriAndQuery = $graphUri.tostring() + $uri.query
+                DeltaToken = $deltatoken
+            }
+        }
+
+        function GetUriNoQuery([Uri] $uri) {
+            $pathAndQuery = $uri.tostring() -split '\?'
+            if ( ! $pathAndQuery -or ( $pathAndQuery.length -lt 1 ) -or ( $pathAndQuery.length -gt 2 ) ) {
+                throw [ArgumentException]::new("The URI '$uri' is not a valid URI")
+            }
+
+            $uriQueryLength = if ( $pathAndQuery.length -gt 1 ) { $pathAndQuery[1].length + 1 } else { 0 }
+            $uri.OriginalString.substring(0, $uri.OriginalString.length - $uriQueryLength)
+        }
+
+        function GetOptionalTypeFromResponseObject($object) {
+            if ( $object | gm '@odata.type' -erroraction ignore ) {
+                $object.'@odata.type'.trimstart('#')
+            }
+        }
+
+        function ParseTypeName([string] $typeName) {
+            $isCollection = $false
+
+            $scalarQualifiedTypeName = if ($typeName -match 'Collection\((?<typename>.+)\)') {
+                $isCollection = $true
+                $matches.typename
+            } else {
+                $typeName
+            }
+
+            [PSCustomObject]@{TypeName=$scalarQualifiedTypeName;IsCollection=$isCollection}
+        }
+
+        function GetAbstractUriFromResponseObject($object, $assumeEntity, $explicitId) {
+            $objectContext = GetResponseObjectContext $object
+
+            if ( $objectContext ) {
+                $id = if ( $object | gm id -erroraction ignore ) {
+                    $object.id
+                }
+
+                $isEntity = $objectContext.IsEntity -or $objectContext.IsDelta
+                $idNotNeededOrInItem = $assumeEntity -or ! $isEntity
+
+                $targetId = if ( $objectContext.IsCollectionMember ) {
+                    if ( $id ) {
+                        $id
+                    } else {
+                        $explicitId
+                    }
+                }
+
+                $typelessUri = $objectContext.TypelessGraphUri
+
+                # If we have an id, we'll return something if it's known to be entity,
+                # if we were told to assume that its an entity
+                if ( $targetId ) {
+                    $result = $typelessUri
+                    if ( $result  ) {
+                        $normalizedUri = $result.trimend('/')
+                        if ( $normalizedUri.tolower().endswith($targetId.tolower()) ) {
+                            $result
+                        } elseif ( $assumeEntity -or $isEntity ) {
+                            $result.trimend('/'), $targetId -join '/'
+                        }
+                    }
+                    # If there is no typeless URI, we will return nothing
+                } elseif ( ! $idNotNeededOrInItem -or ! $objectContext.IsCollectionMember ) {
+                    $typelessUri
+                }
+
+                # If we return $null, it is because there was no typeless uri OR
+                # we needed an id and couldn't get one. The latter case happens
+                # because (1) we were instructed to assume this was an entity
+                # regardless even if the context does not mark it as such explicitly,
+                # or (2) we know for sure that the item is an entity
+            }
+        }
+
+        function GetResponseObjectContext($object) {
+            if ( $object | gm -membertype scriptmethod __ItemContext -erroraction ignore ) {
+                $object.__ItemContext()
             }
         }
     }

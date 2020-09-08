@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 . (import-script ../common/GraphUtilities)
 . (import-script ../common/GraphAccessDeniedException)
 . (import-script common/QueryHelper)
+. (import-script common/ItemResultHelper)
 . (import-script ../REST/GraphRequest)
 . (import-script ../REST/RequestLog)
 . (import-script ../REST/GraphErrorRecorder)
@@ -34,7 +35,7 @@ The output of the command is typically the Content field of the response as dese
 
 Executing Invoke-GraphRequest will result in a sign-in UX if the Connection object of the current Graph or one explicitly supplied to the command through the Connection parameter does not already have a token associated with it. Once the token is acquired for the Connection object, it is used to issue the request to Graph. Subsequent invocations of this or any other commands in the module that use the same connection will silently use the previously acquired token without a UX, so there will be no additional sign-in UX.
 
-The command also supports paging, since the Graph endpoint can return large result sets in the thousands of objects over HTTP protocol. By default this command returns only the first 10 results in a request. The PowerShell standard paging parameters First and Skip can be used to control which subset of the results to return in a single invocation of Invoke-GraphRequest.
+The command also supports paging, since the Graph endpoint can return large result sets in the thousands of objects over HTTP protocol. By default this command returns only a limited number of results in the request depending on the particular request. The PowerShell standard paging parameters First and Skip can be used to control the number and overall subset of the results to return in a single invocation of Invoke-GraphRequest.
 
 This command, like all commands in this module, uses the Connection object of the current graph by default to determine the Graph endpoint and credentials / permissions of an access token used to communicate to Graph. The current Graph's connection can be changed to use different credentials, permissions, or Graph endpoing by using the Connect-Graph command.
 
@@ -77,13 +78,30 @@ The Expand parameter transforms results in a response from identifiers to the fu
 The OrderBy parameter, which is also aliased as 'Sort', indicates that the results returned by the Graph API should be sorted using the key specified as the parameter value. If the Descending parameter is not specified when OrderBy is specified, the values should be sorted in ascending order.
 
 .PARAMETER First
-The First parameter specifies that Graph should only return a specific number of results in the HTTP response. If a request would normally result in 500 items, only the number specified by this parameter would be returned, i.e. the first N results according to the sort order that Graph defaults to or that is specified by this command through the OrderBy parameter. This parameter can be used in conjunction with the Skip parameter to page through results -- First is essentially the page size. By default, Invoke-GraphRequest returns only the first 10 results.
+The First parameter specifies that Graph should only return a specific number of results in the HTTP response. If a request would normally result in 500 items, only the number specified by this parameter would be returned, i.e. the first N results according to the sort order that Graph defaults to or that is specified by this command through the OrderBy parameter.
 
 .PARAMETER Skip
 Skip specifies that Graph should not return the first N results in the HTTP response, i.e. that it should "discard" them. Graph determines the results to throw away after sorting them according to the order Graph defaults to or is specified by this command through the OrderBy parameter. This parameter can be used in conjunction with this First parameter to page through results -- if 20 results were already returned by one or more previous invocations of this command, then by specifying 20 for Skip in the next invocation, Graph will skip past the previously returned results and return the next "page" of results with a page size specified by First.
 
 .PARAMETER Value
 The Value parameter may be used when the result is itself metadata describing some data, such as an image. To obtain the actual data, rather than the metadata, specify Value. This is particularly useful for obtaining pictures for instance, e.g. me/photo.
+
+.PARAMETER Delta
+The Delta parameter specifies that this command should issue a request to get incremental changes for the specified URI. For example, if the caller needs information about new security groups as they are created, they could use this command to periodically issue a query with the URI /groups which would return all currently existing groups, and compare this list to the result from a previous response to the same query. Such an approach is expensive, particularly for tenants with a large number of security groups. To avoid this, use the Delta parameter in the first command invocation. The response will conform to that used when the AsResponseDetail parameter is specified, and will include not just the results in the Content field, but also the fields DeltaToken and DeltaUri. The DeltaUri field can be used any subsequent request to Invoke-GraphRequest -- the response to such a request will include only the data that have changed between the time all data was retrieved from the initial request with Delta specified and now. Because these responses include only the changes, this approach to obtaining the changes to security groups is dramatically more efficient.
+
+.PARAMETER DeltaToken
+This parameter provides a way to request only the incremental changes that would be returned compared to a previous request issued by this command using the Delta parameter. Its value can be obtained from the result of that initial request in the DeltaToken field of its response. When DeltaToken is specified, the URI parameter should simply be the same URI specified in the initial request that used the Delta parameter. Alternatively, the DeltaUri field can be specified as the URI for subsequent requests and the DeltaToken field should not be specified in that case.
+
+.PARAMETER AsResponseDetail
+By default, unless the NoPaging, Delta, or DeltaToken parameters are specified, the ouptut of this command is simply the collection of objects returned from the Graph. Such default output is missing some additional information returned by Graph including the OData context or the next URI to use for incomplete results. The additional output which may include additional type information about the content can be useful for custom processing of incremental delta requests, customized result paging and indication of partial results, and interpretation of the content. The fields of this output are as follows:
+  * Content: contains the equivalent of the output emitted when the AsResponseDetail format is not used.
+  * ContextUri (optional): contains the OData context URI
+  * DeltaUri (optional): a URI that can be used with this command to get only incremental changes from this response. Only returned once all data are processed for a request issued with the Delta parameter
+  * AbsoluteDeltaUri (optional): Same as DeltaUri, but uses an absolute URI format that can only be used as the Invoke-GraphRequest Uri parameter when the AbsoluteUri parameter is specified
+  * DeltaToken (optional): a state token that can be used with this command to get only incremental changes from this response, and returned only when DeltaUri would be returned
+  * NextUri (optional): a URI used to retrieve the next page of results, empty if there are no next results. This can be used to do custom paging, or to indicate that there are more results left to retrieve.
+  * AbsoluteNextUri (optional): Same as NextUri, but uses an absolute URI format that can only be as the Invoke-GraphRequest Uri parameter when the AbsoluteUri parameter is specified
+  * Responses: This contains the actual HTTP protocol responses from Graph along with additional details about each response. There will always be at least one response if the command is successful, and more than one of Invoke-GraphRequest makes additional requests as part of paging through partial responses returned by Graph
 
 .PARAMETER OutputFilePrefix
 The OutputFilePrefix parameter specifies that rather than emitting the results to the PowerShell pipeline, each result should be written to a file name prefixed with the value of the OutputFilePrefix. The parameter value may be a path to a directory, or simply a name with no path separator. If there is more than one item in the result, the base file name for that result will end with a unique integer identifier within the result set. The file extension will be 'json' unless the result is of another content type, in which case the command will attempt to determine the extension from the content type returned in the HTTP response. If the content type cannot be determined, then the file extension will be '.dat'.
@@ -115,14 +133,23 @@ By default the URIs specified by the Uri parameter are relative to the current G
 .PARAMETER RawContent
 This parameter specifies that the command should return results exactly in the format of the HTTP response from the Graph endpoint, rather than the default behavior where the objects are deserialized into PowerShell objects. Graph returns objects as JSON except in cases where content types such as media are being requested, so use of this parameter will generally cause the command to return JSON output.
 
-.PARAMETER IncludeFullResponse
-This parameter specifies that the output of this command should be structured as an object with a reference to the output typically returned when this parameter is not specified, along with the responses from the service. This parameter may be replaced in the future with a more generic interface.
-
 .PARAMETER AADGraph
 This parameter specifies that instead of accessing Microsoft Graph, the command should make requests against Azure Active Directory Graph (AAD Graph). Note that most functionality of this command and other commands in the module is not compatible with AAD Graph; this parameter may be deprecated in the future.
 
+.PARAMETER PageSizePreference
+This parameter directs the command to issues requests that instruct the Graph API to return a specific maximum number of items in each page of results. This parameter will only take effect if Graph honors it for the particular request.
+
 .PARAMETER NoClientRequestId
 This parameter suppresses the automatic generation and submission of the 'client-request-id' header in the request used for troubleshooting with service-side request logs. This parameter is included only to enable complete control over the protocol as there would be very few use cases for not sending the request id.
+
+.PARAMETER NoPaging
+By default, when Invoke-GraphRequest issues a request and receives a response indicating that an incomplete result set for the request has been returned, the command issues additional requests to retrieve the full set of data until the Graph indicates that all data have been returned. When the NoPaging parameter is specified, Invoke-GraphCommand issues only one request. When NoPaging is specified, instead of directly returning the content of the response for Graph, the output result uses the format as that specified by the AsResponseDetail parameter; the content is exposed in the Data property of the result object.
+
+.PARAMETER NoRequest
+When NoRequest is specified, instead of the command issuing a request to the Graph and returning the response content as command output, no request is issued and the request URI including query parameters rather than the content is emitted as output. This parameter is a useful way to understnd the request URI that would be generated for a given set of parameter options including search filters, and could be used to supply a URI to other Graph clients that could issue the actual request.
+
+.PARAMETER NoSizeWarning
+Specify NoSizeWarning to suppress the warning emitted by the command if 1000 or more items are retrieved by the command and no paging parameters, i.e. First or Skip parameters, were specified. The warning is intended to communicate that returning such a large result set may not have been intended. Use this parameter to ensure that automated scripts do not output the warning when intentionally used on large result sets to return all results.
 
 .OUTPUTS
 TThe command returns the content of the HTTP response from the Graph endpoint. The result will depend on the documented response for the specified HTTP method parameter for the Graph URI. The results are formatted as either deserialized PowerShell objects, or, if the RawContent parameter is also specified, the literal content of the HTTP response. Because Graph responds to requests with JSON except in cases where content types such as images or other media are requested, use of the RawContent parameter will usually result in JSON output.
@@ -256,6 +283,12 @@ function Invoke-GraphRequest {
 
         [Switch] $Value,
 
+        [Switch] $Delta,
+
+        [string] $DeltaToken,
+
+        [Switch] $AsResponseDetail,
+
         [String] $OutputFilePrefix = $null,
 
         [String] $Query = $null,
@@ -280,14 +313,18 @@ function Invoke-GraphRequest {
 
         [switch] $RawContent,
 
-        [switch] $IncludeFullResponse,
-
         [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
         [switch] $AADGraph,
 
+        [int32] $PageSizePreference,
+
+        [switch] $NoPaging,
+
         [switch] $NoClientRequestId,
 
-        [switch] $NoRequest
+        [switch] $NoRequest,
+
+        [switch] $NoSizeWarning
     )
 
     begin {
@@ -312,12 +349,16 @@ function Invoke-GraphRequest {
 
         if ( $Query ) {
             if ( $Search -or $Filter -or $Select -or $OrderBy ) {
-                throw [ArgumentException]::new("'Filter', 'Search', 'OrderBy',  and 'Select' parameters may not specified when the 'Query' parameter is specified")
+                throw [ArgumentException]::new("'Filter', 'Search', 'OrderBy', and 'Select' parameters may not specified when the 'Query' parameter is specified")
             }
         }
 
         if ( $Descending.IsPresent -and ! $OrderBy ) {
             throw [ArgumentException]::new("'Descending' option was specified without 'OrderBy'")
+        }
+
+        if ( $Delta.IsPresent -and $DeltaToken ) {
+            throw [ArgumentException]::new("Only one of the Delta and DeltaToken parameters may be specified")
         }
 
         $orderQuery = if ( $OrderBy ) {
@@ -411,12 +452,16 @@ function Invoke-GraphRequest {
         $maxReturnedResults = $null
         $maxResultCount = if ( $pscmdlet.pagingparameters.first -ne $null -and $pscmdlet.pagingparameters.first -lt [Uint64]::MaxValue ) {
             $pscmdlet.pagingparameters.First | tee-object -variable maxReturnedResults
-        } else {
-            10
         }
 
         $skipCount = $firstIndex
         $results = @()
+
+        $deltaLink = $null
+        $nextLink = $null
+        $contextUri = $null
+
+        $responses = @()
     }
 
     process {
@@ -500,6 +545,19 @@ function Invoke-GraphRequest {
 
         $logger = $::.RequestLog |=> GetDefault
 
+        $startDelta = $Delta.IsPresent
+        $initialDeltaToken = $DeltaToken
+
+        $isDeltaUri = ( $::.GraphUtilities |=> IsDeltaUri $Uri )
+
+        $isDeltaRequest = $Delta.IsPresent -or $DeltaToken -or $isDeltaUri
+
+        $skipSizeWarning = $NoSizeWarning.IsPresent -or $pscmdlet.pagingparameters.Skip -or $NoPaging.IsPresent -or (
+            ( $pscmdlet.pagingparameters.First -ne $null ) -and
+            ( $pscmdlet.pagingparameters.First -gt 0 ) -and
+            ( $pscmdlet.pagingparameters.First -lt [int32]::MaxValue )
+        )
+
         while ( $graphRelativeUri -ne $null -and ($graphRelativeUri.tostring().length -gt 0) -and ($maxResultCount -eq $null -or $results.length -lt $maxResultCount) ) {
             if ( $graphType -eq ([GraphType]::AADGraph) ) {
                 $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
@@ -512,10 +570,10 @@ function Invoke-GraphRequest {
                     $null
                 }
 
-                $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent $NoRequest.IsPresent
+                $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent $NoRequest.IsPresent ( $startDelta -and ! $isDeltaUri ) $initialDeltaToken $PageSizePreference
                 $request |=> SetBody $Body
                 try {
-                    $request |=> Invoke $skipCount -logger $logger
+                    $request |=> Invoke $skipCount $PageSizePreference -logger $logger
                 } catch [System.Net.WebException] {
                     $statusCode = if ( $_.exception.response | gm statuscode -erroraction ignore ) {
                         $_.exception.response.statuscode
@@ -541,9 +599,20 @@ function Invoke-GraphRequest {
                     $contentTypeData = $graphResponse.RestResponse.ContentTypeData
                 }
 
-                $graphRelativeUri = $graphResponse.Nextlink
+                $nextLink = $graphResponse.NextLink
+                $deltaLink = $graphResponse.DeltaLink
+                if ( ! $contextUri ) {
+                    $contextUri = $graphResponse.ODataContext
+                }
 
-                if (! $useRawContent) {
+                $graphRelativeUri = if ( ! $NoPaging.IsPresent ) {
+                    $nextLink
+                }
+
+                $startDelta = $false
+                $initialDeltaToken = $null
+
+                if ( ! $useRawContent ) {
                     $entities = if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
                         @([PSCustomObject] $graphResponse.entities)
                     } elseif ($graphResponse.entities -is [HashTable]) {
@@ -561,11 +630,7 @@ function Invoke-GraphRequest {
                     }
                     $entities
                 } else {
-                    if ( $IncludeFullResponse.IsPresent -and ! $outputFilePrefix) {
-                        __ToResponseWithObject ($graphResponse |=> Content) $graphResponse
-                    } else {
-                        $graphResponse |=> Content
-                    }
+                    $graphResponse |=> Content
                 }
             } else {
                 $graphRelativeUri = $null
@@ -577,16 +642,29 @@ function Invoke-GraphRequest {
             if ( $graphResponse -and ( ! $useRawContent ) ) {
                 # Add __ItemContext to decorate the object with its source uri.
                 # Do this as a script method to prevent deserialization
-                $requestUriNoQuery = $request.Uri.GetLeftPart([System.UriPartial]::Path)
-                $ItemContextScript = [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=`"$requestUriNoQuery`"}")
+
+                $responseItemContext = $::.ItemResultHelper |=> GetItemContext $request.Uri $graphResponse.ODataContext
+
                 $content | foreach {
-                    $_ | add-member -membertype scriptmethod -name __ItemContext -value $ItemContextScript
+                    $sourceContext = if ( $_ | gm '@odata.context' -erroraction ignore ) {
+                        $::.ItemResultHelper |=> GetItemContext $request.Uri $_.'@odata.context'
+                    } else {
+                        $responseItemContext
+                    }
+                    $::.ItemResultHelper |=> SetItemContext $_ $sourceContext
                 }
+
+                $responses += $graphResponse
             }
 
             $results += $content
 
             $pageCount++
+
+            if ( $results.length -gt 1000 -and ! $skipSizeWarning ) {
+                write-warning "Graph is returning large result size of 1000 items or more; consider using filters or paging parameters to limit the amount of data returned."
+                $skipSizeWarning = $true
+            }
         }
 
         if ($pscmdlet.pagingparameters.includetotalcount.ispresent -eq $true) {
@@ -603,17 +681,27 @@ function Invoke-GraphRequest {
 
             $PSCmdlet.PagingParameters.NewTotalCount($count,  $accuracy)
         }
-
-        $filteredResults = if ( $maxReturnedResults ) {
-            $results | select -first $maxReturnedResults
-        } else {
-            $results
-        }
     }
 
     end {
-        if ( ! $OutputFilePrefix ) {
+        $filteredResults = if ( ! $useRawContent ) {
+            $results | where { $_ | gm id -erroraction ignore }
+        } else {
+            $results
+        }
+
+        $filteredResults = if ( $maxReturnedResults ) {
+            $filteredResults | select -first $maxReturnedResults
+        } else {
             $filteredResults
+        }
+
+        if ( ! $OutputFilePrefix ) {
+            if ( ! $useRawContent -and ( $AsResponseDetail.IsPresent -or $isDeltaRequest -or $NoPaging.IsPresent ) ) {
+                $::.ItemResultHelper |=> GetResponseDetail $filteredResults $contextUri $nextLink $deltaLink $responses
+            } else {
+                $filteredResults
+            }
         } else {
             $enumerableResults = if ( ! $contentTypeData['charset'] ) {
                 $byteResults = @($null, $null)

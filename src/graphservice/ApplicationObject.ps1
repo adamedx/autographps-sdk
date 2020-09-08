@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../client/Application)
 . (import-script ../common/GraphApplicationCertificate)
 . (import-script ../common/ScopeHelper)
 . (import-script ../graphservice/ApplicationAPI)
@@ -76,7 +77,7 @@ ScriptClass ApplicationObject {
         $publicClientRedirectUris = if ( $redirectUris -ne $null ) {
             $redirectUris
         } else {
-            , @('urn:ietf:wg:oauth:2.0:oob')
+            , @($::.Application.DefaultRedirectUri)
         }
 
         $publicClient = [PSCustomObject] @{
@@ -84,6 +85,7 @@ ScriptClass ApplicationObject {
         }
 
         $app.Add('publicClient', $publicClient)
+        $app.Add('isFallbackPublicClient', $true)
     }
 
     function __SetConfidentialApp($app, $redirectUris) {
@@ -91,7 +93,7 @@ ScriptClass ApplicationObject {
         $appRedirectUris = if ( $redirectUris ) {
             $redirectUris
         } else {
-            , @('http://localhost', 'urn:ietf:wg:oauth:2.0:oob')
+            , @($::.Application.DefaultRedirectUri)
         }
 
         $web = @{

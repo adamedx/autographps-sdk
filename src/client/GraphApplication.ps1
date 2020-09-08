@@ -42,12 +42,8 @@ ScriptClass GraphApplication {
         $this.RedirectUri = if ( $RedirectUri ) {
             $RedirectUri
         } else {
-            __GetDefaultRedirectUri $this.AppId
+            $::.Application.DefaultRedirectUri
         }
-    }
-
-    function __GetDefaultRedirectUri($appId) {
-        'urn:ietf:wg:oauth:2.0:oob'
     }
 
     function IsConfidential {

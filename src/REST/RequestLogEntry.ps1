@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script ../cmdlets/common/DisplayTypeFormatter)
+. (import-script HttpUtilities)
 
 ScriptClass RequestLogEntry {
     $displayProperties = $null
@@ -151,13 +152,14 @@ ScriptClass RequestLogEntry {
         }
     }
 
-    function LogError([System.Net.WebResponse] $response, $responseMessage ) {
+    function LogError($response, $responseMessage ) {
         $this.isError = $true
         try {
             $responseTimeStamp = [DateTimeOffset]::now
+            $responseHeaders = $::.HttpUtilities |=> NormalizeHeaders $response.headers
             $this.displayProperties.StatusCode = $response.statuscode.value__
-            $this.displayProperties.ResponseClientRequestId = $response.headers['client-request-id']
-            $this.displayProperties.Headers = $response.headers
+            $this.displayProperties.ResponseClientRequestId = $responseHeaders['client-request-id']
+            $this.displayProperties.ResponseHeaders = $responseHeaders
             $this.displayProperties.ResponseTimestamp = $responseTimestamp
             $this.displayProperties[$this.scriptclass.ERROR_RESPONSE_FIELD] = $responseMessage
             $this.displayProperties.ClientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
@@ -183,7 +185,7 @@ ScriptClass RequestLogEntry {
     }
 
     function __GetScrubbedHeaders([HashTable] $headers) {
-        $scrubbedHeaders = $headers.clone()
+        $scrubbedHeaders = $::.HttpUtilities |=> NormalizeHeaders ( $headers.clone() )
         'Authorization', 'Workload-Authorization' | foreach {
             if ( $headers.ContainsKey($_) ) {
                 $scrubbedHeaders[$_] = '<redacted>'

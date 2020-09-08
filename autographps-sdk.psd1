@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.21.1'
+ModuleVersion = '0.22.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -184,6 +184,7 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\src\common\GraphUtilities.ps1'
         '.\src\common\PreferenceHelper.ps1'
         '.\src\common\ProgressWriter.ps1'
+        '.\src\common\ResponseContext.ps1'
         '.\src\common\ScopeHelper.ps1'
         '.\src\common\Secret.ps1'
         '.\src\graphservice\ApplicationAPI.ps1'
@@ -192,6 +193,7 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\src\REST\GraphErrorRecorder.ps1'
         '.\src\REST\GraphRequest.ps1'
         '.\src\REST\GraphResponse.ps1'
+        '.\src\REST\HttpUtilities.ps1'
         '.\src\REST\RequestLog.ps1'
         '.\src\REST\RequestLogEntry.ps1'
         '.\src\REST\RESTRequest.ps1'
@@ -221,48 +223,38 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.20.0 Release Notes
+## AutoGraphPS-SDK 0.22.0 Release Notes
 
-This release includes improvements to existing commands and important fixes for major regressions in the previous release.
+This release adds helper libraries for interpreting OData protocol response metadata, simplifies result paging capabilities, adds a detailed Graph response output format for applications building complex scenarios that require protocol awareness, and adds preview support for delta query.
 
 ### New dependencies
 
-* Microsoft.Identity.Client (MSAL) 4.14.0
-* Microsoft.IdentityModel.Clients.ActiveDirectory (ADAL) 5.2.7
-* `platyPS 0.14.0` (optional): Tool-only dependency. Currently only required during CI.
+None.
 
 ### Breaking changes
 
-* The object pipeline is now explicitly supported by the `Invoke-GraphRequest` and `Get-GraphResource` commands -- graph URI's may be supplied to the pipeline and the commands will retrieve results for each URI. This may have subtle behavior differences from the previous implementation which modeled the Uri parameter as an array -- it is now a scalar object with multiple URIs available only from the pipeline and not by passing an array of URIs for the URI parameter.
+* The `IncludeFullResponse` parameter is no longer supported by the `Invoke-GraphRequest` command. It has been superseded by the `AsResponseDetail` parameter added in this release.
+* Applications created by New-GraphApplication no longer include 'http://localhost' and 'urn:ietf:wg:oauth:2.0:oob' by default. The only default URI specified for these application is 'https://login.microsoftonline.com/common/oauth2/nativeclient'.
 
 ### New features
 
-* The `Get-GraphResource` command's `Select` parameter has been renamed to `Property` to be consistent with related commands in `AutoGraphPS`. However the command retains a `Select` alias for compatibility with the original parameter name and to support users accustomed to the Graph terminology for projection of a record's fields.
-* The `Property` parameter (aka `Select` per above) is now the second positional parameter and `Filter` is no longer a positional parameter. Now you can use an invocation such as `Get-GraphResource me id, displayName` to get only specific properties. This change is made in part because `Filter` is seen as a less common and more advanced use case due to the need to know OData syntax. This is also consistent with other commands in related modules such as `AutoGraphPS` where `Property` is a positional parameter and `Filter` is not.
-# The `Invoke-GraphRequest` and `Get-GraphResource` commands have a `NoRequest` parameter that simply returns information about the request that would be made by the command rather than issuing the request.
+* `Invoke-GraphRequest` has several new parameters to support delta query and improved control over result pagin:
+  * `AsResponseDetail`: when specified, the output of the command rather than directly returning the deserialized objects from the Graph response instead returns a structure that includes a `Content` field that contains those objects. The other fields of the structure include additional details about the response, including conditionally populated fields such as `DeltaUri` and `DeltaToken` returned from delta query responses. The `Responses` field contains all of the detailed protocol responses from the graph that were issued as the command paged through result sets that required multiple requests to process.
+  * `Delta`: when this is specified, the command issues a delta query to Graph, i.e. a query that in addition to returning the results specified in the query also returns additional metadata in the form of a "delta URI" or "delta token" that can be used in subsequent requests to return only the information that has changed since the original query. When this parameter is specified, the results are returned in the format used when `AsResponseDetail` is specified.
+  * `DeltaToken`: This parameter provides a way to request only the incremental changes that would be returned compared to a previous request issued by this command using the Delta parameter.
+  * `NoPaging`: This disables the default behavior of the command that issues multiple requests to Graph until all results for the initial request have been retrieved. When this command is specified, the results are returned using the `AsResponseDetail` format so that the caller has the additional information beyond the request results necessary to retrieve the additional results if desired.
+  * `PageSizePreference`: directs the command to issues requests that instruct the Graph API to return a specific maximum number of items in each page of results. This parameter will only take effect if Graph honors it for the particular request.
+  * `ResponseContext` class: This class parses the `ODataContext` property, an [OData Context URL](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ContextURL) to return information about the type of the response and the URI used to make the request.
+  * New methods in `GraphUtilities`:
+    * `GetAbstractUriFromResponseObject` returns a close approximation of a URI that can be used to make a request for that response.
+    * `GetOptionalTypeFromResponseObject` returns the parsed type from `@odata.type` for a given object if it is present
+* AAD Application commands such as New-GraphApplication, Get-GraphApplication, Set-GraphApplicationConsent, etc., have been updated to use Graph API version v1.0 instead of beta since all application functionality is now present in v1.0.
 
 ### Fixed defects
 
-* The AAD Application-related commands including `Get-GraphApplication`, `New-GraphApplication`, and `Remove-GraphApplication` commands were unusable due to a breaking change to parameter names in the `0.19.0` release of this module for the `Invoke-GraphRequest` command. This release includes the fix. The affected commands were:
-
-    * `Get-GraphApplication`
-    * `Get-GraphApplicationCertificate`
-    * `Get-GraphApplicationConsent`
-    * `Get-GraphApplicationServicePrincipal`
-    * `New-GraphApplication`
-    * `New-GraphApplicationCertificate`
-    * `Register-GraphApplication`
-    * `Remove-GraphApplication`
-    * `Remove-GraphApplicationCertificate`
-    * `Remove-GraphApplicationConsent`
-    * `Set-GraphApplicationConsent`
-    * `Unregister-GraphApplication`
-
-* The `Invoke-GraphRequest` and `Get-GraphResource` commands incorrectly handled the `Expand` parameter in cases where the syntax `-Expand:$false` was used -- instead of being correctly interpreted as the parameter not being specified, it was treated as if it had been expressed `-Expand`, resulting in invalid queries to Graph. This is now fixed.
-* The `Descending` parameter of `Invoke-GraphRequest` and `Get-GraphResource` was ignored in the mainstream case of the `OrderBy` parameter not being hash table. This has been fixed.
-* The `Skip` parameter on `Invoke-GraphRequest` and `Get-GraphResource` would generate an incorrect URI when used resulting in a `BadRequest` response from Graph -- `Skip` was unusable. This issue has been fixed.
-
-None.
+* V2 public client authentication fails with mismatch reply URL when using a non-default app id unless localhost is configured as a reply url. The only workaround was to add localhost as a reply url to the app because no reply URL was specified by AutoGraphPS to the MSAL library when making the request. From an MSAL (and possibly from the protocol) standpoint, this is the equivalent of specifying no reply url. The fix is to specify whatever reply URL is configured in the local connection; by default, the app now uses 'https://login.microsoftonline.com/common/oauth2/nativeclient', which is now the default reply URL for applications created by New-GraphApplication.
+* Get-GraphLog and related commands did not function correctly on PowerShell 7 -- error responses were logged with incomplete fields including an invalid http status code of 0. This was due to the underlying http client type being different on PowerShell 7 vs. PowerShell 5, and the methods and properties were different for this class, resulting in errors when trying to read data from the response. This seemed to only be an issue for error responses. The fix ensures that the type differences are accounted for on the different platforms and restores the error logging.
+* Fixed an error where apps created by New-GraphApplication were registered such that device code authentication flow could not be used to sign-in with the apps. They were missing the fallbackPublicClient property for the app, which is apparently required for that flow to work. This is now fixed, and this restores device code flow login for these apps, which is critical for PowerShell 7 and later since they do not support the web browser controls used to sign in on PowerShell 5.
 
 '@
 

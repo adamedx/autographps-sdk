@@ -2,6 +2,10 @@
 
 ## To-do items -- prioritized
 
+* Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
+* When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
+* Add AllResults option to Get-GraphResource and Invoke-GraphRequest, and corresponding preference variable
+* Add Start-GraphDeltaJob
 * Add Get-LastGraphResponse with view parameters, remove LASTGRAPHITEMS
 * Add output types to as many commands as possible
 * Add batching support
@@ -99,7 +103,7 @@
 
 * Test schema and basic tests offline
 * Unauthenticated functional tests
-* Parse odata context
+
 * Background runspace jobs
 
 * Release
@@ -362,6 +366,8 @@
 * Use begin / process / end for Invoke-GraphRequest and Get-GraphResource commands
 * Add 'NoRequest' mode to output what request would have been made.
 * Make Uri argument a non-array
+* Add delta
+* Parse odata context
 
 ### Postponed
 

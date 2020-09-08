@@ -24,7 +24,7 @@ enum AppTenancy {
 
 ScriptClass ApplicationAPI {
     static {
-        const DefaultApplicationApiVersion beta
+        const DefaultApplicationApiVersion 'v1.0'
         $TenantToGraphServicePrincipal = @{}
     }
 
