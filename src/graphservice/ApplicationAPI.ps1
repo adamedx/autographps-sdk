@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../cmdlets/Invoke-GraphRequest)
+. (import-script ../cmdlets/Invoke-GraphApiRequest)
 . (import-script ../common/GraphApplicationCertificate)
 . (import-script ../common/ScopeHelper)
 
@@ -41,7 +41,7 @@ ScriptClass ApplicationAPI {
     }
 
     function CreateApp($appObject) {
-         Invoke-GraphRequest /applications -method POST -body $appObject -version $this.version -connection $this.connection
+         Invoke-GraphApiRequest /applications -method POST -body $appObject -version $this.version -connection $this.connection
     }
 
     function AddKeyCredentials($appObject, $appCertificate) {
@@ -63,7 +63,7 @@ ScriptClass ApplicationAPI {
             }
         ) | convertto-json -depth 6
 
-        Invoke-GraphRequest "/applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.version -connection $this.connection
+        Invoke-GraphApiRequest "/applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.version -connection $this.connection
     }
 
     function SetKeyCredentials($appId, $keyCredentials) {
@@ -71,7 +71,7 @@ ScriptClass ApplicationAPI {
             keyCredentials = $keyCredentials
         }
 
-        Invoke-GraphRequest "/applications/$appId" -method PATCH -Body $keyCredentialPatch -version $this.version -connection $this.connection | out-null
+        Invoke-GraphApiRequest "/applications/$appId" -method PATCH -Body $keyCredentialPatch -version $this.version -connection $this.connection | out-null
     }
 
     function RegisterApplication($appId, $isExternal) {
@@ -101,7 +101,7 @@ ScriptClass ApplicationAPI {
     }
 
     function NewAppServicePrincipal($appId) {
-        invoke-graphrequest /servicePrincipals -method POST -body @{appId=$appId} -Version $this.version -connection $this.connection -erroraction stop
+        Invoke-GraphApiRequest /servicePrincipals -method POST -body @{appId=$appId} -Version $this.version -connection $this.connection -erroraction stop
     }
 
     function GetAppServicePrincipal($appId, $properties, $errorAction = 'stop') {
@@ -109,21 +109,21 @@ ScriptClass ApplicationAPI {
         if ( $properties ) {
             $selectArguments['select'] = $properties
         }
-        $result = invoke-graphrequest /servicePrincipals -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction @selectArguments
+        $result = Invoke-GraphApiRequest /servicePrincipals -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction @selectArguments
         __NormalizeResult $result
     }
 
     function GetApplicationByAppId($appId, $errorAction = 'stop') {
-        $result = invoke-graphrequest /Applications -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction
+        $result = Invoke-GraphApiRequest /Applications -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction
         __NormalizeResult $result
     }
 
     function GetApplicationByObjectId($objectId, $errorAction = 'stop') {
-        invoke-graphrequest "/Applications/$objectId" -method GET -Version $this.version -connection $this.connection -erroraction $errorAction
+        Invoke-GraphApiRequest "/Applications/$objectId" -method GET -Version $this.version -connection $this.connection -erroraction $errorAction
     }
 
     function RemoveApplicationByObjectId($objectId, $errorAction = 'stop') {
-        invoke-graphrequest "/Applications/$objectId" -method DELETE -Version $this.version -connection $this.connection -erroraction $erroraction| out-null
+        Invoke-GraphApiRequest "/Applications/$objectId" -method DELETE -Version $this.version -connection $this.connection -erroraction $erroraction| out-null
     }
 
     function GetReducedPermissionsString($permissionsString, $permissionsToRemove) {
@@ -187,7 +187,7 @@ ScriptClass ApplicationAPI {
             write-verbose 'Processing user consent...'
             $grant = GetConsentGrantForApp $appId $consentUserId $DelegatedPermissions $consentRequiredPermissions $appWithRequiredResource
             if ( $grant ) {
-                Invoke-GraphRequest /oauth2PermissionGrants -method POST -body $grant -version $this.version -connection $this.connection | out-null
+                Invoke-GraphApiRequest /oauth2PermissionGrants -method POST -body $grant -version $this.version -connection $this.connection | out-null
             } else {
                 write-verbose 'Skipping consent because no consent was specified'
             }
@@ -275,7 +275,7 @@ ScriptClass ApplicationAPI {
         }
 
         foreach ( $assignment in $appRoleAssignments ) {
-            Invoke-GraphRequest /servicePrincipals/$($appSP.id)/appRoleAssignments -method POST -body $assignment -version $this.version -connection $this.connection | out-null
+            Invoke-GraphApiRequest /servicePrincipals/$($appSP.id)/appRoleAssignments -method POST -body $assignment -version $this.version -connection $this.connection | out-null
         }
     }
 
@@ -338,4 +338,6 @@ ScriptClass ApplicationAPI {
         }
     }
 }
+
+
 

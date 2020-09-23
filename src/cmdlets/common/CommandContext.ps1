@@ -62,7 +62,7 @@ ScriptClass CommandContext {
 
         __NormalizeParameters $requestParameters
 
-        Invoke-GraphRequest @requestParameters -version $this.version -connection $this.connection
+        Invoke-GraphApiRequest @requestParameters -version $this.version -connection $this.connection
     }
 
     function __NormalizeParameters([HashTable] $parameterTable) {
@@ -89,3 +89,4 @@ ScriptClass CommandContext {
         }
     }
 }
+

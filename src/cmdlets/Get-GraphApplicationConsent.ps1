@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script Invoke-GraphRequest)
+. (import-script Invoke-GraphApiRequest)
 . (import-script ../graphservice/ApplicationAPI)
 . (import-script common/ConsentHelper)
 . (import-script common/CommandContext)
@@ -79,7 +79,7 @@ function Get-GraphApplicationConsent {
 
             $RawContentArgument = @{ RawContent = $RawContent }
 
-            $response = Invoke-GraphRequest /oauth2PermissionGrants -method GET -Filter $filter -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
+            $response = Invoke-GraphApiRequest /oauth2PermissionGrants -method GET -Filter $filter -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
 
             if ( $response ) {
                 if ( ! $RawContent.IsPresent ) {
@@ -93,7 +93,7 @@ function Get-GraphApplicationConsent {
                 }
             }
 
-            $roleResponse = Invoke-GraphRequest /servicePrincipals/$appSPId/appRoleAssignedTo -method GET -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
+            $roleResponse = Invoke-GraphApiRequest /servicePrincipals/$appSPId/appRoleAssignedTo -method GET -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
 
             if ( $roleResponse ) {
                 if ( ! $RawContent.IsPresent ) {
@@ -111,3 +111,4 @@ function Get-GraphApplicationConsent {
 
     end {}
 }
+

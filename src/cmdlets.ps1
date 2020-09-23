@@ -27,7 +27,7 @@
 . (import-script cmdlets\Get-GraphLog)
 . (import-script cmdlets\Get-GraphLogOption)
 . (import-script cmdlets\Get-GraphToken)
-. (import-script cmdlets\Invoke-GraphRequest)
+. (import-script cmdlets\Invoke-GraphApiRequest)
 . (import-script cmdlets\New-GraphApplication)
 . (import-script cmdlets\New-GraphApplicationCertificate)
 . (import-script cmdlets\New-GraphConnection)
@@ -42,3 +42,4 @@
 . (import-script cmdlets\Set-GraphLogOption)
 . (import-script cmdlets\Test-Graph)
 . (import-script cmdlets\Unregister-GraphApplication)
+

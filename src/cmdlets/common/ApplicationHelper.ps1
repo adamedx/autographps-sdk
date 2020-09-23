@@ -13,7 +13,7 @@
 # limitations under the License.
 
 . (import-script DisplayTypeFormatter)
-. (import-script ../Invoke-GraphRequest)
+. (import-script ../Invoke-GraphApiRequest)
 
 ScriptClass ApplicationHelper {
     static {
@@ -94,9 +94,10 @@ ScriptClass ApplicationHelper {
             }
 
             write-verbose "Querying for applications at version $apiVersion' with uri '$uri, filter '$filter', select '$select'"
-            Invoke-GraphRequest -Method $method -Uri $uri @requestArguments -version $apiVersion
+            Invoke-GraphApiRequest -Method $method -Uri $uri @requestArguments -version $apiVersion
         }
     }
 }
 
 $::.ApplicationHelper |=> __initialize
+
