@@ -13,7 +13,7 @@
 # limitations under the License.
 
 . (import-script cmdlets\Clear-GraphLog)
-. (import-script cmdlets\Connect-Graph)
+. (import-script cmdlets\Connect-GraphApi)
 . (import-script cmdlets\Disconnect-Graph)
 . (import-script cmdlets\Find-GraphLocalCertificate)
 . (import-script cmdlets\Format-GraphLog)
@@ -42,4 +42,5 @@
 . (import-script cmdlets\Set-GraphLogOption)
 . (import-script cmdlets\Test-Graph)
 . (import-script cmdlets\Unregister-GraphApplication)
+
 

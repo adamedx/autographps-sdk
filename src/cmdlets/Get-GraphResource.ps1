@@ -31,7 +31,7 @@ Executing Get-GraphResource will result in a sign-in UX if the Connection object
 
 The command also supports paging, since the Graph endpoint can return large result sets in the thousands of objects over HTTP protocol. By default this command returns only the first 10 results in a request. The PowerShell standard paging parameters First and Skip can be used to control which subset of the results to return in a single invocation of Get-GraphResource.
 
-This command, like all commands in this module, uses the Connection object of the current graph by default to determine the Graph endpoint and credentials / permissions of an access token used to communicate to Graph. The current Graph's connection can be changed to use different credentials, permissions, or Graph endpoing by using the Connect-Graph command.
+This command, like all commands in this module, uses the Connection object of the current graph by default to determine the Graph endpoint and credentials / permissions of an access token used to communicate to Graph. The current Graph's connection can be changed to use different credentials, permissions, or Graph endpoing by using the Connect-GraphApi command.
 
 .PARAMETER Uri
 This parameter is required -- it is the URI relative to the current Graph of the graph resource on which to invoke the GET method. For example, if the goal was to issue a GET on the resource URI https://graph.microsoft.com/v1.0/users/user1@mydomain.org, assuming that the current Graph endpoint was http://graph.microsoft.com and the API version was 'v1.0', this parameter would be specified as 'users/user1@mydomain.org'. If the AbsoluteUri parameter is specified, the Uri parameter must be an absolute Uri (see the AbsoluteUri documentation below).
@@ -149,7 +149,7 @@ Note that the behavior of search is resource-specific -- it happens to return th
 
 .LINK
 Invoke-GraphRequest
-Connect-Graph
+Connect-GraphApi
 New-GraphConnection
 ConvertTo-JSON
 ConvertFrom-JSON
@@ -274,3 +274,4 @@ function Get-GraphResource {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+

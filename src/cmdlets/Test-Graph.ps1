@@ -87,7 +87,7 @@ This command returns the same information as in the first example, but by specif
 .LINK
 Get-GraphConnectionInfo
 New-GraphConnection
-Connect-Graph
+Connect-GraphApi
 #>
 function Test-Graph {
     [cmdletbinding(defaultparametersetname='currentconnection')]
@@ -158,3 +158,4 @@ function Test-Graph {
         $response.content
     }
 }
+

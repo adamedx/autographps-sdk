@@ -20,7 +20,7 @@
 . (import-script ../common/ScopeHelper)
 . (import-script common/PermissionParameterCompleter)
 
-function Connect-Graph {
+function Connect-GraphApi {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='msgraph')]
     param(
         [parameter(parametersetname='msgraph', position=0)]
@@ -195,4 +195,5 @@ function Connect-Graph {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Connect-Graph Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Connect-GraphApi Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
+

@@ -39,7 +39,7 @@ A PSCustomObject that contains the following fields:
 * Endpoint: The URI endpoint of the Microsoft Graph service instance, e.g.https://graph.microsoft.com
 * User: If the user has signed in, this is the user principal name of the user, i.e. user@domain.com
 * Status: The value Online or Offline, which can be set with Set-GraphConnectionStatus
-* Connection: The full GraphConnection PSCustomObject that can be used with the Connection parameter of commands like Get-GraphResource, Connect-Graph, etc.
+* Connection: The full GraphConnection PSCustomObject that can be used with the Connection parameter of commands like Get-GraphResource, Connect-GraphApi, etc.
 
 .NOTES
 In this module, there are no commands to create or find new Graph objects; the module does export interfaces for use in building commands that do this. So by default there is only one active Graph, and it points to the v1.0 Graph API version. Commands such as Get-GraphResource and Invoke-GraphRequest allow you to override the API version with a Version parameter while continuing to use the current Graph's connection information to access the Graph service.
@@ -55,7 +55,7 @@ Connection : @{ScriptClass=; NoBrowserUI=False; Scopes=System.String[]; Connecte
              PSTypeName=GraphConnection}
 
 .LINK
-Connect-Graph
+Connect-GraphApi
 New-GraphConnection
 #>
 function Get-GraphConnectionInfo {
@@ -84,3 +84,4 @@ function Get-GraphConnectionInfo {
 
     $::.GraphConnection |=> ToConnectionInfo $context.connection
 }
+

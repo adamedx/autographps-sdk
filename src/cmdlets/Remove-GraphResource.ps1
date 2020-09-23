@@ -71,7 +71,7 @@ This example pipes the output of Get-GraphResource for a user object to Remove-G
 Get-GraphResource
 Invoke-GraphRequest
 New-GraphConnection
-Connect-Graph
+Connect-GraphApi
 #>
 function Remove-GraphItem {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='High', positionalbinding=$false)]
@@ -178,3 +178,4 @@ function Remove-GraphItem {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+
