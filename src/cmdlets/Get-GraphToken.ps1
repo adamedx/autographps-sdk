@@ -128,7 +128,7 @@ function Get-GraphToken {
 
             # Note that we do some things for UX that should theoretically be handled
             # with parameter sets. We customize the behavior here in order to keep the
-            # parametersets identical to those for New-GraphConnection and Connect-Graph,
+            # parametersets identical to those for New-GraphConnection and Connect-GraphApi,
             # which makes it easy to maintain symmetry with those related commands.
             if ( ! $AuthenticationEndpointUri ) {
                 # Add this automatically if it wasn't specified so callers don't need to
@@ -159,3 +159,4 @@ function Get-GraphToken {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphToken Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
+
