@@ -16,8 +16,8 @@
 
 $cmdlets = @(
     'Clear-GraphLog'
-    'Connect-Graph'
-    'Disconnect-Graph'
+    'Connect-GraphApi'
+    'Disconnect-GraphApi'
     'Find-GraphLocalCertificate'
     'Format-GraphLog'
     'Get-GraphApplication'
@@ -54,3 +54,5 @@ $aliases = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
 $variables = @('GraphVerboseOutputPreference', 'LastGraphItems')
 
 export-modulemember -function $cmdlets -alias $aliases -variable $variables
+
+

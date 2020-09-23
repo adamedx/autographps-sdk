@@ -71,8 +71,8 @@ NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f55
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
     'Clear-GraphLog'
-    'Connect-Graph'
-    'Disconnect-Graph'
+    'Connect-GraphApi'
+    'Disconnect-GraphApi'
     'Find-GraphLocalCertificate'
     'Format-GraphLog'
     'Get-GraphApplication'
@@ -139,8 +139,8 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\src\client\GraphIdentity.ps1'
         '.\src\client\LogicalGraphManager.ps1'
         '.\src\cmdlets\Clear-GraphLog.ps1'
-        '.\src\cmdlets\Connect-Graph.ps1'
-        '.\src\cmdlets\Disconnect-Graph.ps1'
+        '.\src\cmdlets\Connect-GraphApi.ps1'
+        '.\src\cmdlets\Disconnect-GraphApi.ps1'
         '.\src\cmdlets\Find-GraphLocalCertificate.ps1'
         '.\src\cmdlets\Format-GraphLog.ps1'
         '.\src\cmdlets\Get-GraphApplication.ps1'

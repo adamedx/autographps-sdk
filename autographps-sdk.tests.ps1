@@ -32,8 +32,8 @@ Describe "Poshgraph application" {
         It "should export the exact same set of functions as are in the set of expected functions" {
             $expectedFunctions = @(
                 'Clear-GraphLog',
-                'Connect-Graph',
-                'Disconnect-Graph',
+                'Connect-GraphApi',
+                'Disconnect-GraphApi',
                 'Find-GraphLocalCertificate',
                 'Format-GraphLog',
                 'Get-GraphApplication',
@@ -91,5 +91,6 @@ Describe "Poshgraph application" {
         }
     }
 }
+
 
 

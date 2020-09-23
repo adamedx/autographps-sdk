@@ -19,18 +19,18 @@
 Removes cached access token credential information from the Connection object of the current Graph so that a new token must be acquired to access the Graph through the Connection
 
 .DESCRIPTION
-The Connect-GraphApi command explicitly invokes a sign-in for a Connection object such as that for the current Graph in order to obtain an access token that can then be used to make REST calls to the Graph. All commands that access the Graph service do this implicitly as well. The Disconnect-Graph command removes the acquired credential so that a new credential must be re-acquired before a successful request can be made to Graph.
+The Connect-GraphApi command explicitly invokes a sign-in for a Connection object such as that for the current Graph in order to obtain an access token that can then be used to make REST calls to the Graph. All commands that access the Graph service do this implicitly as well. The Disconnect-GraphApi command removes the acquired credential so that a new credential must be re-acquired before a successful request can be made to Graph.
 
 If the Connection has no associated credential, the command has no effect and succeeds.
 
 .PARAMETER Connection
-By default, Disconnect-Graph operates on the Connection object associated with the default Graph. To disconnect a connection other than the default, specify this parameter with a Connection object like that returned by the New-GraphConnection command.
+By default, Disconnect-GraphApi operates on the Connection object associated with the default Graph. To disconnect a connection other than the default, specify this parameter with a Connection object like that returned by the New-GraphConnection command.
 
 .OUTPUTS
 None.
 
 .EXAMPLE
-Disconnect-Graph
+Disconnect-GraphApi
 
 This command disconnects the current Graph's connection. Any subsequent Graph acccess will be preceded by a credential acquisition such as an interactive sign-in for delegated authentication scenarios or a non-interactive flow using a private key for app-only flows.
 
@@ -39,7 +39,7 @@ Connect-GraphApi
 New-GraphConnection
 Get-GraphConnectionInfo
 #>
-function Disconnect-Graph {
+function Disconnect-GraphApi {
     [cmdletbinding()]
     param(
         [PSTypeName('GraphConnection')] $Connection
@@ -52,4 +52,3 @@ function Disconnect-Graph {
         $::.GraphContext |=> DisconnectCurrentConnection
     }
 }
-

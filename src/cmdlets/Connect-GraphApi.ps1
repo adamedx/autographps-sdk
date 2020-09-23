@@ -196,4 +196,3 @@ function Connect-GraphApi {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Connect-GraphApi Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
-
