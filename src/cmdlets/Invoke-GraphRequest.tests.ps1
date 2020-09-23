@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-Describe 'Invoke-GraphRequest cmdlet' {
+Describe 'Invoke-GraphApiRequest cmdlet' {
     $expectedUserPrincipalName = 'searchman@megarock.org'
     $meResponseDataExpected = '"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","businessPhones":[],"displayName":"Search Man","givenName":null,"jobTitle":"Administrator","mail":null,"mobilePhone":null,"officeLocation":null,"preferredLanguage":null,"surname":null,"userPrincipalName":"{0}","id":"012345567-89ab-cdef-0123-0123456789ab"' -f $expectedUserPrincipalName
     $meResponseExpected = "{$meResponseDataExpected}"
@@ -40,8 +40,9 @@ Describe 'Invoke-GraphRequest cmdlet' {
         }
 
         It 'Should return an object with the expected user principal name' {
-            $meResponse = Invoke-GraphRequest me
+            $meResponse = Invoke-GraphApiRequest me
             $meResponse.userPrincipalName | Should Be $expectedUserPrincipalName
         }
     }
 }
+

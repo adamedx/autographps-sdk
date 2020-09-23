@@ -19,7 +19,7 @@
 Retrieves a log of the all of the REST requests to the Graph and associated responses issued by this module in the PowerShell session.
 
 .DESCRIPTION
-When a command such as Get-GraphResource or Invoke-GraphRequest issues a request to the Graph, the details of that request, including the
+When a command such as Get-GraphResource or Invoke-GraphApiRequest issues a request to the Graph, the details of that request, including the
 URI, http method, headers, along with details of the response are recorded as entries in a log. The Get-GraphLog command returns a collection
 of log entries, where each request is a log entry. This command is useful for troubleshooting / diagnosis, analyzing performance, or
 simply exploring and understanding the Graph protocol.
@@ -116,7 +116,7 @@ Set-GraphLogOption
 Get-GraphLogOption
 Clear-GraphLog
 Get-GraphResource
-Invoke-GraphRequest
+Invoke-GraphApiRequest
 Test-Graph
 #>
 function Get-GraphLog {
@@ -168,3 +168,4 @@ function Get-GraphLog {
         }
     }
 }
+

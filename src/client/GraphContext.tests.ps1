@@ -109,7 +109,7 @@ Describe 'GraphContext class' {
 
         It 'Should clear the authentication token from the original connection and not the new connection' {
             # This will get an auth token
-            Invoke-GraphRequest me | out-null
+            Invoke-GraphApiRequest me | out-null
 
             $firstConnection = (Get-GraphConnectionInfo).connection
             $firstResult = $mockAuthResult.Result
@@ -133,3 +133,4 @@ Describe 'GraphContext class' {
         }
     }
 }
+

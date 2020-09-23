@@ -19,7 +19,7 @@
 Sets options related to logging of the requests made by this module.
 
 .DESCRIPTION
-When a command such as Get-GraphResource or Invoke-GraphRequest issues a request to the Graph, the details of that request, including the
+When a command such as Get-GraphResource or Invoke-GraphApiRequest issues a request to the Graph, the details of that request, including the
 URI, http method, headers, along with details of the response are recorded as entries in a log. The Set-GraphLogOption command
 configures the the log's settings such as the amount of detail logged for each request and the size of the log.
 
@@ -84,7 +84,7 @@ Get-GraphLog
 Get-GraphLogOption
 Clear-GraphLog
 Get-GraphResource
-Invoke-GraphRequest
+Invoke-GraphApiRequest
 #>
 function Set-GraphLogOption {
     [cmdletbinding(positionalbinding=$false)]
@@ -104,3 +104,4 @@ function Set-GraphLogOption {
         $logger.LogLevel = $LogLevel
     }
 }
+

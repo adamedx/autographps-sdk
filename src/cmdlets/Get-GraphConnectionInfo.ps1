@@ -42,7 +42,7 @@ A PSCustomObject that contains the following fields:
 * Connection: The full GraphConnection PSCustomObject that can be used with the Connection parameter of commands like Get-GraphResource, Connect-GraphApi, etc.
 
 .NOTES
-In this module, there are no commands to create or find new Graph objects; the module does export interfaces for use in building commands that do this. So by default there is only one active Graph, and it points to the v1.0 Graph API version. Commands such as Get-GraphResource and Invoke-GraphRequest allow you to override the API version with a Version parameter while continuing to use the current Graph's connection information to access the Graph service.
+In this module, there are no commands to create or find new Graph objects; the module does export interfaces for use in building commands that do this. So by default there is only one active Graph, and it points to the v1.0 Graph API version. Commands such as Get-GraphResource and Invoke-GraphApiRequest allow you to override the API version with a Version parameter while continuing to use the current Graph's connection information to access the Graph service.
 
 .EXAMPLE
 Get-GraphConnectionInfo
@@ -84,4 +84,5 @@ function Get-GraphConnectionInfo {
 
     $::.GraphConnection |=> ToConnectionInfo $context.connection
 }
+
 
