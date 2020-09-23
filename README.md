@@ -82,13 +82,13 @@ If you're using a script module (`.psm1` file) or simply a plain PowerShell `ps1
 
 ## Reference
 
-The full list of cmdlets in this module is given below; note that `Invoke-GraphRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-Graph` to request additional permissions as described in the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference). Additional cmdlets will be added to this module as development matures.
+The full list of cmdlets in this module is given below; note that `Invoke-GraphRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-GraphApi` to request additional permissions as described in the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference). Additional cmdlets will be added to this module as development matures.
 
 | Cmdlet (alias)                       | Description                                                                                                                                             |
 |--------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Clear-GraphLog                       | Clear the log of REST requests to Graph made by the module's commands                                                                                   |
-| Connect-Graph                        | Establishes authentication and authorization context used across cmdlets for the current graph                                                          |
-| Disconnect-Graph                     | Clears authentication and authorization context used across cmdlets for the current graph                                                               |
+| Connect-GraphApi                     | Establishes authentication and authorization context used across cmdlets for the current graph                                                          |
+| Disconnect-GraphApi                  | Clears authentication and authorization context used across cmdlets for the current graph                                                               |
 | Find-GraphLocalCertificate           | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph                                    |
 | Format-GraphLog (fgl)                | Emits the Graph request log to the console in a manner optimized for understanding Graph and troubleshooting requests                                   |
 | Get-GraphApplication                 | Gets a list of Azure AD applications in the tenant                                                                                                      |

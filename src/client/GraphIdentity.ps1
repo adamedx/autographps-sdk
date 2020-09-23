@@ -209,4 +209,3 @@ ScriptClass GraphIdentity {
 }
 
 $::.GraphIdentity |=> __initialize
-
