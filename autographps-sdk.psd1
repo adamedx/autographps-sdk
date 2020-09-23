@@ -85,7 +85,7 @@ FunctionsToExport = @(
     'Get-GraphLog'
     'Get-GraphLogOption'
     'Get-GraphToken'
-    'Invoke-GraphRequest'
+    'Invoke-GraphApiRequest'
     'New-GraphApplication'
     'New-GraphApplicationCertificate'
     'New-GraphConnection'
@@ -153,7 +153,7 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\src\cmdlets\Get-GraphLog.ps1'
         '.\src\cmdlets\Get-GraphLogOption.ps1'
         '.\src\cmdlets\Get-GraphToken.ps1'
-        '.\src\cmdlets\Invoke-GraphRequest.ps1'
+        '.\src\cmdlets\Invoke-GraphApiRequest.ps1'
         '.\src\cmdlets\New-GraphApplication.ps1'
         '.\src\cmdlets\New-GraphApplicationCertificate.ps1'
         '.\src\cmdlets\New-GraphConnection.ps1'
@@ -236,9 +236,11 @@ None.
 * The following commands have been renamed:
   `Connect-Graph => Connect-GraphApi`
   `Disconnect-Graph => Disconnect-GraphApi`
-  `Invoke-Graph => Invoke-GraphApi`
+  `Invoke-GraphRequest => Invoke-GraphApiRequest`
 
 ### New features
+
+None.
 
 ### Fixed defects
 

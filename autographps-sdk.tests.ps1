@@ -46,7 +46,7 @@ Describe "Poshgraph application" {
                 'Get-GraphLog',
                 'Get-GraphLogOption',
                 'Get-GraphToken',
-                'Invoke-GraphRequest',
+                'Invoke-GraphApiRequest',
                 'New-GraphApplication',
                 'New-GraphApplicationCertificate',
                 'New-GraphConnection',
