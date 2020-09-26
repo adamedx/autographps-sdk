@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ The operator can then correct the error in the original Invoke-GraphApiRequest c
 .LINK
 Get-GraphResource
 Invoke-GraphApiRequest
-Remove-GraphItem
+Remove-GraphResource
 #>
 function Get-GraphError {
     [cmdletbinding()]

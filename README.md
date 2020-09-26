@@ -110,7 +110,7 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Remove-GraphApplication              | Deletes an Azure AD application                                                                                                                         |
 | Remove-GraphApplicationCertificate   | Removes a public key from the application for a certificate allowed to authenticate as that application                                                 |
 | Remove-GraphApplicationConsent       | Removes consent grants for an Azure AD application                                                                                                      |
-| Remove-GraphItem                     | Makes generic ``DELETE`` requests to a specified Graph URI to delete items                                                                              |
+| Remove-GraphResource                 | Makes generic ``DELETE`` requests to a specified Graph URI to delete resources                                                                          |
 | Set-GraphApplicationConsent          | Sets a consent grant for an Azure AD application                                                                                                        |
 | Set-GraphConnectionStatus            | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service                    |
 | Set-GraphLogOption                   | Sets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |

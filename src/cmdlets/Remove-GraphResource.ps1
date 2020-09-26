@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@
 Deletes resources such as users, groups, drive items, or any other resource from the Graph.
 
 .DESCRIPTION
-The Remove-GraphItem command issues a DELETE request against the URI for one or more Graph objects; if successful, any such objects will be deleted from the Graph according to Graph REST API semantics.
+The Remove-GraphResource command issues a DELETE request against the URI for one or more Graph objects; if successful, any such objects will be deleted from the Graph according to Graph REST API semantics.
 
 .PARAMETER Uri
 If this parameter is specified and the TargetItem parameter is not specified, this Uri specifies a URI relative to the current Graph's API version. For example, if the current Graph endpoint is https://graph.microsoft.com and the API version is v1.0, a Uri parameter of 'users/user1@domain.org' specifies that this command must delete the object at https://graph.microsoft.com/v1.0/users/user1@domain.org. Note that the version may be overridden by the Version parameter (see the documentation for Version below). If the AbsoluteUri parameter is specified, the Uri parameter must be an absolute Uri (see the AbsoluteUri documentation below). If TargetItem is specified, the Uri parameter is interpreted as the "parent" of the objects to delete -- see the documentation for the TargetItem parameter.
 
 .PARAMETER TargetItem
-TargetItem may be any object returned by Get-GraphResource or Invoke-GraphApiRequest. Remove-GraphItem will attempt to delete that object from the Graph. If both Uri and TargetItem are specified, the Uri and TargetItem parameters are intepreted together as the path of the item to delete, i.e. for each specified TargetItem, a relative URI consisting of the Uri parameter succeeded with a segment named with the TargetItem object's id property. The TargetItem parameter accepts one or more objects from the pipeline as objects to delete.
+TargetItem may be any object returned by Get-GraphResource or Invoke-GraphApiRequest. Remove-GraphResource will attempt to delete that object from the Graph. If both Uri and TargetItem are specified, the Uri and TargetItem parameters are intepreted together as the path of the item to delete, i.e. for each specified TargetItem, a relative URI consisting of the Uri parameter succeeded with a segment named with the TargetItem object's id property. The TargetItem parameter accepts one or more objects from the pipeline as objects to delete.
 
 .PARAMETER Filter
 Specifies a filter using the OData specification to filter the items to be deleted from the Uri or TargetItem that is specified. This parameter may not be supported by all Graph Uris.
@@ -54,7 +54,7 @@ Specifies that for this command invocation, an access token with delegated permi
 None.
 
 .EXAMPLE
-Remove-GraphItem groups/19f1afdc-376c-48b7-9125-54ac8e73e3a3
+Remove-GraphResource groups/19f1afdc-376c-48b7-9125-54ac8e73e3a3
 
 Confirm
 Are you sure you want to perform this action?
@@ -64,16 +64,16 @@ Performing the operation "DELETE" on target "groups/19f1afdc-376c-48b7-9125-54ac
 This example removes the group object with ID 19f1afdc-376c-48b7-9125-54ac8e73e3a3; it ultimately makes a DELETE request against the URI https://graph.microsoft.com/v1.0/groups/19f1afdc-376c-48b7-9125-54ac8e73e3a3. By default, the command asks for confirmation, so a prompt was displayed that requires the user to enter "A" or "Y" to proceed.
 
 .EXAMPLE
-Get-GraphResource user/26a733c2-e87f-4030-a128-a8968c6ee204 | Remove-GraphItem -Confirm:$false
+Get-GraphResource user/26a733c2-e87f-4030-a128-a8968c6ee204 | Remove-GraphResource -Confirm:$false
 
-This example pipes the output of Get-GraphResource for a user object to Remove-GraphItem. This results in the deletion of that user object. Because the Confirm option was specified with the value '$false", no confirmation prompt was displayed and the command proceeded to delete the target without further user interaction.
+This example pipes the output of Get-GraphResource for a user object to Remove-GraphResource. This results in the deletion of that user object. Because the Confirm option was specified with the value '$false", no confirmation prompt was displayed and the command proceeded to delete the target without further user interaction.
 
 Get-GraphResource
 Invoke-GraphApiRequest
 New-GraphConnection
 Connect-GraphApi
 #>
-function Remove-GraphItem {
+function Remove-GraphResource {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='High', positionalbinding=$false)]
     param(
         [parameter(position=0)]
@@ -177,6 +177,5 @@ function Remove-GraphItem {
     end {}
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
-
+$::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphResource Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
 
