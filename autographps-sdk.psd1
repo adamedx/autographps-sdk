@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.23.0'
+ModuleVersion = '0.24.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -94,7 +94,7 @@ FunctionsToExport = @(
     'Remove-GraphApplication'
     'Remove-GraphApplicationCertificate'
     'Remove-GraphApplicationConsent'
-    'Remove-GraphItem'
+    'Remove-GraphResource'
     'Set-GraphApplicationConsent'
     'Set-GraphConnectionStatus'
     'Set-GraphLogOption'
@@ -223,9 +223,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.23.0 Release Notes
+## AutoGraphPS-SDK 0.24.0 Release Notes
 
-This release renames some commands that are already in use by modules commonly utilized by the community.
+This release renames the Remove-GraphItem command to Remove-GraphResource as it was intended to be named.
 
 ### New dependencies
 
@@ -233,10 +233,8 @@ None.
 
 ### Breaking changes
 
-* The following commands have been renamed:
-  `Connect-Graph => Connect-GraphApi`
-  `Disconnect-Graph => Disconnect-GraphApi`
-  `Invoke-GraphRequest => Invoke-GraphApiRequest`
+* The following command has been renamed:
+  `Remove-GraphItem => Remove-GraphResource`
 
 ### New features
 
