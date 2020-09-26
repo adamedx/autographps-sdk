@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script Invoke-GraphRequest)
+. (import-script Invoke-GraphApiRequest)
 . (import-script common/ItemResultHelper)
 . (import-script common/PermissionParameterCompleter)
 
@@ -23,7 +23,7 @@ Issues a REST HTTP request with the GET method for a URI on a Graph endpoint
 .DESCRIPTION
 The Get-GraphResource command issues a GET method request to the Graph in the context of a given graph resource URI and Graph API version. To learn about the capabilities of the Graph API and the URIs that can be supplied to this command to access resources such as users, devices, documents, and relationships, see the Graph API documentation: https://docs.microsoft.com/en-us/graph/api/overview?view=graph-rest-1.0.
 
-Get-GraphResource obtains information from the Graph by making GET HTTP requests to a Graph endpoint such as https://graph.microsoft.com. To make the request, the command obtains a token for a Graph endpoint and then issues the GET request against a URI based on the endpoint and returns the resulting response. The graph resource URI, HTTP Headers, and other Microsoft Graph-specific parameters of the request may all be specified by this command. Get-GraphResource allows the issuing of any valid GET request to Microsoft Graph. Because the command is limited to GET requests, it can only be used to read data from the Graph. To perform write operations, see the Invoke-GraphRequest command which takes a set of parameters similar to Get-GraphResource but also allows the HTTP method to be specified; it defaults to the GET method as in the Get-GraphResource command, but other methods may be specified in order to accomplish write operations.
+Get-GraphResource obtains information from the Graph by making GET HTTP requests to a Graph endpoint such as https://graph.microsoft.com. To make the request, the command obtains a token for a Graph endpoint and then issues the GET request against a URI based on the endpoint and returns the resulting response. The graph resource URI, HTTP Headers, and other Microsoft Graph-specific parameters of the request may all be specified by this command. Get-GraphResource allows the issuing of any valid GET request to Microsoft Graph. Because the command is limited to GET requests, it can only be used to read data from the Graph. To perform write operations, see the Invoke-GraphApiRequest command which takes a set of parameters similar to Get-GraphResource but also allows the HTTP method to be specified; it defaults to the GET method as in the Get-GraphResource command, but other methods may be specified in order to accomplish write operations.
 
 The output of the command is typically the Content field of the response as deserialized objects returned by the API call; the format may be altered through command parameters such as RawContent to provide output in other formats such as the exact stream returned by Graph. If the HTTP status code of the response does not indicate success (i.e. it is not 2XX), an exception will be thrown.
 
@@ -31,7 +31,7 @@ Executing Get-GraphResource will result in a sign-in UX if the Connection object
 
 The command also supports paging, since the Graph endpoint can return large result sets in the thousands of objects over HTTP protocol. By default this command returns only the first 10 results in a request. The PowerShell standard paging parameters First and Skip can be used to control which subset of the results to return in a single invocation of Get-GraphResource.
 
-This command, like all commands in this module, uses the Connection object of the current graph by default to determine the Graph endpoint and credentials / permissions of an access token used to communicate to Graph. The current Graph's connection can be changed to use different credentials, permissions, or Graph endpoing by using the Connect-Graph command.
+This command, like all commands in this module, uses the Connection object of the current graph by default to determine the Graph endpoint and credentials / permissions of an access token used to communicate to Graph. The current Graph's connection can be changed to use different credentials, permissions, or Graph endpoing by using the Connect-GraphApi command.
 
 .PARAMETER Uri
 This parameter is required -- it is the URI relative to the current Graph of the graph resource on which to invoke the GET method. For example, if the goal was to issue a GET on the resource URI https://graph.microsoft.com/v1.0/users/user1@mydomain.org, assuming that the current Graph endpoint was http://graph.microsoft.com and the API version was 'v1.0', this parameter would be specified as 'users/user1@mydomain.org'. If the AbsoluteUri parameter is specified, the Uri parameter must be an absolute Uri (see the AbsoluteUri documentation below).
@@ -148,8 +148,8 @@ This example issues a GET request to search the me/messages resource -- this res
 Note that the behavior of search is resource-specific -- it happens to return the results in reverse chronological order of the 'receivedDateTime' property, and currently this cannot be overridden in the request to Graph. Behaviors peculiar to a given resource may only be understood by consulting that specific resource's documentation as found in the Graph API documentation: https://docs.microsoft.com/en-us/graph/api/overview?view=graph-rest-1.0.
 
 .LINK
-Invoke-GraphRequest
-Connect-Graph
+Invoke-GraphApiRequest
+Connect-GraphApi
 New-GraphConnection
 ConvertTo-JSON
 ConvertFrom-JSON
@@ -267,10 +267,12 @@ function Get-GraphResource {
 
         $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
 
-        $uris | Invoke-GraphRequest @requestArguments | tee-object -variable localResult
+        $uris | Invoke-GraphApiRequest @requestArguments | tee-object -variable localResult
 
         $targetResultVariable.value = $localResult
     }
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+
+

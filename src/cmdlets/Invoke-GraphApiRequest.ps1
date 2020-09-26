@@ -27,17 +27,17 @@
 Issues a REST HTTP request for a URI on a Graph endpoint
 
 .DESCRIPTION
-The Invoke-GraphRequest command issues a request to the Graph in the context of a given graph resource URI and Graph API version. To learn about the capabilities of the Graph API and the URIs that can be supplied to this command to access resources such as users, devices, documents, and relationships, see the Graph API documentation: https://docs.microsoft.com/en-us/graph/api/overview?view=graph-rest-1.0.
+The Invoke-GraphApiRequest command issues a request to the Graph in the context of a given graph resource URI and Graph API version. To learn about the capabilities of the Graph API and the URIs that can be supplied to this command to access resources such as users, devices, documents, and relationships, see the Graph API documentation: https://docs.microsoft.com/en-us/graph/api/overview?view=graph-rest-1.0.
 
-Invoke-GraphRequest obtains information from or alters objects in the Graph by making requests to a Graph endpoint such as https://graph.microsoft.com. To make the request, the command obtains a token for a Graph endpoint, issues the specified REST HTTP method request to the endpoint and returns the resulting response. The graph resource URI, HTTP method, HTTP Headers, and other Microsoft Graph-specific parameters of the request may all be specified by this command. Invoke-GraphRequest allows the issuing of any valid request to Microsoft Graph. As such, it can be used not just to read data from the Graph, but also to create new objects, invoke function and actions, update objects, and delete them.
+Invoke-GraphApiRequest obtains information from or alters objects in the Graph by making requests to a Graph endpoint such as https://graph.microsoft.com. To make the request, the command obtains a token for a Graph endpoint, issues the specified REST HTTP method request to the endpoint and returns the resulting response. The graph resource URI, HTTP method, HTTP Headers, and other Microsoft Graph-specific parameters of the request may all be specified by this command. Invoke-GraphApiRequest allows the issuing of any valid request to Microsoft Graph. As such, it can be used not just to read data from the Graph, but also to create new objects, invoke function and actions, update objects, and delete them.
 
 The output of the command is typically the Content field of the response as deserialized objects returned by the API call; the format may be altered through command parameters such as RawContent to provide output in other formats such as the exact stream returned by Graph. If the HTTP status code of the response does not indicate success (i.e. it is not 2XX), an exception will be thrown.
 
-Executing Invoke-GraphRequest will result in a sign-in UX if the Connection object of the current Graph or one explicitly supplied to the command through the Connection parameter does not already have a token associated with it. Once the token is acquired for the Connection object, it is used to issue the request to Graph. Subsequent invocations of this or any other commands in the module that use the same connection will silently use the previously acquired token without a UX, so there will be no additional sign-in UX.
+Executing Invoke-GraphApiRequest will result in a sign-in UX if the Connection object of the current Graph or one explicitly supplied to the command through the Connection parameter does not already have a token associated with it. Once the token is acquired for the Connection object, it is used to issue the request to Graph. Subsequent invocations of this or any other commands in the module that use the same connection will silently use the previously acquired token without a UX, so there will be no additional sign-in UX.
 
-The command also supports paging, since the Graph endpoint can return large result sets in the thousands of objects over HTTP protocol. By default this command returns only a limited number of results in the request depending on the particular request. The PowerShell standard paging parameters First and Skip can be used to control the number and overall subset of the results to return in a single invocation of Invoke-GraphRequest.
+The command also supports paging, since the Graph endpoint can return large result sets in the thousands of objects over HTTP protocol. By default this command returns only a limited number of results in the request depending on the particular request. The PowerShell standard paging parameters First and Skip can be used to control the number and overall subset of the results to return in a single invocation of Invoke-GraphApiRequest.
 
-This command, like all commands in this module, uses the Connection object of the current graph by default to determine the Graph endpoint and credentials / permissions of an access token used to communicate to Graph. The current Graph's connection can be changed to use different credentials, permissions, or Graph endpoing by using the Connect-Graph command.
+This command, like all commands in this module, uses the Connection object of the current graph by default to determine the Graph endpoint and credentials / permissions of an access token used to communicate to Graph. The current Graph's connection can be changed to use different credentials, permissions, or Graph endpoing by using the Connect-GraphApi command.
 
 .PARAMETER Uri
 This parameter is required -- it is the URI relative to the current Graph of the Graph resource on which to invoke the REST method. For example, if the goal was to invoke a method on the resource URI https://graph.microsoft.com/v1.0/users/user1@mydomain.org, assuming that the current Graph endpoint was http://graph.microsoft.com and the API version was 'v1.0', this parameter would be specified as 'users/user1@mydomain.org'. If the AbsoluteUri parameter is specified, the Uri parameter must be an absolute Uri (see the AbsoluteUri documentation below).
@@ -87,7 +87,7 @@ Skip specifies that Graph should not return the first N results in the HTTP resp
 The Value parameter may be used when the result is itself metadata describing some data, such as an image. To obtain the actual data, rather than the metadata, specify Value. This is particularly useful for obtaining pictures for instance, e.g. me/photo.
 
 .PARAMETER Delta
-The Delta parameter specifies that this command should issue a request to get incremental changes for the specified URI. For example, if the caller needs information about new security groups as they are created, they could use this command to periodically issue a query with the URI /groups which would return all currently existing groups, and compare this list to the result from a previous response to the same query. Such an approach is expensive, particularly for tenants with a large number of security groups. To avoid this, use the Delta parameter in the first command invocation. The response will conform to that used when the AsResponseDetail parameter is specified, and will include not just the results in the Content field, but also the fields DeltaToken and DeltaUri. The DeltaUri field can be used any subsequent request to Invoke-GraphRequest -- the response to such a request will include only the data that have changed between the time all data was retrieved from the initial request with Delta specified and now. Because these responses include only the changes, this approach to obtaining the changes to security groups is dramatically more efficient.
+The Delta parameter specifies that this command should issue a request to get incremental changes for the specified URI. For example, if the caller needs information about new security groups as they are created, they could use this command to periodically issue a query with the URI /groups which would return all currently existing groups, and compare this list to the result from a previous response to the same query. Such an approach is expensive, particularly for tenants with a large number of security groups. To avoid this, use the Delta parameter in the first command invocation. The response will conform to that used when the AsResponseDetail parameter is specified, and will include not just the results in the Content field, but also the fields DeltaToken and DeltaUri. The DeltaUri field can be used any subsequent request to Invoke-GraphApiRequest -- the response to such a request will include only the data that have changed between the time all data was retrieved from the initial request with Delta specified and now. Because these responses include only the changes, this approach to obtaining the changes to security groups is dramatically more efficient.
 
 .PARAMETER DeltaToken
 This parameter provides a way to request only the incremental changes that would be returned compared to a previous request issued by this command using the Delta parameter. Its value can be obtained from the result of that initial request in the DeltaToken field of its response. When DeltaToken is specified, the URI parameter should simply be the same URI specified in the initial request that used the Delta parameter. Alternatively, the DeltaUri field can be specified as the URI for subsequent requests and the DeltaToken field should not be specified in that case.
@@ -97,11 +97,11 @@ By default, unless the NoPaging, Delta, or DeltaToken parameters are specified, 
   * Content: contains the equivalent of the output emitted when the AsResponseDetail format is not used.
   * ContextUri (optional): contains the OData context URI
   * DeltaUri (optional): a URI that can be used with this command to get only incremental changes from this response. Only returned once all data are processed for a request issued with the Delta parameter
-  * AbsoluteDeltaUri (optional): Same as DeltaUri, but uses an absolute URI format that can only be used as the Invoke-GraphRequest Uri parameter when the AbsoluteUri parameter is specified
+  * AbsoluteDeltaUri (optional): Same as DeltaUri, but uses an absolute URI format that can only be used as the Invoke-GraphApiRequest Uri parameter when the AbsoluteUri parameter is specified
   * DeltaToken (optional): a state token that can be used with this command to get only incremental changes from this response, and returned only when DeltaUri would be returned
   * NextUri (optional): a URI used to retrieve the next page of results, empty if there are no next results. This can be used to do custom paging, or to indicate that there are more results left to retrieve.
-  * AbsoluteNextUri (optional): Same as NextUri, but uses an absolute URI format that can only be as the Invoke-GraphRequest Uri parameter when the AbsoluteUri parameter is specified
-  * Responses: This contains the actual HTTP protocol responses from Graph along with additional details about each response. There will always be at least one response if the command is successful, and more than one of Invoke-GraphRequest makes additional requests as part of paging through partial responses returned by Graph
+  * AbsoluteNextUri (optional): Same as NextUri, but uses an absolute URI format that can only be as the Invoke-GraphApiRequest Uri parameter when the AbsoluteUri parameter is specified
+  * Responses: This contains the actual HTTP protocol responses from Graph along with additional details about each response. There will always be at least one response if the command is successful, and more than one of Invoke-GraphApiRequest makes additional requests as part of paging through partial responses returned by Graph
 
 .PARAMETER OutputFilePrefix
 The OutputFilePrefix parameter specifies that rather than emitting the results to the PowerShell pipeline, each result should be written to a file name prefixed with the value of the OutputFilePrefix. The parameter value may be a path to a directory, or simply a name with no path separator. If there is more than one item in the result, the base file name for that result will end with a unique integer identifier within the result set. The file extension will be 'json' unless the result is of another content type, in which case the command will attempt to determine the extension from the content type returned in the HTTP response. If the content type cannot be determined, then the file extension will be '.dat'.
@@ -143,7 +143,7 @@ This parameter directs the command to issues requests that instruct the Graph AP
 This parameter suppresses the automatic generation and submission of the 'client-request-id' header in the request used for troubleshooting with service-side request logs. This parameter is included only to enable complete control over the protocol as there would be very few use cases for not sending the request id.
 
 .PARAMETER NoPaging
-By default, when Invoke-GraphRequest issues a request and receives a response indicating that an incomplete result set for the request has been returned, the command issues additional requests to retrieve the full set of data until the Graph indicates that all data have been returned. When the NoPaging parameter is specified, Invoke-GraphCommand issues only one request. When NoPaging is specified, instead of directly returning the content of the response for Graph, the output result uses the format as that specified by the AsResponseDetail parameter; the content is exposed in the Data property of the result object.
+By default, when Invoke-GraphApiRequest issues a request and receives a response indicating that an incomplete result set for the request has been returned, the command issues additional requests to retrieve the full set of data until the Graph indicates that all data have been returned. When the NoPaging parameter is specified, Invoke-GraphCommand issues only one request. When NoPaging is specified, instead of directly returning the content of the response for Graph, the output result uses the format as that specified by the AsResponseDetail parameter; the content is exposed in the Data property of the result object.
 
 .PARAMETER NoRequest
 When NoRequest is specified, instead of the command issuing a request to the Graph and returning the response content as command output, no request is issued and the request URI including query parameters rather than the content is emitted as output. This parameter is a useful way to understnd the request URI that would be generated for a given set of parameter options including search filters, and could be used to supply a URI to other Graph clients that could issue the actual request.
@@ -155,7 +155,7 @@ Specify NoSizeWarning to suppress the warning emitted by the command if 1000 or 
 TThe command returns the content of the HTTP response from the Graph endpoint. The result will depend on the documented response for the specified HTTP method parameter for the Graph URI. The results are formatted as either deserialized PowerShell objects, or, if the RawContent parameter is also specified, the literal content of the HTTP response. Because Graph responds to requests with JSON except in cases where content types such as images or other media are requested, use of the RawContent parameter will usually result in JSON output.
 
 .EXAMPLE
-Invoke-GraphRequest me
+Invoke-GraphApiRequest me
 
     id                : 82f53da9-b996-4227-b268-c20564ceedf7
     officeLocation    : 7/3191
@@ -173,7 +173,7 @@ In this example a request is made to retrieve 'me', which stands for the user re
 The specification of the single parameter value 'me' in this case results in a request based on the current graph, which in this example was the endpoint https://graph.microsoft.com with API version 1.0. The request then is made against the URI https://graph.microsoft.com/v1.0/me.
 
 .EXAMPLE
-Invoke-GraphRequest users -Filter "startsWith(displayName, 'Alan')" -Select userPrincipalName, displayName
+Invoke-GraphApiRequest users -Filter "startsWith(displayName, 'Alan')" -Select userPrincipalName, displayName
 
     userPrincipalName         displayName
     -----------------         -----------
@@ -184,7 +184,7 @@ Invoke-GraphRequest users -Filter "startsWith(displayName, 'Alan')" -Select user
 This command issues a GET request to retrieve all users in the tenant whose displayName properties start with 'Alan' by specifying an OData query filter with the Filter parameter. The output of the command consists of just those users, and only includes the userPrinicpal and displayName properties in the output because those properties were specified with the Select parameter.
 
 .EXAMPLE
-Invoke-GraphRequest me/messages -Search 'Michigan conference' -First 3 -Descending | Select-Object receivedDateTime, subject
+Invoke-GraphApiRequest me/messages -Search 'Michigan conference' -First 3 -Descending | Select-Object receivedDateTime, subject
 
 receivedDateTime     subject
 ----------------     -------
@@ -198,7 +198,7 @@ Note that the behavior of search is resource-specific -- it happens to return th
 
 .EXAMPLE
 $credential = (Get-Credential -Message 'New user password' -Username 'katjo').getnetworkcredential()
-PS C:\> Invoke-GraphRequest users POST @{displayName='Katherine Johnson';passwordProfile=@{password=$credential.password};mailNickName=$credential.username;accountEnabled=$true;userPrincipalName="$($credential.username)@nasa.org";jobTitle='Rocket Scientist'}
+PS C:\> Invoke-GraphApiRequest users POST @{displayName='Katherine Johnson';passwordProfile=@{password=$credential.password};mailNickName=$credential.username;accountEnabled=$true;userPrincipalName="$($credential.username)@nasa.org";jobTitle='Rocket Scientist'}
 
 id                : 16ab7cf8-e7ef-4dde-a282-adcbf183a12a
 @odata.context    : https://graph.microsoft.com/v1.0/$metadata#users/
@@ -206,12 +206,12 @@ jobTitle          : Rocket Scientist
 userPrincipalName : katjo@nasa.org
 displayName       : Katherine Johnson
 
-This example uses Graph to create a user. First it uses the PowerShell command Get-Credential to obtain a password for the user and store it in the variable $credential. Next, the Invoke-GraphRequest command is specified with the resource 'users' and a method POST -- this means that a POST request will be issued ot the resource. For this resource, Graph interprets a POST as a request to create the user specified by the body, which is the last parameter of the command.
+This example uses Graph to create a user. First it uses the PowerShell command Get-Credential to obtain a password for the user and store it in the variable $credential. Next, the Invoke-GraphApiRequest command is specified with the resource 'users' and a method POST -- this means that a POST request will be issued ot the resource. For this resource, Graph interprets a POST as a request to create the user specified by the body, which is the last parameter of the command.
 
 The body is given a PowerShell object that conforms to the documented structure given in the documentation for the users resource. Because Graph requires the body to be specified as JSON, the PowerShell object is serialized into JSON before sending it to Graph. To understand how PowerShell objects are serialized and deserialized to and from JSON, see the standard ConvertTo-Json and ConvertFrom-Json commands.
 
 .EXAMPLE
-Invoke-GraphRequest groups POST @{mailNickName='AccessGroup6';displayName='Group 6 Access';mailEnabled=$false;securityEnabled=$true}
+Invoke-GraphApiRequest groups POST @{mailNickName='AccessGroup6';displayName='Group 6 Access';mailEnabled=$false;securityEnabled=$true}
 
 id                           : d90733b4-8aba-40e0-86ac-8eb0ede2b799
 displayName                  : Group 6 Access
@@ -227,7 +227,7 @@ mailNickname                 : AccessGroup6
 This example creates a group via POST, and passes the body as a PowerShell hashtable which will be converted to JSON when communicating with Graph.
 
 .EXAMPLE
-Invoke-GraphRequest groups POST '
+Invoke-GraphApiRequest groups POST '
 {
      "mailNickName":    "AccessGroup7",
      "displayName":     "Group 7 Access",
@@ -250,12 +250,12 @@ In this example a group is created and the body that defines the group is specif
 
 .LINK
 Get-GraphResource
-Connect-Graph
+Connect-GraphApi
 New-GraphConnection
 ConvertTo-JSON
 ConvertFrom-JSON
 #>
-function Invoke-GraphRequest {
+function Invoke-GraphApiRequest {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, supportsshouldprocess=$true, defaultparametersetname='MSGraphDefaultConnection')]
     param(
         [parameter(position=0, valuefrompipeline=$true, mandatory=$true)]
@@ -727,4 +727,6 @@ function Invoke-GraphRequest {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphRequest Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphApiRequest Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
+
+

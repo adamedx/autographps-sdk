@@ -109,14 +109,14 @@ Describe 'GraphContext class' {
 
         It 'Should clear the authentication token from the original connection and not the new connection' {
             # This will get an auth token
-            Invoke-GraphRequest me | out-null
+            Invoke-GraphApiRequest me | out-null
 
             $firstConnection = (Get-GraphConnectionInfo).connection
             $firstResult = $mockAuthResult.Result
 
             # This will reconnect and should get a different token
             # rather than reusing the earlier token.
-            { connect-graph user.read | out-null } | Should Not Throw
+            { connect-graphapi user.read | out-null } | Should Not Throw
 
             Assert-VerifiableMock
 
@@ -133,3 +133,4 @@ Describe 'GraphContext class' {
         }
     }
 }
+

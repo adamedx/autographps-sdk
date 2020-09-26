@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script Invoke-GraphRequest)
+. (import-script Invoke-GraphApiRequest)
 . (import-script common/PermissionParameterCompleter)
 
 
@@ -27,7 +27,7 @@ The Remove-GraphItem command issues a DELETE request against the URI for one or 
 If this parameter is specified and the TargetItem parameter is not specified, this Uri specifies a URI relative to the current Graph's API version. For example, if the current Graph endpoint is https://graph.microsoft.com and the API version is v1.0, a Uri parameter of 'users/user1@domain.org' specifies that this command must delete the object at https://graph.microsoft.com/v1.0/users/user1@domain.org. Note that the version may be overridden by the Version parameter (see the documentation for Version below). If the AbsoluteUri parameter is specified, the Uri parameter must be an absolute Uri (see the AbsoluteUri documentation below). If TargetItem is specified, the Uri parameter is interpreted as the "parent" of the objects to delete -- see the documentation for the TargetItem parameter.
 
 .PARAMETER TargetItem
-TargetItem may be any object returned by Get-GraphResource or Invoke-GraphRequest. Remove-GraphItem will attempt to delete that object from the Graph. If both Uri and TargetItem are specified, the Uri and TargetItem parameters are intepreted together as the path of the item to delete, i.e. for each specified TargetItem, a relative URI consisting of the Uri parameter succeeded with a segment named with the TargetItem object's id property. The TargetItem parameter accepts one or more objects from the pipeline as objects to delete.
+TargetItem may be any object returned by Get-GraphResource or Invoke-GraphApiRequest. Remove-GraphItem will attempt to delete that object from the Graph. If both Uri and TargetItem are specified, the Uri and TargetItem parameters are intepreted together as the path of the item to delete, i.e. for each specified TargetItem, a relative URI consisting of the Uri parameter succeeded with a segment named with the TargetItem object's id property. The TargetItem parameter accepts one or more objects from the pipeline as objects to delete.
 
 .PARAMETER Filter
 Specifies a filter using the OData specification to filter the items to be deleted from the Uri or TargetItem that is specified. This parameter may not be supported by all Graph Uris.
@@ -69,9 +69,9 @@ Get-GraphResource user/26a733c2-e87f-4030-a128-a8968c6ee204 | Remove-GraphItem -
 This example pipes the output of Get-GraphResource for a user object to Remove-GraphItem. This results in the deletion of that user object. Because the Confirm option was specified with the value '$false", no confirmation prompt was displayed and the command proceeded to delete the target without further user interaction.
 
 Get-GraphResource
-Invoke-GraphRequest
+Invoke-GraphApiRequest
 New-GraphConnection
-Connect-Graph
+Connect-GraphApi
 #>
 function Remove-GraphItem {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='High', positionalbinding=$false)]
@@ -170,7 +170,7 @@ function Remove-GraphItem {
 
         write-verbose "DELETE requested for target URI '$targetUri'"
         if ( $pscmdlet.shouldprocess($targetUri, 'DELETE') ) {
-            Invoke-GraphRequest $targetUri -Method DELETE @commonRequestArguments -AbsoluteUri:$useFullyQualifiedUri | out-null
+            Invoke-GraphApiRequest $targetUri -Method DELETE @commonRequestArguments -AbsoluteUri:$useFullyQualifiedUri | out-null
         }
     }
 
@@ -178,3 +178,5 @@ function Remove-GraphItem {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Remove-GraphItem Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
+
+

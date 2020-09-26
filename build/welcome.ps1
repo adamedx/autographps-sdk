@@ -16,8 +16,9 @@ write-host -foregroundcolor cyan "`nWelcome to AutoGraphPS-SDK!`n"
 write-host "To get started, try executing any of the following commands:"
 @(
     [PSCustomObject]@{Command="    Test-Graph";Purpose="# Retrieves diagnostic information from a Microsoft Graph Service endpoint"}
-    [PSCustomObject]@{Command="    Connect-Graph";Purpose="# Establishes a convenient connection context; no need to re-auth for each command"}
-    [PSCustomObject]@{Command="    Get-GraphItem me";Purpose="# Gets the user profile of the authenticated user"}
+    [PSCustomObject]@{Command="    Connect-GraphApi";Purpose="# Establishes a convenient connection context; no need to re-auth for each command"}
+    [PSCustomObject]@{Command="    Get-GraphResource me";Purpose="# Gets the user profile of the authenticated user"}
     [PSCustomObject]@{Command="    Get-GraphToken";Purpose="# Gets information about Graph API versions such as v1.0, beta, etc."}
 ) | format-table -wrap -hidetableheaders | out-host
 write-host ''
+
