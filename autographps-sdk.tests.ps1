@@ -55,14 +55,12 @@ Describe "Poshgraph application" {
                 'Remove-GraphApplication',
                 'Remove-GraphApplicationCertificate',
                 'Remove-GraphApplicationConsent',
-                'Remove-GraphItem',
+                'Remove-GraphResource',
                 'Set-GraphApplicationConsent',
                 'Set-GraphConnectionStatus',
                 'Set-GraphLogOption',
                 'Test-Graph',
                 'Unregister-GraphApplication')
-
-            $manifest.FunctionsToExport.count | Should BeExactly $expectedFunctions.length
 
             $verifiedExportsCount = 0
 
@@ -70,9 +68,30 @@ Describe "Poshgraph application" {
                 if ( $manifest.FunctionsToExport -contains $_ ) {
                     $verifiedExportsCount++
                 }
+
+                { get-command $_ | out-null } | Should Not Throw
             }
 
+            $manifest.FunctionsToExport.count | Should BeExactly $expectedFunctions.length
+
             $verifiedExportsCount | Should BeExactly $expectedFunctions.length
+        }
+
+        It "should export the exact same set of aliases as are in the set of expected aliases" {
+            $expectedAliases = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
+
+            $manifest.AliasesToExport.count | Should BeExactly $expectedAliases.length
+
+            $verifiedExportsCount = 0
+
+            $expectedAliases | foreach {
+                if ( $manifest.AliasesToExport -contains $_ ) {
+                    $verifiedExportsCount++
+                }
+                $_ | get-alias | select -expandproperty resolvedcommandname | get-command | select -expandproperty module | select -expandproperty name | Should Be $manifest.Name
+            }
+
+            $verifiedExportsCount | Should BeExactly $expectedAliases.length
         }
 
         It "Should export the exact same set of variables that are in the set of expected variables" {
