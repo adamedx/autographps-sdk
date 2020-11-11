@@ -310,9 +310,8 @@ ScriptClass ResponseContext {
             $selectList = $parsedParameters.SelectList
             $parameterString = $parsedParameters.Parameters
 
-            # This may be a type cast -- if so, it has a qualified name,
-            # which always has a '.', so look for that to identify the cast
-            if ( $matches.name.Contains('.') ) {
+            # This may be a type cast
+            if ( __IsTypeCast $matches.name ) {
                 $parsedSelect = __ParseSelectList $parameterString
                 $selectedProperties = $parsedSelect.SelectedProperties
                 $expandedProperties = $parsedSelect.ExpandedProperties
@@ -321,7 +320,7 @@ ScriptClass ResponseContext {
             } else {
                 $name = $matches.name
 
-                if ( $parameterString.Contains('.') ) {
+                if ( __IsTypeCast $parameterString ) {
                     $parsedSelect = __ParseSelectList $selectList
                     $selectedProperties = $parsedSelect.SelectedProperties
                     $expandedProperties = $parsedSelect.ExpandedProperties
@@ -348,7 +347,7 @@ ScriptClass ResponseContext {
             }
         } else {
             # There are no parameters, the name is just the segment or a type cast
-            if ( $segment.Contains('.') ) {
+            if ( __IsTypeCast $segment ) {
                 $typeCast = $segment
                 $typeCastOnly = $true
             } else {
@@ -367,6 +366,15 @@ ScriptClass ResponseContext {
                 IsRefCollection = $isRefCollection
             }
         }
+    }
+
+    function __IsTypeCast($name) {
+        # See if this is a type cast -- if so, it has a qualified name,
+        # which always has a '.', so look for that to identify the cast --
+        # also make, sure it doesn't have a "'" character which would indicate its
+        # actually an id, e.g. part of a uri like
+        # https://graph.microsoft.com/v1.0/$metadata#users('adamedw@hotmail.com')/contacts
+        $name.Contains('.') -and ! $name.StartsWith("'")
     }
 
     function __ParseParameters($parameterString) {
