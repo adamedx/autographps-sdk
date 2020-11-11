@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.24.0'
+ModuleVersion = '0.25.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -223,9 +223,10 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.24.0 Release Notes
+## AutoGraphPS-SDK 0.25.0 Release Notes
 
-This release renames the Remove-GraphItem command to Remove-GraphResource as it was intended to be named.
+This release addresses a major regression for Microsoft Accounts only (not Azure Active Directory accounts) and
+updates authentication parameters to best practices.
 
 ### New dependencies
 
@@ -233,14 +234,13 @@ None.
 
 ### Breaking changes
 
-* The following command has been renamed:
-  `Remove-GraphItem => Remove-GraphResource`
-
 ### New features
 
 None.
 
 ### Fixed defects
+
+* [Many scenarios broken for Microsoft Accounts only but not broken for AAD accounts](https://github.com/adamedx/autographps-sdk/issues/53)
 
 '@
 
