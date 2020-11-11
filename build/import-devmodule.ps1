@@ -13,7 +13,7 @@
 # limitations under the License.
 
 [cmdletbinding()]
-param($InitialCommand = $null, [switch] $NoNewShell, [switch] $Wait, [switch] $ReuseConsole, [switch] $FromSource, [switch] $ReturnExitCode, $Path)
+param($InitialCommand = $null, [switch] $NoNewShell, [switch] $Wait, [switch] $ReuseConsole, [switch] $FromSource, [switch] $ReturnExitCode, [switch] $NoImport, $Path)
 
 . "$psscriptroot/common-build-functions.ps1"
 
@@ -59,12 +59,20 @@ if (! $NoNewShell.ispresent ) {
         $moduleName
     }
 
+    $importArgument = if ( ! $NoImport.IsPresent ) {
+        "import-module '$moduleArg'"
+    } else {
+        ''
+    }
+
+    $shellArguments = '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath'; $importArgument; $InitialCommand"
+
     # Strange things occur when I use -NoNewWindow:$false -- going to just
     # duplicate the command with the additional -NoNewWindow param :(
     $processStatus = if ( ! $NoNewWindow ) {
-        start-process $PowerShellExecutable '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleArg'; $InitialCommand" -Wait:$shouldWait -passthru
+        start-process $PowerShellExecutable $shellArguments -Wait:$shouldWait -passthru
     } else {
-        start-process $PowerShellExecutable '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath';import-module '$moduleArg'; $InitialCommand" -Wait:$shouldWait -nonewwindow -passthru
+        start-process $PowerShellExecutable $shellArguments -Wait:$shouldWait -nonewwindow -passthru
     }
     write-host "Successfully launched environment for module '$moduleName' in a new PowerShell console."
 
