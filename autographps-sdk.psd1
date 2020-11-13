@@ -234,13 +234,20 @@ None.
 
 ### Breaking changes
 
+* Old default appid is deprecated, superseded with new appid ac70e3e2-a821-4d19-839c-b8af4515254b
+* When signing in with an app other than the default appid, personal Microsoft Accounts cannot sign in without specifying `AllowMSA` via `Connect-GraphApi`
+* `New-GraphApplication` now creates single tenant applications by default for public client apps
+
 ### New features
+
+* `Connect-GraphApi` and `New-GraphConnection` support the `AllowMSA` parameter to enable MSA accounts when signing in with an app other than the default app
 
 None.
 
 ### Fixed defects
 
 * [Many scenarios broken for Microsoft Accounts only but not broken for AAD accounts](https://github.com/adamedx/autographps-sdk/issues/53)
+* Sign-in for single tenant applications was broken
 
 '@
 

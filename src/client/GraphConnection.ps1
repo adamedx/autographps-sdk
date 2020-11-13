@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -104,11 +104,11 @@ ScriptClass GraphConnection {
     }
 
     static {
-        function NewSimpleConnection([string] $graphType = 'MSGraph', [string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null, $userAgent = $null ) {
+        function NewSimpleConnection([string] $graphType = 'MSGraph', [string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null, $userAgent = $null, $allowMSA = $true ) {
             $endpoint = new-so GraphEndpoint $cloud $graphType $null $null $authProtocol
             $app = new-so GraphApplication $::.Application.DefaultAppId
             $identity = if ( ! $anonymous ) {
-                new-so GraphIdentity $app $endpoint $tenantName
+                new-so GraphIdentity $app $endpoint $tenantName $allowMSA
             }
 
             new-so GraphConnection $endpoint $identity $ScopeNames $false $userAgent

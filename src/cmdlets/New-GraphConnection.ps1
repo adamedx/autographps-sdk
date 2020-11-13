@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -106,6 +106,11 @@ function New-GraphConnection {
         [parameter(parametersetname='customendpoint')]
         [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
 
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='customendpoint')]
+        [ValidateSet('Auto', 'AzureADOnly', 'AzureADAndPersonalMicrosoftAccount')]
+        [string] $AccountType = 'Auto',
+
         [parameter(parametersetname='aadgraph', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
         [switch] $AADGraph,
@@ -146,15 +151,25 @@ function New-GraphConnection {
 
         $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $AuthProtocol $validatedCloud $GraphType
 
+        $noAppSpecified = $false
+
         $targetAppId = if ( $appId ) {
             $appId
         } else {
+            $noAppSpecified = $true
             $::.Application.DefaultAppId
+        }
+
+        $allowMSA = $AccountType -eq 'AzureADAndPersonalMicrosoftAccount'
+
+        if ( ! $allowMSA -and $AccountType -eq 'Auto' ) {
+            # The default app supports MSA
+            $allowMSA = $noAppSpecified
         }
 
         if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
             write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'
-            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $computedAuthProtocol -useragent $UserAgent
+            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $computedAuthProtocol -useragent $UserAgent -allowMSA $allowMSA
         } else {
             $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
                 write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
@@ -197,7 +212,7 @@ function New-GraphConnection {
             }
 
             $app = new-so GraphApplication $targetAppId $AppRedirectUri $appSecret $NoninteractiveAppOnlyAuth.IsPresent
-            $identity = new-so GraphIdentity $app $graphEndpoint $adjustedTenantId
+            $identity = new-so GraphIdentity $app $graphEndpoint $adjustedTenantId $allowMSA
             new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent
         }
     }

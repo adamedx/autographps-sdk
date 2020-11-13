@@ -121,7 +121,16 @@ ScriptClass ItemResultHelper -ArgumentList $__DefaultResultVariable {
                 }
 "@
 
-            [ScriptBlock]::Create($scriptText)
+            # In case of unpredictable issues with the context uri response from Graph,
+            # fall back to a simpler implementation of ItemContext that simply includes
+            # the original request uri
+            $script = try {
+                [ScriptBlock]::Create($scriptText)
+            } catch {
+                [ScriptBlock]::Create("[PSCustomObject] @{RequestUri=`"$requestUriNoQuery`"}")
+            }
+
+            $script
         }
 
         function SetItemContext([object[]] $items, [ScriptBlock] $contextScript) {

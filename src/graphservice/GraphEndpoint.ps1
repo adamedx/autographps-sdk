@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -141,11 +141,13 @@ ScriptClass GraphEndpoint {
         $this.GraphResourceUri = if ( $graphResourceUri ) { $graphResourceUri } else { $this.Graph }
     }
 
-    function GetAuthUri($tenantName) {
-        $tenantSegment = if ( ! $TenantName ) {
+    function GetAuthUri($tenantName, $allowMSA) {
+        $tenantSegment = if ( $allowMSA -and ! $tenantName ) {
             'common'
-        } else {
+        } elseif ( $tenantName ) {
             $tenantName
+        } else {
+            'organizations'
         }
 
         $components = @($this.Authentication.tostring().trimend('/'))
