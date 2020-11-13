@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -107,11 +107,7 @@ function New-GraphApplication {
     $computedTenancy = if ( $Tenancy -ne ([AppTenancy]::Auto) ) {
         $Tenancy
     } else {
-        if( $Confidential.IsPresent ) {
-            [AppTenancy]::SingleTenant
-        } else {
-            [AppTenancy]::AnyTenant
-        }
+        [AppTenancy]::SingleTenant
     }
 
     $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
