@@ -234,7 +234,7 @@ None.
 
 ### Breaking changes
 
-* Old default appid is deprecated, superseded with new appid ac70e3e2-a821-4d19-839c-b8af4515254b
+* Old default appid is deprecated, superseded with new appid ac70e3e2-a821-4d19-839c-b8af4515254b. Impact includes the need to re-consent to any desired permissions that were granted to the previous appid.
 * When signing in with an app other than the default appid, personal Microsoft Accounts cannot sign in without specifying `AllowMSA` via `Connect-GraphApi`
 * `New-GraphApplication` now creates single tenant applications by default for public client apps
 
