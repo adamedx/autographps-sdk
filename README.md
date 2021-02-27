@@ -82,7 +82,7 @@ If you're using a script module (`.psm1` file) or simply a plain PowerShell `ps1
 
 ## Reference
 
-The full list of cmdlets in this module is given below; note that `Invoke-GraphRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-GraphApi` to request additional permissions as described in the [Graph permissions documentation](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference). Additional cmdlets will be added to this module as development matures.
+The full list of cmdlets in this module is given below; note that `Invoke-GraphRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-GraphApi` to request additional permissions as described in the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference).
 
 | Cmdlet (alias)                       | Description                                                                                                                                             |
 |--------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
