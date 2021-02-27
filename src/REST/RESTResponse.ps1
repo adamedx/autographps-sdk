@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,11 +50,14 @@ ScriptClass RESTResponse {
         function GetErrorResponseDetails($response) {
             if ( $response -ne $null ) {
                 $responseType = $response.GetType()
-                $responseStream = switch ( $responseType ) {
-                    [System.Net.WebResponse] {
-                        $responseStream = $response.getresponsestream()
+                $responseStream = switch ( $responseType.FullName ) {
+                    'System.Net.WebResponse' {
+                        $response.getresponsestream()
                     }
-                    [System.Net.Http.HttpResponseMessage] {
+                    'System.Net.HttpWebResponse' {
+                        $response.getresponsestream()
+                    }
+                    'System.Net.Http.HttpResponseMessage' {
                         # No need to read the stream for this type, so
                         # we won't return it
                     }
