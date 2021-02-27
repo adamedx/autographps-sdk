@@ -225,8 +225,8 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS-SDK 0.25.0 Release Notes
 
-This release addresses a major regression for Microsoft Accounts only (not Azure Active Directory accounts) and
-updates authentication parameters to best practices.
+This release addresses a major regression for Microsoft Accounts only (not Azure Active Directory accounts),
+updates authentication parameters to best practices, and includes minor bug fixes and improvements.
 
 ### New dependencies
 
@@ -242,8 +242,6 @@ None.
 
 * `Connect-GraphApi` and `New-GraphConnection` support the `AllowMSA` parameter to enable MSA accounts when signing in with an app other than the default app
 * Objects emitted by `Invoke-GraphApiRequest` and related commands now have a type `GraphResponseObject` included in `PSTypeNames` to enable reliable pipeline binding and eventual improvements in output formatting.
-
-None.
 
 ### Fixed defects
 
