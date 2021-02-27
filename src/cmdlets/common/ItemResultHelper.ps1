@@ -136,6 +136,7 @@ ScriptClass ItemResultHelper -ArgumentList $__DefaultResultVariable {
         function SetItemContext([object[]] $items, [ScriptBlock] $contextScript) {
             $items | foreach {
                 $_ | add-member -membertype scriptmethod -name __ItemContext -value $contextScript
+                $_.pstypenames.Add('GraphResponseObject')
             }
         }
     }
