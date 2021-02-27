@@ -138,6 +138,23 @@ Describe 'ResponseContext class' {
             $responseContext.Root | Should Be 'users'
         }
 
+        It "Should not confuse a quoted id with a typecast as in the case of 10.2 Collection of Entities - {context-url}#Collection({type-name})" {
+            $requestUri = 'https://graph.microsoft.com/v1.0/me/contacts'
+            $contextUri = "https://graph.microsoft.com/v1.0/$metadata#users('myuser@mydomain.com')/contacts"
+
+            $responseContext = new-so ResponseContext $requestUri $contextUri |=> ToPublicContext
+
+            $responseContext.GraphUri | Should Be '/users/myuser@mydomain.com/contacts'
+            $responseContext.TypelessGraphUri | Should Be '/users/myuser@mydomain.com/contacts'
+            $responseContext.AbsoluteGraphUri | Should Be 'https://graph.microsoft.com/v1.0/users/myuser@mydomain.com/contacts'
+            $responseContext.ContextUrl | Should Be $contextUri
+            $responseContext.RequestUrl | Should Be $requestUri
+            $responseContext.TypeCast | Should Be $null
+            $responseContext.IsEntity | Should Be $false
+            $responseContext.IsCollectionMember | Should Be $false
+            $responseContext.Root | Should Be 'users'
+        }
+
         It 'Should correctly parse 10.3 Entity - {context-url}#{entity-set}/$entity' {
             $requestUri = 'https://graph.microsoft.com/v1.0/users/userid'
             $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users/$entity'

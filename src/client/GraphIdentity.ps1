@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ ScriptClass GraphIdentity {
     $TenantName = $null
     $TenantDisplayId = $null
     $TenantDisplayName = $null
+    $AllowMSA = $false
 
     static {
         $AuthProvidersInitialized = $false
@@ -34,12 +35,14 @@ ScriptClass GraphIdentity {
         }
     }
 
-    function __initialize([PSCustomObject] $app, [PSCustomObject] $graphEndpoint, [String] $tenantName) {
+    function __initialize([PSCustomObject] $app, [PSCustomObject] $graphEndpoint, [String] $tenantName, [boolean] $allowMSA) {
         $this.App = $app
         $this.GraphEndpoint = $graphEndpoint
         $this.TenantName = $tenantName
+        $this.AllowMSA = $allowMSA
 
         $defaultAppId = $::.Application.DefaultAppId.tostring()
+
         $chinaEndpointUri = ( $::.GraphEndpoint |=> GetCloudEndpoint ChinaCloud MSGraph ).Graph.tostring().trimend('/')
 
         if ( ( $graphEndpoint.Graph.tostring().trimend('/') -eq $chinaEndpointUri ) -and
@@ -83,7 +86,7 @@ ScriptClass GraphIdentity {
 
     function ClearAuthentication($groupId) {
         if ( $this.token -and $this.app.AuthType -eq 'Delegated' ) {
-            $authUri = $this.graphEndpoint |=> GetAuthUri $this.TenantName
+            $authUri = $this.graphEndpoint |=> GetAuthUri $this.TenantName $this.AllowMSA
 
             $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
             $authContext = $providerInstance |=> GetAuthContext $this.app $this.graphEndpoint.GraphResourceUri $authUri $groupId
@@ -101,7 +104,7 @@ ScriptClass GraphIdentity {
 
         write-verbose ("Adding scopes to request: {0}" -f ($scopes -join ';'))
 
-        $authUri = $graphEndpoint |=> GetAuthUri $this.TenantName
+        $authUri = $graphEndpoint |=> GetAuthUri $this.TenantName $this.AllowMSA
         write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
         write-verbose ("Using redirect uri (reply url) '{0}'" -f $this.App.RedirectUri)
 

@@ -246,7 +246,11 @@ function Format-GraphLog {
         }
 
         if ( $errorSimpleIncluded -and $errorMessage ) {
-            $errorAsObject = $errorMessage | convertfrom-json -erroraction ignore
+            $errorAsObject = try {
+                # Apparently action ignore still results in errors at times
+                $errorMessage | convertfrom-json -erroraction ignore
+            } catch {
+            }
 
             $simpleErrorMessage = if ( $errorAsObject ) {
                 $errorMember = if ( $errorAsObject | gm error -erroraction ignore ) {

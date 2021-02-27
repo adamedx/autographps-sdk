@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2020, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 ScriptClass Application {
     static {
-        const DefaultAppId (strict-val [Guid] '9825d80c-5aa0-42ef-bf13-61e12116704c')
+        const DefaultAppId (strict-val [Guid] 'ac70e3e2-a821-4d19-839c-b8af4515254b')
         const DefaultRedirectUri 'https://login.microsoftonline.com/common/oauth2/nativeclient'
         $SupportsBrowserSignin = $PSVersionTable.PSEdition -eq 'Desktop'
     }
