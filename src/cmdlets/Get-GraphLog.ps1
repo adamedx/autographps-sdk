@@ -150,10 +150,11 @@ function Get-GraphLog {
     $filterFlag = if ( $StatusFilter -ne 'None' ) { $StatusFilter -eq 'Error' }
     $results = ($::.RequestLog |=> GetDefault) |=> GetLogEntries $Skip $count $fromOldest $All.IsPresent $filterFlag
 
-    # Results are sorted in reverse chronological order if enumerating from newest -- reverse this
-    # so that we always return results in chronological order as part of a standard ux convention
+    # Results are sorted in reverse chronological order if enumerating from newest, but the reverse
+    # is true for sorting from oldest. To ensure that for oldest the newest retrieved record is first,
+    # reverse this so that we always return results in chronological order as part of a standard ux convention
     if ( $results ) {
-        if ( ! $fromOldest -and ( $results -is [object[]] ) ) {
+        if ( $fromOldest -and ( $results -is [object[]] ) ) {
             $start = 0
             $end = $results.length - 1
             while ( $start -lt $end ) {
