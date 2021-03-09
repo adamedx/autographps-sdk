@@ -161,7 +161,7 @@ function Connect-GraphApi {
         } else {
             write-verbose "Connecting context '$($context.name)'"
             $applicationId = if ( $AppId ) {
-            [Guid] $AppId
+                [Guid] $AppId
             } else {
                 $::.Application.DefaultAppId
             }
@@ -179,7 +179,14 @@ function Connect-GraphApi {
             } else {
                 write-verbose 'No reconnect -- creating a new connection for this context'
 
-                $conditionalArguments = @{}
+                # Get the arguments from the profile -- these will be overridden by
+                # any parameters specified to this command
+                $currentProfile = $::.LocalProfile |=> GetCurrentProfile
+                $conditionalArguments = if ( $currentProfile ) {
+                    $currentProfile |=> ToConnectionParameters
+                } else {
+                    @{}
+                }
 
                 $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction') } | foreach {
                     $conditionalArguments[$_] = $PSBoundParameters[$_]

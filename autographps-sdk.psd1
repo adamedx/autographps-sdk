@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.25.0'
+ModuleVersion = '0.26.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -137,6 +137,9 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\src\client\GraphConnection.ps1'
         '.\src\client\GraphContext.ps1'
         '.\src\client\GraphIdentity.ps1'
+        '.\src\client\LocalConnectionProfile.ps1'
+        '.\src\client\LocalProfile.ps1'
+        '.\src\client\LocalSettings.ps1'
         '.\src\client\LogicalGraphManager.ps1'
         '.\src\cmdlets\Clear-GraphLog.ps1'
         '.\src\cmdlets\Connect-GraphApi.ps1'
@@ -223,10 +226,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.25.0 Release Notes
+## AutoGraphPS-SDK 0.26.0 Release Notes
 
-This release addresses a major regression for Microsoft Accounts only (not Azure Active Directory accounts),
-updates authentication parameters to best practices, and includes minor bug fixes and improvements.
+This release adds profile-based configuration
 
 ### New dependencies
 
@@ -234,21 +236,15 @@ None.
 
 ### Breaking changes
 
-* Old default appid is deprecated, superseded with new appid ac70e3e2-a821-4d19-839c-b8af4515254b. Impact includes the need to re-consent to any desired permissions that were granted to the previous appid.
-* When signing in with an app other than the default appid, personal Microsoft Accounts cannot sign in without specifying `AllowMSA` via `Connect-GraphApi`
-* `New-GraphApplication` now creates single tenant applications by default for public client apps
+None.
 
 ### New features
 
-* `Connect-GraphApi` and `New-GraphConnection` support the `AllowMSA` parameter to enable MSA accounts when signing in with an app other than the default app
-* Objects emitted by `Invoke-GraphApiRequest` and related commands now have a type `GraphResponseObject` included in `PSTypeNames` to enable reliable pipeline binding and eventual improvements in output formatting.
+* Configuration: the module now loads the file '~/.autographps/settings.json' on module load if it exists and sets behaviors including the initial connection according to the settings expressed in the configuration file
 
 ### Fixed defects
 
-* [Many scenarios broken for Microsoft Accounts only but not broken for AAD accounts](https://github.com/adamedx/autographps-sdk/issues/53)
-* Sign-in for single tenant applications was broken
-* Error response streams were not being retrieved, so detailed errors were missing from Get-GraphLog and other error-surfacing mechanisms
-* `Get-GraphLog` was emitting errors in the wrong order with oldest first rather than newest first
+* The `CertificatePath` parameter of `New-GraphConnection` and `Connect-GraphApi` was broken -- specifying it caused an error. This has been fixed and the path to a certificate in the certificate store may now be specified.
 
 '@
 

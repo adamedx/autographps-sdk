@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,4 @@ set-strictmode -version 5
 
 . (import-script cmdlets)
 . (import-script aliases)
-
-. (import-script common/ProgressWriter)
 

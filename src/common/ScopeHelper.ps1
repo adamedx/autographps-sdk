@@ -205,7 +205,11 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
                 }
             }
 
-            $permission.value
+            if ( $permission ) {
+                $permission.value
+            } else {
+                $permissionId
+            }
         }
 
         function QualifyScopes([string[]] $scopes, [Uri] $resourceUri) {

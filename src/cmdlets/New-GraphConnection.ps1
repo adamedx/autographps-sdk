@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 . (import-script ../graphservice/GraphEndpoint)
 . (import-script ../client/GraphIdentity)
+. (import-script ../common/GraphApplicationCertificate)
 . (import-script ../client/GraphConnection)
 . (import-script common/DynamicParamHelper)
 . (import-script ../common/ScopeHelper)
