@@ -2,7 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Use a new appid hosted in a normal aad tenant rather than a consumer-initiated tenant
+* Support certificate paths to certificate files outside of the certificate store to allow apponly support on Linux
+* Make public client apps aad only by default for multi-tenant apps
 * Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
 * When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
 * Add AllResults option to Get-GraphResource and Invoke-GraphRequest, and corresponding preference variable
@@ -369,6 +370,7 @@
 * Make Uri argument a non-array
 * Add delta
 * Parse odata context
+* Use a new appid hosted in a normal aad tenant rather than a consumer-initiated tenant
 
 ### Postponed
 

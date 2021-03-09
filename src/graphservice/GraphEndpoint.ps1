@@ -99,6 +99,10 @@ ScriptClass GraphEndpoint {
 
             $authProtocol
         }
+
+        function IsWellKnownCloud([string] $cloud) {
+            $cloud -ne 'Custom' -and ( $cloud -in [GraphCloud]::GetNames([GraphCloud]) )
+        }
     }
 
     $Authentication = $null

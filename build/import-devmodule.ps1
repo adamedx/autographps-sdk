@@ -65,7 +65,7 @@ if (! $NoNewShell.ispresent ) {
         ''
     }
 
-    $shellArguments = '-noexit', '-command', "si env:PSModulePath '$newpsmodulepath'; $importArgument; $InitialCommand"
+    $shellArguments = '-noexit', '-command', "set-item env:AUTOGRAPH_BYPASS_SETTINGS `$true; set-item env:PSModulePath '$newpsmodulepath'; $importArgument; $InitialCommand"
 
     # Strange things occur when I use -NoNewWindow:$false -- going to just
     # duplicate the command with the additional -NoNewWindow param :(

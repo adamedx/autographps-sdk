@@ -14,6 +14,7 @@
 
 . (import-script ../client/GraphConnection)
 . (import-script ../client/LogicalGraphManager)
+. (import-script ../client/LocalProfile)
 
 ScriptClass GraphContext {
     $connection = $null
@@ -85,9 +86,7 @@ ScriptClass GraphContext {
     }
 
     function SetLocation([PSCustomObject] $location) {
-        if ( ! $location ) {
-            throw 'nono'
-        }
+        throw [ArgumentException]::new('Cannot set the current location because the specified location was null.')
         $this.location = $location
     }
 
@@ -98,7 +97,21 @@ ScriptClass GraphContext {
 
         function __initialize {
             $::.LogicalGraphManager |=> __initialize
-            $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null ($::.GraphConnection |=> NewSimpleConnection MSGraph Public @('User.Read')) (GetDefaultVersion) $this.defaultContextName
+            $defaultPermissions = @('User.Read')
+            $defaultProfile = $::.LocalProfile |=> GetDefaultProfile
+            $defaultApiVersion = GetDefaultVersion
+            $defaultConnection = if ( $defaultProfile ) {
+                $defaultProfile |=> ToConnection $defaultPermissions
+                if ( $defaultProfile.InitialApiVersion ) {
+                    $defaultApiVersion = $defaultProfile.InitialApiVersion
+                }
+            }
+
+            if ( ! $defaultConnection ) {
+                $defaultConnection = $::.GraphConnection |=> NewSimpleConnection MSGraph Public $defaultPermissions
+            }
+
+            $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null $defaultConnection $defaultApiVersion $defaultApiVersion
             $this.current = $currentContext.Name
         }
 
@@ -107,10 +120,10 @@ ScriptClass GraphContext {
         }
 
         function SetDefaultLocation($location) {
-            if ( $location -eq $null ) {
-                throw 'angerdefault'
+            if ( ! $location ) {
+                throw [ArgumentException]::new('Cannot set the default location because the specified location was null.')
+                $this.defaultLocation = $location
             }
-            $this.defaultLocation = $location
         }
 
         function FindContext($endpoint, $apiVersion) {
@@ -200,6 +213,7 @@ ScriptClass GraphContext {
                 $existingConnection
             } else {
                 write-verbose "No connection supplied and no compatible connection found from a context"
+
                 $namedArguments=@{Anonymous=($anonymous -eq $true)}
                 if ( $cloud ) { $namedArguments['Cloud'] = $cloud }
                 $namedArguments['ScopeNames'] = $connectionScopes
