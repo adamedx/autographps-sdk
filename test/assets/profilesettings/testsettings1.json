@@ -1,0 +1,184 @@
+{
+    "defaultProfile":  "StandardSettings",
+
+    "profiles":  {
+        "defaults":  {
+            "initialApiVersion": "beta"
+        },
+        "list":  [
+            {
+                "name": "StandardSettings",
+                "settingNotInSchema": "somevalue",
+                "initialApiVersion": "v1.0"
+            },
+
+            {
+                "name":  "ProductionAutomated",
+                "connectionProfile": "ProductionAutomated"
+            },
+
+            {
+                "name":  "TestEnvironmentAutomated",
+                "connectionProfile": "Test",
+                "LogLevel": "Full"
+            },
+
+            {
+                "name":  "TestEnvironmentAutomated2",
+                "connectionProfile": "Test2"
+            },
+
+            {
+                "name":  "ChinaSettings",
+                "connectionProfile": "China",
+                "initialApiVersion": "v1.0"
+            },
+
+            {
+                "name":  "ConnectionInvalid1",
+                "connectionProfile": "NonExistentConnection",
+                "LogLevel": "Full"
+            },
+
+            {
+                "name":  "ConnectionInvalid2",
+                "connectionProfile": "ExistingButInvalidConnection",
+                "LogLevel": "Full"
+            },
+
+            {
+            },
+
+            {
+                "novalidproperties": "profileval"
+            },
+
+            {
+                "name": "NoSpecialSettings"
+            },
+
+            {
+                "name": "DuplicateSettings"
+            },
+
+            {
+                "name": "DuplicateSettings2"
+            },
+
+            {
+                "name": "DuplicateSettings2",
+                "LogLevel": "FullRequest"
+            },
+
+            {
+                "name": "DuplicateSettings2",
+                "LogLevel": "FullResponse"
+            }
+        ]
+    },
+
+    "connectionProfiles":  {
+        "defaults":  {
+            "appId":  "28830add-2d1b-401f-8762-f7be317e7bd3",
+            "userAgent": "MyWorkstation-MyOrg-PS"
+        },
+
+        "list":  [
+            {
+                "name":  "China",
+                "graphEndpoint":  "ChinaCloud"
+            },
+
+            {
+                "name":  "ProductionAutomated",
+                "confidential":  true,
+                "appId": "15f0a1ae-5d11-4e74-a9aa-655c853a568e",
+                "appCredentials":  {
+                    "tenantId":  "34ed84c2-4ce9-4b88-9606-cc8f314cd80b",
+                    "certificatePath":  "Cert:/CurrentMachine/My/FABC1234"
+                },
+                "graphEndpoint":  "Public",
+                "authType":  "apponly"
+            },
+
+            {
+                "name":  "Test",
+                "appId":  "dd033dc5-8ef1-4b25-8542-7b6018cccd1d",
+                "graphEndpoint":  "TestProxy",
+                "authType":  "apponly",
+                "appCredentials":  {
+                    "tenantId":  "650c9193-decf-402d-a6b8-70b1e2f8f2e6"
+                }
+            },
+
+            {
+                "name":  "Test2",
+                "appId":  "dd033dc5-8ef1-4b25-8542-7b6018cccd1d",
+                "graphEndpoint":  "TestProxy2",
+                "authType":  "apponly",
+                "appCredentials":  {
+                    "tenantId":  "650c9193-decf-402d-a6b8-70b1e2f8f2e6"
+                }
+            },
+
+            {
+            },
+
+            {
+                "name": "MinimalConnection"
+            },
+
+            {
+                "onlyInvalidPropertiesConnection": "connnectionVal"
+            },
+
+            {
+                "name": "ConnectionWithNonexistentEndpoint",
+                "graphEndpoint":  "nonexistentoendpoint"
+            },
+
+            {
+                "name": "ConnectionWithBadEndpoint",
+                "graphEndpoint":  "MissingGraphUri"
+            },
+
+            {
+                "name": "MalformedAppId",
+                "appId": "notaguid"
+            },
+
+            {
+                "name": "usesmsa",
+                "accountType": "AzureADAndPersonalMicrosoftAccount"
+            }
+        ]
+    },
+    "graphEndpoints":  {
+        "list":  [
+            {
+                "name":  "TestProxy",
+                "graphUri":  "https://graphproxy.myorg.org",
+                "authUri":  "https://authproxy.myorg.org",
+                "resourceUri":  "https://graph.microsoft.com"
+            },
+
+            {
+                "name":  "TestProxy2",
+                "graphUri":  "https://graphproxy2.myorg.org",
+                "authUri":  "https://authproxy2.myorg.org",
+                "resourceUri":  "https://graph.microsoft.com"
+            },
+
+            {
+                "name":  "MissingGraphUri"
+            },
+
+            {
+            },
+
+            {
+                "onlyInvalidPropertiesEndpoint":  "endpointvalue"
+            }
+        ]
+    }
+}

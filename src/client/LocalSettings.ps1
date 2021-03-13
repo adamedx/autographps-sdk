@@ -15,29 +15,40 @@
 ScriptClass LocalSettings {
     $settingsPath = $null
     $settingsData = $null
+    $lastLoadError = $null
 
     function __initialize($settingsPath) {
         $this.settingsPath = $settingsPath
     }
 
     function Load {
+        write-verbose "Attempting to load settings from path '$this.settingsPath'"
+
         $this.settingsData = if ( $this.settingsPath -and ( test-path $this.settingsPath ) ) {
             $settingsContent = try {
                 get-content $this.settingsPath | out-string
             } catch {
-                write-verbose "Failed to read settings file at '$($this.settingsPAth)'"
+                $this.lastLoadError = $_.exception
+                write-verbose "Failed to read settings file at '$($this.settingsPath)'"
                 write-verbose $_.exception
             }
 
-            try {
-                $settingsContent | convertfrom-json
-            } catch {
-                write-verbose "Data from file '$($this.settingsPath)' could not be parsed as valid JSON content"
-                write-verbose $_.exception
+            if ( $settingsContent ) {
+                try {
+                    $settingsContent | convertfrom-json
+                } catch {
+                    $this.lastLoadError = $_.exception
+                    write-warning "Unable to load settings from file '$($this.settingsPath)' because it could not be parsed as valid JSON content"
+                    write-warning $_.exception
 
+                }
             }
+
+            $this.lastLoadError = $null
 
             write-verbose "Successfully read AutoGraph settings file at '$($this.settingsPath)'"
+        } else {
+            write-verbose "No settings were loaded because the specified path '$($this.settingsPath)' was not a valid path or no file could be accessed there."
         }
     }
 
@@ -73,7 +84,11 @@ ScriptClass LocalSettings {
             if ( $list ) {
                 foreach ( $listItem in $list ) {
                     if ( $listItem | gm name -erroraction ignore ) {
-                        $items.Add($listItem.name, $listItem)
+                        if ( ! $items.ContainsKey($listItem.Name ) ) {
+                            $items.Add($listItem.name, $listItem)
+                        } else {
+                            write-warning "Duplicate setting '$($listItem.name)' found in settings file '$($this.settingsPath)', the duplicate will be ignored; the issue can be fixed by updating the settings file."
+                        }
                     }
                 }
             }
@@ -90,16 +105,22 @@ ScriptClass LocalSettings {
 
         if ( $groupData ) {
             $defaultSetting = __GetDefaultSettingForGroup $groupName $groupData $context
+            $settingInfo = $this.scriptclass |=> __GetSettingTypeInfo $groupName
 
             foreach ( $setting in $groupData.list.values ) {
                 $validSetting = $defaultSetting.Clone()
+
                 $newSetting = __GetValidSetting $groupName $setting $context
                 if ( $newSetting ) {
                     foreach ( $propertyName in $newSetting.keys ) {
                         $validSetting[$propertyName] = $newSetting[$propertyName]
                     }
                 }
-                $validSettings.Add($validSetting['name'], $validSetting)
+
+                # Allow default settings to be added unless FailOnIInvalidProperty is set
+                if ( $newSetting -or ! $settingInfo.FailOnInvalidProperty ) {
+                    $validSettings.Add($validSetting['name'], $validSetting)
+                }
             }
         }
 
@@ -118,8 +139,9 @@ ScriptClass LocalSettings {
         $validSetting = @{}
         $settingName = if ( ! $isDefault ) { $setting.name } else { @{} }
         $validations = $this.scriptclass |=> __GetPropertyReaders $settingType
+        $settingInfo = $this.scriptclass |=> __GetSettingTypeInfo $settingType
 
-        foreach ( $propertyName in ( $setting | gm -membertype noteproperty | select -expandproperty name ) ) {
+        foreach ( $propertyName in $validations.keys ) {
             if ( $isDefault -and $propertyName -eq 'name' ) {
                 write-warning "Ignoring property 'name' for default settings of group '$settingType'"
                 continue
@@ -130,7 +152,9 @@ ScriptClass LocalSettings {
                 $this.scriptclass |=> __GetPropertyReaderScript $validation
             }
 
-            $propertyValue = $setting.$propertyName
+            $propertyValue = if ( $setting | gm $propertyName -erroraction ignore ) {
+                $setting.$propertyName
+            }
 
             $result = if ( $validation -and ! ( ! $propertyValue -and ! $validation.Required ) ) {
                 . $propertyReaderScript $propertyValue $context
@@ -139,13 +163,19 @@ ScriptClass LocalSettings {
             if ( $result ) {
                 if ( $result.ContainsKey('Error') ) {
                     write-warning "Property '$propertyName' of setting '$settingName of type '$settingType' is invalid: $($result.error)"
-                    if ( $validation.Required -and ! $isDefault ) {
+                    if ( $settingInfo.FailOnInvalidProperty -or ( $validation.Required -and ! $isDefault ) ) {
                         write-warning "Setting '$settingName' of type '$settingType' will be ignored due to an invalid value for required property '$propertyName'"
                         $validSetting = $null
                         break
                     } else {
                         continue
                     }
+                }
+
+                if ( ! $result.value -and $validation.Required ) {
+                    write-warning "Property '$propertyName' of setting '$settingName' of type '$settingType' is a required property but was not set -- the setting will be ignored"
+                    $validSetting = $null
+                    break
                 }
 
                 $validSetting.Add($propertyName, $result.Value)
@@ -158,12 +188,21 @@ ScriptClass LocalSettings {
     }
 
     static {
-        function RegisterSettingProperties([string] $settingType, [HashTable] $propertyReaders) {
+        $propertyReaders = $null
+        $settingTypeInfo = $null
+
+        function __initialize {
+            $this.propertyReaders = @{}
+            $this.settingTypeInfo = @{}
+        }
+
+        function RegisterSettingProperties([string] $settingType, [HashTable] $propertyReaders, $failOnInvalidProperty) {
             $settingTypePropertyReaders = $propertyReaders[$settingType]
 
             if ( ! $settingTypePropertyReaders ) {
                 $settingTypePropertyReaders = @{}
                 $this.propertyReaders.Add($settingType, $settingTypePropertyReaders)
+                $this.settingTypeInfo.Add($settingType, @{FailOnInvalidProperty=$failOnInvalidProperty})
             }
 
             foreach ( $property in $propertyReaders.Keys ) {
@@ -176,6 +215,16 @@ ScriptClass LocalSettings {
 
             foreach ( $updater in $updaters ) {
                 . $updater
+            }
+        }
+
+        function __GetSettingTypeInfo($settingType) {
+            $result = $this.settingTypeInfo[$settingType]
+
+            if ( $result ) {
+                $result
+            } else {
+                @{}
             }
         }
 
@@ -203,7 +252,6 @@ ScriptClass LocalSettings {
             $propertyTypeReaders[$propertyReader.Validator]
         }
 
-        $propertyReaders = @{}
         $propertyTypeReaders = @{
             UriValidator = {
                 param($value, $context)
@@ -219,6 +267,14 @@ ScriptClass LocalSettings {
                     @{ Error = "Expecting a string, but received a $($value.gettype().tostring())" }
                 } else {
                     @{Value = [string] $value }
+                }
+            }
+            StringArrayValidator = {
+                param($value, $context)
+                if ( $value -isnot [string[]] -and $value -isnot [object[]] ) {
+                    @{ Error = "Expecting a string array ([string[]]), but received a $($value.gettype().tostring())" }
+                } else {
+                    @{Value = [string[]] $value }
                 }
             }
             GuidStringValidator = {
@@ -299,3 +355,5 @@ ScriptClass LocalSettings {
         }
     }
 }
+
+$::.LocalSettings |=> __initialize

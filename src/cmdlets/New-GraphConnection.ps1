@@ -105,12 +105,15 @@ function New-GraphConnection {
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
         [parameter(parametersetname='customendpoint')]
-        [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
+        [ValidateSet('Default', 'v1', 'v2')]
+        [string] $AuthProtocol = 'Default',
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='customendpoint')]
         [ValidateSet('Auto', 'AzureADOnly', 'AzureADAndPersonalMicrosoftAccount')]
         [string] $AccountType = 'Auto',
+
+        [string] $Name = $null,
 
         [parameter(parametersetname='aadgraph', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
@@ -214,7 +217,7 @@ function New-GraphConnection {
 
             $app = new-so GraphApplication $targetAppId $AppRedirectUri $appSecret $NoninteractiveAppOnlyAuth.IsPresent
             $identity = new-so GraphIdentity $app $graphEndpoint $adjustedTenantId $allowMSA
-            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent
+            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent $Name
         }
     }
 }

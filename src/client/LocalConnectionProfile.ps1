@@ -21,37 +21,49 @@ ScriptClass LocalConnectionProfile {
     $customGraphUri = $null
     $customAuthUri = $null
     $customResourceUri = $null
+    $Name = $null
 
     function __initialize($connectionData, $endpointData) {
-        $endpointName = if ( $endpointData ) {
-            $endpointData['name']
+        $this.Name = if ( $connectionData ) {
+            $connectionData['name']
         }
 
-        $referencedEndpoint = if ( $connectionData ) {
+        $referencedEndpointName = if ( $connectionData ) {
             $connectionData['graphEndpoint']
         }
 
-        if ( $referencedEndpoint ) {
-            if ( $::.GraphEndpoint |=> IsWellKnownCloud $referencedEndpoint ) {
-                $this.knownCloud = $referencedEndpoint
-            } elseif ( ! $endpointName -and ! ( $::.GraphEndpoint |=> IsWellKnownCloud $referencedEndpoint ) ) {
-                throw "Connection profile endpoint '$referencedEndpoint' did not match the specified endpoint name '$endpointName'"
-            } else {
-                $this.customGraphUri = $this.endpointData['graphUri']
-                $this.customResourceUri = $this.endpointData['resourceUri']
+        $targetEndpoint = if ( $referencedEndpointName -and $endpointData ) {
+            $endpointData[$referencedEndpointName]
+        }
+
+        $isValid = $true
+
+        if ( $referencedEndpointName ) {
+            if ( $::.GraphEndpoint |=> IsWellKnownCloud $referencedEndpointName ) {
+                $this.knownCloud = $referencedEndpointName
+            } elseif ( ! $targetEndpoint -and ! ( $::.GraphEndpoint |=> IsWellKnownCloud $referencedEndpointName ) ) {
+                $isValid = $false
+                write-warning "The connection endpoint '$targetEndpoint' specified in the settings configuration could not be found"
+            } elseif ( $endpointData ) {
+                $this.customGraphUri = $endpointData['graphUri']
+                $this.customResourceUri = $endpointData['resourceUri']
                 if ( ! $this.customResourceUri ) {
                     $this.customResourceUri = $this.customGraphUri
                 }
 
-                $this.customAuthUri = $this.endpointData['authUri']
+                $this.customAuthUri = $endpointData['authUri']
+            } else {
+                $isValid = $false
             }
         }
 
-        $this.connectionData = $connectionData
-        $this.endpointData = $endpointData
+        if ( $isValid ) {
+            $this.connectionData = $connectionData
+            $this.endpointData = $targetEndpoint
+        }
     }
 
-    function ToConnectionParameters([string[]] $permissions, $allowMSA) {
+    function ToConnectionParameters([string[]] $permissions) {
         $parameters = @{}
         $enabledParameter = [System.Management.Automation.SwitchParameter]::new($true)
 
@@ -60,7 +72,9 @@ ScriptClass LocalConnectionProfile {
             if ( $this.connectionData['userAgent'] ) { $parameters['UserAgent'] = $this.connectionData['userAgent'] }
             if ( $this.connectionData['appId'] ) { $parameters['AppId'] = $this.connectionData['appId'] }
             if ( $this.connectionData['appRedirectUri'] ) { $parameters['appRedirectUri'] = $this.connectionData['appRedirectUri'] }
-            if ( $this.connectionData['confidential'] ) {
+            $isConfidential = $this.connectionData['confidential'] -ne $null -or $this.connectionData['authType'] -eq 'appOnly'
+
+            if ( $isConfidential ) {
                 $parameters['Confidential'] = $enabledParameter
                 if ( $this.connectionData['authType'] -eq 'appOnly' ) {
                     $parameters['NoninteractiveAppOnlyAuth'] = $enabledParameter
@@ -78,6 +92,11 @@ ScriptClass LocalConnectionProfile {
                     }
                 }
             }
+
+            if ( ! $this.connectionData['appCredentials'] -and $this.connectionData['delegatedPermissions'] ) {
+                $parameters['Permissions'] = $this.connectionData['delegatedPermissions']
+            }
+
             if ( $this.knownCloud ) {
                 $parameters['Cloud'] = $this.knownCloud
             } elseif ( $this.customGraphUri ) {
@@ -111,6 +130,7 @@ ScriptClass LocalConnectionProfile {
         $connectionPropertyReaders = @{
             name = @{ Validator = 'NameValidator'; Required = $true }
             appId = @{ Validator = 'GuidStringValidator'; Required = $false }
+            delegatedPermissions = @{ Validator = 'StringArrayValidator'; Required = $false }
             authType = @{ Validator = 'StringValidator'; Required = $false }
             accountType = @{ Validator = 'StringValidator'; Required = $false }
             authProtocol = @{ Validator = 'StringValidator'; Required = $false }
@@ -126,8 +146,8 @@ ScriptClass LocalConnectionProfile {
         }
 
         function __RegisterSettingProperties {
-            $::.LocalSettings |=> RegisterSettingProperties graphEndpoints $this.endpointPropertyReaders
-            $::.LocalSettings |=> RegisterSettingProperties connectionProfiles $this.connectionPropertyReaders
+            $::.LocalSettings |=> RegisterSettingProperties graphEndpoints $this.endpointPropertyReaders $true
+            $::.LocalSettings |=> RegisterSettingProperties connectionProfiles $this.connectionPropertyReaders $true
         }
     }
 }

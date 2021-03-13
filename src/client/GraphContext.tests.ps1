@@ -116,7 +116,7 @@ Describe 'GraphContext class' {
 
             # This will reconnect and should get a different token
             # rather than reusing the earlier token.
-            { connect-graphapi user.read | out-null } | Should Not Throw
+            { connect-graphapi -Permissions user.read | out-null } | Should Not Throw
 
             Assert-VerifiableMock
 

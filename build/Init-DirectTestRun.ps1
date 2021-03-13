@@ -22,6 +22,7 @@ $testInitPath = join-path $testDir PesterDirectRunInit.ps1
 
 $devDirectory = Get-DevModuleDirectory
 $newpsmodulepath = $devDirectory + $OSPathSeparator + (gi env:PSModulePath).value
+si env:AUTOGRAPH_BYPASS_SETTINGS $true
 si env:PSModulePath $newpsmodulepath
 write-verbose "Updated PSModulePath environment variable to '$newpsmodulepath'"
 

@@ -23,13 +23,26 @@
 function Connect-GraphApi {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='msgraph')]
     param(
-        [parameter(parametersetname='msgraph', position=0)]
-        [parameter(parametersetname='cloud', position=0)]
-        [parameter(parametersetname='customendpoint', position=0)]
-        [parameter(parametersetname='cert', position=0)]
-        [parameter(parametersetname='certpath', position=0)]
-        [parameter(parametersetname='autocert', position=0)]
-        [parameter(parametersetname='secret', position=0)]
+        [parameter(parametersetname='msgraphname', position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [ArgumentCompleter({
+        param ( $commandName,
+                $parameterName,
+                $wordToComplete,
+                $commandAst,
+                $fakeBoundParameters )
+                               $::.GraphConnection |=> GetNamedConnection | where Name -like "$($wordToComplete)*" | select-object -expandproperty Name
+                           })]
+        [Alias('Name')]
+        [string] $ConnectionName,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='msgraphname')]
+        [parameter(parametersetname='cloud')]
+        [parameter(parametersetname='customendpoint')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='autocert')]
+        [parameter(parametersetname='secret')]
         [String[]] $Permissions = $null,
 
         [parameter(parametersetname='cloud')]
@@ -150,14 +163,19 @@ function Connect-GraphApi {
             throw "No current session -- unable to connect it to Graph"
         }
 
-        $connectionResult = if ( $Connection ) {
+        $targetConnection = if ( $connection ) {
+        } elseif ( $ConnectionName ) {
+            $::.GraphConnection |=> GetNamedConnection $ConnectionName $true
+        }
+
+        $connectionResult = if ( $targetConnection ) {
             write-verbose "Explicit connection was specified"
 
-            $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $Connection
+            $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $targetConnection
 
             $::.GraphContext |=> SetCurrentByName $newContext.name
 
-            $Connection
+            $targetConnection
         } else {
             write-verbose "Connecting context '$($context.name)'"
             $applicationId = if ( $AppId ) {
@@ -188,7 +206,7 @@ function Connect-GraphApi {
                     @{}
                 }
 
-                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction') } | foreach {
+                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction', 'ConnectionName') } | foreach {
                     $conditionalArguments[$_] = $PSBoundParameters[$_]
                 }
 

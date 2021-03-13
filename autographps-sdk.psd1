@@ -79,11 +79,13 @@ FunctionsToExport = @(
     'Get-GraphApplicationCertificate'
     'Get-GraphApplicationConsent'
     'Get-GraphApplicationServicePrincipal'
+    'Get-GraphConnection'
     'Get-GraphConnectionInfo'
     'Get-GraphError'
     'Get-GraphResource'
     'Get-GraphLog'
     'Get-GraphLogOption'
+    'Get-GraphProfileSettings'
     'Get-GraphToken'
     'Invoke-GraphApiRequest'
     'New-GraphApplication'
@@ -94,7 +96,9 @@ FunctionsToExport = @(
     'Remove-GraphApplication'
     'Remove-GraphApplicationCertificate'
     'Remove-GraphApplicationConsent'
+    'Remove-GraphConnection'
     'Remove-GraphResource'
+    'Select-GraphProfileSettings'
     'Set-GraphApplicationConsent'
     'Set-GraphConnectionStatus'
     'Set-GraphLogOption'
@@ -150,11 +154,13 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\src\cmdlets\Get-GraphApplicationCertificate.ps1'
         '.\src\cmdlets\Get-GraphApplicationConsent.ps1'
         '.\src\cmdlets\Get-GraphApplicationServicePrincipal.ps1'
+        '.\src\cmdlets\Get-GraphConnection.ps1'
         '.\src\cmdlets\Get-GraphConnectionInfo.ps1'
         '.\src\cmdlets\Get-GraphError.ps1'
         '.\src\cmdlets\Get-GraphResource.ps1'
         '.\src\cmdlets\Get-GraphLog.ps1'
         '.\src\cmdlets\Get-GraphLogOption.ps1'
+        '.\src\cmdlets\Get-GraphProfileSettings.ps1'
         '.\src\cmdlets\Get-GraphToken.ps1'
         '.\src\cmdlets\Invoke-GraphApiRequest.ps1'
         '.\src\cmdlets\New-GraphApplication.ps1'
@@ -165,7 +171,9 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\src\cmdlets\Remove-GraphApplication.ps1'
         '.\src\cmdlets\Remove-GraphApplicationCertificate.ps1'
         '.\src\cmdlets\Remove-GraphApplicationConsent.ps1'
+        '.\src\cmdlets\Remove-GraphConnection.ps1'
         '.\src\cmdlets\Remove-GraphResource.ps1'
+        '.\src\cmdlets\Select-GraphProfileSettings.ps1'
         '.\src\cmdlets\Set-GraphApplicationConsent.ps1'
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1'
         '.\src\cmdlets\Set-GraphLogOption.ps1'
@@ -245,7 +253,7 @@ None.
 ### Fixed defects
 
 * The `CertificatePath` parameter of `New-GraphConnection` and `Connect-GraphApi` was broken -- specifying it caused an error. This has been fixed and the path to a certificate in the certificate store may now be specified.
-
+* The `Get-GraphApplicationConsent` and other commands related to consent could fail when encountering permission id's for which no known permission name mapping could be located, possibly due to using the default snapshot of mappings rather than the most recent mappings found by reading the MS Graph service principal which requires additional access.
 '@
 
     } # End of PSData hashtable
