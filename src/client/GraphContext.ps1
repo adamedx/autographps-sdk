@@ -92,7 +92,7 @@ ScriptClass GraphContext {
 
     static {
         $current = $null
-        $defaultContextName = 'v1.0'
+        $defaultContextName = $::.GraphEndpoint.DefaultGraphAPIVersion
         $defaultLocation = $null
 
         function __initialize {
@@ -101,7 +101,7 @@ ScriptClass GraphContext {
             $defaultProfile = $::.LocalProfile |=> GetDefaultProfile
             $defaultApiVersion = GetDefaultVersion
             $defaultConnection = if ( $defaultProfile ) {
-                $defaultProfile |=> ToConnection $defaultPermissions
+                $defaultProfile |=> GetConnection $defaultPermissions
                 if ( $defaultProfile.InitialApiVersion ) {
                     $defaultApiVersion = $defaultProfile.InitialApiVersion
                 }

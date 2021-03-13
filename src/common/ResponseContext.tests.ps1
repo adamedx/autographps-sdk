@@ -140,7 +140,7 @@ Describe 'ResponseContext class' {
 
         It "Should not confuse a quoted id with a typecast as in the case of 10.2 Collection of Entities - {context-url}#Collection({type-name})" {
             $requestUri = 'https://graph.microsoft.com/v1.0/me/contacts'
-            $contextUri = "https://graph.microsoft.com/v1.0/$metadata#users('myuser@mydomain.com')/contacts"
+            $contextUri = "https://graph.microsoft.com/v1.0/`$metadata#users('myuser@mydomain.com')/contacts"
 
             $responseContext = new-so ResponseContext $requestUri $contextUri |=> ToPublicContext
 

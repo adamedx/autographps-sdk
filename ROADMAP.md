@@ -2,6 +2,10 @@
 
 ## To-do items -- prioritized
 
+* Add Get-GraphProfile, Select-GraphProfile
+* Add Get-GraphConnection, Select-GraphConnection
+* Allow named connections
+* Restore Connect-Graph from Connect-GraphApi
 * Support certificate paths to certificate files outside of the certificate store to allow apponly support on Linux
 * Make public client apps aad only by default for multi-tenant apps
 * Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
@@ -386,6 +390,9 @@
 * Remove Get-GraphSchema
 * Remove Get-GraphVersion
 * Add useragent to connection commands
+* Add Get-GraphProfileSettings, Select-GraphProfileSettings
+* Add Get-GraphConnection, Remove-GraphConnection
+* Allow named connections
 
 ### Abandoned
 
