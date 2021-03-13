@@ -21,37 +21,40 @@ ScriptClass LocalConnectionProfile {
     $customGraphUri = $null
     $customAuthUri = $null
     $customResourceUri = $null
+    $Name = $null
 
     function __initialize($connectionData, $endpointData) {
-        $endpointName = if ( $endpointData ) {
-            $endpointData['name']
-        }
+        $this.Name = $connectionData['name']
 
-        $referencedEndpoint = if ( $connectionData ) {
+        $referencedEndpointName = if ( $connectionData ) {
             $connectionData['graphEndpoint']
         }
 
-        if ( $referencedEndpoint ) {
-            if ( $::.GraphEndpoint |=> IsWellKnownCloud $referencedEndpoint ) {
-                $this.knownCloud = $referencedEndpoint
-            } elseif ( ! $endpointName -and ! ( $::.GraphEndpoint |=> IsWellKnownCloud $referencedEndpoint ) ) {
-                throw "Connection profile endpoint '$referencedEndpoint' did not match the specified endpoint name '$endpointName'"
+        $targetEndpoint = if ( $referencedEndpointName -and $endpointData ) {
+            $endpointData[$referencedEndpointName]
+        }
+
+        if ( $referencedEndpointName ) {
+            if ( $::.GraphEndpoint |=> IsWellKnownCloud $referencedEndpointName ) {
+                $this.knownCloud = $referencedEndpointName
+            } elseif ( ! $targetEndpoint -and ! ( $::.GraphEndpoint |=> IsWellKnownCloud $referencedEndpointName ) ) {
+                throw "Connection profile endpoint '$referencedEndpointName' could not be found"
             } else {
-                $this.customGraphUri = $this.endpointData['graphUri']
-                $this.customResourceUri = $this.endpointData['resourceUri']
+                $this.customGraphUri = $endpointData['graphUri']
+                $this.customResourceUri = $endpointData['resourceUri']
                 if ( ! $this.customResourceUri ) {
                     $this.customResourceUri = $this.customGraphUri
                 }
 
-                $this.customAuthUri = $this.endpointData['authUri']
+                $this.customAuthUri = $endpointData['authUri']
             }
         }
 
         $this.connectionData = $connectionData
-        $this.endpointData = $endpointData
+        $this.endpointData = $targetEndpoint
     }
 
-    function ToConnectionParameters([string[]] $permissions, $allowMSA) {
+    function ToConnectionParameters([string[]] $permissions) {
         $parameters = @{}
         $enabledParameter = [System.Management.Automation.SwitchParameter]::new($true)
 
@@ -111,6 +114,7 @@ ScriptClass LocalConnectionProfile {
         $connectionPropertyReaders = @{
             name = @{ Validator = 'NameValidator'; Required = $true }
             appId = @{ Validator = 'GuidStringValidator'; Required = $false }
+            delegatedPermissions = @{ Validator = 'StringArrayValidator'; Required = $false }
             authType = @{ Validator = 'StringValidator'; Required = $false }
             accountType = @{ Validator = 'StringValidator'; Required = $false }
             authProtocol = @{ Validator = 'StringValidator'; Required = $false }

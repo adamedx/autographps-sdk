@@ -221,6 +221,14 @@ ScriptClass LocalSettings {
                     @{Value = [string] $value }
                 }
             }
+            StringArrayValidator = {
+                param($value, $context)
+                if ( $value -isnot [string[]] -and $value -isnot [object[]] ) {
+                    @{ Error = "Expecting a string array ([string[]]), but received a $($value.gettype().tostring())" }
+                } else {
+                    @{Value = [string[]] $value }
+                }
+            }
             GuidStringValidator = {
                 param($value, $context)
                 try {
@@ -299,3 +307,4 @@ ScriptClass LocalSettings {
         }
     }
 }
+

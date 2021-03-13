@@ -112,6 +112,8 @@ function New-GraphConnection {
         [ValidateSet('Auto', 'AzureADOnly', 'AzureADAndPersonalMicrosoftAccount')]
         [string] $AccountType = 'Auto',
 
+        [string] $Name = $null,
+
         [parameter(parametersetname='aadgraph', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
         [switch] $AADGraph,
@@ -214,7 +216,7 @@ function New-GraphConnection {
 
             $app = new-so GraphApplication $targetAppId $AppRedirectUri $appSecret $NoninteractiveAppOnlyAuth.IsPresent
             $identity = new-so GraphIdentity $app $graphEndpoint $adjustedTenantId $allowMSA
-            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent
+            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent $Name
         }
     }
 }

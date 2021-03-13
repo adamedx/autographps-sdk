@@ -34,22 +34,26 @@ ScriptClass LocalProfile {
         $this.name = $profileData.name
         $this.InitialApiVersion = $profileData['initialApiVersion']
         $this.logLevel = $profileData['logLevel']
-        $this.connectionProfile = $connectionProfile
 
         $this.connectionProfile = new-so LocalConnectionProfile $connectionData $endpointData
     }
 
-    function ToConnection([string[]] $permissions, $allowMSA) {
-        $parameters = ToConnectionParameters $permissions $allowMSA
-        try {
-            New-GraphConnection @parameters
-        } catch {
-            write-verbose $_.exception
+    function GetConnection {
+        if ( $this.connectionProfile.Name ) {
+            $::.GraphConnection |=> GetNamedConnection $this.connectionProfile.Name
         }
     }
 
-    function ToConnectionParameters([string[]] $permissions, $allowMSA) {
-        $this.connectionProfile |=> ToConnectionParameters $permissions $allowMSA
+    function ToConnectionParameters([string[]] $permissions) {
+        $this.connectionProfile |=> ToConnectionParameters $permissions
+    }
+
+    function ToPublicProfile {
+        [PSCustomObject] @{
+            ProfileName = $this.name
+            LogLevel = $this.logLevel
+            IsDefault = $this.name -eq $this.scriptclass.defaultProfileName
+        }
     }
 
     function ToJson {
@@ -94,6 +98,17 @@ ScriptClass LocalProfile {
                 $connectionData = $this.settings |=> GetSettings connectionProfiles $endpointData
                 $profileData = $this.settings |=> GetSettings profiles $connectionData
 
+                foreach ( $connectionElement in $connectionData.values ) {
+                    $connectionProfile = new-so LocalConnectionProfile $connectionElement $endpointData
+
+                    $connectionParameters = $connectionProfile |=> ToConnectionParameters
+
+                    try {
+                        New-GraphConnection @connectionParameters -Name $connectionProfile.Name | out-null
+                    } catch {
+                    }
+                }
+
                 $this.profiles = if ( $profileData ) {
                     foreach ( $profileData in $profileData.values ) {
                         $normalizedData = __GetNormalizedProfileData $profileData $connectionData $endpointData
@@ -132,12 +147,16 @@ ScriptClass LocalProfile {
             $this.currentProfile
         }
 
-        function SetCurrentProfile($profileName) {
+        function SetCurrentProfile($profileName, $refreshSettings) {
             if ( $profileName ) {
                 $newProfile = GetProfileByName $profileName
 
                 if ( $newProfile ) {
                     $this.currentProfile = $newProfile
+
+                    if ( $refreshSettings ) {
+                        $::.LocalSettings |=> RefreshBehaviorsFromSettings
+                    }
                 }
             }
         }
