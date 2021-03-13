@@ -81,6 +81,11 @@ ScriptClass LocalConnectionProfile {
                     }
                 }
             }
+
+            if ( ! $this.connectionData['appCredentials'] -and $this.connectionData['delegatedPermissions'] ) {
+                $parameters['Permissions'] = $this.connectionData['delegatedPermissions']
+            }
+
             if ( $this.knownCloud ) {
                 $parameters['Cloud'] = $this.knownCloud
             } elseif ( $this.customGraphUri ) {

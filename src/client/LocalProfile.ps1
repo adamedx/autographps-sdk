@@ -98,14 +98,16 @@ ScriptClass LocalProfile {
                 $connectionData = $this.settings |=> GetSettings connectionProfiles $endpointData
                 $profileData = $this.settings |=> GetSettings profiles $connectionData
 
-                foreach ( $connectionElement in $connectionData.values ) {
-                    $connectionProfile = new-so LocalConnectionProfile $connectionElement $endpointData
+                if ( $connectionData ) {
+                    foreach ( $connectionElement in $connectionData.values ) {
+                        $connectionProfile = new-so LocalConnectionProfile $connectionElement $endpointData
 
-                    $connectionParameters = $connectionProfile |=> ToConnectionParameters
+                        $connectionParameters = $connectionProfile |=> ToConnectionParameters
 
-                    try {
-                        New-GraphConnection @connectionParameters -Name $connectionProfile.Name | out-null
-                    } catch {
+                        try {
+                            New-GraphConnection @connectionParameters -Name $connectionProfile.Name | out-null
+                        } catch {
+                        }
                     }
                 }
 
