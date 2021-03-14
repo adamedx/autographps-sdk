@@ -35,12 +35,12 @@ function Get-GraphProfileSettings {
     $profiles = if ( $Current.IsPresent ) {
         $::.LocalProfile |=> GetCurrentProfile
     } else {
-        $matchingProfiles = $::.LocalProfile |=> GetProfiles
+        $allProfiles = $::.LocalProfile |=> GetProfiles
 
-        if ( $ProfileName -and $matchingProfiles ) {
-            $matchingProfiles | where name -eq $ProfileName
+        if ( $ProfileName -and $allProfiles ) {
+            $allProfiles | where name -eq $ProfileName
         } else {
-            $matchingProfiles
+            $allProfiles | sort-object Name
         }
     }
 

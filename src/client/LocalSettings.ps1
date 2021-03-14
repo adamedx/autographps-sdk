@@ -15,29 +15,40 @@
 ScriptClass LocalSettings {
     $settingsPath = $null
     $settingsData = $null
+    $lastLoadError = $null
 
     function __initialize($settingsPath) {
         $this.settingsPath = $settingsPath
     }
 
     function Load {
+        write-verbose "Attempting to load settings from path '$this.settingsPath'"
+
         $this.settingsData = if ( $this.settingsPath -and ( test-path $this.settingsPath ) ) {
             $settingsContent = try {
                 get-content $this.settingsPath | out-string
             } catch {
-                write-verbose "Failed to read settings file at '$($this.settingsPAth)'"
+                $this.lastLoadError = $_.exception
+                write-verbose "Failed to read settings file at '$($this.settingsPath)'"
                 write-verbose $_.exception
             }
 
-            try {
-                $settingsContent | convertfrom-json
-            } catch {
-                write-verbose "Data from file '$($this.settingsPath)' could not be parsed as valid JSON content"
-                write-verbose $_.exception
+            if ( $settingsContent ) {
+                try {
+                    $settingsContent | convertfrom-json
+                } catch {
+                    $this.lastLoadError = $_.exception
+                    write-warning "Unable to load settings from file '$($this.settingsPath)' because it could not be parsed as valid JSON content"
+                    write-warning $_.exception
 
+                }
             }
+
+            $this.lastLoadError = $null
 
             write-verbose "Successfully read AutoGraph settings file at '$($this.settingsPath)'"
+        } else {
+            write-verbose "No settings were loaded because the specified path '$($this.settingsPath)' was not a valid path or no file could be accessed there."
         }
     }
 
@@ -73,7 +84,11 @@ ScriptClass LocalSettings {
             if ( $list ) {
                 foreach ( $listItem in $list ) {
                     if ( $listItem | gm name -erroraction ignore ) {
-                        $items.Add($listItem.name, $listItem)
+                        if ( ! $items.ContainsKey($listItem.Name ) ) {
+                            $items.Add($listItem.name, $listItem)
+                        } else {
+                            write-warning "Duplicate setting '$($listItem.name)' found in settings file '$($this.settingsPath)', the duplicate will be ignored; the issue can be fixed by updating the settings file."
+                        }
                     }
                 }
             }
@@ -158,6 +173,12 @@ ScriptClass LocalSettings {
     }
 
     static {
+        $propertyReaders = $null
+
+        function __initialize {
+            $this.propertyReaders = @{}
+        }
+
         function RegisterSettingProperties([string] $settingType, [HashTable] $propertyReaders) {
             $settingTypePropertyReaders = $propertyReaders[$settingType]
 
@@ -203,7 +224,6 @@ ScriptClass LocalSettings {
             $propertyTypeReaders[$propertyReader.Validator]
         }
 
-        $propertyReaders = @{}
         $propertyTypeReaders = @{
             UriValidator = {
                 param($value, $context)
@@ -308,3 +328,4 @@ ScriptClass LocalSettings {
     }
 }
 
+$::.LocalSettings |=> __initialize

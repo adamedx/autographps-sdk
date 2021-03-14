@@ -24,7 +24,9 @@ ScriptClass LocalConnectionProfile {
     $Name = $null
 
     function __initialize($connectionData, $endpointData) {
-        $this.Name = $connectionData['name']
+        $this.Name = if ( $connectionData ) {
+            $connectionData['name']
+        }
 
         $referencedEndpointName = if ( $connectionData ) {
             $connectionData['graphEndpoint']
@@ -34,12 +36,15 @@ ScriptClass LocalConnectionProfile {
             $endpointData[$referencedEndpointName]
         }
 
+        $isValid = $true
+
         if ( $referencedEndpointName ) {
             if ( $::.GraphEndpoint |=> IsWellKnownCloud $referencedEndpointName ) {
                 $this.knownCloud = $referencedEndpointName
             } elseif ( ! $targetEndpoint -and ! ( $::.GraphEndpoint |=> IsWellKnownCloud $referencedEndpointName ) ) {
-                throw "Connection profile endpoint '$referencedEndpointName' could not be found"
-            } else {
+                $isValid = $false
+                write-warning "The connection endpoint '$targetEndpoint' specified in the settings configuration could not be found"
+            } elseif ( $endpointData ) {
                 $this.customGraphUri = $endpointData['graphUri']
                 $this.customResourceUri = $endpointData['resourceUri']
                 if ( ! $this.customResourceUri ) {
@@ -47,11 +52,15 @@ ScriptClass LocalConnectionProfile {
                 }
 
                 $this.customAuthUri = $endpointData['authUri']
+            } else {
+                $isValid = $false
             }
         }
 
-        $this.connectionData = $connectionData
-        $this.endpointData = $targetEndpoint
+        if ( $isValid ) {
+            $this.connectionData = $connectionData
+            $this.endpointData = $targetEndpoint
+        }
     }
 
     function ToConnectionParameters([string[]] $permissions) {

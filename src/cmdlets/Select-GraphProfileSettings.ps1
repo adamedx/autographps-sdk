@@ -17,7 +17,7 @@
 function Select-GraphProfileSettings {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0, valuefrompipelinebypropertyname=$true)]
+        [parameter(position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [ArgumentCompleter({
         param ( $commandName,
                 $parameterName,

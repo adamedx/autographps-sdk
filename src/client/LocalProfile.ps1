@@ -49,9 +49,12 @@ ScriptClass LocalProfile {
     }
 
     function ToPublicProfile {
+        $connectionName = if ( $this.connectionProfile ) { $this.connectionProfile.Name }
         [PSCustomObject] @{
             ProfileName = $this.name
             LogLevel = $this.logLevel
+            InitialApiVersion = $this.InitialApiVersion
+            Connection = $connectionName
             IsDefault = $this.name -eq $this.scriptclass.defaultProfileName
         }
     }
@@ -60,10 +63,11 @@ ScriptClass LocalProfile {
     }
 
     static {
+        const defaultSettingsPath '~/.autographps/settings.json'
+
         $settings = $null
         $profiles = $null
         $defaultProfileName = $null
-        $defaultSettingsPath = '~/.autographps/settings.json'
         $settingsLoadAttempted = $false
         $settingsPath = $null
         $settingsBypassed = $false
@@ -87,6 +91,14 @@ ScriptClass LocalProfile {
         }
 
         function __initialize {
+            $this.settings = $null
+            $this.profiles = $null
+            $this.defaultProfileName = $null
+            $this.settingsLoadAttempted = $false
+            $this.settingsPath = $null
+            $this.settingsBypassed = $false
+            $this.currentProfile = $null
+
             __RegisterSettingProperties
         }
 
@@ -120,7 +132,9 @@ ScriptClass LocalProfile {
 
                 $this.defaultProfileName = $this.settings |=> GetSettingValue defaultProfile
 
-                SetCurrentProfile $this.defaultProfileName
+                if ( $this.defaultProfileName ) {
+                    SetCurrentProfile $this.defaultProfileName
+                }
 
                 $::.LocalSettings |=> RefreshBehaviorsFromSettings
             }
@@ -132,10 +146,7 @@ ScriptClass LocalProfile {
         }
 
         function GetProfileByName($profileName) {
-            __LoadProfiles
-            if ( $this.profiles ) {
-                $this.profiles | where name -eq $profileName
-            }
+            __GetProfileByName $profileName
         }
 
         function GetDefaultProfile {
@@ -150,34 +161,40 @@ ScriptClass LocalProfile {
         }
 
         function SetCurrentProfile($profileName, $refreshSettings) {
-            if ( $profileName ) {
-                $newProfile = GetProfileByName $profileName
+            $newProfile = __GetProfileByName $profileName
 
-                if ( $newProfile ) {
-                    $this.currentProfile = $newProfile
+            if ( $newProfile ) {
+                $this.currentProfile = $newProfile
 
-                    if ( $refreshSettings ) {
-                        $::.LocalSettings |=> RefreshBehaviorsFromSettings
-                    }
+                if ( $refreshSettings ) {
+                    $::.LocalSettings |=> RefreshBehaviorsFromSettings
                 }
+            } else {
+                throw "Cannot set the current profile settings -- the specified profile '$profileName' could not be found."
+            }
+        }
+
+        function __GetProfileByName($profileName) {
+            if ( $this.profiles ) {
+                $this.profiles | where name -eq $this.defaultProfileName
             }
         }
 
         function __LoadSettings($settingsPath) {
-            if ( ! $this.settingsLoadAttempted ) {
+            if ( ! $this.settingsLoadAttempted -or $settingsPath ) {
                 $this.settingsLoadAttempted = $true
-                if ( $settingsPath ) {
-                    $settingsPath
-                } else {
-                    $this.settingsBypassed = test-path env:AUTOGRAPH_BYPASS_SETTINGS
-                    if ( ! $this.settingsBypassed ) {
-                        $targetPath = if ( test-path env:AUTOGRAPH_SETTINGS_FILE ) {
-                            $env:AUTOGRAPH_SETTINGS_FILE
-                        } else {
-                            $this.defaultSettingsPath
-                        }
-                        $this.settings = new-so LocalSettings $targetPath
+                $this.settingsBypassed = ! $settingsPath -and ( test-path env:AUTOGRAPH_BYPASS_SETTINGS )
+
+                if ( ! $this.settingsBypassed ) {
+                    $targetPath = if ( $settingsPath ) {
+                        write-verbose "Settings load: Overriding default behaviors and environment variables with explicit path '$settingsPath'"
+                        $settingsPath
+                    } elseif ( test-path env:AUTOGRAPH_SETTINGS_FILE ) {
+                        $env:AUTOGRAPH_SETTINGS_FILE
+                    } else {
+                        $this.defaultSettingsPath
                     }
+                    $this.settings = new-so LocalSettings $targetPath
                 }
             }
         }
