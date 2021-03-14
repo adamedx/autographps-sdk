@@ -42,6 +42,13 @@
             },
 
             {
+            },
+
+            {
+                "novalidproperties": "profileval"
+            },
+
+            {
                 "name": "NoSpecialSettings"
             },
 
@@ -97,6 +104,17 @@
                 "appCredentials":  {
                     "tenantId":  "650c9193-decf-402d-a6b8-70b1e2f8f2e6"
                 }
+            },
+
+            {
+            },
+
+            {
+                "name": "MinimalConnection"
+            },
+
+            {
+                "onlyInvalidPropertiesConnection": "connnectionVal"
             }
         ]
     },
@@ -107,6 +125,24 @@
                 "graphUri":  "https://graphproxy.myorg.org",
                 "authUri":  "https://authproxy.myorg.org",
                 "resourceUri":  "https://graph.microsoft.com"
+            },
+
+            {
+                "name":  "TestProxy2",
+                "graphUri":  "https://graphproxy2.myorg.org",
+                "authUri":  "https://authproxy2.myorg.org",
+                "resourceUri":  "https://graph.microsoft.com"
+            },
+
+            {
+                "name":  "MissingDataEndpoint"
+            },
+
+            {
+            },
+
+            {
+                "onlyInvalidPropertiesEndpoint":  "endpointvalue"
             }
         ]
     }

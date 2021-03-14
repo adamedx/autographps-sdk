@@ -15,6 +15,11 @@
 $testSettingsFilePath = "$psscriptroot/../../test/assets/profilesettings/testsettings1.json"
 $testSettings = get-content $testSettingsFilePath | out-string | convertfrom-json
 
+# Need this as there are assumptions about missing property values
+# that cause behavior that's usually desired, but not always intended. :)
+# This does result in more checks to see if properties exist, this coudl
+# probably be generalized to make the tests more readable.
+set-strictmode -version 2
 
 function EnableSettings {
     if ( test-path env:AUTOGRAPH_BYPASS_SETTINGS ) {
@@ -62,7 +67,11 @@ function AddExpectedProperties($profileData, $properties, [string[]] $propertyNa
 
         # Ignore connections that don't actually exist -- these should resolve as null
         if ( $dataPropertyName -eq 'connectionProfile' -and $expectedValue ) {
-            if ( ! ( $testSettings.connectionProfiles.list | where name -eq $expectedValue ) ) {
+            $existingConnection = $testSettings.connectionProfiles.list | where {
+                ( $_ | gm name -erroraction ignore ) -and ( $_.name -eq $expectedValue )
+            }
+
+            if ( ! $existingConnection ) {
                 $expectedValue = $null
             }
         }
@@ -121,20 +130,31 @@ Describe 'LocalProfile class' {
         It "Should have the expected default profile" {
             $profileSettings = Get-GraphProfileSettings -current
             $profileSettings.ProfileName | Should Be $testSettings.defaultProfile
-            $profileSettings.InitialApiVersion | Should Be ( $testSettings.profiles.list | where name -eq $profileSettings.ProfileName | select -expandproperty InitialApiVersion )
+            $profileSettings.InitialApiVersion | Should Be ( $testSettings.profiles.list |
+              where {
+                  if ( $_ | gm name -erroraction ignore ) {
+                      $_.name -eq $profileSettings.ProfileName
+                  }
+              } | select -expandproperty InitialApiVersion )
         }
 
         It "Should return the expected set of profiles from GetProfiles sorted alphabetically by profile name" {
             $profiles = Get-GraphProfileSettings
 
-            $expectedProfileNames = $testSettings.profiles.list.name | select-object -unique | sort-object
+            $expectedProfileNames = $testSettings.profiles.list | where { $_ | gm name -erroraction ignore } | select -expandproperty name | select-object -unique | sort-object
             Compare-object $expectedProfileNames $profiles.ProfileName -syncwindow 0 | Should Be $null
         }
 
         It "Should ignore settings from a duplicated profile" {
             $profiles = Get-GraphProfileSettings
 
-            $expectedProfileData = $testSettings.profiles.list | where name -eq 'DuplicateSettings2' | select -first 1
+            $expectedProfileData = $testSettings.profiles.list |
+              where {
+                  if ( $_ | gm name -erroraction ignore ) {
+                      $_.name -eq 'DuplicateSettings2'
+                  }
+              }  | select -first 1
+
             $expectedProfile = [PSCustomObject] @{
                 ProfileName = $expectedProfileData.Name
                 LogLevel = $null
@@ -143,7 +163,11 @@ Describe 'LocalProfile class' {
                 IsDefault = $false
             }
 
-            $ignoredProfileData = $testSettings.profiles.list | where name -eq 'DuplicateSettings2' | select -last 1
+            $ignoredProfileData = $testSettings.profiles.list |
+              where {
+                  ( $_ | gm name -erroraction ignore ) -and ( $_.name -eq 'DuplicateSettings2' )
+              } | select -last 1
+
             $ignoredProfile = [PSCustomObject] @{
                 ProfileName = $ignoredProfileData.Name
                 LogLevel = $ignoredProfileData.LogLevel
@@ -163,7 +187,12 @@ Describe 'LocalProfile class' {
         It "Should include the initial api version of beta in all versions except when overridden due to inclusion of initialApi version of beta in the defaults section" {
             $profiles = Get-GraphProfileSettings
             foreach ( $profileSettings in $profiles ) {
-                $profileData = $testSettings.profiles.list | where name -eq $profileSettings.ProfileName
+                $profileData = $testSettings.profiles.list |
+                  where {
+                      if ( $_ | gm name -erroraction ignore ) {
+                          $_.name -eq $profileSettings.ProfileName
+                      }
+                  }
 
                 $expectedVersion = if ( $profileData | gm InitialApiVersion -erroraction ignore ) {
                     $profileData.InitialApiVersion
@@ -180,8 +209,12 @@ Describe 'LocalProfile class' {
             $defaultProfile = $testSettings.defaultProfile
 
             foreach ( $actualProfile in $profiles ) {
-                $expectedProfileData = $testSettings.profiles.list | where name -eq $actualProfile.ProfileName | select -first 1
-
+                $expectedProfileData = $testSettings.profiles.list |
+                  where {
+                      if ( $_ | gm name -erroraction ignore ) {
+                          $_.name -eq $actualProfile.ProfileName
+                      }
+                  } | select -first 1
 
                 $expectedProfileProperties = [ordered] @{
                     ProfileName = $expectedProfileData.Name
