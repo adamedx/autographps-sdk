@@ -115,6 +115,21 @@
 
             {
                 "onlyInvalidPropertiesConnection": "connnectionVal"
+            },
+
+            {
+                "name": "ConnectionWithNonexistentEndpoint",
+                "graphEndpoint":  "nonexistentoendpoint"
+            },
+
+            {
+                "name": "ConnectionWithBadEndpoint",
+                "graphEndpoint":  "MissingGraphUri"
+            },
+
+            {
+                "name": "MalformedAppId",
+                "appId": "notaguid"
             }
         ]
     },
@@ -135,7 +150,7 @@
             },
 
             {
-                "name":  "MissingDataEndpoint"
+                "name":  "MissingGraphUri"
             },
 
             {
