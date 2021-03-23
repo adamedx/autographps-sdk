@@ -57,5 +57,17 @@ ScriptClass GraphFormatter {
 
             $::.ColorString.ToColorString($method, $foreGround, $backGround)
         }
+
+        function ResponseElapsedTime([TimeSpan] $elapsed) {
+            $forecolor = if ( $elapsed.TotalSeconds -lt 1 ) {
+                10
+            } elseif ( $elapsed.TotalSeconds -lt 2 ) {
+                11
+            } else {
+                9
+            }
+
+            $::.ColorString.ToColorString($elapsed.ToString(), $foreColor, $null)
+        }
     }
 }
