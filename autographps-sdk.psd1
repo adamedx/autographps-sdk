@@ -63,7 +63,7 @@ PowerShellVersion = '5.1'
 # TypesToProcess = @()
 
 # Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
+FormatsToProcess = @('./src/cmdlets/common/formats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
@@ -110,7 +110,8 @@ FunctionsToExport = @(
 CmdletsToExport = @()
 
 # Variables to export from this module
-VariablesToExport = @(
+ VariablesToExport = @(
+    'AutoGraphColorModePreference'
     'GraphVerboseOutputPreference'
     'LastGraphItems'
 )
@@ -130,6 +131,7 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\autographps-sdk.psm1'
         '.\src\aliases.ps1'
         '.\src\cmdlets.ps1'
+        '.\src\formats.ps1'
         '.\src\graph-sdk.ps1'
         '.\src\auth\AuthProvider.ps1'
         '.\src\auth\CompiledDeviceCodeAuthenticator.ps1'
@@ -184,14 +186,17 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\src\cmdlets\common\ConsentHelper.ps1'
         '.\src\cmdlets\common\DisplayTypeFormatter.ps1'
         '.\src\cmdlets\common\DynamicParamHelper.ps1'
+        '.\src\cmdlets\common\Formats.ps1xml'
         '.\src\cmdlets\common\GraphOutputFile.ps1'
         '.\src\cmdlets\common\ItemResultHelper.ps1'
         '.\src\cmdlets\common\ParameterCompleter.ps1'
         '.\src\cmdlets\common\PermissionParameterCompleter.ps1'
         '.\src\cmdlets\common\QueryHelper.ps1'
+        '.\src\common\ColorString.ps1'
         '.\src\common\DefaultScopeData.ps1'
         '.\src\common\GraphAccessDeniedException.ps1'
         '.\src\common\GraphApplicationCertificate.ps1'
+        '.\src\common\GraphFormatter.ps1'
         '.\src\common\GraphUtilities.ps1'
         '.\src\common\PreferenceHelper.ps1'
         '.\src\common\ProgressWriter.ps1'

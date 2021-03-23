@@ -55,7 +55,7 @@ $cmdlets = @(
 
 $aliases = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
 
-$variables = @('GraphVerboseOutputPreference', 'LastGraphItems')
+$variables = @('AutoGraphColorModePreference', 'GraphVerboseOutputPreference', 'LastGraphItems')
 
 export-modulemember -function $cmdlets -alias $aliases -variable $variables
 
