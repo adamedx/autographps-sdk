@@ -100,6 +100,7 @@ Describe "Poshgraph application" {
 
         It "Should export the exact same set of variables that are in the set of expected variables" {
             $expectedVariables = @(
+                'AutoGraphColorModePreference'
                 'GraphVerboseOutputPreference'
                 'LastGraphItems'
             )
@@ -114,6 +115,4 @@ Describe "Poshgraph application" {
         }
     }
 }
-
-
 
