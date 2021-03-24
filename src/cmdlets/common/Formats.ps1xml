@@ -60,7 +60,7 @@ limitations under the License.
                 <PropertyName>ResourceUri</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>ErrorMessage</PropertyName>
+                <PropertyName>ErrorResponse</PropertyName>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -171,7 +171,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToColorString($_.Query, 14, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>ErrorMessage</PropertyName>
+                <PropertyName>ErrorResponse</PropertyName>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -237,7 +237,105 @@ limitations under the License.
           </TableRowEntry>
         </TableRowEntries>
       </TableControl>
+
+    </View>
+
+    <View>
+      <Name>GraphLogDetail</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphLogEntryDisplayType</TypeName>
+      </ViewSelectedBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>RequestTimeStamp</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>StatusCode</Label>
+                <ScriptBlock>$::.GraphFormatter.StatusCode($_.StatusCode)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ErrorResponse</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Method</Label>
+                <ScriptBlock>$::.GraphFormatter.RestMethod($_.Method)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Uri</Label>
+                <ScriptBlock>$::.ColorString.ToColorString($_.Uri, 11, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>RequestBody</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>ClientElapsedTime</Label>
+                <ScriptBlock>$::.GraphFormatter.ResponseElapsedTime($_.ClientElapsedTime)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ResponseHeaders</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ClientRequestId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AppId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>TenantId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>UserUpn</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>UserObjectId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AuthType</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>RequestHeaders</PropertyName>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.LogLevel -eq 'Full' -or $.LogLevel -eq 'FullRequest'</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>RequestBody</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>ResourceUri</Label>
+                <ScriptBlock>$::.ColorString.ToColorString($_.ResourceUri, 11, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Query</Label>
+                <ScriptBlock>$::.ColorString.ToColorString($_.Query, 14, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ResponseTimeStamp</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ResponseClientRequestId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ResponseHeaders</PropertyName>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.LogLevel -eq 'Full' -or $_.LogLevel -eq 'FullResponse'</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>ResponseContent</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
     </View>
 
   </ViewDefinitions>
+
 </Configuration>
