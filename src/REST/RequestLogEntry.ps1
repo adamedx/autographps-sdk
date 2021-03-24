@@ -50,7 +50,7 @@ ScriptClass RequestLogEntry {
                 ClientRequestId = $restRequestHeaders['client-request-id']
                 RequestHeaders = $scrubbedRequestHeaders
                 RequestBody = $requestBody
-                HasRequestBody = $restRequestBody -ne $null
+                HasRequestBody = ( $restRequestBody -ne $null ) -and ( $restRequestBody -ne '' )
                 AppId = $appId
                 AuthType = $authType
                 UserObjectId = $userObjectId
