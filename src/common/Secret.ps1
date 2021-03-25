@@ -20,6 +20,7 @@ enum SecretType {
 ScriptClass Secret {
     $data = $null
     $type = $null
+    $certificatePath = $null
 
     function __initialize($secret) {
 
@@ -36,28 +37,44 @@ ScriptClass Secret {
                 $secret
             } elseif ( $secret -is [string] ) {
                 $certPath = if ( split-path -isabsolute $secret ) {
+                    if ( ! ( test-path $secret ) ) {
+                        throw [ArgumentException]::new("The specified path '$secret' is not a valid file system path or cert store path")
+                    }
                     if ( (split-path -qualifier $secret ) -eq 'cert:' ) {
                         $secret
                     } else {
-                        throw [ArgumentException]::new("Path '{0}' was not a valid absolute or relative path in the PowerShell cert: drive" -f $secret)
+                        $this.certificatePath = $secret
                     }
                 } else {
                     join-path 'cert:\currentuser\my' $secret
                 }
 
-                gi $certPath
+                if ( $certPath ) {
+                    get-item $certPath
+                }
             } else {
                 throw [ArgumentException]::new("Secret was of invalid type '{0}', it must be a [SecureString], [X509Certificate2], or [String] path to a certificate in the PowerShell certificate drive" -f $secret.gettype())
             }
 
-            __ValidateCertificate $certificate
+            if ( $certificate ) {
+                __ValidateCertificate $certificate
+            }
+
             $this.data = $certificate
         }
     }
 
-    function GetSecretData {
+    function GetSecretData([securestring] $secretPassword) {
         switch ( $this.type ) {
             ([SecretType]::Certificate) {
+                if ( ! $this.data -and $this.certificatePath ) {
+                    $this.data = if ( $secretPassword ) {
+                        [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($this.certificatePath, $secretPassword)
+                    } else {
+                        [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($this.certificatePath)
+                    }
+                }
+
                 $this.data
             }
             ([SecretType]::Password) {

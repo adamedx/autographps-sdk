@@ -35,7 +35,7 @@ ScriptClass V2AuthProvider {
     # we can look up the right authcontext for a connection. A better approach may be
     # to simply make the auth context part of the connection itself rather than part of
     # a store maintained here.
-    function GetAuthContext($app, $authUri, $groupId) {
+    function GetAuthContext($app, $authUri, $groupId, [securestring] $certificatePassword) {
         $isConfidential = $app |=> IsConfidential
         write-verbose "Searching for app context for appid '$($app.AppId)' and uri '$authUri' -- confidential:$isConfidential, groupid '$groupId'"
         $existingApp = $this |=> __GetAppContext $isConfidential $app.AppId $authUri $groupId
@@ -45,7 +45,7 @@ ScriptClass V2AuthProvider {
         } elseif ( $isConfidential ) {
             write-verbose "Confidential app context not found -- will create new context"
             $confidentialAppBuilder = [Microsoft.Identity.Client.ConfidentialClientApplicationBuilder]::Create($app.appid).WithAuthority($authUri).WithRedirectUri($app.RedirectUri)
-            $secretCredential = ($app.secret |=> GetSecretData)
+            $secretCredential = ($app.secret |=> GetSecretData $certificatePassword)
 
             $confidentialApp = if ( $app.secret.type -eq [SecretType]::Certificate ) {
                 $confidentialAppBuilder.WithCertificate($secretCredential).Build()
@@ -94,7 +94,7 @@ ScriptClass V2AuthProvider {
         $::.DeviceCodeAuthenticator |=> Authenticate $authContext.protocolcontext $scopes
     }
 
-    function AcquireFirstAppToken($authContext) {
+    function AcquireFirstAppToken($authContext, [securestring] $certificatePassword) {
         write-verbose 'V2 auth provider acquiring initial app token'
         $defaultScopeList = $this |=> __GetDefaultScopeList $authContext
 

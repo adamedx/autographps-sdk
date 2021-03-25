@@ -57,17 +57,17 @@ ScriptClass GraphConnection {
         }
     }
 
-    function Connect {
+    function Connect([securestring] $certificatePassword) {
         write-verbose ( 'Request to connect connection id {0}' -f $this.id )
         if ( ($this.Status -eq [GraphConnectionStatus]::Online) -and (! $this.connected) ) {
             if ($this.Identity) {
-                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id
+                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id $certificatePassword
             }
             $this.connected = $true
         }
     }
 
-    function GetToken {
+    function GetToken([securestring] $certificatePassword) {
         if (! $this.Identity) {
             throw [ArgumentException]::new('Cannot obtain a token for this connection because the connection is anonymous')
         }
@@ -75,7 +75,7 @@ ScriptClass GraphConnection {
         if ( $this.Status -eq [GraphConnectionStatus]::Online ) {
             if ( $this.GraphEndpoint.Type -eq 'MSGraph' ) {
                 # Trust the library's token cache to get a new token if necessary
-                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id
+                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id $certificatePassword
                 $this.connected = $true
             } else {
                 Connect

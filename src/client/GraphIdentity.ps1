@@ -67,7 +67,7 @@ ScriptClass GraphIdentity {
         }
     }
 
-    function Authenticate($scopes = $null, $noBrowserUI = $false, $groupId = $null) {
+    function Authenticate($scopes = $null, $noBrowserUI = $false, $groupId = $null, [securestring] $certificatePassword) {
         if ( $this.token ) {
             $tokenTimeLeft = $this.token.expireson - [DateTime]::UtcNow
             write-verbose ("Found existing token with {0} minutes left before expiration" -f $tokenTimeLeft.TotalMinutes)
@@ -75,7 +75,7 @@ ScriptClass GraphIdentity {
 
         write-verbose ("Getting token for resource {0} from auth endpoint: {1} with protocol {2} for groupid '{3}'" -f $this.graphEndpoint.GraphResourceUri, $this.graphEndpoint.Authentication, $this.graphEndpoint.AuthProtocol, $groupId)
 
-        $this.Token = getGraphToken $this.graphEndpoint $scopes $noBrowserUI $groupId
+        $this.Token = getGraphToken $this.graphEndpoint $scopes $noBrowserUI $groupId $certificatePassword
 
         if ($this.token -eq $null) {
             throw "Failed to acquire token, no additional error information"
@@ -96,7 +96,7 @@ ScriptClass GraphIdentity {
         $this.token = $null
     }
 
-    function getGraphToken($graphEndpoint, $scopes, $noBrowserUI, $groupId) {
+    function getGraphToken($graphEndpoint, $scopes, $noBrowserUI, $groupId, [securestring] $certificatePassword) {
         write-verbose "Attempting to get token in tenant '$($this.tenantName)' for '$($graphEndpoint.GraphResourceUri)' ..."
         write-verbose "Using app id '$($this.App.AppId)'"
         $isConfidential = ($this.app |=> IsConfidential)
@@ -115,7 +115,7 @@ ScriptClass GraphIdentity {
 
         $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
 
-        $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.GraphResourceUri $authUri $groupId
+        $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.GraphResourceUri $authUri $groupId $certificatePassword
 
         $authResult = if ( $this.token ) {
             $providerInstance |=> AcquireRefreshedToken $authContext $this.token
