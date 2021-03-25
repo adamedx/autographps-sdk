@@ -38,7 +38,8 @@ function EnableSettings($settingsPath)  {
     $warningpreference = 'silentlycontinue'
     $::.LocalSettings |=> __initialize
     $::.LocalConnectionProfile |=> __initialize
-    $::.LocalProfile |=> __initialize
+    $::.GraphConnection |=> __initialize
+    $::.LocalProfile |=> __initialize (get-command New-GraphConnection).ScriptBlock
     $::.LogicalGraphManager.sessionManager = $null
     $::.GraphContext |=> __initialize
 }
@@ -53,7 +54,8 @@ function DisableSettings {
     $warningpreference = 'silentlycontinue'
     $::.LocalSettings |=> __initialize
     $::.LocalConnectionProfile |=> __initialize
-    $::.LocalProfile |=> __initialize
+    $::.GraphConnection |=> __initialize
+    $::.LocalProfile |=> __initialize (get-command New-GraphConnection).ScriptBlock
     $::.LogicalGraphManager.sessionManager = $null
     $::.GraphContext |=> __initialize
 }

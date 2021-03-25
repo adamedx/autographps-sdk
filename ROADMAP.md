@@ -2,11 +2,7 @@
 
 ## To-do items -- prioritized
 
-* Add Get-GraphProfile, Select-GraphProfile
-* Add Get-GraphConnection, Select-GraphConnection
-* Allow named connections
 * Restore Connect-Graph from Connect-GraphApi
-* Support certificate paths to certificate files outside of the certificate store to allow apponly support on Linux
 * Make public client apps aad only by default for multi-tenant apps
 * Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
 * When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
@@ -375,6 +371,11 @@
 * Add delta
 * Parse odata context
 * Use a new appid hosted in a normal aad tenant rather than a consumer-initiated tenant
+* Add Get-GraphProfileSettings, Select-GraphProfile
+* Add Get-GraphConnection, Select-GraphConnection
+* Allow named connections
+* Support certificate paths to certificate files outside of the certificate store to allow apponly support on Linux
+* Add -NoProfile option to Connect-GraphApi to remove impact of profiles on connections
 
 ### Postponed
 

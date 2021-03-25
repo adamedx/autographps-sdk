@@ -32,15 +32,13 @@ function New-GraphApplication {
 
         [AppTenancy] $Tenancy = ([AppTenancy]::Auto),
 
-        [parameter(parametersetname='publicapp')]
         [String[]] $DelegatedUserPermissions,
 
-        [parameter(parametersetname='confidentialapp', mandatory=$true)]
         [String[]] $ApplicationPermissions,
 
         [parameter(parametersetname='confidentialapp', mandatory=$true)]
         [parameter(parametersetname='confidentialappexistingcertpath', mandatory=$true)]
-        [parameter(parametersetname='confidentialappnewcert', mandatory=$true)]
+        [parameter(parametersetname='confidentialappnewcertexport', mandatory=$true)]
         [parameter(parametersetname='confidentialappexistingcert', mandatory=$true)]
         [switch] $Confidential,
 
@@ -48,9 +46,6 @@ function New-GraphApplication {
         [switch] $AADAccountsOnly,
 
         [parameter(parametersetname='confidentialapp')]
-        [parameter(parametersetname='confidentialappexistingcertpath')]
-        [parameter(parametersetname='confidentialappnewcert')]
-        [parameter(parametersetname='confidentialappexistingcert')]
         [switch] $NoCredential,
 
         [switch] $ConsentForAllUsers,
@@ -65,19 +60,25 @@ function New-GraphApplication {
         $ExistingCertStorePath,
 
         [parameter(parametersetname='confidentialappnewcert')]
+        [parameter(parametersetname='confidentialappnewcertexport')]
         $CertStoreLocation = 'cert:/currentuser/my',
 
         [parameter(parametersetname='confidentialappexistingcert', mandatory=$true)]
         $Certificate,
 
         [parameter(parametersetname='confidentialappnewcert')]
+        [parameter(parametersetname='confidentialappnewcertexport')]
         [TimeSpan] $CertValidityTimeSpan,
 
         [parameter(parametersetname='confidentialappnewcert')]
+        [parameter(parametersetname='confidentialappnewcertexport')]
         [DateTime] $CertValidityStart,
 
-        [parameter(parametersetname='confidentialappnewcert')]
+        [parameter(parametersetname='confidentialappnewcertexport', mandatory=$true)]
         [string] $CertOutputDirectory,
+
+        [parameter(parametersetname='confidentialappnewcertexport', mandatory=$true)]
+        [PSCredential] $CertCredential,
 
         [string] $UserIdToConsent,
 
@@ -129,7 +130,11 @@ function New-GraphApplication {
         }
 
         if ( $CertOutputDirectory ) {
-            $certificate |=> Export $CertOutputDirectory
+            $certpassword = if ( $CertCredential ) {
+                $CertCredential.Password
+            }
+
+            $certificate |=> Export $CertOutputDirectory $certPassword
         }
     }
 

@@ -67,6 +67,12 @@ function Connect-GraphApi {
         [parameter(parametersetname='customendpoint')]
         [string] $CertificatePath,
 
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [PSCredential] $CertCredential,
+
+        [parameter(parametersetname='certpath')]
+        [switch] $NoCertCredential,
+
         [parameter(parametersetname='cert', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
         [System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate = $null,
@@ -131,6 +137,8 @@ function Connect-GraphApi {
         [switch] $AADGraph,
 
         [string] $UserAgent = $null,
+
+        [switch] $NoProfile,
 
         [parameter(parametersetname='reconnect', mandatory=$true)]
         [Switch] $Reconnect,
@@ -199,14 +207,17 @@ function Connect-GraphApi {
 
                 # Get the arguments from the profile -- these will be overridden by
                 # any parameters specified to this command
-                $currentProfile = $::.LocalProfile |=> GetCurrentProfile
+                $currentProfile = if ( ! $NoProfile.IsPresent ) {
+                    $::.LocalProfile |=> GetCurrentProfile
+                }
+
                 $conditionalArguments = if ( $currentProfile ) {
                     $currentProfile |=> ToConnectionParameters
                 } else {
                     @{}
                 }
 
-                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction', 'ConnectionName') } | foreach {
+                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction', 'ConnectionName', 'CertCredential', 'NoProfile') } | foreach {
                     $conditionalArguments[$_] = $PSBoundParameters[$_]
                 }
 
@@ -217,7 +228,11 @@ function Connect-GraphApi {
                 }
             }
 
-            $context |=> UpdateConnection $newConnection
+            $certificatePassword = if ( $CertCredential ) {
+                $CertCredential.Password
+            }
+
+            $context |=> UpdateConnection $newConnection $certificatePassword
             $newConnection
         }
 

@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ ScriptClass V1AuthProvider {
         $this.base = $base
     }
 
-    function GetAuthContext($app, $authUri, $groupId) {
+    function GetAuthContext($app, $authUri, $groupId, [securestring] $certificatePassword) {
         New-Object "Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext" -ArgumentList $authUri, $this.scriptclass.__TokenCache
     }
 
@@ -59,10 +59,10 @@ ScriptClass V1AuthProvider {
         throw [NotImplementedException]::new("Device code authentication is not implemented for the v1 authentication protocol.")
     }
 
-    function AcquireFirstAppToken($authContext) {
+    function AcquireFirstAppToken($authContext, [securestring] $certificatePassword) {
         write-verbose 'V1 auth provider acquiring initial app token'
 
-        __AcquireAppToken $authContext
+        __AcquireAppToken $authContext $certificatePassword
     }
 
     function AcquireFirstUserTokenConfidential($authContext, $scopes) {
@@ -107,13 +107,13 @@ ScriptClass V1AuthProvider {
         }
     }
 
-    function __AcquireAppToken($authContext) {
+    function __AcquireAppToken($authContext, [securestring] $certificatePassword) {
         write-verbose 'V1 auth provider acquiring app token'
 
         $clientCredential = switch ( $authContext.app.secret.type ) {
             ([SecretType]::Certificate) {
                 write-verbose 'V1 auth provider accessing specified certificate as client credential'
-                $clientCertificate = $authContext.app.secret.GetSecretData()
+                $clientCertificate = $authContext.app.secret.GetSecretData($certificatePassword)
                 [Microsoft.IdentityModel.Clients.ActiveDirectory.ClientAssertionCertificate]::new($authContext.App.AppId, $clientCertificate)
             }
             ([SecretType]::Password) {

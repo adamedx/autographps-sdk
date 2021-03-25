@@ -15,7 +15,6 @@
 . (import-script LocalSettings)
 . (import-script LocalConnectionProfile)
 . (import-script ../cmdlets/New-GraphConnection)
-. (import-script ../cmdlets/Set-GraphLogOption)
 
 ScriptClass LocalProfile {
     $name = $null
@@ -72,6 +71,7 @@ ScriptClass LocalProfile {
         $settingsPath = $null
         $settingsBypassed = $false
         $currentProfile = $null
+        $connectionCommand = $null
 
         $propertyReaders = @{
             name = @{ Validator = 'NameValidator'; Required = $true }
@@ -84,13 +84,17 @@ ScriptClass LocalProfile {
                           Updater = {
                               $currentProfile = $::.LocalProfile |=> GetCurrentProfile
                               if ( $currentProfile -and $currentProfile.logLevel ) {
-                                  Set-GraphLogOption -LogLevel $currentProfile.logLevel -erroraction ignore
+                                  try {
+                                      $logger = $::.RequestLog |=> GetDefault
+                                      $logger.LogLevel = $currentProfile.loglevel
+                                  } catch {
+                                  }
                               }
                           }
                         }
         }
 
-        function __initialize {
+        function __initialize($connectionCommand) {
             $this.settings = $null
             $this.profiles = $null
             $this.defaultProfileName = $null
@@ -98,6 +102,7 @@ ScriptClass LocalProfile {
             $this.settingsPath = $null
             $this.settingsBypassed = $false
             $this.currentProfile = $null
+            $this.connectionCommand = $connectionCommand
 
             __RegisterSettingProperties
         }
@@ -109,6 +114,16 @@ ScriptClass LocalProfile {
                 $endpointData = $this.settings |=> GetSettings graphEndpoints
                 $connectionData = $this.settings |=> GetSettings connectionProfiles $endpointData
                 $profileData = $this.settings |=> GetSettings profiles $connectionData
+
+                # We need this strange workaround for scriptclass because scriptclass
+                # hosts the code for static methods in a separate 'custom' module from the rest
+                # of the class and the overall module itself. So commands exported
+                # by this module are invisible (unless you dot source the module's code
+                # instead of importing it as a module). So we inject the command script
+                # as a parameter, assuming that the caller of __initialize is outside of
+                # this custom module and has access to the New-GraphConnection command.
+                # TODO: Find a better way to do this. :)
+                new-item -force function:New-GraphConnection -value $this.connectionCommand | out-null
 
                 if ( $connectionData ) {
                     foreach ( $connectionElement in $connectionData.values ) {
@@ -253,4 +268,4 @@ ScriptClass LocalProfile {
     }
 }
 
-$::.LocalProfile |=> __initialize
+$::.LocalProfile |=> __initialize (get-command New-GraphConnection).ScriptBlock

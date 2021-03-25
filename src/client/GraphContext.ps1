@@ -60,7 +60,7 @@ ScriptClass GraphContext {
         $this.connection.GraphEndpoint.Graph
     }
 
-    function UpdateConnection($connection) {
+    function UpdateConnection($connection, $certificatePassword) {
         $newConnection = if ( $connection ) {
             write-verbose 'Connection specified to UpdateConnection'
             $connection
@@ -71,7 +71,7 @@ ScriptClass GraphContext {
 
         write-verbose 'Connecting...'
 
-        $newConnection |=> Connect
+        $newConnection |=> Connect $certificatePassword
 
         write-verbose 'Connection succeeded.'
 

@@ -49,6 +49,9 @@ function Get-GraphToken {
         [parameter(parametersetname='customendpoint')]
         [string] $CertificatePath,
 
+        [parameter(parametersetname='certpath', mandatory=$true)]
+        [PSCredential] $CertCredential,
+
         [parameter(parametersetname='cert', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
         [System.Security.Cryptography.X509Certificates.X509Certificate2] $Certificate = $null,
@@ -141,7 +144,7 @@ function Get-GraphToken {
             $connectionArguments['GraphEndpoint'] = 'https://graph.microsoft.com'
         }
 
-        $psboundparameters.keys | where { $psboundparameters[$_] -and @('Current', 'Connection', 'AsObject') -notcontains $_ } | foreach {
+        $psboundparameters.keys | where { $psboundparameters[$_] -and @('Current', 'Connection', 'AsObject', 'ErrorAction', 'CertCredential', 'ConnectionName' ) -notcontains $_ } | foreach {
             $connectionArguments[$_] = $psboundparameters[$_]
         }
 
