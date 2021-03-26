@@ -30,7 +30,7 @@ limitations under the License.
             <Label>RequestTimestamp</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>StatusCode</Label>
+            <Label>Status</Label>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Method</Label>
@@ -52,7 +52,7 @@ limitations under the License.
                 <ScriptBlock>$_.RequestTimestamp.DateTime</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.GraphFormatter.StatusCode($_.StatusCode)</ScriptBlock>
+                <ScriptBlock>$::.GraphFormatter.StatusCode($_.Status)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>$::.GraphFormatter.RestMethod($_.Method)</ScriptBlock>
@@ -88,7 +88,7 @@ limitations under the License.
             <Label>ClientElapsedTime</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>StatusCode</Label>
+            <Label>Status</Label>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Method</Label>
@@ -108,7 +108,7 @@ limitations under the License.
                 <ScriptBlock>$::.GraphFormatter.ResponseElapsedTime($_.ClientElapsedTime)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.GraphFormatter.StatusCode($_.StatusCode)</ScriptBlock>
+                <ScriptBlock>$::.GraphFormatter.StatusCode($_.Status)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>$::.GraphFormatter.RestMethod($_.Method)</ScriptBlock>
@@ -117,7 +117,7 @@ limitations under the License.
                 <PropertyName>ResourceUri</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>ResponseTimeStamp</PropertyName>
+                <PropertyName>ResponseTimestamp</PropertyName>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -137,7 +137,7 @@ limitations under the License.
           <TableColumnHeader>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>StatusCode</Label>
+            <Label>Status</Label>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Method</Label>
@@ -167,7 +167,7 @@ limitations under the License.
                 <PropertyName>ClientRequestId</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.GraphFormatter.StatusCode($_.StatusCode)</ScriptBlock>
+                <ScriptBlock>$::.GraphFormatter.StatusCode($_.Status)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>$::.GraphFormatter.RestMethod($_.Method)</ScriptBlock>
@@ -213,7 +213,7 @@ limitations under the License.
           <TableColumnHeader>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>StatusCode</Label>
+            <Label>Status</Label>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Method</Label>
@@ -240,7 +240,7 @@ limitations under the License.
                 <PropertyName>UserObjectId</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.GraphFormatter.StatusCode($_.StatusCode)</ScriptBlock>
+                <ScriptBlock>$::.GraphFormatter.StatusCode($_.Status)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>$::.GraphFormatter.RestMethod($_.Method)</ScriptBlock>
@@ -273,8 +273,8 @@ limitations under the License.
                 <PropertyName>RequestTimestamp</PropertyName>
               </ListItem>
               <ListItem>
-                <Label>StatusCode</Label>
-                <ScriptBlock>$::.GraphFormatter.StatusCode($_.StatusCode)</ScriptBlock>
+                <Label>Status</Label>
+                <ScriptBlock>$::.GraphFormatter.StatusCode($_.Status)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <PropertyName>ErrorResponse</PropertyName>

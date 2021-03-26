@@ -90,7 +90,6 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Connect-GraphApi                     | Establishes authentication and authorization context used across cmdlets for the current graph                                                          |
 | Disconnect-GraphApi                  | Clears authentication and authorization context used across cmdlets for the current graph                                                               |
 | Find-GraphLocalCertificate           | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph                                    |
-| Format-GraphLog (fgl)                | Emits the Graph request log to the console in a manner optimized for understanding Graph and troubleshooting requests                                   |
 | Get-GraphApplication                 | Gets a list of Azure AD applications in the tenant                                                                                                      |
 | Get-GraphApplicationCertificate      | Gets the certificates with public keys configured on the application                                                                                    |
 | Get-GraphApplicationConsent          | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)                                                  |
