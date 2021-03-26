@@ -17,5 +17,4 @@ set-alias ggr Get-GraphResource
 set-alias gcat Get-GraphResource
 set-alias Get-GraphContent Get-GraphResource
 set-alias ggl Get-GraphLog
-set-alias fgl Format-GraphLog
 

@@ -74,7 +74,6 @@ FunctionsToExport = @(
     'Connect-GraphApi'
     'Disconnect-GraphApi'
     'Find-GraphLocalCertificate'
-    'Format-GraphLog'
     'Get-GraphApplication'
     'Get-GraphApplicationCertificate'
     'Get-GraphApplicationConsent'
@@ -117,7 +116,7 @@ CmdletsToExport = @()
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
+AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -151,7 +150,6 @@ AliasesToExport = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
         '.\src\cmdlets\Connect-GraphApi.ps1'
         '.\src\cmdlets\Disconnect-GraphApi.ps1'
         '.\src\cmdlets\Find-GraphLocalCertificate.ps1'
-        '.\src\cmdlets\Format-GraphLog.ps1'
         '.\src\cmdlets\Get-GraphApplication.ps1'
         '.\src\cmdlets\Get-GraphApplicationCertificate.ps1'
         '.\src\cmdlets\Get-GraphApplicationConsent.ps1'

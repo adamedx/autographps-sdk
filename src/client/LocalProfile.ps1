@@ -122,7 +122,8 @@ ScriptClass LocalProfile {
                 # instead of importing it as a module). So we inject the command script
                 # as a parameter, assuming that the caller of __initialize is outside of
                 # this custom module and has access to the New-GraphConnection command.
-                # TODO: Find a better way to do this. :)
+                # TODO: Find a better way to do this. :) Easiest fix would be to simply make an internal
+                # version of New-GraphConnection exposed as a class method instead of using the command.
                 new-item -force function:New-GraphConnection -value $this.connectionCommand | out-null
 
                 if ( $connectionData ) {

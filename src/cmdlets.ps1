@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 . (import-script cmdlets\Connect-GraphApi)
 . (import-script cmdlets\Disconnect-GraphApi)
 . (import-script cmdlets\Find-GraphLocalCertificate)
-. (import-script cmdlets\Format-GraphLog)
 . (import-script cmdlets\Get-GraphApplication)
 . (import-script cmdlets\Get-GraphApplicationCertificate)
 . (import-script cmdlets\Get-GraphApplicationConsent)

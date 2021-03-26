@@ -26,7 +26,7 @@ ScriptClass RequestLogEntry {
         const ERROR_MESSAGE_EXTENDED_FIELD 'ErrorMessage'
         const EXTENDED_PROPERTIES @($ERROR_MESSAGE_EXTENDED_FIELD)
 
-        $::.DisplayTypeFormatter |=> RegisterDisplayType $LOG_ENTRY_DISPLAY_TYPE 'RequestTimestamp', 'StatusCode', 'Method', 'Uri'
+        $::.DisplayTypeFormatter |=> RegisterDisplayType $LOG_ENTRY_DISPLAY_TYPE 'RequestTimestamp', 'Status', 'Method', 'Uri'
 
         $ExtendedPropertySet = $null
 
@@ -43,6 +43,13 @@ ScriptClass RequestLogEntry {
             $restRequestMethod = if ( $restRequest ) { $restRequest.Method }
             $restRequestHeaders = if ( $restRequest ) { $restRequest.headers } else { @{} }
             $restRequestBody = if ( $restRequest ) { $restRequest.body }
+
+            $restRequestBodySize = if ( $restRequestBody -ne $null ) {
+                $restRequestBody.length
+            } else {
+                0
+            }
+
             [ordered] @{
                 RequestTimestamp = $null
                 Uri = $restRequestUri
@@ -50,7 +57,7 @@ ScriptClass RequestLogEntry {
                 ClientRequestId = $restRequestHeaders['client-request-id']
                 RequestHeaders = $scrubbedRequestHeaders
                 RequestBody = $requestBody
-                HasRequestBody = ( $restRequestBody -ne $null ) -and ( $restRequestBody -ne '' )
+                RequestBodySize = $restRequestBodySize
                 AppId = $appId
                 AuthType = $authType
                 UserObjectId = $userObjectId
@@ -60,13 +67,15 @@ ScriptClass RequestLogEntry {
                 ResourceUri = $resourceUri
                 Query = $query
                 Version = $version
-                StatusCode = 0
+                Status = 0
                 ResponseTimestamp = $null
                 $ERROR_RESPONSE_FIELD = $null
                 ResponseClientRequestId = $null
                 ResponseHeaders = $null
                 ResponseContent = $null
+                ResponseContentSize = $null
                 ResponseRawContent = $null
+                ResponseRawContentSize = $null
                 ClientElapsedTime = $null
                 LogLevel = $logLevel
             }
@@ -132,16 +141,20 @@ ScriptClass RequestLogEntry {
 
     function LogSuccess([PSTypeName('RESTResponse')] $response) {
         try {
-            $responseTimeStamp = [DateTimeOffset]::now
+            $responseTimestamp = [DateTimeOffset]::now
             $scrubbedHeaders = __GetScrubbedHeaders $response.headers
 
             if ( $this.logLevel -ne 'None' ) {
-                $this.displayProperties.StatusCode = $response.statuscode
+                $this.displayProperties.Status = $response.statuscode
                 $this.displayProperties.ResponseTimestamp = [DateTimeOffset]::now
                 $this.displayProperties.ResponseTimestamp = $responseTimestamp
                 $this.displayProperties.ClientRequestId = $scrubbedHeaders['client-request-id']
                 $this.displayProperties.ResponseHeaders = $scrubbedHeaders
                 $this.displayProperties.ClientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
+
+                $this.displayProperties.ResponseContentSize = $response.RawContentLength
+                $this.displayProperties.ResponseRawContentSize = $response.RawContent.Length
+
                 if ( __ShouldLogFullResponse ) {
                     $this.displayProperties.ResponseContent = $response.content
                     $this.displayProperties.ResponseRawContent = $response.rawContent
@@ -155,14 +168,18 @@ ScriptClass RequestLogEntry {
     function LogError($response, $responseMessage ) {
         $this.isError = $true
         try {
-            $responseTimeStamp = [DateTimeOffset]::now
+            $responseTimestamp = [DateTimeOffset]::now
             $responseHeaders = $::.HttpUtilities |=> NormalizeHeaders $response.headers
-            $this.displayProperties.StatusCode = $response.statuscode.value__
+            $this.displayProperties.Status = $response.statuscode.value__
             $this.displayProperties.ResponseClientRequestId = $responseHeaders['client-request-id']
             $this.displayProperties.ResponseHeaders = $responseHeaders
             $this.displayProperties.ResponseTimestamp = $responseTimestamp
             $this.displayProperties[$this.scriptclass.ERROR_RESPONSE_FIELD] = $responseMessage
             $this.displayProperties.ClientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
+
+            $this.displayProperties.ResponseContentSize = $response.RawContentLength
+            $this.displayProperties.ResponseRawContentSize = $response.RawContent.Length
+
             if ( __ShouldLogFullResponse ) {
                 $this.displayProperties.ResponseContent = $response.content
                 $this.displayProperties.ResponseRawContent = $response.rawContent

@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@ URI, http method, headers, along with details of the response are recorded as en
 of log entries, where each request is a log entry. This command is useful for troubleshooting / diagnosis, analyzing performance, or
 simply exploring and understanding the Graph protocol.
 
-Entries are returned by this command in chronolgical order. The results of the command may be piped to other PowerShell commands such as
-Sort-Object to provide other sort orders, filtering, projected properties, or formatting of the log entries.
+Entries are returned by this command in reverse chronological order. The results of the command may be piped to other PowerShell commands such as Sort-Object to provide other sort orders, filtering, projected properties, or formatting of the log entries.
 
 The Clear-GraphLog command may be used to remove all entries from the log. The Set-GraphLogOption command may also be used
 to disable logging altogether.
@@ -63,38 +62,38 @@ When the log has reached its maximum capacity, the next request that is logged w
 .EXAMPLE
 Get-GraphLog
 
-RequestTimestamp              StatusCode Method Uri
-----------------              ---------- ------ ---
-10/21/2019 9:50:11 PM -07:00         200 GET    https://graph.microsoft.com/ping
-10/21/2019 9:51:33 PM -07:00         200 GET    https://graph.microsoft.com/v1.0/me
-10/21/2019 9:54:18 PM -07:00         201 POST   https://graph.microsoft.com/beta/applications
-10/21/2019 9:54:25 PM -07:00         204 PATCH  https://graph.microsoft.com/beta/applications/4b44df3-8248-4cc9-bfc6-2b9...
-10/21/2019 9:54:29 PM -07:00         200 GET    https://graph.microsoft.com/beta/servicePrincipals?$select=id&$filter=app...
-10/21/2019 10:14:31 PM -07:00        404 GET    https://graph.microsoft.com/v1.0/me/messages
-10/21/2019 10:14:54 PM -07:00        200 GET    https://graph.microsoft.com/v1.0/users
+RequestTimestamp       Status Method Version Size  ResourceUri                 ErrorResponse
+----------------       ------ ------ ------- ----  -----------                 -------------
+10/21/2019 11:50:11 PM 200    GET            163   ping
+10/21/2019 11:51:33 PM 200    GET    v1.0    415   me
+10/21/2019 11:54:18 PM 201    POST   beta    30009 applications
+10/21/2019 11:54:25 PM 204    PATCH  beta    4988  applications/4b44df3-824...
+10/21/2019 11:54:29 PM 200    GET    beta    562   servicePrincipals?$selec...
+10/21/2019 10:14:31 PM 200    GET    beta    80971 me/messages
+10/21/2019 10:14:54 PM 404    GET    v1.0          user                        {...Not found
 
 This shows a sequence of the 20 most recent calls issued from AutoGraphPS. To see more than just the 20 most recent, use
 the Oldest, Newest, or All options.
 
 .EXAMPLE
-Get-GraphLog -Newest 3
+Get-GraphLog -Oldest 3
 
-RequestTimestamp              StatusCode Method Uri
-----------------              ---------- ------ ---
-10/21/2019 10:14:11 PM -07:00        200 GET    https://graph.microsoft.com/ping
-10/21/2019 10:14:31 PM -07:00        404 GET    https://graph.microsoft.com/v1.0/me/messages
-10/21/2019 10:14:54 PM -07:00        200 GET    https://graph.microsoft.com/v1.0/users
+RequestTimestamp       Status Method Version Size  ResourceUri ErrorResponse
+----------------       ------ ------ ------- ----  ----------- -------------
+10/21/2019 10:14:54 PM 200    GET    beta    80971 me/messages
+10/21/2019 10:14:24 PM 404    GET    v1.0          user        {... Not foun
+10/21/2019  9:27:04 PM 200    GET    v1.0    163   ping
 
 This shows the newest 3 messages in the log.
 
 .EXAMPLE
-Get-GraphLog -Oldest 3 | Select  StatusCode, Method, ResourceUri
+Get-GraphLog -Oldest 3 | Select  Status, Method, ResourceUri
 
-StatusCode Method ResourceUri
----------- ------ -----------
-       200 GET    ping
-       404 GET    me/messages
-       200 GET    users
+Status Method ResourceUri
+------ ------ -----------
+   200 GET    ping
+   404 GET    me/messages
+   200 GET    users
 
 This shows the oldest 3 entries, and pipes the output to select to project specific fields
 
@@ -103,15 +102,14 @@ Get-GraphLog -StatusFilter Error
 
 2019.11.04 21:59:54> get-graphlog -StatusFilter Error
 
-RequestTimestamp            StatusCode Method Uri
-----------------            ---------- ------ ---
-11/4/2019 9:59:11 PM -08:00        404 GET    https://graph.microsoft.com/v1.0/me/applications
-11/4/2019 9:59:47 PM -08:00        400 GET    https://graph.microsoft.com/v1.0/me2
+RequestTimestamp     Status Method Version Size ResourceUri     ErrorResponse
+----------------     ------ ------ ------- ---- -----------     -------------
+11/4/2019 9:59:11 PM 403    GET    v1.0         me/applications {...
+11/4/2019 9:59:47 PM 404    GET    v1.0         me2             {... "Not fou
 
 In this example, the StatusFilter parameter is specified with the value Error so that only failed requests are returned by the command.
 
 .LINK
-Format-GraphLog
 Set-GraphLogOption
 Get-GraphLogOption
 Clear-GraphLog
