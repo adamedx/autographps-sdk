@@ -43,6 +43,13 @@ ScriptClass RequestLogEntry {
             $restRequestMethod = if ( $restRequest ) { $restRequest.Method }
             $restRequestHeaders = if ( $restRequest ) { $restRequest.headers } else { @{} }
             $restRequestBody = if ( $restRequest ) { $restRequest.body }
+
+            $restRequestBodySize = if ( $restRequestBody -ne $null ) {
+                $restRequestBody.length
+            } else {
+                0
+            }
+
             [ordered] @{
                 RequestTimestamp = $null
                 Uri = $restRequestUri
@@ -50,7 +57,7 @@ ScriptClass RequestLogEntry {
                 ClientRequestId = $restRequestHeaders['client-request-id']
                 RequestHeaders = $scrubbedRequestHeaders
                 RequestBody = $requestBody
-                HasRequestBody = ( $restRequestBody -ne $null ) -and ( $restRequestBody -ne '' )
+                RequestBodySize = $restRequestBodySize
                 AppId = $appId
                 AuthType = $authType
                 UserObjectId = $userObjectId
@@ -67,6 +74,7 @@ ScriptClass RequestLogEntry {
                 ResponseHeaders = $null
                 ResponseContent = $null
                 ResponseRawContent = $null
+                ResponseRawContentSize = $null
                 ClientElapsedTime = $null
                 LogLevel = $logLevel
             }
@@ -142,6 +150,10 @@ ScriptClass RequestLogEntry {
                 $this.displayProperties.ClientRequestId = $scrubbedHeaders['client-request-id']
                 $this.displayProperties.ResponseHeaders = $scrubbedHeaders
                 $this.displayProperties.ClientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
+
+                $this.displayProperties.ResponseContentSize = $response.RawContentLength
+                $this.displayProperties.ResponseRawContentSize = $response.RawContent.Length
+
                 if ( __ShouldLogFullResponse ) {
                     $this.displayProperties.ResponseContent = $response.content
                     $this.displayProperties.ResponseRawContent = $response.rawContent
@@ -163,6 +175,10 @@ ScriptClass RequestLogEntry {
             $this.displayProperties.ResponseTimestamp = $responseTimestamp
             $this.displayProperties[$this.scriptclass.ERROR_RESPONSE_FIELD] = $responseMessage
             $this.displayProperties.ClientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
+
+            $this.displayProperties.ResponseContentSize = $response.RawContentLength
+            $this.displayProperties.ResponseRawContentSize = $response.RawContent.Length
+
             if ( __ShouldLogFullResponse ) {
                 $this.displayProperties.ResponseContent = $response.content
                 $this.displayProperties.ResponseRawContent = $response.rawContent

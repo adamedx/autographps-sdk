@@ -27,6 +27,7 @@ limitations under the License.
       <TableControl>
         <TableHeaders>
           <TableColumnHeader>
+            <Label>RequestTimestamp</Label>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>StatusCode</Label>
@@ -37,6 +38,9 @@ limitations under the License.
           <TableColumnHeader>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Label>Size</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
           </TableColumnHeader>
           <TableColumnHeader>
           </TableColumnHeader>
@@ -45,7 +49,7 @@ limitations under the License.
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <PropertyName>RequestTimeStamp</PropertyName>
+                <ScriptBlock>$_.RequestTimestamp.DateTime</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>$::.GraphFormatter.StatusCode($_.StatusCode)</ScriptBlock>
@@ -55,6 +59,9 @@ limitations under the License.
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Version</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ResponseContentSize</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>ResourceUri</PropertyName>
@@ -95,7 +102,7 @@ limitations under the License.
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <PropertyName>RequestTimeStamp</PropertyName>
+                <PropertyName>RequestTimestamp</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>$::.GraphFormatter.ResponseElapsedTime($_.ClientElapsedTime)</ScriptBlock>
@@ -145,12 +152,16 @@ limitations under the License.
           </TableColumnHeader>
           <TableColumnHeader>
           </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
+          <TableColumnHeader>
+          </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <PropertyName>RequestTimeStamp</PropertyName>
+                <PropertyName>RequestTimestamp</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>ClientRequestId</PropertyName>
@@ -171,6 +182,12 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToColorString($_.Query, 14, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
+                <PropertyName>ResponseContentSize</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ResponseRawContentSize</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
                 <PropertyName>ErrorResponse</PropertyName>
               </TableColumnItem>
             </TableColumnItems>
@@ -187,6 +204,7 @@ limitations under the License.
       <TableControl>
         <TableHeaders>
           <TableColumnHeader>
+            <Label>RequestTimestamp</Label>
           </TableColumnHeader>
           <TableColumnHeader>
           </TableColumnHeader>
@@ -210,7 +228,7 @@ limitations under the License.
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <PropertyName>RequestTimeStamp</PropertyName>
+                <ScriptBlock>$_.RequestTimestamp.DateTime</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>AppId</PropertyName>
@@ -252,7 +270,7 @@ limitations under the License.
           <ListEntry>
             <ListItems>
               <ListItem>
-                <PropertyName>RequestTimeStamp</PropertyName>
+                <PropertyName>RequestTimestamp</PropertyName>
               </ListItem>
               <ListItem>
                 <Label>StatusCode</Label>
@@ -270,7 +288,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToColorString($_.Uri, 11, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
-                <PropertyName>RequestBody</PropertyName>
+                <PropertyName>RequestBodySize</PropertyName>
               </ListItem>
               <ListItem>
                 <Label>ClientElapsedTime</Label>
@@ -315,13 +333,19 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToColorString($_.Query, 14, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
-                <PropertyName>ResponseTimeStamp</PropertyName>
+                <PropertyName>ResponseTimestamp</PropertyName>
               </ListItem>
               <ListItem>
                 <PropertyName>ResponseClientRequestId</PropertyName>
               </ListItem>
               <ListItem>
                 <PropertyName>ResponseHeaders</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ResponseContentSize</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ResponseRawContentSize</PropertyName>
               </ListItem>
               <ListItem>
                 <ItemSelectionCondition>

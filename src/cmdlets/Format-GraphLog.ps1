@@ -49,7 +49,6 @@ $Views = @{
         'Version'
         'ResourceUri'
         'Query'
-        'HasRequestBody'
         $::.RequestLogEntry.ERROR_MESSAGE_EXTENDED_FIELD
     )
 }

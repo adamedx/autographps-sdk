@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Remove use of New-GraphConnection from within static methods and replace with internal version that is still mockable.
 * Restore Connect-Graph from Connect-GraphApi
 * Make public client apps aad only by default for multi-tenant apps
 * Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
@@ -376,6 +377,7 @@
 * Allow named connections
 * Support certificate paths to certificate files outside of the certificate store to allow apponly support on Linux
 * Add -NoProfile option to Connect-GraphApi to remove impact of profiles on connections
+* Add request and response sizes to basic log level log entries
 
 ### Postponed
 
