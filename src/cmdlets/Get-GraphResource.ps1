@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -101,6 +101,9 @@ When NoRequest is specified, instead of the command issuing a request to the Gra
 
 .PARAMETER NoSizeWarning
 Specify NoSizeWarning to suppress the warning emitted by the command if 1000 or more items are retrieved by the command and no paging parameters, i.e. First or Skip parameters, were specified. The warning is intended to communicate that returning such a large result set may not have been intended. Use this parameter to ensure that automated scripts do not output the warning when intentionally used on large result sets to return all results.
+
+.PARAMETER All
+Specify the All parameter to retrieve all results. By default, requests to the Graph will return a limited number of results; this number varies by API. This parameter makes it easy to override that behavior and retrieve all possible results in a set with a single command as opposed to querying for the result size and then paging through results (and implementing error handling logic). The downside is that in the case of a large result set the command could be unresponsive for several minutes or even longer.
 
 .OUTPUTS
 The command returns the content of the HTTP response from the Graph endpoint. The result will depend on the documented response of GET requests for the Graph URI. The results are formatted as either deserialized PowerShell objects, or, if the RawContent parameter is also sp ecified, the literal content of the HTTP response. Because Graph responds to requests with JSON except in cases where content types such as images or other media are requested, use of the RawContent parameter will usually result in JSON output.
@@ -210,6 +213,8 @@ function Get-GraphResource {
 
         [switch] $NoSizeWarning,
 
+        [switch] $All,
+
         [string] $ResultVariable = $null
     )
 
@@ -234,6 +239,7 @@ function Get-GraphResource {
             NoClientRequestId=$NoClientRequestId
             NoRequest=$NoRequest
             NoSizeWarning=$NoSizeWarning
+            All=$All
             First=$pscmdlet.pagingparameters.first
             Skip=$pscmdlet.pagingparameters.skip
             IncludeTotalCount=$pscmdlet.pagingparameters.includetotalcount
