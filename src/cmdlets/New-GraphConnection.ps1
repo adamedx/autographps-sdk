@@ -197,8 +197,8 @@ function New-GraphConnection {
                     $appCertificate = $::.GraphApplicationCertificate |=> FindAppCertificate $targetAppId
                     if ( ! $appCertificate ) {
                         throw "NoninteractiveAppOnlyAuth or Confidential was specified, but no password or certificate was specified, and no certificate with the appId '$targetAppId' in the subject name could be found in the default certificate store location. Specify an explicit certificate or password and retry."
-                    } elseif ( ($appCertificate | gm length -erroraction silentlycontinue) -and $appCertificate.length -gt 1 ) {
-                        throw "NoninteractiveAppOnlyAuth or Confidential was specified, and more than one certificate with the appId '$targetAppId' in the subject name could be found in the default certificate store location. Specify an explicity certificate or password and retry."
+                    } elseif ( ($appCertificate -is [object[]] ) -and $appCertificate.length -gt 1 ) {
+                        throw "NoninteractiveAppOnlyAuth or Confidential was specified, and more than one certificate with the appId '$targetAppId' in the subject name could be found in the default certificate store location. Specify an explicit certificate or password and retry. `n$($appCertificate.PSPath)`n"
                     }
                     $appCertificate
                 }

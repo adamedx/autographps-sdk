@@ -249,6 +249,7 @@ None.
 
 * The `Invoke-GraphRequest` and `Get-GraphRequest` commands were usually paging through all results by default rather than returning some default minimum -- this has been fixed
 * Some fields of `Get-GraphLog` such as `HasRequestBody` have been removed
+* The output of `Get-GraphApplicationConsent` now returns `Delegated` instead of `DelegatedUser` for the `PermissionType` field
 
 ### New features
 

@@ -2,7 +2,9 @@
 
 ## To-do items -- prioritized
 
-* Fix New-GraphApplicationCertificate to correclty handle certificates
+* Should add Add-GraphApplicationCertificate
+* Should add Remove-GraphApplicationCertificate
+* Should implement certificate update using addkey / removekey: https://docs.microsoft.com/en-us/graph/api/application-addkey?view=graph-rest-1.0&tabs=http
 * Remove use of New-GraphConnection from within static methods and replace with internal version that is still mockable.
 * Restore Connect-Graph from Connect-GraphApi
 * Make public client apps aad only by default for multi-tenant apps
@@ -397,6 +399,7 @@
 * Add Get-GraphProfileSettings, Select-GraphProfileSettings
 * Add Get-GraphConnection, Remove-GraphConnection
 * Allow named connections
+* Fix New-GraphApplicationCertificate to correctly handle file system-based certificates
 
 ### Abandoned
 
