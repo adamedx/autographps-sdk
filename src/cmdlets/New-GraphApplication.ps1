@@ -77,8 +77,11 @@ function New-GraphApplication {
         [parameter(parametersetname='confidentialappnewcertexport', mandatory=$true)]
         [string] $CertOutputDirectory,
 
-        [parameter(parametersetname='confidentialappnewcertexport', mandatory=$true)]
+        [parameter(parametersetname='confidentialappnewcertexport')]
         [PSCredential] $CertCredential,
+
+        [parameter(parametersetname='confidentialappnewcertexport')]
+        [switch] $NoCertCredential,
 
         [string] $UserIdToConsent,
 
@@ -88,8 +91,17 @@ function New-GraphApplication {
     )
     Enable-ScriptClassVerbosePreference
 
-    if ( $CertOutputDirectory -and ! (test-path -pathtype container $CertOutputDirectory) ) {
-        throw [ArgumentException]::new("The CertOutputDirectory parameter value '$CertOutputDirectory' is not a valid directory")
+    $exportedCertCredential = if ( $CertOutputDirectory ) {
+        if (! (test-path -pathtype container $CertOutputDirectory) ) {
+            throw [ArgumentException]::new("The CertOutputDirectory parameter value '$CertOutputDirectory' is not a valid directory")
+        }
+
+        if ( $CertCredential ) {
+            $CertCredential
+        } elseif ( ! $NoCertCredential.IsPresent ) {
+            $userName = if ( $env:user ) { $env:user } else { $env:username }
+            Get-Credential -username $userName
+        }
     }
 
     if ( $SkipTenantRegistration.IsPresent ) {
@@ -130,8 +142,8 @@ function New-GraphApplication {
         }
 
         if ( $CertOutputDirectory ) {
-            $certpassword = if ( $CertCredential ) {
-                $CertCredential.Password
+            $certpassword = if ( $exportedCertCredential ) {
+                $exportedCertCredential.Password
             }
 
             $certificate |=> Export $CertOutputDirectory $certPassword

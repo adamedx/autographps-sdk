@@ -67,7 +67,7 @@ function Connect-GraphApi {
         [parameter(parametersetname='customendpoint')]
         [string] $CertificatePath,
 
-        [parameter(parametersetname='certpath', mandatory=$true)]
+        [parameter(parametersetname='certpath')]
         [PSCredential] $CertCredential,
 
         [parameter(parametersetname='certpath')]
@@ -153,6 +153,20 @@ function Connect-GraphApi {
     process {
         Enable-ScriptClassVerbosePreference
 
+        if ( $CertificatePath ) {
+            $existingCert = get-item $certificatePath -erroraction ignore
+
+            if ( ! $existingCert ) {
+                throw [ArgumentException]::new("The specified certificate path '$CertificatePath' is not accessible. Correct the path and retry the command")
+            }
+
+            if ( $existingCert -isnot [System.Security.Cryptography.X509Certificates.X509certificate2] ) {
+                if ( ! $NoCertCredential.IsPresent -and ! $CertCredential ) {
+                    throw [ArgumentException]::new("The CertCredential parameter or the NoCertCredential parameter must be specified because a file system path '$CertificatePath' was specified with the CertificatePath parameter. Alternatively, a path to a certificate in the PowerShell certificate drive may be specified if the certificate drive is supported on this platform.")
+                }
+            }
+        }
+
         $validatedCloud = if ( $Cloud ) {
             [GraphCloud] $Cloud
         } else {
@@ -217,7 +231,7 @@ function Connect-GraphApi {
                     @{}
                 }
 
-                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction', 'ConnectionName', 'CertCredential', 'NoProfile') } | foreach {
+                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction', 'ConnectionName', 'CertCredential', 'NoProfile', 'NoCertCredential') } | foreach {
                     $conditionalArguments[$_] = $PSBoundParameters[$_]
                 }
 
@@ -228,7 +242,7 @@ function Connect-GraphApi {
                 }
             }
 
-            $certificatePassword = if ( $CertCredential ) {
+            $certificatePassword = if ( ! $NoCertCredential.IsPresent -and $CertCredential ) {
                 $CertCredential.Password
             }
 

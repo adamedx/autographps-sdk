@@ -53,7 +53,7 @@ ScriptClass Secret {
                     get-item $certPath
                 }
             } else {
-                throw [ArgumentException]::new("Secret was of invalid type '{0}', it must be a [SecureString], [X509Certificate2], or [String] path to a certificate in the PowerShell certificate drive" -f $secret.gettype())
+                throw [ArgumentException]::new("Secret was of invalid type '{0}', it must be a [SecureString], [X509Certificate2], or [String] path to a certificate in the PowerShell certificate drive or path to a .pfx file in a file system drive" -f $secret.gettype())
             }
 
             if ( $certificate ) {
