@@ -37,7 +37,7 @@ ScriptClass ConsentHelper {
                 foreach ( $scope in $scopes ) {
                     if ( $scope ) {
                         $consentEntries += @{
-                            PermissionType = 'DelegatedUser'
+                            PermissionType = 'Delegated'
                             StartTime = $startTimeOffset
                             Permission = $scope
                             GrantedTo = $grantedTo

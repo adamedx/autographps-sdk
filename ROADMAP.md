@@ -2,12 +2,12 @@
 
 ## To-do items -- prioritized
 
+* Fix New-GraphApplicationCertificate to correclty handle certificates
 * Remove use of New-GraphConnection from within static methods and replace with internal version that is still mockable.
 * Restore Connect-Graph from Connect-GraphApi
 * Make public client apps aad only by default for multi-tenant apps
 * Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
 * When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
-* Add AllResults option to Get-GraphResource and Invoke-GraphRequest, and corresponding preference variable
 * Add Start-GraphDeltaJob
 * Add Get-LastGraphResponse with view parameters, remove LASTGRAPHITEMS
 * Add output types to as many commands as possible
@@ -378,6 +378,7 @@
 * Support certificate paths to certificate files outside of the certificate store to allow apponly support on Linux
 * Add -NoProfile option to Connect-GraphApi to remove impact of profiles on connections
 * Add request and response sizes to basic log level log entries
+* Add AllResults option to Get-GraphResource and Invoke-GraphRequest, and corresponding preference variable
 
 ### Postponed
 
