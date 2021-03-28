@@ -90,6 +90,9 @@ By default the URIs specified by the Uri parameter are relative to the current G
 .PARAMETER RawContent
 This parameter specifies that the command should return results exactly in the format of the HTTP response from the Graph endpoint, rather than the default behavior where the objects are deserialized into PowerShell objects. Graph returns objects as JSON except in cases where content types such as media are being requested, so use of this parameter will generally cause the command to return JSON output.
 
+.PARAMETER ConsistencyLevel
+This parameter specifies that Graph should process the request using a specific consistency level of 'Default', 'Session' or 'Eventual'. Requests processed with 'Session" consistency, originally the only supported consistency level for Graph API requests, these requests will make a best effort to ensure that the response reflects any changes made by previous Graph API requests made by the current caller. This allows applications to perform Graph API change operations such as creating a new resource such as a user or group followed by a request to retrieve information about that group or other information (e.g. the count of all users or groups) that would be influenced by the success of the earlier change. All operations are therefore consistent within the boundary of the "session." The disadvantage of session semantics is that the cost of supporting advanced queries such as counts or searches is very costly for the Graph API services that process the request, and so many advanced queries are not supported with session semantics. For this reason, a subset of services including those providing Azure Active Directory objects like user and group subsequently added the eventual consistency level. With eventual semantics, the API services that support this consistency level may temporarily violate session consistency with the benefit that advanced queries too costly to process with session semantics are now available. The results of those queries may not be fully up to date with the latest changes, but after some (typically short, a few minutes or less than an hour) time period a given set of changes will be reflected in the results for the same query repeated at a later time. The results of the API are not immediately consistent with changes in the session, but will be "eventually." For a given use case, a particular consistency level that prioritizes short-term accuracy higher or lower than complex query capability may be more appropriate; this parameter allows the caller of this command to make that choice. Specifying 'Default' for this parameter means the consistency level is determined by the API itself and API documentation should be consulted to determine if the API even supports a particular consistency level and therefore whether it is necessary to use this parameter. Note that if this parameter is not specified, the behavior is determined by the configuration of the Graph connection used for this request.
+
 .PARAMETER AADGraph
 This parameter specifies that instead of accessing Microsoft Graph, the command should make requests against Azure Active Directory Graph (AAD Graph). Note that most functionality of this command and other commands in the module is not compatible with AAD Graph; this parameter may be deprecated in the future.
 
@@ -204,6 +207,9 @@ function Get-GraphResource {
 
         [switch] $RawContent,
 
+        [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
+        [string] $ConsistencyLevel = 'Auto',
+
         [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
         [switch] $AADGraph,
 
@@ -236,6 +242,7 @@ function Get-GraphResource {
             RawContent=$RawContent
             AbsoluteUri=$AbsoluteUri
             Headers=$Headers
+            ConsistencyLevel=$ConsistencyLevel
             NoClientRequestId=$NoClientRequestId
             NoRequest=$NoRequest
             NoSizeWarning=$NoSizeWarning

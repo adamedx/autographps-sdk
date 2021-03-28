@@ -28,7 +28,21 @@ ScriptClass GraphRequest {
     $DeltaQuery = $false
     $PageSizePreference = 0
 
-    function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null, $clientRequestId, [bool] $noRequestId, [bool] $returnRequest, [bool] $deltaQuery, $deltaToken, $pageSizePreference) {
+    function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null, $clientRequestId, [bool] $noRequestId, [bool] $returnRequest, [bool] $deltaQuery, $deltaToken, $pageSizePreference, [string] $consistencyLevel = 'Auto') {
+        $targetConsistencyLevel = if ( $consistencyLevel -and $consistencyLevel -ne 'Auto' ) {
+                $consistencyLevel
+        } else {
+            $graphConnection.consistencyLevel
+        }
+
+        if ( $targetConsistencyLevel -eq 'Auto' ) {
+            $targetConsistencyLevel = $null
+        }
+
+        if ( $targetConsistencyLevel -and ( $targetConsistencyLevel -notin 'Default', 'Session', 'Eventual' ) ) {
+            throw "The specified consistency level '$targetConsistencyLevel' is not valid -- it must be one of 'Default', 'Session', or 'Eventual'"
+        }
+
         $uriString = if ( $uri.scheme -ne $null ) {
             $uri.AbsoluteUri
         } else {
@@ -88,6 +102,10 @@ ScriptClass GraphRequest {
 
         if ( $this.PageSizePreference ) {
             $this.Headers['Prefer'] = "Prefer: odata.maxpagesize=$($this.PageSizePreference)"
+        }
+
+        if ( $targetConsistencyLevel -and $targetConsistencyLevel -ne 'Default' ) {
+            $this.Headers['ConsistencyLevel'] = $targetConsistencyLevel
         }
     }
 

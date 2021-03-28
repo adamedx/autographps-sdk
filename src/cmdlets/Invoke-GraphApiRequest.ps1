@@ -133,17 +133,17 @@ By default the URIs specified by the Uri parameter are relative to the current G
 .PARAMETER RawContent
 This parameter specifies that the command should return results exactly in the format of the HTTP response from the Graph endpoint, rather than the default behavior where the objects are deserialized into PowerShell objects. Graph returns objects as JSON except in cases where content types such as media are being requested, so use of this parameter will generally cause the command to return JSON output.
 
+.PARAMETER ConsistencyLevel
+This parameter specifies that Graph should process the request using a specific consistency level of 'Default', 'Session' or 'Eventual'. Requests processed with 'Session" consistency, originally the only supported consistency level for Graph API requests, these requests will make a best effort to ensure that the response reflects any changes made by previous Graph API requests made by the current caller. This allows applications to perform Graph API change operations such as creating a new resource such as a user or group followed by a request to retrieve information about that group or other information (e.g. the count of all users or groups) that would be influenced by the success of the earlier change. All operations are therefore consistent within the boundary of the "session." The disadvantage of session semantics is that the cost of supporting advanced queries such as counts or searches is very costly for the Graph API services that process the request, and so many advanced queries are not supported with session semantics. For this reason, a subset of services including those providing Azure Active Directory objects like user and group subsequently added the eventual consistency level. With eventual semantics, the API services that support this consistency level may temporarily violate session consistency with the benefit that advanced queries too costly to process with session semantics are now available. The results of those queries may not be fully up to date with the latest changes, but after some (typically short, a few minutes or less than an hour) time period a given set of changes will be reflected in the results for the same query repeated at a later time. The results of the API are not immediately consistent with changes in the session, but will be "eventually." For a given use case, a particular consistency level that prioritizes short-term accuracy higher or lower than complex query capability may be more appropriate; this parameter allows the caller of this command to make that choice. Specifying 'Default' for this parameter means the consistency level is determined by the API itself and API documentation should be consulted to determine if the API even supports a particular consistency level and therefore whether it is necessary to use this parameter. Note that if this parameter is not specified, the behavior is determined by the configuration of the Graph connection used for this request.
+
 .PARAMETER AADGraph
 This parameter specifies that instead of accessing Microsoft Graph, the command should make requests against Azure Active Directory Graph (AAD Graph). Note that most functionality of this command and other commands in the module is not compatible with AAD Graph; this parameter may be deprecated in the future.
 
 .PARAMETER PageSizePreference
-This parameter directs the command to issues requests that instruct the Graph API to return a specific maximum number of items in each page of results. This parameter will only take effect if Graph honors it for the particular request.
+This parameter directs the command to issue requests that instruct the Graph API to return a specific maximum number of items in each page of results. This parameter will only take effect if Graph honors it for the particular request.
 
 .PARAMETER NoClientRequestId
 This parameter suppresses the automatic generation and submission of the 'client-request-id' header in the request used for troubleshooting with service-side request logs. This parameter is included only to enable complete control over the protocol as there would be very few use cases for not sending the request id.
-
-.PARAMETER NoPaging
-By default, when Invoke-GraphApiRequest issues a request and receives a response indicating that an incomplete result set for the request has been returned, the command issues additional requests to retrieve the full set of data until the Graph indicates that all data have been returned. When the NoPaging parameter is specified, Invoke-GraphCommand issues only one request. When NoPaging is specified, instead of directly returning the content of the response for Graph, the output result uses the format as that specified by the AsResponseDetail parameter; the content is exposed in the Data property of the result object.
 
 .PARAMETER NoRequest
 When NoRequest is specified, instead of the command issuing a request to the Graph and returning the response content as command output, no request is issued and the request URI including query parameters rather than the content is emitted as output. This parameter is a useful way to understnd the request URI that would be generated for a given set of parameter options including search filters, and could be used to supply a URI to other Graph clients that could issue the actual request.
@@ -315,6 +315,9 @@ function Invoke-GraphApiRequest {
         [switch] $AbsoluteUri,
 
         [switch] $RawContent,
+
+        [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
+        [string] $ConsistencyLevel = 'Auto',
 
         [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
         [switch] $AADGraph,
@@ -582,7 +585,7 @@ function Invoke-GraphApiRequest {
                     $null
                 }
 
-                $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent $NoRequest.IsPresent ( $startDelta -and ! $isDeltaUri ) $initialDeltaToken $PageSizePreference
+                $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent $NoRequest.IsPresent ( $startDelta -and ! $isDeltaUri ) $initialDeltaToken $PageSizePreference $ConsistencyLevel
                 $request |=> SetBody $Body
                 try {
                     $request |=> Invoke $skipCount $PageSizePreference -logger $logger
