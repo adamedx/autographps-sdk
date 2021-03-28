@@ -35,6 +35,7 @@ Describe "Poshgraph application" {
                 'Connect-GraphApi',
                 'Disconnect-GraphApi',
                 'Find-GraphLocalCertificate',
+                'Format-GraphLog',
                 'Get-GraphApplication',
                 'Get-GraphApplicationCertificate',
                 'Get-GraphApplicationConsent',
@@ -81,7 +82,7 @@ Describe "Poshgraph application" {
         }
 
         It "should export the exact same set of aliases as are in the set of expected aliases" {
-            $expectedAliases = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl')
+            $expectedAliases = @('fgl', 'gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl')
 
             $manifest.AliasesToExport.count | Should BeExactly $expectedAliases.length
 

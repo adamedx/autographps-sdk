@@ -16,6 +16,7 @@
 . (import-script cmdlets\Connect-GraphApi)
 . (import-script cmdlets\Disconnect-GraphApi)
 . (import-script cmdlets\Find-GraphLocalCertificate)
+. (import-script cmdlets\Format-GraphLog)
 . (import-script cmdlets\Get-GraphApplication)
 . (import-script cmdlets\Get-GraphApplicationCertificate)
 . (import-script cmdlets\Get-GraphApplicationConsent)
