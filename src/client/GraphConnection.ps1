@@ -30,8 +30,9 @@ ScriptClass GraphConnection {
     $NoBrowserUI = $false
     $UserAgent = $null
     $Name = $null
+    $ConsistencyLevel = $null
 
-    function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes, $noBrowserUI = $false, $userAgent = $null, [string] $name) {
+    function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes, $noBrowserUI = $false, $userAgent = $null, [string] $name, [string] $consistencyLevel = 'Auto' ) {
         $this.Id = new-guid
         $this.GraphEndpoint = $graphEndpoint
         $this.Identity = $Identity
@@ -42,6 +43,15 @@ ScriptClass GraphConnection {
 
         $isRemotePSSession = (get-variable PSSenderInfo -erroraction ignore) -ne $null
         write-verbose ("Browser supported: {0}, NoBrowserUISpecified {1}, IsRemotePSSession: {2}" -f $::.Application.SupportsBrowserSignin, $noBrowserUI, $isRemotePSSession)
+
+        $this.consistencyLevel = if ( $consistencyLevel ) {
+            if ( $consistencyLevel -notin 'Auto', 'Default', 'Session', 'Eventual' ) {
+                throw "The specified consistency level of '$consistencyLevel' is not valid -- it must be one of 'Default', 'Session', or 'Eventual'"
+            }
+            if ( $consistencyLevel -notin 'Auto', 'Default' ) {
+                $consistencyLevel
+            }
+        }
 
         $this.NoBrowserUI = ! $::.Application.SupportsBrowserSignin -or $noBrowserUI -or $isRemotePSSession
 
@@ -115,14 +125,14 @@ ScriptClass GraphConnection {
             $this.connections = @{}
         }
 
-        function NewSimpleConnection([string] $graphType = 'MSGraph', [string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null, $userAgent = $null, $allowMSA = $true, $name ) {
+        function NewSimpleConnection([string] $graphType = 'MSGraph', [string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null, $userAgent = $null, $allowMSA = $true, $name, [string] $consistencyLevel ) {
             $endpoint = new-so GraphEndpoint $cloud $graphType $null $null $authProtocol
             $app = new-so GraphApplication $::.Application.DefaultAppId
             $identity = if ( ! $anonymous ) {
                 new-so GraphIdentity $app $endpoint $tenantName $allowMSA
             }
 
-            new-so GraphConnection $endpoint $identity $ScopeNames $false $userAgent $name
+            new-so GraphConnection $endpoint $identity $ScopeNames $false $userAgent $name $consistencyLevel
         }
 
         function ToConnectionInfo([PSCustomObject] $connection) {
