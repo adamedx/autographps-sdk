@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script LocalProfileSpec)
 . (import-script LocalSettings)
 . (import-script LocalConnectionProfile)
 . (import-script ../cmdlets/New-GraphConnection)
@@ -34,7 +35,11 @@ ScriptClass LocalProfile {
         $this.InitialApiVersion = $profileData['initialApiVersion']
         $this.logLevel = $profileData['logLevel']
 
-        $this.connectionProfile = new-so LocalConnectionProfile $connectionData $endpointData
+        $endpointCollection = if ( $endpointData ) {
+            @{$endpointData.Name=$endpointData}
+        }
+
+        $this.connectionProfile = new-so LocalConnectionProfile $connectionData $endpointCollection
     }
 
     function GetConnection {
@@ -75,8 +80,32 @@ ScriptClass LocalProfile {
 
         $propertyReaders = @{
             name = @{ Validator = 'NameValidator'; Required = $true }
-            initialApiVersion = @{ Validator = 'StringValidator'; Required = $false }
-            connectionProfile = @{ Validator = 'ConnectionValidator'; Required = $false }
+            initialApiVersion = @{ Validator = 'StringValidator'; Required = $false
+                                   Updater = {
+                                       $currentProfile = $::.LocalProfile |=> GetCurrentProfile
+                                       if ( $currentProfile -and $currentProfile.InitialApiVersion ) {
+                                           $currentContext = $::.GraphContext |=> GetCurrent
+                                           # Only do this if we have a context -- if there is none, this must be startup,
+                                           # so let this value be set by the rest of the startup process
+                                           if ( $currentContext ) {
+                                               $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $currentContext $null $currentProfile.InitialApiVersion $null $false
+                                               $::.GraphContext |=> SetCurrentByName $newContext.name
+                                           }
+                                       }
+                                   }
+                                 }
+            $::.LocalProfileSpec.ConnectionProperty = @{ Validator = 'ConnectionValidator'; Required = $false
+                                                         Updater = {
+                                                             $currentProfile = $::.LocalProfile |=> GetCurrentProfile
+                                                             if ( $currentProfile ) {
+                                                                 $connection = $currentProfile |=> GetConnection
+                                                                 $currentContext = $::.GraphContext |=> GetCurrent
+                                                                 if ( $connection -and $currentContext ) {
+                                                                     $currentContext |=> UpdateConnection $connection
+                                                                 }
+                                                             }
+                                                         }
+                                                       }
             noBowserSigninUI = @{ Validator = 'BooleanValidator'; Required = $false }
             shellPromptBehavior = @{ Validator = 'StringValidator'; Required = $false }
             autoConnect = @{ Validator = 'BooleanValidator'; Required = $false }
@@ -111,9 +140,9 @@ ScriptClass LocalProfile {
             if ( $this.settings ) {
                 $this.settings |=> Load
 
-                $endpointData = $this.settings |=> GetSettings graphEndpoints
-                $connectionData = $this.settings |=> GetSettings connectionProfiles $endpointData
-                $profileData = $this.settings |=> GetSettings profiles $connectionData
+                $endpointData = $this.settings |=> GetSettings $::.LocalProfileSpec.EndpointsCollection
+                $connectionData = $this.settings |=> GetSettings $::.LocalProfileSpec.ConnectionsCollection $endpointData
+                $profileData = $this.settings |=> GetSettings $::.LocalProfileSpec.ProfilesCollection $connectionData
 
                 # We need this strange workaround for scriptclass because scriptclass
                 # hosts the code for static methods in a separate 'custom' module from the rest
@@ -132,11 +161,16 @@ ScriptClass LocalProfile {
 
                         $connectionParameters = $connectionProfile |=> ToConnectionParameters
 
+                        write-verbose "Configuring application '$($connectionProfile.name)' with the following parameters:"
+                        foreach ( $parameterName in $connectionParameters.Keys ) {
+                            write-verbose ( "{0}: {1}" -f $parameterName, $connectionParameters[$parameterName] )
+                        }
+
                         try {
                             New-GraphConnection @connectionParameters -Name $connectionProfile.Name | out-null
                         } catch {
                             write-warning "Unable to configure specified connection setting '$($connectionProfile.name)'"
-                            write-warning $_.exception
+                            write-warning $_.exception.message
                         }
                     }
                 }
@@ -194,7 +228,7 @@ ScriptClass LocalProfile {
 
         function __GetProfileByName($profileName) {
             if ( $this.profiles ) {
-                $this.profiles | where name -eq $this.defaultProfileName
+                $this.profiles | where name -eq $profileName
             }
         }
 
@@ -225,7 +259,7 @@ ScriptClass LocalProfile {
         }
 
         function __GetNormalizedProfileData($profileData, $connections, $endpoints) {
-            $referencedConnectionName = $profileData['connectionProfile']
+            $referencedConnectionName = $profileData[$::.LocalProfileSpec.ConnectionProperty]
             $referencedEndpointName = $null
 
             $endpointData = $null
@@ -235,7 +269,7 @@ ScriptClass LocalProfile {
                 $connectionData = $connections[$referencedConnectionName]
 
                 if ( $connectionData ) {
-                    $endpointName = $connectionData['graphEndpoint']
+                    $endpointName = $connectionData[$::.LocalProfileSpec.EndpointProperty]
                     $referencedEndpointName = if ( $endpointName -and ! ( $::.GraphEndpoint |=> IsWellKnownCloud $endpointName ) ) {
                         $endpointName
                     }
@@ -264,7 +298,7 @@ ScriptClass LocalProfile {
         }
 
         function __RegisterSettingProperties {
-            $::.LocalSettings |=> RegisterSettingProperties profiles $this.propertyReaders
+            $::.LocalSettings |=> RegisterSettingProperties $::.LocalProfileSpec.ProfilesCollection $this.propertyReaders
         }
     }
 }

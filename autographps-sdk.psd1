@@ -145,6 +145,7 @@ AliasesToExport = @('fgl', 'gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl')
         '.\src\client\GraphIdentity.ps1'
         '.\src\client\LocalConnectionProfile.ps1'
         '.\src\client\LocalProfile.ps1'
+        '.\src\client\LocalProfileSpec.ps1'
         '.\src\client\LocalSettings.ps1'
         '.\src\client\LogicalGraphManager.ps1'
         '.\src\cmdlets\Clear-GraphLog.ps1'

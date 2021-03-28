@@ -86,7 +86,9 @@ ScriptClass GraphContext {
     }
 
     function SetLocation([PSCustomObject] $location) {
-        throw [ArgumentException]::new('Cannot set the current location because the specified location was null.')
+        if ( ! $location ) {
+            throw [ArgumentException]::new('Cannot set the current location because the specified location was null.')
+        }
         $this.location = $location
     }
 
@@ -122,8 +124,8 @@ ScriptClass GraphContext {
         function SetDefaultLocation($location) {
             if ( ! $location ) {
                 throw [ArgumentException]::new('Cannot set the default location because the specified location was null.')
-                $this.defaultLocation = $location
             }
+            $this.defaultLocation = $location
         }
 
         function FindContext($endpoint, $apiVersion) {
