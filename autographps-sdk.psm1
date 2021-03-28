@@ -19,6 +19,7 @@ $cmdlets = @(
     'Connect-GraphApi'
     'Disconnect-GraphApi'
     'Find-GraphLocalCertificate'
+    'Format-GraphLog'
     'Get-GraphApplication'
     'Get-GraphApplicationCertificate'
     'Get-GraphApplicationConsent'
@@ -52,7 +53,7 @@ $cmdlets = @(
     'Unregister-GraphApplication'
 )
 
-$aliases = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl')
+$aliases = @('fgl', 'gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl')
 
 $variables = @('AutoGraphColorModePreference', 'GraphVerboseOutputPreference', 'LastGraphItems')
 

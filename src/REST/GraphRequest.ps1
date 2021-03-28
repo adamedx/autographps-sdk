@@ -40,7 +40,7 @@ ScriptClass GraphRequest {
         }
 
         if ( $targetConsistencyLevel -and ( $targetConsistencyLevel -notin 'Default', 'Session', 'Eventual' ) ) {
-            throw "The specified consistency level '$targetConsistencyLevel' is not valid -- it must be one of 'Default', 'Session', or 'Eventual'"
+            throw "The specified consistency level '$targetConsistencyLevel' is not valid -- it must be one of 'Auto', 'Default', 'Session', or 'Eventual'"
         }
 
         $uriString = if ( $uri.scheme -ne $null ) {
