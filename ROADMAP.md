@@ -7,7 +7,6 @@
 * Should implement certificate update using addkey / removekey: https://docs.microsoft.com/en-us/graph/api/application-addkey?view=graph-rest-1.0&tabs=http
 * Remove use of New-GraphConnection from within static methods and replace with internal version that is still mockable.
 * Restore Connect-Graph from Connect-GraphApi
-* Make public client apps aad only by default for multi-tenant apps
 * Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
 * When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
 * Add Start-GraphDeltaJob
@@ -381,6 +380,8 @@
 * Add -NoProfile option to Connect-GraphApi to remove impact of profiles on connections
 * Add request and response sizes to basic log level log entries
 * Add AllResults option to Get-GraphResource and Invoke-GraphRequest, and corresponding preference variable
+* Support for eventual consistency options in Graph requests
+* Make public client apps aad only by default for multi-tenant apps
 
 ### Postponed
 

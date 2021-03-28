@@ -108,7 +108,8 @@
                 "authType":  "apponly",
                 "appCredentials":  {
                     "tenantId":  "650c9193-decf-402d-a6b8-70b1e2f8f2e6"
-                }
+                },
+                "consistencyLevel": "Eventual"
             },
 
             {
@@ -130,6 +131,11 @@
 
             {
                 "onlyInvalidPropertiesConnection": "connnectionVal"
+            },
+
+            {
+                "name": "BadConsistencyLevel",
+                "consistencyLevel": "InvalidConsistencyLevel"
             },
 
             {

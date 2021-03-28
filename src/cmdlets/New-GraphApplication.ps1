@@ -43,7 +43,7 @@ function New-GraphApplication {
         [switch] $Confidential,
 
         [parameter(parametersetname='publicapp')]
-        [switch] $AADAccountsOnly,
+        [switch] $AllowMSAAccounts,
 
         [parameter(parametersetname='confidentialapp')]
         [switch] $NoCredential,
@@ -125,7 +125,7 @@ function New-GraphApplication {
 
     $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
 
-    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris
+    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy ( ! $AllowMSAAccounts.IsPresent ) $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris
 
     $newApp = $newAppRegistration |=> CreateNewApp
 

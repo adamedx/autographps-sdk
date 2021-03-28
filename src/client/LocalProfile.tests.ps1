@@ -119,6 +119,8 @@ $NewGraphConnectionMockScript = {
         [string] $AuthProtocol = 'Default',
         [string] $AccountType = 'Auto',
         [string] $Name = $null,
+        [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
+        [string] $ConsistencyLevel = 'Auto',
         [switch] $AADGraph,
         [String] $UserAgent = $null
     )
@@ -144,6 +146,7 @@ $NewGraphConnectionMockScript = {
         NoBrowserUI = $NoBrowserSigninUi.IsPresent
         UserAgent = $UserAgent
         Name = $Name
+        ConsistencyLevel = $ConsistencyLevel
     }
 
     $mockConnections.Add($connection.Id, $connection)
@@ -217,6 +220,7 @@ Describe 'LocalProfile class' {
                 'ConnectionWithNonexistentEndpoint'
                 'ConnectionWithBadEndpoint'
                 'MalformedAppId'
+                'BadConsistencyLevel'
             ) | select -expandproperty name
 
             $actualConnections = Get-GraphConnection | where name -ne ''
@@ -398,6 +402,7 @@ Describe 'LocalProfile class' {
                 'ConnectionWithNonexistentEndpoint'
                 'ConnectionWithBadEndpoint'
                 'MalformedAppId'
+                'BadConsistencyLevel'
             ) | select -expandproperty name
 
             $mockConnections = $::.MockContext.Connections
@@ -449,6 +454,10 @@ Describe 'LocalProfile class' {
                         if ( $expectedConnection | gm 'accountType' -erroraction ignore ) {
                             $expectedAllowMSA = $expectedConnection.accountType -eq 'AzureADAndPersonalMicrosoftAccount'
                             $connection.App.Identity.AllowMSA -eq $expectedAllowMSA
+                        }
+
+                        if ( $expectedConnection | gm 'consistencyLevel' -erroraction ignore ) {
+                            $connection.consistencyLevel | should be $expectedConnection.consistencyLevel
                         }
                     }
                 }

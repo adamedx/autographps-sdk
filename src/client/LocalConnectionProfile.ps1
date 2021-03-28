@@ -112,6 +112,10 @@ ScriptClass LocalConnectionProfile {
             $parameters['Permissions'] = $permissions }
         }
 
+        if ( $this.connectionData['consistencyLevel'] ) {
+            $parameters['ConsistencyLevel'] = $this.connectionData['consistencyLevel']
+        }
+
         $parameters
     }
 
@@ -139,6 +143,7 @@ ScriptClass LocalConnectionProfile {
             confidential = @{ Validator = 'BooleanValidator'; Required = $false }
             appCredentials = @{ Validator = 'AppCredentialValidator'; Required = $false }
             graphEndpoint = @{ Validator = 'EndpointValidator'; Required = $false }
+            consistencyLevel = @{ Validator = 'StringValidator'; Required = $false }
         }
 
         function __initialize {

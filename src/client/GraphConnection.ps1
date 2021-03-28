@@ -136,6 +136,7 @@ ScriptClass GraphConnection {
         }
 
         function ToConnectionInfo([PSCustomObject] $connection) {
+            $consistencyLevel = if ( $connection.consistencyLevel ) { $connection.consistencyLevel } else { 'Auto' }
             [PSCustomObject] @{
                 Id = $connection.id
                 Name = $connection.Name
@@ -144,6 +145,7 @@ ScriptClass GraphConnection {
                 Tenant = $connection.identity.GetTenantId()
                 User = $connection.identity.GetUserInformation().UserId
                 Status = $connection.getstatus()
+                ConsistencyLevel = $consistencyLevel
                 Connection = $connection
             }
         }
