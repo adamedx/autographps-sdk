@@ -145,6 +145,7 @@ AliasesToExport = @('fgl', 'gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl')
         '.\src\client\GraphIdentity.ps1'
         '.\src\client\LocalConnectionProfile.ps1'
         '.\src\client\LocalProfile.ps1'
+        '.\src\client\LocalProfileSpec.ps1'
         '.\src\client\LocalSettings.ps1'
         '.\src\client\LogicalGraphManager.ps1'
         '.\src\cmdlets\Clear-GraphLog.ps1'
@@ -252,6 +253,7 @@ None.
 * The `Invoke-GraphRequest` and `Get-GraphRequest` commands were usually paging through all results by default rather than returning some default minimum -- this has been fixed
 * Some fields of `Get-GraphLog` such as `HasRequestBody` have been removed
 * The output of `Get-GraphApplicationConsent` now returns `Delegated` instead of `DelegatedUser` for the `PermissionType` field
+* The `AADAccountsOnly` parameter for `New-GraphApplication` has been renamed to `AllowMSAAccounts` and its semantics have been reversed to match the rename. So now by default, public client apps do not allow MSA accounts, where before they would (at least if the app was multi-tenant).
 
 ### New features
 
@@ -269,6 +271,10 @@ None.
   * The existing `CertificatePath` parameter now supports file system paths in addition to Windows certificate store paths. A path to a .pfx file may be specified on any operating system
   * The `CertCredential` parameter allows specification of the certificate password -- it is mandatory when specifying a file-system based certificate using the `CertificatePath` parameter
   * The `NoCertCredential` parameter allows the password to be skipped when the `CertificatePath` parameter is specified -- this is useful when the file-system based certificate has no password.
+* Support for eventual consistency, which allows for a range of rich, complex queries in exchange for those queries missing results from more recent updates to the Graph:
+  * `Connect-GraphApi` and `New-GraphConnection` expose a new `ConsistencyLevel` parameter that allows specification of consistency levels including `Eventual`
+  * The `Get-GraphResource` and `Invoke-GraphApi` also expose the `ConsistencyLevel` parameter to override the setting in the connection
+  * The `ConsistencyLevel` option is also configurable via the new profile settings feature as part of the connection settings
 * `Get-GraphLog` output is now supported by views that can be used with `Format-Table` and `Format-List`:
   * `Format-Table`: `GraphStatus`, `GraphDebug`, `GraphTiming`, `GraphAuthentication`
   * `Format-List`" `GraphDetails`

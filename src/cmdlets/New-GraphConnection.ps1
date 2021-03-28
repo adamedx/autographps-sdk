@@ -46,6 +46,7 @@ function New-GraphConnection {
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
         [parameter(parametersetname='autocert')]
+        [parameter(parametersetname='customendpoint')]
         [Switch] $NoninteractiveAppOnlyAuth,
 
         [String] $TenantId = $null,

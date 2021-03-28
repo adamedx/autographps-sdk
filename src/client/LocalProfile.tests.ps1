@@ -75,8 +75,8 @@ function AddExpectedProperties($profileData, $properties, [string[]] $propertyNa
         }
 
         # Ignore connections that don't actually exist -- these should resolve as null
-        if ( $dataPropertyName -eq 'connectionProfile' -and $expectedValue ) {
-            $existingConnection = $testSettings.connectionProfiles.list | where {
+        if ( $dataPropertyName -eq 'connection' -and $expectedValue ) {
+            $existingConnection = $testSettings.connections.list | where {
                 ( $_ | gm name -erroraction ignore ) -and ( $_.name -eq $expectedValue )
             }
 
@@ -119,6 +119,8 @@ $NewGraphConnectionMockScript = {
         [string] $AuthProtocol = 'Default',
         [string] $AccountType = 'Auto',
         [string] $Name = $null,
+        [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
+        [string] $ConsistencyLevel = 'Auto',
         [switch] $AADGraph,
         [String] $UserAgent = $null
     )
@@ -144,6 +146,7 @@ $NewGraphConnectionMockScript = {
         NoBrowserUI = $NoBrowserSigninUi.IsPresent
         UserAgent = $UserAgent
         Name = $Name
+        ConsistencyLevel = $ConsistencyLevel
     }
 
     $mockConnections.Add($connection.Id, $connection)
@@ -210,13 +213,14 @@ Describe 'LocalProfile class' {
         }
 
         It 'Should enumerate the expected connnections' {
-            $wellFormedConnections = $testSettings.connectionProfiles.list |
+            $wellFormedConnections = $testSettings.connections.list |
               where { $_ | gm name -erroraction ignore }
 
             $expectedConnectionNames = $wellFormedConnections | where name -notin @(
                 'ConnectionWithNonexistentEndpoint'
                 'ConnectionWithBadEndpoint'
                 'MalformedAppId'
+                'BadConsistencyLevel'
             ) | select -expandproperty name
 
             $actualConnections = Get-GraphConnection | where name -ne ''
@@ -350,7 +354,7 @@ Describe 'LocalProfile class' {
                     IsDefault = $expectedProfileData.Name -eq $defaultProfile
                 }
 
-                AddExpectedProperties $expectedProfileData $expectedProfileProperties LogLevel, InitialApiVersion, Connection @{Connection='connectionProfile'}
+                AddExpectedProperties $expectedProfileData $expectedProfileProperties LogLevel, InitialApiVersion, Connection @{Connection='connection'}
                 $expectedProfile = [PSCustomObject] $expectedProfileProperties
 
                 Compare-object $expectedProfile.psobject.properties.Name $actualProfile.psobject.properties.Name -syncwindow 0 | Should Be $null
@@ -363,8 +367,18 @@ Describe 'LocalProfile class' {
         It "Should have the expected endpoints" {
             $profiles = $::.LocalProfile |=> GetProfiles
 
-            $actualEndpoints = @{}
+            $actualConnections = $::.MockContext.Connections.Values
 
+            $wellFormedConnections = $testSettings.connections.list |
+              where { $_ | gm name -erroraction ignore }
+
+            $expectedConnections = $wellFormedConnections | where name -notin @(
+                'ConnectionWithNonexistentEndpoint'
+                'ConnectionWithBadEndpoint'
+                'MalformedAppId'
+                'BadConsistencyLevel'
+            )
+<#
             foreach ( $actualProfile in $profiles ) {
                 $endpointData = $actualProfile.endpointData
 
@@ -375,29 +389,44 @@ Describe 'LocalProfile class' {
 
             # This assumes that this particular test file has a reference to every
             # valid endpoint listed in the file
-            $expectedEndpoints = @{}
-            $testSettings.graphEndpoints.list |
-              where {
-                  if ( ( $_ | gm name -erroraction ignore ) -and ( $_ | gm graphUri -erroraction ignore ) ) {
-                      $expectedEndpoints.Add($_.name, $_)
-                      $actualEndpoints[$_.name] | Should Not Be $null
-                      CompareUri $actualEndpoints[$_.name].graphUri $_.graphUri | Should Be $true
-                      CompareUri $actualEndpoints[$_.name].authUri $_.authUri | Should Be $true
-                      CompareUri $actualEndpoints[$_.name].resourceUri $_.resourceUri | Should Be $true
-                  }
-              }
+#>
+            $referencedEndpoints = @{}
 
-            $actualEndpoints.Count | Should Be $expectedEndpoints.Count
+            foreach ( $graphConnection in $actualConnections ) {
+                $expectedConnection = $expectedConnections | where Name -eq $graphConnection.Name
+
+                $expectedEndpoint = if ( $expectedConnection ) {
+                    $testSettings.endpoints.list | where {
+                        if ( ( $_ | gm name -erroraction ignore ) -and ( $_ | gm graphuri -erroraction ignore ) ) {
+                            if ( $expectedConnection | gm endpoint ) {
+                                $_.Name -eq $expectedConnection.endpoint
+                            }
+                        }
+                    }
+                }
+
+                # If the connection setting has an endpoint, make sure it shows up in the actual connection
+                # We can assume these connections are valid given the filtering done earlier
+                if ( $expectedEndpoint -and ( $expectedEndpoint.Name -notin 'Public', 'ChinaCloud', 'USGovernmentCloud', 'GermanyCloud' ) ) {
+                    $referencedEndpoints.Add($expectedEndpoint.name, $expectedEndpoint)
+                    CompareUri $graphConnection.GraphEndpoint.Graph $expectedEndpoint.graphUri | Should Be $true
+                    CompareUri $graphConnection.GraphEndpoint.Authentication $expectedEndpoint.authUri | Should Be $true
+                    CompareUri $GraphConnection.GraphEndpoint.GraphResourceUri $ExpectedEndpoint.resourceUri | Should Be $true
+                  }
+            }
+
+            $referencedEndpoints.Count | Should Be 2
         }
 
         It "Should have the expected connections" {
-            $wellFormedConnections = $testSettings.connectionProfiles.list |
+            $wellFormedConnections = $testSettings.connections.list |
               where { $_ | gm name -erroraction ignore }
 
             $expectedConnectionNames = $wellFormedConnections | where name -notin @(
                 'ConnectionWithNonexistentEndpoint'
                 'ConnectionWithBadEndpoint'
                 'MalformedAppId'
+                'BadConsistencyLevel'
             ) | select -expandproperty name
 
             $mockConnections = $::.MockContext.Connections
@@ -409,7 +438,7 @@ Describe 'LocalProfile class' {
                 $expectedConnectionName = $expectedConnectionNames | where { $_ -eq $connection.name }
                 $expectedConnectionName | Should Not Be $null
 
-                $expectedConnection = $testSettings.connectionProfiles.list | where {
+                $expectedConnection = $testSettings.connections.list | where {
                     ( $_ | gm name -erroraction ignore ) -and ( $_.name -eq $expectedConnectionName )
                 }
 
@@ -417,7 +446,7 @@ Describe 'LocalProfile class' {
                 if ( $expectedConnection | gm GraphEndpoint -erroraction ignore ) {
                     $connection.GraphEndpoint | Should Not Be $null
                     if ( $expectedConnection.graphendpoint | gm authUri -erroraction ignore ) {
-                        CompareUri $connection.GraphEndpoint.Authentication $epxectedConnection.GraphEndpoint.AuthUri | Should Be $true
+                        CompareUri $connection.GraphEndpoint.Authentication $expectedConnection.GraphEndpoint.AuthUri | Should Be $true
                     }
                 }
 
@@ -439,16 +468,20 @@ Describe 'LocalProfile class' {
                         if ( $expectedConnection | gm 'useragent' -erroraction ignore ) {
                             $connection.useragent | Should Be $expectedConnection.useragent
                         } else {
-                            $connection.useragent | should be $testsettings.connectionProfiles.defaults.useragent
+                            $connection.useragent | should be $testsettings.connections.defaults.useragent
                         }
 
-                        if ( $expectedConnection | gm 'appcredentials' -erroraction ignore ) {
-                            $connection.Identity.TenantName | should be $expectedConnection.appCredentials.tenantid
+                        if ( $expectedConnection | gm 'tenantid' -erroraction ignore ) {
+                            $connection.Identity.TenantName | should be $expectedConnection.tenantid
                         }
 
                         if ( $expectedConnection | gm 'accountType' -erroraction ignore ) {
                             $expectedAllowMSA = $expectedConnection.accountType -eq 'AzureADAndPersonalMicrosoftAccount'
                             $connection.App.Identity.AllowMSA -eq $expectedAllowMSA
+                        }
+
+                        if ( $expectedConnection | gm 'consistencyLevel' -erroraction ignore ) {
+                            $connection.consistencyLevel | should be $expectedConnection.consistencyLevel
                         }
                     }
                 }

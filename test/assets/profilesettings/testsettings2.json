@@ -12,7 +12,7 @@
         ]
     },
 
-    "connectionProfiles":  {
+    "connections":  {
         "defaults":  {
             "appId":  "28830add-2d1b-401f-8762-f7be317e7bd3",
             "userAgent": "MyWorkstation-MyOrg-PS"
@@ -21,26 +21,26 @@
         "list":  [
             {
                 "name":  "China",
-                "graphEndpoint":  "ChinaCloud"
+                "endpoint":  "ChinaCloud"
             },
 
             {
                 "name":  "ProductionAutomated",
                 "confidential":  true,
                 "appId": "15f0a1ae-5d11-4e74-a9aa-655c853a568e",
-                "graphEndpoint":  "Public"
+                "endpoint":  "Public"
             },
 
             {
                 "name":  "Test",
                 "appId":  "dd033dc5-8ef1-4b25-8542-7b6018cccd1d",
-                "graphEndpoint":  "TestProxy"
+                "endpoint":  "TestProxy"
             },
 
             {
                 "name":  "Test2",
                 "appId":  "dd033dc5-8ef1-4b25-8542-7b6018cccd1d",
-                "graphEndpoint":  "TestProxy2"
+                "endpoint":  "TestProxy2"
             },
 
             {
@@ -56,12 +56,12 @@
 
             {
                 "name": "ConnectionWithNonexistentEndpoint",
-                "graphEndpoint":  "nonexistentoendpoint"
+                "endpoint":  "nonexistentoendpoint"
             },
 
             {
                 "name": "ConnectionWithBadEndpoint",
-                "graphEndpoint":  "MissingGraphUri"
+                "endpoint":  "MissingGraphUri"
             },
 
             {
@@ -75,7 +75,7 @@
             }
         ]
     },
-    "graphEndpoints":  {
+    "endpoints":  {
         "list":  [
             {
                 "name":  "TestProxy",

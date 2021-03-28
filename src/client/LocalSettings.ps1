@@ -143,7 +143,6 @@ ScriptClass LocalSettings {
 
         foreach ( $propertyName in $validations.keys ) {
             if ( $isDefault -and $propertyName -eq 'name' ) {
-                write-warning "Ignoring property 'name' for default settings of group '$settingType'"
                 continue
             }
 
@@ -279,10 +278,47 @@ ScriptClass LocalSettings {
             }
             GuidStringValidator = {
                 param($value, $context)
-                try {
-                    @{Value = [guid] $value}
-                } catch {
+                $guidValue = if ( $value -isnot [guid] ) {
+                    try {
+                        @{Value = [guid] $value}
+                    } catch {
+                    }
+                }
+
+                if ( $guidValue ) {
+                    $guidValue
+                } else {
                     @{ Error = "Specified value '$value' is not a valid guid" }
+                }
+            }
+            TenantValidator = {
+                param($value, $context)
+                $tenant = if ( $value -is [guid] ) {
+                    $value.tostring()
+                } elseif ( $value -is [string] ) {
+                    # A valid tenant in domain form has at least one '.' char
+                    if ( $value.contains('.') ) {
+                        $value
+                    } else {
+                        try {
+                            ([guid] $value).tostring()
+                        } catch {
+                        }
+                    }
+                }
+
+                if ( $tenant ) {
+                    @{Value = $tenant}
+                } else {
+                    @{Error = "Specified value '$value' is not a valid tenant identifier in domain or guid format" }
+                }
+            }
+            CertificatePathValidator = {
+                param($value, $context)
+                if ( $value -like "cert:*" -or $value -like "*.pfx" ) {
+                    @{ Value = $value }
+                } else {
+                    @{ Error = "The specified certificate path '$value' is not a valid file system path or PowerShell cert: drive path" }
                 }
             }
             NameValidator = {
@@ -293,7 +329,6 @@ ScriptClass LocalSettings {
                     @{Value = $value }
                 }
             }
-
             BooleanValidator = {
                 param($value, $context)
                 if ( $value -isnot [boolean] ) {

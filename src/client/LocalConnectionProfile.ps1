@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script LocalProfileSpec)
 . (import-script LocalSettings)
 
 ScriptClass LocalConnectionProfile {
@@ -29,7 +30,7 @@ ScriptClass LocalConnectionProfile {
         }
 
         $referencedEndpointName = if ( $connectionData ) {
-            $connectionData['graphEndpoint']
+            $connectionData[$::.LocalProfileSpec.EndpointProperty]
         }
 
         $targetEndpoint = if ( $referencedEndpointName -and $endpointData ) {
@@ -43,15 +44,15 @@ ScriptClass LocalConnectionProfile {
                 $this.knownCloud = $referencedEndpointName
             } elseif ( ! $targetEndpoint -and ! ( $::.GraphEndpoint |=> IsWellKnownCloud $referencedEndpointName ) ) {
                 $isValid = $false
-                write-warning "The connection endpoint '$targetEndpoint' specified in the settings configuration could not be found"
-            } elseif ( $endpointData ) {
-                $this.customGraphUri = $endpointData['graphUri']
-                $this.customResourceUri = $endpointData['resourceUri']
+                write-warning "The connection endpoint '$referencedEndpointName' specified in the settings configuration could not be found"
+            } elseif ( $targetEndpoint ) {
+                $this.customGraphUri = $targetEndpoint['graphUri']
+                $this.customResourceUri = $targetEndpoint['resourceUri']
                 if ( ! $this.customResourceUri ) {
                     $this.customResourceUri = $this.customGraphUri
                 }
 
-                $this.customAuthUri = $endpointData['authUri']
+                $this.customAuthUri = $targetEndpoint['authUri']
             } else {
                 $isValid = $false
             }
@@ -66,6 +67,7 @@ ScriptClass LocalConnectionProfile {
     function ToConnectionParameters([string[]] $permissions) {
         $parameters = @{}
         $enabledParameter = [System.Management.Automation.SwitchParameter]::new($true)
+        $isAppOnly = $false
 
         if ( $this.connectionData ) {
             if ( $this.connectionData['accountType'] ) { $parameters['AccountType'] = $this.connectionData['accountType'] }
@@ -77,39 +79,59 @@ ScriptClass LocalConnectionProfile {
             if ( $isConfidential ) {
                 $parameters['Confidential'] = $enabledParameter
                 if ( $this.connectionData['authType'] -eq 'appOnly' ) {
+                    $isAppOnly = $true
                     $parameters['NoninteractiveAppOnlyAuth'] = $enabledParameter
                 }
 
-                $appCredentials = $this.connectionData['appCredentials']
-
-                if ( $appCredentials ) {
-                    if ( $appCredentials['tenantId'] ) {
-                        $parameters['TenantId'] = $appCredentials['tenantId']
-                    }
-
-                    if ( $appCredentials['certificatePath'] ) {
-                        $parameters['CertificatePath'] = $appCredentials['certificatePath']
-                    }
+                if ( $this.connectionData['certificatePath'] ) {
+                    $parameters['certificatePath'] = $this.connectionData['certificatePath']
                 }
             }
 
-            if ( ! $this.connectionData['appCredentials'] -and $this.connectionData['delegatedPermissions'] ) {
-                $parameters['Permissions'] = $this.connectionData['delegatedPermissions']
+            if ( $this.connectionData['tenantId'] ) {
+                $parameters['TenantId'] = $this.connectionData['tenantId']
             }
 
             if ( $this.knownCloud ) {
                 $parameters['Cloud'] = $this.knownCloud
             } elseif ( $this.customGraphUri ) {
                 $parameters['GraphEndpointUri'] = $this.customGraphUri
-                $parameters['GraphResourceUri'] = $this.customResourceUri
+                if ( $this.customResourceUri ) {
+                    $parameters['GraphResourceUri'] = $this.customResourceUri
+                } else {
+                    $parameters['GraphResourceUri'] = $this.customGraphUri
+                }
+
                 if ( $this.customAuthUri ) {
                     $parameters['AuthenticationEndpointUri'] = $this.customAuthUri
+                } else {
+                    $parameters['AuthenticationEndpointUri'] = [Uri] 'https://login.microsoftonline.com'
                 }
             }
-        if ( $this.connectionData['authProtocol'] ) { $parameters['AuthProtocol'] = $this.connectionData['authProtocol'] }
+
+            if ( $this.connectionData['authProtocol'] ) { $parameters['AuthProtocol'] = $this.connectionData['authProtocol'] }
+
+            if ( ! $isAppOnly -and $parameters['authProtocol'] -ne 'v1' -and $this.connectionData['delegatedPermissions'] ) {
+                $parameters['Permissions'] = $this.connectionData['delegatedPermissions']
+            }
+
+            if ( $this.connectionData['consistencyLevel'] ) {
+                $parameters['ConsistencyLevel'] = $this.connectionData['consistencyLevel']
+            }
+        }
 
         if ( ! $parameters['NoninteractiveAppOnlyAuth'] -and $permissions ) {
-            $parameters['Permissions'] = $permissions }
+            $parameters['Permissions'] = $permissions
+        }
+
+        if ( ! $parameters['tenantid'] ) {
+            if ( $parameters['AuthProtocol'] -eq 'v1' ) {
+                write-warning "A connection specifies an authProtocol property of 'v1' but does not specify a 'tenantid' property"
+            }
+
+            if ( $isAppOnly ) {
+                write-warning "A connection specifies an 'authType' proproperty of 'appOnly' but does not specify a 'tenantId' property"
+            }
         }
 
         $parameters
@@ -137,8 +159,11 @@ ScriptClass LocalConnectionProfile {
             userAgent = @{ Validator = 'StringValidator'; Required = $false }
             appRedirectUri = @{ Validator = 'UriValidator'; Required = $false }
             confidential = @{ Validator = 'BooleanValidator'; Required = $false }
+            tenantId = @{ Validator = 'TenantValidator'; Required = $false }
+            certificatePath = @{ Validator = 'CertificatePathValidator'; Required = $false }
             appCredentials = @{ Validator = 'AppCredentialValidator'; Required = $false }
-            graphEndpoint = @{ Validator = 'EndpointValidator'; Required = $false }
+            $::.LocalProfileSpec.EndpointProperty = @{ Validator = 'EndpointValidator'; Required = $false }
+            consistencyLevel = @{ Validator = 'StringValidator'; Required = $false }
         }
 
         function __initialize {
@@ -146,8 +171,8 @@ ScriptClass LocalConnectionProfile {
         }
 
         function __RegisterSettingProperties {
-            $::.LocalSettings |=> RegisterSettingProperties graphEndpoints $this.endpointPropertyReaders $true
-            $::.LocalSettings |=> RegisterSettingProperties connectionProfiles $this.connectionPropertyReaders $true
+            $::.LocalSettings |=> RegisterSettingProperties $::.LocalProfileSpec.EndpointsCollection $this.endpointPropertyReaders $true
+            $::.LocalSettings |=> RegisterSettingProperties $::.LocalProfileSpec.ConnectionsCollection $this.connectionPropertyReaders $true
         }
     }
 }
