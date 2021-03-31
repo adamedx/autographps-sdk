@@ -710,11 +710,7 @@ function Invoke-GraphApiRequest {
     }
 
     end {
-        $filteredResults = if ( ! $useRawContent ) {
-            $results | where { $_ | gm id -erroraction ignore }
-        } else {
-            $results
-        }
+        $filteredResults = $results
 
         $filteredResults = if ( $maxReturnedResults ) {
             $filteredResults | select -first $maxReturnedResults

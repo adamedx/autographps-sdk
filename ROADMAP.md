@@ -383,6 +383,7 @@
 * Support for eventual consistency options in Graph requests
 * Make public client apps aad only by default for multi-tenant apps
 * Add the Count parameter to Invoke-GraphRequest and Get-GraphResource to return the count of results instead of the results using OData $count when supported
+* Fix intra-entity requests
 
 ### Postponed
 
