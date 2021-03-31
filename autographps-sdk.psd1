@@ -282,12 +282,14 @@ None.
 * Request and response size are now part of `Get-GraphLog` output -- this is true for the default `Basic` log level
 * The `Get-GraphApplicationConsent` supports the `PermissionType` parameter to optionally limit the consents to just `Delegated` or just `AppOnly` consent rather than both.
 * The `Invoke-GraphRequest` and `Get-GraphResource` commands now support the `All` parameter to return all results. Without this parameter, `Invoke-GraphRequest` only returns either 100 results or the number of results contained in one REST response for the particular request URI, whichever is larger.
+* The `Invoke-GraphRequest` and `Get-GraphResource` commands now support the `Count` parameter to return just the count of results that would be returned and note the results themselves. This is only supported if the request URI is backed by an API that supports this capability.
 
 ### Fixed defects
 
 * The `CertificatePath` parameter of `New-GraphConnection` and `Connect-GraphApi` was broken -- specifying it caused an error. This has been fixed and the path to a certificate in the certificate store may now be specified.
 * The `Get-GraphApplicationConsent` and other commands related to consent could fail when encountering permission id's for which no known permission name mapping could be located, possibly due to using the default snapshot of mappings rather than the most recent mappings found by reading the MS Graph service principal which requires additional access.
 * The `Get-GraphApplicationConsent` command would attempt to retrieve all consents for the given application in a tenant, but this could require a very large number of requests in a tenant with large numbers of users (e.g. 10^6) for instance. It now supports the `All` parameter to retrieve all consents, but by default it only returns 100-200.
+* The `OutputFilePrefix` parameter of `Invoke-GraphApiRequest` and `Get-GraphRequest` was ignored resulting in file output with only a file extension -- this was fixed to actually use the base name.
 '@
 
     } # End of PSData hashtable
