@@ -36,8 +36,6 @@ limitations under the License.
             <Label>Method</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-          </TableColumnHeader>
-          <TableColumnHeader>
             <Label>Size</Label>
           </TableColumnHeader>
           <TableColumnHeader>
@@ -58,13 +56,10 @@ limitations under the License.
                 <ScriptBlock>$::.GraphFormatter.RestMethod($_.Method)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>Version</PropertyName>
-              </TableColumnItem>
-              <TableColumnItem>
                 <PropertyName>ResponseContentSize</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>ResourceUri</PropertyName>
+                <PropertyName>Uri</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>ErrorResponse</PropertyName>
