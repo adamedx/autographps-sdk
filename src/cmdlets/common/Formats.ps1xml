@@ -295,7 +295,7 @@ limitations under the License.
                 <ScriptBlock>$::.GraphFormatter.ResponseElapsedTime($_.ClientElapsedTime)</ScriptBlock>
               </ListItem>
               <ListItem>
-                <PropertyName>ResponseHeaders</PropertyName>
+                <PropertyName>RequestHeaders</PropertyName>
               </ListItem>
               <ListItem>
                 <PropertyName>ClientRequestId</PropertyName>
