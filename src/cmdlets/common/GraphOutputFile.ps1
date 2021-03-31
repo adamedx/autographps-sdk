@@ -18,6 +18,10 @@ ScriptClass GraphOutputFile {
     $contentTypeData = $null
 
     function __initialize($baseName, $fileContent, $contentTypeData) {
+        if ( ! $baseName ) {
+            throw "A base file name must be specified."
+        }
+
         $this.baseName = $baseName
         $this.fileContent = $fileContent
         $this.contentTypeData = $contentTypeData
@@ -26,7 +30,7 @@ ScriptClass GraphOutputFile {
     function Save {
         $typeData = __GetTypeData
 
-        $destinationPath = "$baseName.$($typeData.Extension)"
+        $destinationPath = "$($this.baseName).$($typeData.Extension)"
 
         write-verbose "Saving result to file path = '$destinationPath'; isBinary=$($typeData.IsBinary); extension = '$($typeData.extension)'; encoding = '$($typeData.encoding)'"
 

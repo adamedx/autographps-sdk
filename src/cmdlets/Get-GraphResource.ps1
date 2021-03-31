@@ -66,6 +66,9 @@ The OutputFilePrefix parameter specifies that rather than emitting the results t
 .PARAMETER Query
 The Query parameter specifies the URI query parameter of the REST request made by the command to Graph. Because the URI's query parameter is affected by the Select, Filter, OrderBy, Search, and Expand options, the command's Query parameter may not be specified of any those parameters are specified. This parameter is most useful for advanced scenarios where the other command parameters are unable to express valid Graph protocol use of the URI query parameter.
 
+.PARAMETER Count
+The Count parameter specifies that the count of objects that would be returned by the given request URI should be returned as the output of the command rather than the objects themselves. Note that this will only be successful if the functionality to return a count is supported by the given given URI.
+
 .PARAMETER Headers
 Specifies optional HTTP headers to include in the request to Graph, which some parts of the Graph API may support. The headers must be specified as a HashTable, where each key in the hash table is the name of the header, and the value for that key is the value of the header.
 
@@ -187,6 +190,8 @@ function Get-GraphResource {
 
         [String] $Query = $null,
 
+        [switch] $Count,
+
         [HashTable] $Headers = $null,
 
         [String] $Version = $null,
@@ -238,6 +243,7 @@ function Get-GraphResource {
             Descending = $Descending
             OutputFilePrefix = $OutputFilePrefix
             Value = $Value
+            Count = $Count
             Version=$Version
             RawContent=$RawContent
             AbsoluteUri=$AbsoluteUri
