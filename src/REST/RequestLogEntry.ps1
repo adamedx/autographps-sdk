@@ -167,22 +167,30 @@ ScriptClass RequestLogEntry {
 
     function LogError($response, $responseMessage ) {
         $this.isError = $true
+        $headers = if ( $response | gm headers -erroraction ignore) {
+            $response.headers
+        }
+
+        $statusCode = if ( $response | gm statuscode -erroraction ignore ){
+            $response.statusCode.value__
+        }
+
         try {
             $responseTimestamp = [DateTimeOffset]::now
-            $responseHeaders = $::.HttpUtilities |=> NormalizeHeaders $response.headers
-            $this.displayProperties.Status = $response.statuscode.value__
-            $this.displayProperties.ResponseClientRequestId = $responseHeaders['client-request-id']
+            $responseHeaders = $::.HttpUtilities |=> NormalizeHeaders $headers
+            $this.displayProperties.Status = $statuscode
+            $this.displayProperties.ResponseClientRequestId = if ( $responseHeaders ) { $responseHeaders['client-request-id'] }
             $this.displayProperties.ResponseHeaders = $responseHeaders
             $this.displayProperties.ResponseTimestamp = $responseTimestamp
             $this.displayProperties[$this.scriptclass.ERROR_RESPONSE_FIELD] = $responseMessage
             $this.displayProperties.ClientElapsedTime = $responseTimestamp - $this.displayProperties.RequestTimestamp
 
-            $this.displayProperties.ResponseContentSize = $response.RawContentLength
-            $this.displayProperties.ResponseRawContentSize = $response.RawContent.Length
+            $this.displayProperties.ResponseContentSize = if ( $response | gm RawContentLength -erroraction ignore ) { $response.RawContentLength }
+            $this.displayProperties.ResponseRawContentSize = if ( $response | gm RawContent -erroraction ignore ) { $response.RawContent.Length }
 
             if ( __ShouldLogFullResponse ) {
-                $this.displayProperties.ResponseContent = $response.content
-                $this.displayProperties.ResponseRawContent = $response.rawContent
+                $this.displayProperties.ResponseContent = if ( $response | gm Content -erroraction ignore ) { $response.content }
+                $this.displayProperties.ResponseRawContent = if ( $response | gm RawContent -erroraction ignore ) { $response.rawContent }
             }
         } catch {
             $_ | write-debug
