@@ -137,17 +137,24 @@ ScriptClass GraphConnection {
 
         function ToConnectionInfo([PSCustomObject] $connection) {
             $consistencyLevel = if ( $connection.consistencyLevel ) { $connection.consistencyLevel } else { 'Auto' }
-            [PSCustomObject] @{
+
+            $info = [PSCustomObject] @{
                 Id = $connection.id
                 Name = $connection.Name
                 AppId = $connection.identity.app.appid
+                OrganizationName = $connection.identity.TenantDisplayName
                 Endpoint = $connection.graphendpoint.graph
+                AuthType = $connection.identity.app.authtype
                 Tenant = $connection.identity.GetTenantId()
                 User = $connection.identity.GetUserInformation().UserId
                 Status = $connection.getstatus()
                 ConsistencyLevel = $consistencyLevel
                 Connection = $connection
             }
+
+            $info.pstypenames.insert(0, 'GraphConnectionInfo')
+
+            $info
         }
 
         function AddNamedConnection([string] $name, $connection) {

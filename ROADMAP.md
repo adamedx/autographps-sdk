@@ -2,15 +2,15 @@
 
 ## To-do items -- prioritized
 
+* Adaptive progress meter?
+* View for graph application
 * Should add Add-GraphApplicationCertificate
 * Should add Remove-GraphApplicationCertificate
 * Should implement certificate update using addkey / removekey: https://docs.microsoft.com/en-us/graph/api/application-addkey?view=graph-rest-1.0&tabs=http
 * Remove use of New-GraphConnection from within static methods and replace with internal version that is still mockable.
-* Restore Connect-Graph from Connect-GraphApi
 * Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
 * When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
 * Add Start-GraphDeltaJob
-* Add Get-LastGraphResponse with view parameters, remove LASTGRAPHITEMS
 * Add output types to as many commands as possible
 * Add batching support
 * Add more command help
@@ -179,6 +179,13 @@
 * Handle 403's in get-graphchilditem
 * Add user consent, tenant consent options to set-graphconsent and new-graphapplication
 * Remove __GetSimpleConnection
+
+### Maybe
+
+* Color for POST / PUT / PATH operations
+* Color for graph consent
+* View for graph application
+* Restore Connect-Graph from Connect-GraphApi -- might not be possible :(
 
 ### Done
 
@@ -384,6 +391,8 @@
 * Make public client apps aad only by default for multi-tenant apps
 * Add the Count parameter to Invoke-GraphRequest and Get-GraphResource to return the count of results instead of the results using OData $count when supported
 * Fix intra-entity requests
+* Add Get-LastGraphResponse with view parameters
+* Color for Get-GraphConnectionInfo
 
 ### Postponed
 
