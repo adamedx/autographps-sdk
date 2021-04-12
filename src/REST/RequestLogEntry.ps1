@@ -167,8 +167,14 @@ ScriptClass RequestLogEntry {
 
     function LogError($response, $responseMessage ) {
         $this.isError = $true
-        $headers = if ( $response | gm headers -erroraction ignore) {
-            $response.headers
+
+        $headers = $null
+
+        # Interesting -- assigning $response.headers this as the output of the if
+        # converts the type -- quite unexpected and not a good behavior. We'll
+        # just assign it explicitly to work around it
+        if ( $response | gm headers -erroraction ignore) {
+            $headers = $response.headers
         }
 
         $statusCode = if ( $response | gm statuscode -erroraction ignore ){

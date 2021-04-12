@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Enable color schemes
 * Adaptive progress meter?
 * View for graph application
 * Should add Add-GraphApplicationCertificate
