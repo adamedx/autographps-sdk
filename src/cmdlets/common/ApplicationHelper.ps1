@@ -47,7 +47,7 @@ ScriptClass ApplicationHelper {
             $this.keyFormatter |=> DeserializedGraphObjectToDisplayableObject $remappedObject
         }
 
-        function QueryApplications($appId, $objectId, $odataFilter, $name, [object] $rawContent, $version, $permissions, $cloud, $connection, $select, $queryMethod, [int32] $maxResultCount) {
+        function QueryApplications($appId, $objectId, $odataFilter, $name, [object] $rawContent, $version, $permissions, $cloud, $connection, $select, $queryMethod, $first, $skip, [bool] $all) {
             $apiVersion = if ( $Version ) {
                 $Version
             } else {
@@ -83,8 +83,12 @@ ScriptClass ApplicationHelper {
                 $requestArguments['Connection'] = $connection
             }
 
-            if ( $maxResultCount ) {
-                $requestArguments['First'] = $maxResultCount
+            if ( $first ) {
+                $requestArguments['First'] = $first
+            }
+
+            if ( $skip ) {
+                $requestArguments['Skip'] = $skip
             }
 
             $method = if ( $queryMethod ) {
@@ -94,7 +98,7 @@ ScriptClass ApplicationHelper {
             }
 
             write-verbose "Querying for applications at version $apiVersion' with uri '$uri, filter '$filter', select '$select'"
-            Invoke-GraphApiRequest -Method $method -Uri $uri @requestArguments -version $apiVersion
+            Invoke-GraphApiRequest -Method $method -Uri $uri @requestArguments -All:$all -version $apiVersion
         }
     }
 }

@@ -254,6 +254,93 @@ limitations under the License.
     </View>
 
     <View>
+      <Name>GraphConnectionInfo</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphConnectionInfo</TypeName>
+      </ViewSelectedBy>
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>Id</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Name</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>Status</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Status, 'EnabledState', 'Online', 'Offline')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>OrganizationId</Label>
+                <PropertyName>Tenant</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>User</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.User, 'Emphasis2', $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AppId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AuthType</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Endpoint</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ConsistencyLevel</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphConnectionOverview</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphConnectionInfo</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>AppId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Organization</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>AuthType</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>AppId</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Tenant, 'Emphasis2', $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>AuthType</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+    <View>
       <Name>GraphLogDetail</Name>
       <ViewSelectedBy>
         <TypeName>GraphLogEntryDisplayType</TypeName>
@@ -309,9 +396,6 @@ limitations under the License.
               </ListItem>
               <ListItem>
                 <PropertyName>AuthType</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>RequestHeaders</PropertyName>
               </ListItem>
               <ListItem>
                 <ItemSelectionCondition>

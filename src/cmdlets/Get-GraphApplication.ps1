@@ -15,7 +15,7 @@
 . (import-script common/ApplicationHelper)
 
 function Get-GraphApplication {
-    [cmdletbinding(defaultparametersetname='appid', positionalbinding=$false)]
+    [cmdletbinding(defaultparametersetname='appid', supportspaging=$true, positionalbinding=$false)]
     param (
         [parameter(parametersetname='appid', position=0)]
         $AppId,
@@ -29,12 +29,11 @@ function Get-GraphApplication {
         [parameter(parametersetname='name', mandatory=$true)]
         $Name,
 
-        [Alias('MaximumResultCount')]
-        [int32] $First = 0,
-
         [switch] $RawContent,
 
         [String] $Version = $null,
+
+        [switch] $All,
 
         [parameter(parametersetname='ExistingConnectionODataFilter')]
         [parameter(parametersetname='ExistingConnectionObjectId')]
@@ -43,7 +42,7 @@ function Get-GraphApplication {
     )
     Enable-ScriptClassVerbosePreference
 
-    $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $Filter $Name $RawContent $Version $null $null $connection $null $null $First
+    $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $Filter $Name $RawContent $Version $null $null $connection $null $null $pscmdlet.pagingparameters.First $pscmdlet.pagingparameters.Skip $All.IsPresent
 
     $displayableResult = if ( $result ) {
         if ( $RawContent.IsPresent ) {

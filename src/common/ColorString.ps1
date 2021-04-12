@@ -15,35 +15,6 @@
 . (import-script PreferenceHelper)
 
 ScriptClass ColorString {
-    $value = $null
-    $colorMode = $null
-
-    function __initialize([string] $initialValue, $colorMode) {
-        $this.value = if ( $initialValue ) {
-            $initialValue
-        } else {
-            ''
-        }
-
-        $targetColorMode = if ( $colorMode ) {
-            if ( $colorMode -notin $this.scriptclass.ALLOWED_COLORMODES ) {
-                throw ( "Unkown color mode '$colorMode' -- the value must be one of {0}" -f (
-                            $this.scriptclass.ALLOWED_COLORMODES -join ',' ) )
-            }
-            $colorMode
-        } else {
-            $AutoGraphColorModePreference
-        }
-
-        $this.colorMode = $colorMode
-    }
-
-    function WriteColor([string] $value, $colorValue) {
-    }
-
-    function ToColorString {
-    }
-
     static {
         const ALLOWED_COLOR_MODES 2bit, 4bit
         const ESCAPE_CHAR "$([char]0x1b)"
@@ -51,14 +22,87 @@ ScriptClass ColorString {
 
         $supportsColor = $host.ui.SupportsVirtualTerminal
 
-        function ToColorString([string] $text, $foreColor, $backColor) {
-            $colorMode = if ( $this.supportsColor ) {
-                $colorVar = get-variable AutoGraphColorModePreference -value -erroraction ignore
+        $standardColorings = @('Emphasis1', 'Emphasis2', 'Containment', 'EnabledState', 'Error1', 'Error2', 'Contrast')
 
-                if ( $colorVar -eq '4bit' ) {
-                    '4bit'
+        $standardMapping = @{
+            '2Bit' = @{}
+            '4bit' = @{
+                Emphasis1 = 11
+                Emphasis2 = 14
+                Containment = 6
+                Disabled = 8
+                Enabled = 10
+                Error1 = 1
+                Error2 = 9
+                Contrast = @(14, 12, 13)
+            }
+        }
+
+        function ToStandardColorString([string] $text, [string] $coloring, [string[]] $highlightedValues, [string] $disabledValue) {
+
+            if ( $this.standardColorings -notcontains $coloring ) {
+                $text
+                return
+            }
+
+            $colorMode = GetColorMode
+
+            $colorMapping = $this.standardMapping[$colorMode]
+
+            $standardColor = switch ( $coloring ) {
+                'Emphasis1' {
+                    $colorMapping['Emphasis1']
+                }
+                'Emphasis2' {
+                    $colorMapping['Emphasis2']
+                }
+                'Containment' {
+                    $colorMapping['Containment']
+                }
+                'EnabledState' {
+                    if ( $text -eq $disabledValue ) {
+                        $colorMapping['Disabled']
+                    } elseif ( $text -in $highlightedValues ) {
+                        $colorMapping['Enabled']
+                    }
+                }
+                'Error1' {
+                    $colorMapping['Error1']
+                }
+                'Error2' {
+                    $colorMapping['Error2']
+                }
+                'Contrast' {
+                    if ( $text -eq $disabledValue ) {
+                        $colorMapping['Disabled']
+                    } elseif ( $highlightedValues ) {
+                        $valueIndex = $highlightedValues.IndexOf($text)
+                        if ( $valueIndex -ge 0 ) {
+                            $colorVector[$valueIndex % $colorVector.Length]
+                        }
+                    }
                 }
             }
+
+            if ( ! $standardColor ) {
+                $text
+                return
+            }
+
+            $foregroundColor = $null
+            $backgroundColor = $null
+
+            if ( $coloring -eq 'Containment' ) {
+                $backgroundColor = $standardColor
+            } else {
+                $foregroundColor = $standardColor
+            }
+
+            ToColorString $text $foregroundColor $backgroundColor
+        }
+
+        function ToColorString([string] $text, $foreColor, $backColor) {
+            $colorMode = GetColorMode
 
             if ( ! $colorMode -or $colorMode -eq '2bit' ) {
                 $text
@@ -126,10 +170,16 @@ ScriptClass ColorString {
             }
         }
 
-        function FormatColorString([string] $format, [HashTable] $colorMap) {
-        }
+        function GetColorMode {
+            if ( $this.supportsColor ) {
+                $colorVar = get-variable AutoGraphColorModePreference -value -erroraction ignore
 
-        function __GetCompletedString([string] $possiblyIncompleteString) {
+                if ( $colorVar -eq '4bit' ) {
+                    '4bit'
+                }
+            } else {
+                '2bit'
+            }
         }
     }
 }
