@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Enable color schemes
 * Adaptive progress meter?
 * View for graph application
 * Should add Add-GraphApplicationCertificate
@@ -394,6 +393,7 @@
 * Fix intra-entity requests
 * Add Get-LastGraphResponse with view parameters
 * Color for Get-GraphConnectionInfo
+* Enable color schemes
 
 ### Postponed
 

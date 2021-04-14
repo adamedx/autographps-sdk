@@ -194,6 +194,7 @@ AliasesToExport = @('fgl', 'gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl')
         '.\src\cmdlets\common\PermissionParameterCompleter.ps1'
         '.\src\cmdlets\common\QueryHelper.ps1'
         '.\src\common\ColorString.ps1'
+        '.\src\common\ColorScheme.ps1'
         '.\src\common\DefaultScopeData.ps1'
         '.\src\common\GraphAccessDeniedException.ps1'
         '.\src\common\GraphApplicationCertificate.ps1'
@@ -258,7 +259,8 @@ None.
 ### New features
 
 * Configuration: the module now supports "Profile settings". It reads the file `~/.autographps/settings.json` on module load if it exists and sets behaviors including the initial connection according to the settings expressed in the configuration file
-* The following commands related to the proflie settings feature have been added:
+* The following commands related to the proflie settings feature h
+ave been added:
   * `Get-GraphProfileSettings`
   * `Select-GraphProfileSettings`
   * `Get-GraphConnection`: enumerates 'named' connections created by `New-GraphConnection` or profile settings
@@ -288,7 +290,7 @@ None.
 
 * The `CertificatePath` parameter of `New-GraphConnection` and `Connect-GraphApi` was broken -- specifying it caused an error. This has been fixed and the path to a certificate in the certificate store may now be specified.
 * The `Get-GraphApplicationConsent` and other commands related to consent could fail when encountering permission id's for which no known permission name mapping could be located, possibly due to using the default snapshot of mappings rather than the most recent mappings found by reading the MS Graph service principal which requires additional access.
-* The `Get-GraphApplicationConsent` command would attempt to retrieve all consents for the given application in a tenant, but this could require a very large number of requests in a tenant with large numbers of users (e.g. 10^6) for instance. It now supports the `All` parameter to retrieve all consents, but by default it only returns 100-200.
+* The `Get-GraphApplicationConsent` and `Get-GraphApplication` commands would attempt to retrieve all consents for the given application in a tenant, but this could require a very large number of requests in a tenant with large numbers of users (e.g. 10^6) for instance. They now support the `All` parameter to retrieve all consents, but by default only returns 100-200. They also support paging with `First` and `Skip` parameters
 * The `OutputFilePrefix` parameter of `Invoke-GraphApiRequest` and `Get-GraphRequest` was ignored resulting in file output with only a file extension -- this was fixed to actually use the base name.
 '@
 
