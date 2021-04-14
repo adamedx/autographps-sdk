@@ -12,10 +12,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ColorScheme)
 . (import-script ColorString)
 
 ScriptClass GraphFormatter {
     static {
+        function __initialize {
+            $::.ColorScheme.RegisterColorNames(
+                @(
+                    'Success'
+                    'Warning'
+                    'Error1'
+                    'Error2'
+                    'REST-Method-POST'
+                    'REST-Method-PUT'
+                    'REST-Method-GET'
+                    'REST-Method-DELETE'
+                    'REST-Method-PATCH'
+                    'Time-Elapsed-Normal'
+                    'Time-Elapsed-Slow'
+                    'Time-Elapsed-ExtraSlow'
+                ),
+                'autographps-sdk'
+            )
+
+            $colorInfo = [PSCustomObject] @{
+                colorMode = '4bit'
+                colors = [PSCustomObject] @{
+                    'Success' = 10
+                    'Warning' = 11
+                    'Error1' = 1
+                    'Error2' = 9
+                    'REST-Method-POST' = 13
+                    'REST-Method-PUT' = 5
+                    'REST-Method-GET' = 12
+                    'REST-Method-DELETE' = 11
+                    'REST-Method-PATCH' = 3
+                    'Time-Elapsed-Normal' = 10
+                    'Time-Elapsed-Slow' = 11
+                    'Time-Elapsed-ExtraSlow' = 9
+                }
+            }
+
+            $::.ColorString.UpdateColorScheme(@($colorInfo))
+        }
+
         function StatusCode($statusValue) {
             $foreGround = $null
             $background = $null
@@ -26,48 +67,51 @@ ScriptClass GraphFormatter {
                 break
             }
 
-            if ($status -ne $null ) {
+            $coloring = if ( $status -ne $null ) {
                 if ( $status -ge 200 -and $status -lt 300 ) {
-                    $foreGround = 10
+                    'Success'
                 } elseif ($status -eq 401 -or $status -eq 403 ) {
-                    $foreground = 1
+                    'Error3'
                 } elseif( $status -ge 300 -and $status -lt 500 ) {
-                    $foreGround = 9
+                    'Error2'
                 } else {
-                    $foreGround = 0
-                    $backGround = 9
+                    'Error1'
                 }
             }
 
-            $::.ColorString.ToColorString($statusValue, $foreGround, $backGround)
+            $colors = $::.ColorString.GetStandardColors($coloring, $null, $null, $null)
+
+            $::.ColorString.ToColorString($statusValue, $colors[0], $colors[1])
         }
 
         function RestMethod($method) {
             $foreGround = $null
             $background = $null
 
-            switch ( $method ) {
-                'POST' { $foreGround = 13 }
-                'PUT' { $foreGround = 5 }
-                'GET' { $foreGround = 12 }
-                'DELETE' { $foreGround = 11 }
-                'PATCH' { $foreGround = 3 }
+            $colorName = switch ( $method ) {
+                'POST' { 'REST-Method-POST' }
+                'PUT' { 'REST-Method-PUT' }
+                'GET' { 'REST-Method-GET' }
+                'DELETE' { 'REST-Method-DELETE' }
+                'PATCH' { 'REST-Method-PATCH' }
                 default {}
             }
 
-            $::.ColorString.ToColorString($method, $foreGround, $backGround)
+            $::.ColorString.ToStandardColorString($method, 'Scheme', $colorName, $null, $null)
         }
 
         function ResponseElapsedTime([TimeSpan] $elapsed) {
-            $forecolor = if ( $elapsed.TotalSeconds -lt 1 ) {
-                10
+            $colorName = if ( $elapsed.TotalSeconds -lt 1 ) {
+                'Time-Elapsed-Normal'
             } elseif ( $elapsed.TotalSeconds -lt 2 ) {
-                11
+                'Time-Elapsed-Slow'
             } else {
-                9
+                'Time-Elapsed-ExtraSlow'
             }
-
-            $::.ColorString.ToColorString($elapsed.ToString(), $foreColor, $null)
+            $::.ColorString.ToStandardColorString($elapsed.ToString(), 'Scheme', $colorName, $null, $null)
         }
     }
 }
+
+$::.GraphFormatter |=> __initialize
+

@@ -171,10 +171,10 @@ limitations under the License.
                 <PropertyName>Version</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.ColorString.ToColorString($_.ResourceUri, 11, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.ResourceUri, 'Emphasis1', $null, $null, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.ColorString.ToColorString($_.Query, 14, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Query, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>ResponseContentSize</PropertyName>
@@ -241,7 +241,7 @@ limitations under the License.
                 <ScriptBlock>$::.GraphFormatter.RestMethod($_.Method)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.ColorString.ToColorString($_.ResourceUri, 11, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.ResourceUri, 'Emphasis1', $null, $null, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Permissions</PropertyName>
@@ -267,11 +267,11 @@ limitations under the License.
               </ListItem>
               <ListItem>
                 <Label>Name</Label>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <Label>Status</Label>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Status, 'EnabledState', 'Online', 'Offline')</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Status, 'EnabledState', $null, 'Online', 'Offline')</ScriptBlock>
               </ListItem>
               <ListItem>
                 <Label>OrganizationId</Label>
@@ -279,7 +279,7 @@ limitations under the License.
               </ListItem>
               <ListItem>
                 <Label>User</Label>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.User, 'Emphasis2', $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.User,'Emphasis2', $null, $null, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <PropertyName>AppId</PropertyName>
@@ -326,10 +326,10 @@ limitations under the License.
                 <PropertyName>AppId</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Tenant, 'Emphasis2', $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Tenant, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>AuthType</PropertyName>
@@ -367,7 +367,7 @@ limitations under the License.
               </ListItem>
               <ListItem>
                 <Label>Uri</Label>
-                <ScriptBlock>$::.ColorString.ToColorString($_.Uri, 11, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Uri, 'Emphasis1', $null, $null, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <PropertyName>RequestBodySize</PropertyName>
@@ -405,11 +405,11 @@ limitations under the License.
               </ListItem>
               <ListItem>
                 <Label>ResourceUri</Label>
-                <ScriptBlock>$::.ColorString.ToColorString($_.ResourceUri, 11, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.ResourceUri, 'Emphasis1', $null, $null, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <Label>Query</Label>
-                <ScriptBlock>$::.ColorString.ToColorString($_.Query, 14, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Query, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <PropertyName>ResponseTimestamp</PropertyName>

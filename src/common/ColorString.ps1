@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script PreferenceHelper)
+. (import-script ColorScheme)
 
 ScriptClass ColorString {
     static {
@@ -22,26 +23,67 @@ ScriptClass ColorString {
 
         $supportsColor = $host.ui.SupportsVirtualTerminal
 
-        $standardColorings = @('Emphasis1', 'Emphasis2', 'Containment', 'EnabledState', 'Error1', 'Error2', 'Contrast')
+        $standardColorings = @('Emphasis1', 'Emphasis2', 'Containment', 'EnabledState', 'Success', 'Error1', 'Error2', 'Error3', 'Contrast', 'Scheme')
 
         $standardMapping = @{
             '2Bit' = @{}
             '4bit' = @{
                 Emphasis1 = 11
                 Emphasis2 = 14
-                Containment = 6
+                Containment = 14
                 Disabled = 8
                 Enabled = 10
+                Success = 10
                 Error1 = 1
                 Error2 = 9
+                Error3 = 1
                 Contrast = @(14, 12, 13)
             }
         }
 
-        function ToStandardColorString([string] $text, [string] $coloring, [string[]] $highlightedValues, [string] $disabledValue) {
+        $colorMaps = @{
+            '2bit' = @{}
+            '4bit' = @{}
+        }
 
+        function UpdateColorScheme([PSCustomObject[]] $colorInfoObjects) {
+            $newScheme = new-so ColorScheme @($colorInfoObjects)
+
+            foreach ( $colorMode in $this.colorMaps.Keys ) {
+                $colorMap = $newScheme |=> GetColorMap $colorMode
+
+                if ( $colorMap ) {
+                    foreach ( $colorName in $colorMap.keys ) {
+                        $this.colorMaps[$colorMode][$colorName] = $colorMap[$colorName]
+                    }
+                }
+            }
+        }
+
+        function ToStandardColorString($output, [string] $coloring, $criterion, [object[]] $highlightedValues, $disabledValue) {
             if ( $this.standardColorings -notcontains $coloring ) {
-                $text
+                $output
+                return
+            }
+
+            $targetCriterion = if ( $criterion ) {
+                $criterion
+            } else {
+                $output
+            }
+
+            $colors = GetStandardColors $coloring $targetCriterion $highlightedValues $disabledValue
+
+            if ( ( $colors[0] -ne $null ) -or ( $colors[1] -ne $null ) ) {
+                ToColorString $output $colors[0] $colors[1]
+            } else {
+                $output
+            }
+        }
+
+        function GetStandardColors([string] $coloring, $criterion, [object[]] $highlightedValues, $disabledValue) {
+            if ( $this.standardColorings -notcontains $coloring ) {
+                $null, $null
                 return
             }
 
@@ -50,6 +92,11 @@ ScriptClass ColorString {
             $colorMapping = $this.standardMapping[$colorMode]
 
             $standardColor = switch ( $coloring ) {
+                'Scheme' {
+                    if ( $this.colorMaps[$colorMode] -ne $null ) {
+                        $this.colorMaps[$colorMode][$criterion]
+                    }
+                }
                 'Emphasis1' {
                     $colorMapping['Emphasis1']
                 }
@@ -60,11 +107,14 @@ ScriptClass ColorString {
                     $colorMapping['Containment']
                 }
                 'EnabledState' {
-                    if ( $text -eq $disabledValue ) {
+                    if ( $criterion -eq $disabledValue ) {
                         $colorMapping['Disabled']
-                    } elseif ( $text -in $highlightedValues ) {
+                    } elseif ( $criterion -in $highlightedValues ) {
                         $colorMapping['Enabled']
                     }
+                }
+                'Success' {
+                    $colorMapping['Success']
                 }
                 'Error1' {
                     $colorMapping['Error1']
@@ -72,33 +122,35 @@ ScriptClass ColorString {
                 'Error2' {
                     $colorMapping['Error2']
                 }
+                'Error3' {
+                    $colorMapping['Error3']
+                }
                 'Contrast' {
-                    if ( $text -eq $disabledValue ) {
+                    if ( $criterion -eq $disabledValue ) {
                         $colorMapping['Disabled']
                     } elseif ( $highlightedValues ) {
-                        $valueIndex = $highlightedValues.IndexOf($text)
+                        $valueIndex = $highlightedValues.IndexOf($criterion)
                         if ( $valueIndex -ge 0 ) {
+                            $colorVector = $colorMapping['Contrast']
                             $colorVector[$valueIndex % $colorVector.Length]
                         }
                     }
                 }
             }
 
-            if ( ! $standardColor ) {
-                $text
-                return
-            }
-
             $foregroundColor = $null
             $backgroundColor = $null
 
-            if ( $coloring -eq 'Containment' ) {
-                $backgroundColor = $standardColor
-            } else {
-                $foregroundColor = $standardColor
+            if ( $standardColor ) {
+                if ( $coloring -eq 'Containment' -or $coloring -eq 'Error1' ) {
+                    $backgroundColor = $standardColor
+                    $foregroundColor = 0
+                } else {
+                    $foregroundColor = $standardColor
+                }
             }
 
-            ToColorString $text $foregroundColor $backgroundColor
+            $foregroundColor, $backgroundColor
         }
 
         function ToColorString([string] $text, $foreColor, $backColor) {
@@ -176,6 +228,8 @@ ScriptClass ColorString {
 
                 if ( $colorVar -eq '4bit' ) {
                     '4bit'
+                } else {
+                    '2bit'
                 }
             } else {
                 '2bit'
@@ -183,3 +237,4 @@ ScriptClass ColorString {
         }
     }
 }
+
