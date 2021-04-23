@@ -54,12 +54,39 @@ ScriptClass LocalProfile {
 
     function ToPublicProfile {
         $connectionName = if ( $this.connectionProfile ) { $this.connectionProfile.Name }
-        [PSCustomObject] @{
-            ProfileName = $this.name
-            LogLevel = $this.logLevel
-            InitialApiVersion = $this.InitialApiVersion
-            Connection = $connectionName
-            IsDefault = $this.name -eq $this.scriptclass.defaultProfileName
+        $profileInfo = [ordered] @{}
+
+        # Ensure these "well-known" values are part of the structure even
+        # if they are not set -- other settings may come from external modules
+        # that extend the profile structure with their own module-specific
+        # properties
+        $profileInfo['ProfileName'] = $this.name
+        $profileInfo['Connection'] = $connectionName
+        $profileInfo['IsDefault'] = $this.name -eq $this.scriptclass.defaultProfileName
+        $profileInfo['InitialApiVersion'] = $this.InitialApiVersion
+        $profileInfo['LogLevel'] = $this.logLevel
+
+        # Add these last so that we get the correct capitalization -- the setting names
+        # may be camel-cased or have irregular casing -- we'll at least try to adjust
+        # for the camel-case scenario by capitalizing the initial below
+        if ( $this.profileData ) {
+            foreach ( $property in $this.profileData.keys ) {
+                if ( $property -ne 'name' -and ! $profileInfo.Contains($property) ) {
+                    $capitalized = $property[0].ToString().ToUpper() + $property.substring(1, $property.length - 1)
+                    $profileInfo[$capitalized] = $this.profileData[$property]
+                }
+            }
+        }
+
+        $result = [PSCustomObject] $profileInfo
+        $result.pstypenames.insert(0, 'GraphProfileSettings')
+
+        $result
+    }
+
+    function GetSetting([string] $settingName) {
+        if ( $this.profileData ) {
+            $this.profileData[$settingName]
         }
     }
 
@@ -107,7 +134,6 @@ ScriptClass LocalProfile {
                                                          }
                                                        }
             noBowserSigninUI = @{ Validator = 'BooleanValidator'; Required = $false }
-            shellPromptBehavior = @{ Validator = 'StringValidator'; Required = $false }
             autoConnect = @{ Validator = 'BooleanValidator'; Required = $false }
             logLevel = @{ Validator = 'StringValidator'; Required = $false
                           Updater = {
@@ -140,9 +166,11 @@ ScriptClass LocalProfile {
             if ( $this.settings ) {
                 $this.settings |=> Load
 
-                $endpointData = $this.settings |=> GetSettings $::.LocalProfileSpec.EndpointsCollection
-                $connectionData = $this.settings |=> GetSettings $::.LocalProfileSpec.ConnectionsCollection $endpointData
-                $profileData = $this.settings |=> GetSettings $::.LocalProfileSpec.ProfilesCollection $connectionData
+                $settingData = __GetSettingData
+
+                $endpointData = $settingData.endpointData
+                $connectionData = $settingData.connectionData
+                $profileData = $settingData.profileData
 
                 # We need this strange workaround for scriptclass because scriptclass
                 # hosts the code for static methods in a separate 'custom' module from the rest
@@ -175,12 +203,7 @@ ScriptClass LocalProfile {
                     }
                 }
 
-                $this.profiles = if ( $profileData ) {
-                    foreach ( $profileData in $profileData.values ) {
-                        $normalizedData = __GetNormalizedProfileData $profileData $connectionData $endpointData
-                        new-so LocalProfile $normalizedData.ProfileData $normalizedData.ConnectionProfileData $normalizedData.EndpointData
-                    }
-                }
+                __UpdateProfileSettings $endpointData $connectionData $profileData
 
                 $this.defaultProfileName = $this.settings |=> GetSettingValue defaultProfile
 
@@ -190,6 +213,22 @@ ScriptClass LocalProfile {
 
                 $::.LocalSettings |=> RefreshBehaviorsFromSettings
             }
+        }
+
+        function ReloadProfileSettings([boolean] $resetAllSettings) {
+            $settingData = __GetSettingData
+
+            $currentProfile = $::.LocalProfile |=> GetCurrentProfile
+
+            # This creates new profiles for each reloaded profile, so the current profile will be invalid
+            __UpdateProfileSettings $settingData.endpointData $settingData.connectionData $settingData.profileData
+
+            # Set reloaded current profile to be the current profile
+            if ( $currentProfile ) {
+                SetCurrentProfile $currentProfile.Name
+            }
+
+            $::.LocalSettings |=> RefreshBehaviorsFromSettings $resetAllSettings
         }
 
         function GetProfiles {
@@ -255,6 +294,27 @@ ScriptClass LocalProfile {
             __LoadSettings
             if ( $this.settings -and ! $this.profiles ) {
                 LoadProfiles
+            }
+        }
+
+        function __GetSettingData {
+            $endpointData = $this.settings |=> GetSettings $::.LocalProfileSpec.EndpointsCollection
+            $connectionData = $this.settings |=> GetSettings $::.LocalProfileSpec.ConnectionsCollection $endpointData
+            $profileData = $this.settings |=> GetSettings $::.LocalProfileSpec.ProfilesCollection $connectionData
+
+            @{
+                endpointData = $endpointData
+                connectionData = $connectionData
+                profileData = $profileData
+            }
+        }
+
+        function __UpdateProfileSettings($endpointData, $connectionData, $profileData) {
+            $this.profiles = if ( $profileData ) {
+                foreach ( $profileDataItem in $profileData.values ) {
+                    $normalizedData = __GetNormalizedProfileData $profileDataItem $connectionData $endpointData
+                    new-so LocalProfile $normalizedData.ProfileData $normalizedData.ConnectionProfileData $normalizedData.EndpointData
+                }
             }
         }
 

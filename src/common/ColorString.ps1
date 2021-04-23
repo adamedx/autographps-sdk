@@ -46,6 +46,52 @@ ScriptClass ColorString {
             '4bit' = @{}
         }
 
+        $color16NameMap = @{
+            Black = 0
+            DarkBlue = 4
+            DarkGreen = 2
+            DarkCyan = 6
+            DarkRed = 1
+            DarkMagenta = 5
+            DarkYellow = 3
+            Gray = 7
+            DarkGray = 8
+            Blue = 12
+            Green = 10
+            Cyan = 14
+            Red = 9
+            Magenta = 13
+            Yellow = 11
+            White = 15
+        }
+
+        $color16Contrast = @{
+            0 = 15
+            1 = 15
+            2 = 15
+            3 = 0
+            4 = 15
+            5 = 15
+            6 = 0
+            7 = 0
+            8 = 0
+            9 = 0
+            10 = 0
+            11 = 0
+            12 = 15
+            13 = 15
+            14 = 0
+            15 = 0
+        }
+
+        function GetColorFromName([string] $colorName) {
+            $this.color16NameMap[$colorName]
+        }
+
+        function GetColorContrast($color) {
+            $this.color16Contrast[$color]
+        }
+
         function UpdateColorScheme([PSCustomObject[]] $colorInfoObjects) {
             $newScheme = new-so ColorScheme @($colorInfoObjects)
 

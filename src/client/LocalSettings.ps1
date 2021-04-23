@@ -21,8 +21,12 @@ ScriptClass LocalSettings {
         $this.settingsPath = $settingsPath
     }
 
-    function Load {
-        write-verbose "Attempting to load settings from path '$this.settingsPath'"
+    function Load([boolean] $skipIfHasData) {
+        write-verbose "Attempting to load settings from path '$this.settingsPath' with skipIfHasData = '$skipIfHasData'"
+
+        if ( $this.settingsData -and $skipIfHasData ) {
+            return
+        }
 
         $this.settingsData = if ( $this.settingsPath -and ( test-path $this.settingsPath ) ) {
             $settingsContent = try {
@@ -62,7 +66,7 @@ ScriptClass LocalSettings {
         }
     }
 
-    function GetSettings($settingsType, $context) {
+    function GetSettings([string] $settingsType, $context) {
         if ( $this.settingsData ) {
             $settingsData = __ReadGroupData $settingsType
             __GetSettingsFromGroupData $settingsType $settingsData $context
@@ -100,7 +104,7 @@ ScriptClass LocalSettings {
         }
     }
 
-    function __GetSettingsFromGroupData($groupName, $groupData, $context) {
+    function __GetSettingsFromGroupData([string] $groupName, $groupData, $context) {
         $validSettings = @{}
 
         if ( $groupData ) {
@@ -189,19 +193,24 @@ ScriptClass LocalSettings {
     static {
         $propertyReaders = $null
         $settingTypeInfo = $null
+        $updatedProperties = $null
 
         function __initialize {
             $this.propertyReaders = @{}
             $this.settingTypeInfo = @{}
+            $this.updatedProperties = @{}
         }
 
         function RegisterSettingProperties([string] $settingType, [HashTable] $propertyReaders, $failOnInvalidProperty) {
-            $settingTypePropertyReaders = $propertyReaders[$settingType]
+            $settingTypePropertyReaders = $this.propertyReaders[$settingType]
 
             if ( ! $settingTypePropertyReaders ) {
-                $settingTypePropertyReaders = @{}
-                $this.propertyReaders.Add($settingType, $settingTypePropertyReaders)
-                $this.settingTypeInfo.Add($settingType, @{FailOnInvalidProperty=$failOnInvalidProperty})
+                if ( $settingTypePropertyReaders -eq $null ) {
+                    $settingTypePropertyReaders = @{}
+                    $this.propertyReaders.Add($settingType, $settingTypePropertyReaders)
+                    $this.settingTypeInfo.Add($settingType, @{FailOnInvalidProperty=$failOnInvalidProperty})
+                    $this.updatedProperties.Add($settingType, @{})
+                }
             }
 
             foreach ( $property in $propertyReaders.Keys ) {
@@ -209,11 +218,26 @@ ScriptClass LocalSettings {
             }
         }
 
-        function RefreshBehaviorsFromSettings {
+        function RefreshBehaviorsFromSettings([boolean] $refreshExistingSettings) {
+            if ( $refreshExistingSettings ) {
+                __ClearUpdatedProperties
+            }
+
             $updaters = __GetPropertyUpdaters
 
             foreach ( $updater in $updaters ) {
-                . $updater
+                $settingProperties = $this.updatedProperties[$updater.SettingType]
+
+                if ( ! $settingProperties[$updater.PropertyName] ) {
+                    . $updater.Updater
+                    $this.updatedProperties[$updater.SettingType][$updater.PropertyName] = $updater.Updater
+                }
+            }
+        }
+
+        function __ClearUpdatedProperties {
+            foreach ( $settingType in $this.updatedProperties.keys ) {
+                $this.updatedProperties[$settingType].Clear()
             }
         }
 
@@ -238,10 +262,15 @@ ScriptClass LocalSettings {
         }
 
         function __GetPropertyUpdaters {
-            foreach ( $setting in $this.propertyReaders.Values ) {
-                foreach ( $propertyReader in $setting.values ) {
-                    if ( $propertyReader['Updater'] ) {
-                        $propertyReader['Updater']
+            $settingTypes = $this.propertyReaders.keys
+
+            foreach ( $settingType in $settingTypes ) {
+                foreach ( $settingTypeReaders in $this.propertyReaders[$settingType] ) {
+                    foreach ( $propertyName in $settingTypeReaders.keys ) {
+                        $propertyReader = $settingTypeReaders[$propertyName]
+                        if ( $propertyReader['Updater'] ) {
+                            @{SettingType=$settingType;PropertyName=$propertyName;Updater=$propertyReader['Updater']}
+                        }
                     }
                 }
             }
