@@ -83,6 +83,11 @@ ScriptClass GraphConnection {
         }
 
         if ( $this.Status -eq [GraphConnectionStatus]::Online ) {
+            if ( ! $this.connected -and ( ! $this.scriptclass.AutoConnectAllowed() ) ) {
+                $errorOutput =  "The current context is disconnected and AutoConnect is disabled -- invoke 'Connect-GraphApi -Current' before retrying this or any other commands that access the Graph API"
+                write-warning $errorOutput
+                write-error $errorOutput -erroraction stop
+            }
             if ( $this.GraphEndpoint.Type -eq 'MSGraph' ) {
                 # Trust the library's token cache to get a new token if necessary
                 $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id $certificatePassword
@@ -125,6 +130,16 @@ ScriptClass GraphConnection {
             $this.connections = @{}
         }
 
+        function AutoConnectAllowed {
+            $currentProfile = $::.LocalProfile |=> GetCurrentProfile
+
+            if ( $currentProfile ) {
+                $currentProfile.GetSetting('autoConnect') -ne $false
+            } else {
+                $true
+            }
+        }
+
         function NewSimpleConnection([string] $graphType = 'MSGraph', [string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null, $userAgent = $null, $allowMSA = $true, $name, [string] $consistencyLevel ) {
             $endpoint = new-so GraphEndpoint $cloud $graphType $null $null $authProtocol
             $app = new-so GraphApplication $::.Application.DefaultAppId
@@ -147,6 +162,7 @@ ScriptClass GraphConnection {
                 AuthType = $connection.identity.app.authtype
                 Tenant = $connection.identity.GetTenantId()
                 User = $connection.identity.GetUserInformation().UserId
+                Connected = $connection.connected
                 Status = $connection.getstatus()
                 ConsistencyLevel = $consistencyLevel
                 Connection = $connection

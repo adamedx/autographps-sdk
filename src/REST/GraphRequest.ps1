@@ -91,11 +91,6 @@ ScriptClass GraphRequest {
             @{'Content-Type'='application/json'}
         }
 
-        if ($graphConnection.Identity) {
-            $token = $graphConnection |=> GetToken
-            $this.Headers['Authorization'] = $token.CreateAuthorizationHeader()
-        }
-
         if ( $this.ClientRequestId ) {
             $this.Headers['client-request-id'] = $this.ClientRequestId.tostring()
         }
@@ -112,6 +107,11 @@ ScriptClass GraphRequest {
     function Invoke($pageStartIndex = $null, $maxResultCount = $null, $logger) {
         if ( $this.Connection.Status -eq ([GraphConnectionStatus]::Offline) ) {
             throw "Web request cannot proceed -- connection status is set to offline"
+        }
+
+        if ( $this.Connection.Identity -and ! $this.Headers.ContainsKey('Authorization') ) {
+            $token = $this.Connection |=> GetToken
+            $this.Headers['Authorization'] = $token.CreateAuthorizationHeader()
         }
 
         $queryParameters = $this.query
