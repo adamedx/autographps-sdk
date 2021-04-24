@@ -212,7 +212,7 @@ Describe 'LocalProfile class' {
             (get-item env:AUTOGRAPH_SETTINGS_FILE).value | Should BeExactly $testSettingsFilePath2
         }
 
-        It 'Should enumerate the expected connnections' {
+        It 'Should enumerate the expected connections' {
             $wellFormedConnections = $testSettings.connections.list |
               where { $_ | gm name -erroraction ignore }
 
@@ -287,10 +287,12 @@ Describe 'LocalProfile class' {
 
             $expectedProfile = [PSCustomObject] @{
                 ProfileName = $expectedProfileData.Name
-                LogLevel = $null
-                InitialApiVersion = $testSettings.profiles.defaults.InitialApiVersion
                 Connection = $null
                 IsDefault = $false
+                AutoConnect = $null
+                NoBrowserSigninUI = $null
+                InitialApiVersion = $testSettings.profiles.defaults.InitialApiVersion
+                LogLevel = $null
             }
 
             $ignoredProfileData = $testSettings.profiles.list |
@@ -300,10 +302,12 @@ Describe 'LocalProfile class' {
 
             $ignoredProfile = [PSCustomObject] @{
                 ProfileName = $ignoredProfileData.Name
-                LogLevel = $ignoredProfileData.LogLevel
-                InitialApiVersion = $testSettings.profiles.defaults.InitialApiVersion
                 Connection = $null
                 IsDefault = $false
+                AutoConnect = $null
+                NoBrowserSigninUI = $null
+                InitialApiVersion = $testSettings.profiles.defaults.InitialApiVersion
+                LogLevel = $ignoredProfileData.LogLevel
             }
 
             $actualProfile = $profiles | where ProfileName -eq 'DuplicateSettings2'
@@ -348,10 +352,12 @@ Describe 'LocalProfile class' {
 
                 $expectedProfileProperties = [ordered] @{
                     ProfileName = $expectedProfileData.Name
-                    LogLevel = $null
-                    InitialApiVersion = $null
                     Connection = $null
                     IsDefault = $expectedProfileData.Name -eq $defaultProfile
+                    AutoConnect = $null
+                    NoBrowserSigninUI = $null
+                    InitialApiVersion = $null
+                    LogLevel = $null
                 }
 
                 AddExpectedProperties $expectedProfileData $expectedProfileProperties LogLevel, InitialApiVersion, Connection @{Connection='connection'}

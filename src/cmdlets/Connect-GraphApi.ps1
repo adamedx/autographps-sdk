@@ -43,6 +43,7 @@ function Connect-GraphApi {
         [parameter(parametersetname='certpath')]
         [parameter(parametersetname='autocert')]
         [parameter(parametersetname='secret')]
+        [parameter(parametersetname='current')]
         [String[]] $Permissions = $null,
 
         [parameter(parametersetname='cloud')]
@@ -147,7 +148,10 @@ function Connect-GraphApi {
         [Switch] $Reconnect,
 
         [parameter(parametersetname='existingconnection',mandatory=$true)]
-        [PSCustomObject] $Connection = $null
+        [PSCustomObject] $Connection = $null,
+
+        [parameter(parametersetname='currentconnection',mandatory=$true)]
+        [switch] $Current
     )
 
     begin {
@@ -189,8 +193,11 @@ function Connect-GraphApi {
         }
 
         $targetConnection = if ( $connection ) {
+            $connection
         } elseif ( $ConnectionName ) {
             $::.GraphConnection |=> GetNamedConnection $ConnectionName $true
+        } elseif ( $Current.IsPresent -and $context.Connection ) {
+            $context.Connection
         }
 
         $connectionResult = if ( $targetConnection ) {
@@ -199,6 +206,8 @@ function Connect-GraphApi {
             $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $targetConnection
 
             $::.GraphContext |=> SetCurrentByName $newContext.name
+
+            $targetConnection |=> Connect
 
             $targetConnection
         } else {

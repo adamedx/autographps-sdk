@@ -123,10 +123,53 @@ ScriptClass GraphIdentity {
             if ( $this.App.AuthType -eq 'Apponly' ) {
                 $providerInstance |=> AcquireFirstAppToken $authContext
             } else {
-                if ( $isConfidential ) {
-                    $providerInstance |=> AcquireFirstUserTokenConfidential $authContext $scopes
-                } else {
-                    $providerInstance |=> AcquireFirstUserToken $authContext $scopes $noBrowserUI
+                # The latest version of posh-git seems to corrupt the state of the thread if it is imported into the PS session.
+                # This causes auth to fail with a ThreadStateException from MSAL with a message  indicating that an MTA operation
+                # is being attempted in an STA thread, and that is illegal. This occurs when MSAL is trying to show the auth web dialog
+                # and may impact device code auth as well.
+
+                # The good news though is that apparently with a retry MSAL will be just fine -- we can just try again on this
+                # same thread as a workaround until posh-git (or MSAL?) fixes the issue. We do this only when we encounter this specific
+                # error.
+
+                # It's not clear what additional instability is caused by posh-git here, so regardless of whether the workaround here
+                # unblocks this module's functionality, it may be wise to remove posh-git whenever strange behavior arises with any module
+                # to see if that fixes things. In general limiting posh-git to use cases where you really need it (e.g working
+                # with a source control system) is advisable to avoid non-determinism and hard to troubleshoot errors.
+
+                # Note that this workaround is only needed in the interactive case -- if no UX thread (e.g. a web dialog) is shown,
+                # there is no MTA / STA issue.
+
+                $remainingAttempts = 2
+                $interactiveTokenResult = $null
+
+                do {
+                    $interactiveTokenResult = if ( $isConfidential ) {
+                        $providerInstance |=> AcquireFirstUserTokenConfidential $authContext $scopes
+                    } else {
+                        $providerInstance |=> AcquireFirstUserToken $authContext $scopes $noBrowserUI
+                    }
+
+                    # This is terrible -- since we're in PowerShell and async thread operations are inconvenient, we'll
+                    # just synchronously wait for the result :(. If we don't do this, we can't check the status
+                    # as it can change asynchronously
+                    $interactiveTokenResult.Result | out-null
+
+                    $isThreadException = if ( $interactiveTokenResult.Status -eq 'Faulted' ) {
+                        if ( $interactiveTokenResult | gm exception -erroraction ignore ) {
+                            ( $interactiveTokenResult.Exception -is [Exception] ) -and ( $interactiveTokenResult.Exception.InnerException -is [System.Threading.ThreadStateException] )
+                        }
+                    }
+
+                    if ( ! $isThreadException ) {
+                        $remainingAttempts = 0
+                    } elseif ( $remainingAttempts -gt 1 ) {
+                        write-verbose "Encountered thread exception accessing MSAL, a retry will be attempted"
+                    }
+                } while ( --$remainingAttempts -gt 0 )
+
+                if ( $interactiveTokenResult ) {
+                    $interactiveTokenResult
                 }
             }
         }

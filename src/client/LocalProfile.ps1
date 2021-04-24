@@ -63,6 +63,8 @@ ScriptClass LocalProfile {
         $profileInfo['ProfileName'] = $this.name
         $profileInfo['Connection'] = $connectionName
         $profileInfo['IsDefault'] = $this.name -eq $this.scriptclass.defaultProfileName
+        $profileInfo['AutoConnect'] = $this.profileData['AutoConnect']
+        $profileInfo['NoBrowserSigninUI'] = $this.profileData['noBrowserSigninUI']
         $profileInfo['InitialApiVersion'] = $this.InitialApiVersion
         $profileInfo['LogLevel'] = $this.logLevel
 
@@ -133,7 +135,7 @@ ScriptClass LocalProfile {
                                                              }
                                                          }
                                                        }
-            noBowserSigninUI = @{ Validator = 'BooleanValidator'; Required = $false }
+            noBrowserSigninUI = @{ Validator = 'BooleanValidator'; Required = $false }
             autoConnect = @{ Validator = 'BooleanValidator'; Required = $false }
             logLevel = @{ Validator = 'StringValidator'; Required = $false
                           Updater = {
@@ -298,9 +300,15 @@ ScriptClass LocalProfile {
         }
 
         function __GetSettingData {
-            $endpointData = $this.settings |=> GetSettings $::.LocalProfileSpec.EndpointsCollection
-            $connectionData = $this.settings |=> GetSettings $::.LocalProfileSpec.ConnectionsCollection $endpointData
-            $profileData = $this.settings |=> GetSettings $::.LocalProfileSpec.ProfilesCollection $connectionData
+            $endpointData = @{}
+            $connectionData = @{}
+            $profileData = @{}
+
+            if ( $this.settings ) {
+                $endpointData = $this.settings |=> GetSettings $::.LocalProfileSpec.EndpointsCollection
+                $connectionData = $this.settings |=> GetSettings $::.LocalProfileSpec.ConnectionsCollection $endpointData
+                $profileData = $this.settings |=> GetSettings $::.LocalProfileSpec.ProfilesCollection $connectionData
+            }
 
             @{
                 endpointData = $endpointData

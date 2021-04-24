@@ -115,14 +115,14 @@ ScriptClass LocalSettings {
                 $validSetting = $defaultSetting.Clone()
 
                 $newSetting = __GetValidSetting $groupName $setting $context
-                if ( $newSetting ) {
+                if ( $newSetting -ne $null ) {
                     foreach ( $propertyName in $newSetting.keys ) {
                         $validSetting[$propertyName] = $newSetting[$propertyName]
                     }
                 }
 
                 # Allow default settings to be added unless FailOnIInvalidProperty is set
-                if ( $newSetting -or ! $settingInfo.FailOnInvalidProperty ) {
+                if ( ( $newSetting -ne $null ) -or ! $settingInfo.FailOnInvalidProperty ) {
                     $validSettings.Add($validSetting['name'], $validSetting)
                 }
             }
@@ -156,10 +156,15 @@ ScriptClass LocalSettings {
             }
 
             $propertyValue = if ( $setting | gm $propertyName -erroraction ignore ) {
-                $setting.$propertyName
+                $newValue = $setting.$propertyName
+                if ( $newValue -eq $null ) {
+                    write-warning "Property '$propertyName' had a `$null value which is not valid, it will be skipped"
+                    continue
+                }
+                $newValue
             }
 
-            $result = if ( $validation -and ! ( ! $propertyValue -and ! $validation.Required ) ) {
+            $result = if ( $validation -and ! ( ( $propertyValue -eq $null ) -and ! $validation.Required ) ) {
                 . $propertyReaderScript $propertyValue $context
             }
 
@@ -175,7 +180,7 @@ ScriptClass LocalSettings {
                     }
                 }
 
-                if ( ! $result.value -and $validation.Required ) {
+                if ( ( $result.value -eq $null ) -and $validation.Required ) {
                     write-warning "Property '$propertyName' of setting '$settingName' of type '$settingType' is a required property but was not set -- the setting will be ignored"
                     $validSetting = $null
                     break
@@ -185,7 +190,7 @@ ScriptClass LocalSettings {
             }
         }
 
-        if ( $validSetting -ne $null ) {
+        if ( $validSetting ) {
             $validSetting
         }
     }

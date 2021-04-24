@@ -597,6 +597,11 @@ function Invoke-GraphApiRequest {
                 }
 
                 $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent $NoRequest.IsPresent ( $startDelta -and ! $isDeltaUri ) $initialDeltaToken $PageSizePreference $ConsistencyLevel
+
+                if ( ! $request ) {
+                    throw "Unable to issue REST request"
+                }
+
                 $request |=> SetBody $Body
                 try {
                     $request |=> Invoke $skipCount $PageSizePreference -logger $logger
