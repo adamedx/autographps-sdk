@@ -31,12 +31,15 @@ limitations under the License.
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Status</Label>
-          </TableColumnHeader>
-          <TableColumnHeader>
-            <Label>Method</Label>
+            <Alignment>Right</Alignment>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Size</Label>
+            <Alignment>Right</Alignment>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Method</Label>
+            <Alignment>Right</Alignment>
           </TableColumnHeader>
           <TableColumnHeader>
           </TableColumnHeader>
@@ -53,10 +56,10 @@ limitations under the License.
                 <ScriptBlock>$::.GraphFormatter.StatusCode($_.Status)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.GraphFormatter.RestMethod($_.Method)</ScriptBlock>
+                <PropertyName>ResponseContentSize</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>ResponseContentSize</PropertyName>
+                <ScriptBlock>$::.GraphFormatter.RestMethod($_.Method)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Uri</PropertyName>
@@ -84,9 +87,11 @@ limitations under the License.
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Status</Label>
+            <Alignment>Right</Alignment>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Method</Label>
+            <Alignment>Right</Alignment>
           </TableColumnHeader>
           <TableColumnHeader>
           </TableColumnHeader>
@@ -133,9 +138,11 @@ limitations under the License.
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Status</Label>
+            <Alignment>Right</Alignment>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Method</Label>
+            <Alignment>Right</Alignment>
           </TableColumnHeader>
           <TableColumnHeader>
           </TableColumnHeader>
@@ -146,8 +153,10 @@ limitations under the License.
             <Label>Query</Label>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Alignment>Right</Alignment>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Alignment>Right</Alignment>
           </TableColumnHeader>
           <TableColumnHeader>
           </TableColumnHeader>
@@ -209,9 +218,11 @@ limitations under the License.
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Status</Label>
+            <Alignment>Right</Alignment>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Method</Label>
+            <Alignment>Right</Alignment>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>ResourceUri</Label>
