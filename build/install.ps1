@@ -49,7 +49,7 @@ function InstallDependencies($clean) {
     }
 
     $restoreCommand = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
-        "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -packagesDirectory '$packagesDestination' -packagesavemode nuspec"
+        "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -FallbackSource  https://api.nuget.org/v3/index.json -packagesDirectory '$packagesDestination' -packagesavemode nuspec"
     } else {
         $psCorePackagesCSProj = New-DotNetCoreProjFromPackagesConfig $packagesConfigFile $packagesDestination
         "dotnet restore '$psCorePackagesCSProj' --packages '$packagesDestination' /verbosity:normal --no-cache"
