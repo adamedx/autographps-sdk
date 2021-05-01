@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Change get-graphconnectioninfo to get-graphcurrentconnection and wrap get-graphconnection
 * Adaptive progress meter?
 * View for graph application
 * Should add Add-GraphApplicationCertificate
@@ -394,6 +395,8 @@
 * Add Get-LastGraphResponse with view parameters
 * Color for Get-GraphConnectionInfo
 * Enable color schemes
+* Swap method and size fields in get-graphlog default view?
+* Add alias for get-graphconnectioninfo
 
 ### Postponed
 

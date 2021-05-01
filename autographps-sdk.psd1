@@ -117,7 +117,7 @@ CmdletsToExport = @()
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('fgl', 'gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl')
+AliasesToExport = @('fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -251,6 +251,7 @@ None.
 
 ### Breaking changes
 
+* The `Connect-GraphApi` positional parameter 0 is now the new `Name` parameter, not `Permissions`. To specify permissions, this must now requires explicit specification of the `Permissions` parameter.
 * The `Invoke-GraphRequest` and `Get-GraphRequest` commands were usually paging through all results by default rather than returning some default minimum -- this has been fixed
 * Some fields of `Get-GraphLog` such as `HasRequestBody` have been removed
 * The output of `Get-GraphApplicationConsent` now returns `Delegated` instead of `DelegatedUser` for the `PermissionType` field
@@ -259,8 +260,7 @@ None.
 ### New features
 
 * Configuration: the module now supports "Profile settings". It reads the file `~/.autographps/settings.json` on module load if it exists and sets behaviors including the initial connection according to the settings expressed in the configuration file
-* The following commands related to the proflie settings feature h
-ave been added:
+* The following commands related to the proflie settings feature have been added:
   * `Get-GraphProfileSettings`
   * `Select-GraphProfileSettings`
   * `Get-GraphConnection`: enumerates 'named' connections created by `New-GraphConnection` or profile settings

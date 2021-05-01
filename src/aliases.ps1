@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ set-alias fgl Format-GraphLog
 set-alias gge Get-GraphError
 set-alias ggr Get-GraphResource
 set-alias gcat Get-GraphResource
+set-alias gcon Get-GraphConnectionInfo
 set-alias Get-GraphContent Get-GraphResource
 set-alias ggl Get-GraphLog
 
