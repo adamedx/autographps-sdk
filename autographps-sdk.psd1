@@ -117,7 +117,7 @@ CmdletsToExport = @()
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl')
+AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -243,7 +243,7 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS-SDK 0.26.0 Release Notes
 
-This release adds profile-based configuration
+This release adds numerous usability improvements including certificate authentication improvements, profile-based configuration, and color output along with several breaking changes.
 
 ### New dependencies
 
@@ -285,7 +285,7 @@ None.
 * The `Get-GraphApplicationConsent` supports the `PermissionType` parameter to optionally limit the consents to just `Delegated` or just `AppOnly` consent rather than both.
 * The `Invoke-GraphRequest` and `Get-GraphResource` commands now support the `All` parameter to return all results. Without this parameter, `Invoke-GraphRequest` only returns either 100 results or the number of results contained in one REST response for the particular request URI, whichever is larger.
 * The `Invoke-GraphRequest` and `Get-GraphResource` commands now support the `Count` parameter to return just the count of results that would be returned and note the results themselves. This is only supported if the request URI is backed by an API that supports this capability.
-* Introduced the alias `gcon` for `Get-GraphConnectionInfo`
+* Introduced the aliases `gcon` for `Get-GraphConnectionInfo` and `conga` for `Connect-GraphApi`
 
 ### Fixed defects
 
