@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set-alias conga Connect-GraphApi
 set-alias fgl Format-GraphLog
 set-alias gge Get-GraphError
 set-alias ggr Get-GraphResource
