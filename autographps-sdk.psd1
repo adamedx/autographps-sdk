@@ -285,6 +285,7 @@ None.
 * The `Get-GraphApplicationConsent` supports the `PermissionType` parameter to optionally limit the consents to just `Delegated` or just `AppOnly` consent rather than both.
 * The `Invoke-GraphRequest` and `Get-GraphResource` commands now support the `All` parameter to return all results. Without this parameter, `Invoke-GraphRequest` only returns either 100 results or the number of results contained in one REST response for the particular request URI, whichever is larger.
 * The `Invoke-GraphRequest` and `Get-GraphResource` commands now support the `Count` parameter to return just the count of results that would be returned and note the results themselves. This is only supported if the request URI is backed by an API that supports this capability.
+* Introduced the alias `gcon` for `Get-GraphConnectionInfo`
 
 ### Fixed defects
 
