@@ -80,6 +80,16 @@ If your application is packaged as a PowerShell module, simply include it in the
 
 If you're using a script module (`.psm1` file) or simply a plain PowerShell `ps1` script, you should ensure the module has been already been installed on the system using `Install-Module` or a similar deployment mechanism, then add a line `import-module autographps-sdk` to the beginning of your script or script module.
 
+### Configuration and preferences
+
+The module supports the following preference variable:
+
+`AutoGraphColorModePreference`: specify with the value `2bit` to override the default 16-color palette of command output to make it monochrome. Explicitly specifying `4bit` will ensure 16-color output.
+
+#### Settings file
+
+AutoGraphPS-SDK supports the use of a local settings configuration file at the location `~/.autographps/settings.json`. Configuration settings managed by this file include sign-in and credential customization, logging preferences, and API version override among other things. See the specific [settings file documentation](docs/settings/README.md) for more detail on the capabilities and format of the file.
+
 ## Reference
 
 The full list of cmdlets in this module is given below; note that `Invoke-GraphRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-GraphApi` to request additional permissions as described in the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference).
