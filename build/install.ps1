@@ -49,6 +49,8 @@ function InstallDependencies($clean) {
     }
 
     $restoreCommand = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
+        # Add the explicit fallback source to nuget.org because we've hit issues in the past where the required packages
+        # weren't in the local source that the CI pipeline uses, even though these are very popular packages!
         "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -FallbackSource  https://api.nuget.org/v3/index.json -packagesDirectory '$packagesDestination' -packagesavemode nuspec"
     } else {
         $psCorePackagesCSProj = New-DotNetCoreProjFromPackagesConfig $packagesConfigFile $packagesDestination

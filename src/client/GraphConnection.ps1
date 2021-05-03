@@ -46,7 +46,7 @@ ScriptClass GraphConnection {
 
         $this.consistencyLevel = if ( $consistencyLevel ) {
             if ( $consistencyLevel -notin 'Auto', 'Default', 'Session', 'Eventual' ) {
-                throw "The specified consistency level of '$consistencyLevel' is not valid -- it must be one of 'Default', 'Session', or 'Eventual'"
+                throw "The specified consistency level of '$consistencyLevel' is not valid -- it must be one of 'Auto', 'Default', 'Session', or 'Eventual'"
             }
             if ( $consistencyLevel -notin 'Auto', 'Default' ) {
                 $consistencyLevel

@@ -1,0 +1,253 @@
+{
+    "$id": "https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/settings.schema.json",
+    "$schema": "https://json-schema.org/draft/2019-09/schema#",
+    "title": "AutoGraph Settings Profile Schema",
+    "definitions": {
+        "RootSettings": {
+            "additionalProperties": true,
+            "defaultProfile": {
+                "type": "string"
+            }
+        },
+
+        "Profile": {
+            "description": "Settings that affect the user experience",
+            "addtionalProperties": true,
+            "properties": {
+                "autoConnect": {
+                    "description": "Determines whether or not connections must be established via an explicit connection command or if any command that uses a connection can establish the connection on-demand. By default, this setting is enabled",
+                    "type": "boolean"
+                },
+                "connection": {
+                    "description": "The name of the setting connection to use by default when connections are established without explicitly specifying a connnection name. Named connections referenced by this setting can be defined through settings or through a connection-creation command",
+                    "type": "string"
+                },
+                "initialApiVersion": {
+                    "description": "The Graph API version for which to issue requests. AutoGraph defaults to a version with long-term support, rather than pre-release API versions such as the 'beta' version which has unstable APIs with breaking changes. Use this setting to avoid the need to specify the preferred API version on all commands if that version is not the desired version.",
+                    "type": "string"
+                },
+                "logLevel": {
+                    "description": "AutoGraph maintains a local log of requests to Graph and their responses. The local log can be accessed via AutoGraph commands. Use this setting to modify the level of detail of the logged data or to completely disable any logging. The default value is 'Basic', which includes all information sent to and received from Graph except for the HTTP protocol request and response body content. The value 'None' means no logging whatsoever. The 'Error' value logs the same information as 'Basic' but only when there is an HTTP error response status and it also includes that response. The 'FullRequest' value is the same as 'Basic' except the HTTP request body content is logged. The 'FullResponse' value is the same as 'Basic' except the HTTP response body content is also logged. And the value 'Full' logs all information sent to and from Graph, including both HTTP request and response body content.",
+                    "enum": [
+                        "None",
+                        "Error",
+                        "Basic",
+                        "FullRequest",
+                        "FullResponse",
+                        "Full"
+                    ],
+                    "type": "string"
+                },
+                "name": {
+                    "description": "The unique name of the profile -- this property is required.",
+                    "type": "string"
+                },
+                "noBrowserSigninUI": {
+                    "description": "Determines whether a web browser should be interactively displayed from within the command-line user interface experience. By default, the behavior controlled by this setting depends on the platform in which the application is executing. When executing from the PowerShell Desktop, this behavior defaults to 'false', which means a web browser is used for signin directly from the user interface. For other platforms, the default is 'true', which means that sign-in instructions are displayed in th command-line user interface instead of a browser, though those instructions will require the user to visit a particlar web location via an external browser that may or may not also be launched for the user for convenience by the application. Use this setting to override the automatic behavior to consisently apply one of the interactions regardless of platform.",
+                    "type": "boolean"
+                }
+            }
+        },
+
+        "ProfileCollection": {
+            "additionalProperties": false,
+            "description": "Collection of profiles.",
+            "items": {
+                "$ref": "#/definitions/Profile",
+                "required": [
+                    "name"
+                ]
+            },
+            "type": "array"
+        },
+
+        "ProfileSettings": {
+            "additionalProperties": false,
+            "description": "Collection of profile settings including the default values shared by all such collections.",
+            "properties": {
+                "list": {
+                    "$ref": "#/definitions/ProfileCollection"
+                },
+                "defaults": {
+                    "description": "Settings that should be applied to every profile by default unless overridden in the profile",
+                    "$ref": "#/definitions/Profile"
+                }
+            }
+        },
+
+        "Connection": {
+            "additionalProperties": false,
+            "description": "The settings required to issue requests to a Graph service",
+            "properties": {
+                "accountType": {
+                    "description": "The type of account that can sign in to use this connection. The value 'AzureADOnly' means that sign-in to this application requires and Azure Active Directory (AAD) organization principal such as an AAD user or application -- when this value is specified, a Microsoft Account (MSA) may not be used for sign-in. The 'AzureADAndPersonalMicrosoftAccount' value means that both AAD principals and MSA accounts may be used to sign-in. By default, the value is 'Auto', which is the same as 'AzureADOnly' unless the application's default AAD application ID is used to sign-in. If that default application ID is overridden using the commands for connecting to the Graph API or through settings via the 'appId' property, then by default MSA signin-in will be disallowed because of the 'Auto' value. This can be overridden by setting this property explicitly to 'AzureADAndPersonalMicrosoftAccount' or by specifying the equivalent value to the commands used to create and establish connections to Graph.",
+                    "enum": [
+                        "Auto",
+                        "AzureADOnly",
+                        "AzureADAndPersonalMicrosoftAccount"
+                    ],
+                    "type": "string"
+                },
+                "appId": {
+                    "description": "Specifies the identifier of the Azure Active Directory (AAD) application identity used to sign-in to the Graph API to gain authorized access when no explicit application ID is specified to a connection-related command. By default, this application uses its own mulit-tenant application. To use a different application, particularly in order to use a single-tenant application for your specific organization, you may specify this setting.",
+                    "type": "string"
+                },
+                "appRedirectUri": {
+                    "description": "Specifies the OAuth2 protocol redirect URI to use when signing in to the application. The application uses the correct default value of 'https://login.microsoftonline.com/common/oauth2/nativeclient' for this property when the default application is used, but if you specify an alternate application through the 'appId' property or using explicit parameters of connection-related commands, you may also need to specify the application-specific value for this property for sign-in to be successful.",
+                    "type": "string"
+                },
+                "authProtocol": {
+                    "description": "Specifies the AAD authentication protocol to use during sign-in -- the default value is 'v2', the latest value. Specify 'v1' when using older applications configured prior to the release of the new protocols. Note that this property is likely to be removed in the future as the latest authentication libraries and protocols can now support even older applications.",
+                    "enum": [
+                        "v2",
+                        "v1"
+                    ],
+                    "type": "string"
+                },
+                "authType": {
+                    "description": "When this property is set to 'Delegated', sign-in to the Graph API occurs interactively as a specific user the delegated authentication flow which allows the application delegated permissions to act as the user. When the value is set to 'AppOnly,', then a non-interactive sign-in occurs using some available credential such as a certificate and the application has only the permissions assigned specifically to that application and none assigned to any user.",
+                    "enum": [
+                        "Delegated",
+                        "AppOnly"
+                    ],
+                    "type": "string"
+                },
+                "certificatePath": {
+                    "description": "This property specifies a runtime accessible path to a certificate used for app-only or any client-credentials flow sign-in to the Graph API. For the Windows OS platform, the value of the path may be a Windows certificate store path, i.e. one that starts with 'cert:', or a local file system path. For non-Windows platfors, only a local file system path may be specified. This setting is especially needed outside of the Windows OS because on Windows this application's application creation commands employ conventions that allow for the required certificate for a given application through conventions that link the application to certificates in the certificate store. There is no comparable certificate store interface for other platforms, so the certificate path must always be specified in those cases when app-only or client credentials flow sign-in is specified.",
+                    "type": "string"
+                },
+                "confidential": {
+                    "description": "Specifies that the sign-in to the Graph API must be accomplished using a confidential client authentication flow which requires the use of a credential for the application such as a certificate. By default, this is set to 'false', which means that a public client flow is used. Such public flows can allow delegated user sign-in by the code of any application since there is no proof of the identity of the actual executing code without a secret, i.e. confidential , credential.",
+                    "type": "boolean"
+                },
+                "consistencyLevel": {
+                    "description": "Specifies that Graph API requests should honor a particular consistency level. The default value is 'Default', which was originally the same as 'Session', but this may change in the future as updates to the Graph API protocol are deployed. The value 'Session' requests session consistency semantics at the expense of performance such that changes made to data exposed by the Graph API are immediately visible in subsequent read requests. The value 'Eventual' requests eventual consistency semantics for improved query performance and richness at the expense of delays in changes made to data exposed by Graph being reflected in read requests. Note that only some Graph APIs support this setting and many will ignore it -- API documentation will confirm with this capability will impact a given API.",
+                    "enum": [
+                        "Default",
+                        "Session",
+                        "Eventual"
+                    ],
+                    "type": "string"
+                },
+                "delegatedPermissions": {
+                    "description": "The comma-delimited list of delegated user permissions that should be requested when signing in to the Graph API.",
+                    "type": "string"
+                },
+                "endpoint": {
+                    "description": "The name of the endpoint that describes the authorization and Graph API endpoint specified in settings. If this is not specified the default value of 'Public' for the Azure Public cloud graph endpoints https://login.microsoftonline.com for authentication / authorization and Graph API endpoint https://graph.microsoft.com are used. This property may be set to the value of the other known Graph endpoints 'ChinaCloud', 'GermanyCloud', and 'USGovernmentCloud'. Additionally, the name of endpoints specified in the endpoints section of settings may be specified to allow customized use of proxies or Graph environments not currenty supported by the application.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "The unique name of the connection",
+                    "type": "string"
+                },
+                "tenantId": {
+                    "description": "The tenant, expressed as the tenant's domain name or as the tenant ID guid, to which the application is signing in. This information is required as command input or in settings when signing in using app-only authentication or when the authProtocol is specified as 'v1'.",
+                    "type": "string"
+                },
+                "userAgent": {
+                    "description": "The HTTP protocol user agent field to be used when this application makes requests. When not specified in settings, the user agent is the one specified using command parameters and if not specified is then a standard default user agent of the application. This property can be used to customize the user agent for application telemetry or other purposes.",
+                    "type": "string"
+                }
+            }
+        },
+
+        "ConnectionCollection": {
+            "additionalProperties": false,
+            "description": "Collection of connections.",
+            "items": {
+                "$ref": "#/definitions/Connection",
+                "required": [
+                    "name"
+                ]
+            },
+            "type": "array"
+        },
+
+        "ConnectionSettings": {
+            "additionalProperties": false,
+            "description": "Collection of connections including the default values shared by all connections.",
+            "properties": {
+                "list": {
+                    "$ref": "#/definitions/ConnectionCollection"
+                },
+                "defaults": {
+                    "description": "Settings that should be applied to every connection by default unless overridden in a specific connection",
+                    "$ref": "#/definitions/Connection"
+                }
+            }
+        },
+
+        "Endpoint": {
+            "additionalProperties": false,
+            "description": "The service locations for authorizing and servicing Graph requests. This can be used to customize",
+            "properties": {
+                "authUri": {
+                    "description": "The URI to which requests for authentication and authorization for access to the Graph API should be made.",
+                    "type": "string"
+                },
+                "graphUri": {
+                    "description": "The URI to which requests to the Graph API should be made.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "The unique name of the endpoint",
+                    "type": "string"
+                },
+                "resourceUri": {
+                    "description": "The URI of the Graph resource for which to request authorization at sign-in time. When not specified, this is just the same as the Graph API endpoint itself, but in cases where that endpoint is specified as a proxy for instance then this property may be specified in settings or as a command parameter to override the resource URI to conform to that required by the authorization endpoint.",
+                    "type": "string"
+                }
+            }
+        },
+
+        "EndpointCollection": {
+            "additionalProperties": false,
+            "description": "Collection of endpoints.",
+            "items": {
+                "$ref": "#/definitions/Endpoint",
+                "required": [
+                    "name"
+                ]
+            },
+            "type": "array"
+        },
+
+        "EndpointSettings": {
+            "description": "Collection of endpoints",
+            "properties": {
+                "list": {
+                    "$ref": "#/definitions/EndpointCollection"
+                }
+            }
+        }
+    },
+
+    "allOf": [
+        { "$ref": "#/definitions/RootSettings" },
+        {
+            "additionalItems": true,
+            "properties": {
+                "profiles": {
+                    "oneOf": [
+                        { "$ref": "#/definitions/ProfileCollection" },
+                        { "$ref": "#/definitions/ProfileSettings" }
+                    ]
+                },
+
+                "connections": {
+                    "oneOf": [
+                        { "$ref": "#/definitions/ConnectionCollection" },
+                        { "$ref": "#/definitions/ConnectionSettings" }
+                    ]
+                },
+
+                "endpoints": {
+                    "oneOf": [
+                        { "$ref": "#/definitions/EndpointSettings" }
+                    ]
+                }
+            }
+        }
+    ]
+}

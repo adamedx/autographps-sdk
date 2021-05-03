@@ -1,0 +1,97 @@
+{
+    "$schema": "https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/settings.schema.json",
+    "defaultProfile":  "MSFTCORP",
+
+    "profiles":  {
+        "defaults":  {
+        },
+        "list":  [
+            {
+                "name": "MSFTCORP",
+                "connection":  "DesktopPS"
+            },
+
+            {
+                "name":  "Afrosoft",
+                "connection": "AfrosoftAutoLogon",
+                "logLevel":  "Full"
+            },
+
+            {
+                "name": "Canary",
+                "connection": "Canary",
+                "initialApiVersion": "v2.0",
+                "autoConnect": false,
+                "PromptColor": "Red"
+            }
+        ]
+    },
+
+    "connections":  {
+        "defaults":  {
+            "ConsistencyLevel": "Eventual"
+        },
+
+        "list":  [
+            {
+                "name":  "DesktopPS",
+                "endpoint":  "Public",
+                "appId": "9825d80c-5aa0-42ef-bf13-61e12116704c"
+            },
+
+            {
+                "name":  "PSCore",
+                "endpoint":  "Public"
+            },
+
+            {
+                "name":  "AzureADPS-MSFTCORP",
+                "endpoint":  "Public",
+                "appId": "1b730954-1685-4b74-9bfd-dac224a7b894",
+                "authProtocol": "v1",
+                "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47"
+            },
+
+            {
+                "name":  "AfrosoftAutoLogon",
+                "appId": "96505f5d-3610-45ce-8c1a-48fadfc21048",
+                "confidential":  true,
+                "authType":  "AppOnly",
+                "tenantId":  "cb494bd3-5606-4ab6-bc24-d8187b172b2b"
+            },
+
+            {
+                "name":  "PPE-AzureADPS",
+                "appId":  "1b730954-1685-4b74-9bfd-dac224a7b894",
+                "authProtocol":   "v1",
+                "tenantId": "microsoft.com",
+                "endpoint":  "PPE"
+            },
+
+            {
+                "name": "Canary",
+                "endpoint": "Canary"
+            },
+
+            {
+                "name": "Personal",
+                "accountType": "AzureADAndPersonalMicrosoftAccount"
+            }
+        ]
+    },
+    "endpoints":  {
+        "list":  [
+            {
+                "name":  "PPE",
+                "graphUri":  "https://graph.microsoft-ppe.com",
+                "authUri":  "https://login.windows-ppe.net"
+            },
+
+            {
+                "name":  "Canary",
+                "graphUri":  "https://canary.graph.microsoft.com",
+                "authUri":  "https://login.microsoftonline.com"
+            }
+        ]
+    }
+}

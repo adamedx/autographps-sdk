@@ -161,7 +161,6 @@ ScriptClass LocalConnectionProfile {
             confidential = @{ Validator = 'BooleanValidator'; Required = $false }
             tenantId = @{ Validator = 'TenantValidator'; Required = $false }
             certificatePath = @{ Validator = 'CertificatePathValidator'; Required = $false }
-            appCredentials = @{ Validator = 'AppCredentialValidator'; Required = $false }
             $::.LocalProfileSpec.EndpointProperty = @{ Validator = 'EndpointValidator'; Required = $false }
             consistencyLevel = @{ Validator = 'StringValidator'; Required = $false }
         }
