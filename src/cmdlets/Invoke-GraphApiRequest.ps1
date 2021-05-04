@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -109,6 +109,9 @@ The OutputFilePrefix parameter specifies that rather than emitting the results t
 .PARAMETER Query
 The Query parameter specifies the URI query parameter of the REST request made by the command to Graph. Because the URI's query parameter is affected by the Select, Filter, OrderBy, Search, and Expand options, the command's Query parameter may not be specified of any those parameters are specified. This parameter is most useful for advanced scenarios where the other command parameters are unable to express valid Graph protocol use of the URI query parameter.
 
+.PARAMETER Count
+The Count parameter specifies that the count of objects that would be returned by the given request URI should be returned as the output of the command rather than the objects themselves. Note that this will only be successful if the functionality to return a count is supported by the given given URI.
+
 .PARAMETER Headers
 Specifies optional HTTP headers to include in the request to Graph, which some parts of the Graph API may support. The headers must be specified as a HashTable, where each key in the hash table is the name of the header, and the value for that key is the value of the header.
 
@@ -133,23 +136,26 @@ By default the URIs specified by the Uri parameter are relative to the current G
 .PARAMETER RawContent
 This parameter specifies that the command should return results exactly in the format of the HTTP response from the Graph endpoint, rather than the default behavior where the objects are deserialized into PowerShell objects. Graph returns objects as JSON except in cases where content types such as media are being requested, so use of this parameter will generally cause the command to return JSON output.
 
+.PARAMETER ConsistencyLevel
+This parameter specifies that Graph should process the request using a specific consistency level of 'Default', 'Session' or 'Eventual'. Requests processed with 'Session" consistency, originally the only supported consistency level for Graph API requests, these requests will make a best effort to ensure that the response reflects any changes made by previous Graph API requests made by the current caller. This allows applications to perform Graph API change operations such as creating a new resource such as a user or group followed by a request to retrieve information about that group or other information (e.g. the count of all users or groups) that would be influenced by the success of the earlier change. All operations are therefore consistent within the boundary of the "session." The disadvantage of session semantics is that the cost of supporting advanced queries such as counts or searches is very costly for the Graph API services that process the request, and so many advanced queries are not supported with session semantics. For this reason, a subset of services including those providing Azure Active Directory objects like user and group subsequently added the eventual consistency level. With eventual semantics, the API services that support this consistency level may temporarily violate session consistency with the benefit that advanced queries too costly to process with session semantics are now available. The results of those queries may not be fully up to date with the latest changes, but after some (typically short, a few minutes or less than an hour) time period a given set of changes will be reflected in the results for the same query repeated at a later time. The results of the API are not immediately consistent with changes in the session, but will be "eventually." For a given use case, a particular consistency level that prioritizes short-term accuracy higher or lower than complex query capability may be more appropriate; this parameter allows the caller of this command to make that choice. Specifying 'Default' for this parameter means the consistency level is determined by the API itself and API documentation should be consulted to determine if the API even supports a particular consistency level and therefore whether it is necessary to use this parameter. Note that if this parameter is not specified, the behavior is determined by the configuration of the Graph connection used for this request.
+
 .PARAMETER AADGraph
 This parameter specifies that instead of accessing Microsoft Graph, the command should make requests against Azure Active Directory Graph (AAD Graph). Note that most functionality of this command and other commands in the module is not compatible with AAD Graph; this parameter may be deprecated in the future.
 
 .PARAMETER PageSizePreference
-This parameter directs the command to issues requests that instruct the Graph API to return a specific maximum number of items in each page of results. This parameter will only take effect if Graph honors it for the particular request.
+This parameter directs the command to issue requests that instruct the Graph API to return a specific maximum number of items in each page of results. This parameter will only take effect if Graph honors it for the particular request.
 
 .PARAMETER NoClientRequestId
 This parameter suppresses the automatic generation and submission of the 'client-request-id' header in the request used for troubleshooting with service-side request logs. This parameter is included only to enable complete control over the protocol as there would be very few use cases for not sending the request id.
-
-.PARAMETER NoPaging
-By default, when Invoke-GraphApiRequest issues a request and receives a response indicating that an incomplete result set for the request has been returned, the command issues additional requests to retrieve the full set of data until the Graph indicates that all data have been returned. When the NoPaging parameter is specified, Invoke-GraphCommand issues only one request. When NoPaging is specified, instead of directly returning the content of the response for Graph, the output result uses the format as that specified by the AsResponseDetail parameter; the content is exposed in the Data property of the result object.
 
 .PARAMETER NoRequest
 When NoRequest is specified, instead of the command issuing a request to the Graph and returning the response content as command output, no request is issued and the request URI including query parameters rather than the content is emitted as output. This parameter is a useful way to understnd the request URI that would be generated for a given set of parameter options including search filters, and could be used to supply a URI to other Graph clients that could issue the actual request.
 
 .PARAMETER NoSizeWarning
 Specify NoSizeWarning to suppress the warning emitted by the command if 1000 or more items are retrieved by the command and no paging parameters, i.e. First or Skip parameters, were specified. The warning is intended to communicate that returning such a large result set may not have been intended. Use this parameter to ensure that automated scripts do not output the warning when intentionally used on large result sets to return all results.
+
+.PARAMETER All
+Specify the All parameter to retrieve all results. By default, requests to the Graph will return a limited number of results; this number varies by API. This parameter makes it easy to override that behavior and retrieve all possible results in a set with a single command as opposed to querying for the result size and then paging through results (and implementing error handling logic). The downside is that in the case of a large result set the command could be unresponsive for several minutes or even longer.
 
 .OUTPUTS
 TThe command returns the content of the HTTP response from the Graph endpoint. The result will depend on the documented response for the specified HTTP method parameter for the Graph URI. The results are formatted as either deserialized PowerShell objects, or, if the RawContent parameter is also specified, the literal content of the HTTP response. Because Graph responds to requests with JSON except in cases where content types such as images or other media are requested, use of the RawContent parameter will usually result in JSON output.
@@ -293,6 +299,8 @@ function Invoke-GraphApiRequest {
 
         [String] $Query = $null,
 
+        [switch] $Count,
+
         [HashTable] $Headers = $null,
 
         [String] $Version = $null,
@@ -313,6 +321,9 @@ function Invoke-GraphApiRequest {
 
         [switch] $RawContent,
 
+        [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
+        [string] $ConsistencyLevel = 'Auto',
+
         [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
         [switch] $AADGraph,
 
@@ -324,11 +335,21 @@ function Invoke-GraphApiRequest {
 
         [switch] $NoRequest,
 
-        [switch] $NoSizeWarning
+        [switch] $NoSizeWarning,
+
+        [switch] $All
     )
 
     begin {
         Enable-ScriptClassVerbosePreference
+
+        if ( $All.IsPresent -and $NoPaging.IsPresent ) {
+            throw [ArgumentException]::new("The 'All' parameter may not be specified with the 'NoPaging' parameter is specified")
+        }
+
+        if ( $Count.IsPresent -and $Value.IsPresent ) {
+            throw [ArgumentException]::new("The'Count' parameter may not be specified when the 'Value' parameter is specified")
+        }
 
         if ( $OutputFilePrefix ) {
             $outputFileParent = split-path $OutputFilePrefix -parent
@@ -343,7 +364,7 @@ function Invoke-GraphApiRequest {
             throw [ArgumentException]::new("The 'Value' parameter may not be specified when the 'Method' parameter has the value 'GET'")
         }
 
-        $useRawContent = $RawContent.IsPresent -or $Value.IsPresent
+        $useRawContent = $RawContent.IsPresent -or $Value.IsPresent -or $Count.IsPresent
 
         $::.GraphErrorRecorder |=> StartRecording
 
@@ -450,8 +471,11 @@ function Invoke-GraphApiRequest {
         }
 
         $maxReturnedResults = $null
-        $maxResultCount = if ( $pscmdlet.pagingparameters.first -ne $null -and $pscmdlet.pagingparameters.first -lt [Uint64]::MaxValue ) {
-            $pscmdlet.pagingparameters.First | tee-object -variable maxReturnedResults
+        $maxResultCount = if ( ! $All.IsPresent ) { 100 }
+
+        if ( ! $All.IsPresent -and ( $pscmdlet.pagingparameters.first -ne $null -and $pscmdlet.pagingparameters.first -lt [Uint64]::MaxValue ) ) {
+            $maxResultCount = $pscmdlet.pagingparameters.first
+            $maxReturnedResults = $pscmdlet.pagingparameters.first
         }
 
         $skipCount = $firstIndex
@@ -534,6 +558,8 @@ function Invoke-GraphApiRequest {
 
         if ( $Value.IsPresent ) {
             $contextUri = $contextUri, '$value' -join '/'
+        } elseif ( $Count.IsPresent ) {
+            $contextUri = $contextUri, '$count' -join '/'
         }
 
         $graphRelativeUri = $::.GraphUtilities |=> JoinRelativeUri $tenantQualifiedVersionSegment $contextUri
@@ -552,7 +578,7 @@ function Invoke-GraphApiRequest {
 
         $isDeltaRequest = $Delta.IsPresent -or $DeltaToken -or $isDeltaUri
 
-        $skipSizeWarning = $NoSizeWarning.IsPresent -or $pscmdlet.pagingparameters.Skip -or $NoPaging.IsPresent -or (
+        $skipSizeWarning = $Value.IsPresent -or $NoSizeWarning.IsPresent -or $pscmdlet.pagingparameters.Skip -or $NoPaging.IsPresent -or (
             ( $pscmdlet.pagingparameters.First -ne $null ) -and
             ( $pscmdlet.pagingparameters.First -gt 0 ) -and
             ( $pscmdlet.pagingparameters.First -lt [int32]::MaxValue )
@@ -570,7 +596,12 @@ function Invoke-GraphApiRequest {
                     $null
                 }
 
-                $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent $NoRequest.IsPresent ( $startDelta -and ! $isDeltaUri ) $initialDeltaToken $PageSizePreference
+                $request = new-so GraphRequest $graphConnection $graphRelativeUri $Method $Headers $currentPageQuery $ClientRequestId $NoClientRequestId.IsPresent $NoRequest.IsPresent ( $startDelta -and ! $isDeltaUri ) $initialDeltaToken $PageSizePreference $ConsistencyLevel
+
+                if ( ! $request ) {
+                    throw "Unable to issue REST request"
+                }
+
                 $request |=> SetBody $Body
                 try {
                     $request |=> Invoke $skipCount $PageSizePreference -logger $logger
@@ -684,11 +715,7 @@ function Invoke-GraphApiRequest {
     }
 
     end {
-        $filteredResults = if ( ! $useRawContent ) {
-            $results | where { $_ | gm id -erroraction ignore }
-        } else {
-            $results
-        }
+        $filteredResults = $results
 
         $filteredResults = if ( $maxReturnedResults ) {
             $filteredResults | select -first $maxReturnedResults

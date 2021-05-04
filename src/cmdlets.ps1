@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,10 +22,12 @@
 . (import-script cmdlets\Get-GraphApplicationConsent)
 . (import-script cmdlets\Get-GraphApplicationServicePrincipal)
 . (import-script cmdlets\Get-GraphConnectionInfo)
+. (import-script cmdlets\Get-GraphConnection)
 . (import-script cmdlets\Get-GraphError)
 . (import-script cmdlets\Get-GraphResource)
 . (import-script cmdlets\Get-GraphLog)
 . (import-script cmdlets\Get-GraphLogOption)
+. (import-script cmdlets\Get-GraphProfileSettings)
 . (import-script cmdlets\Get-GraphToken)
 . (import-script cmdlets\Invoke-GraphApiRequest)
 . (import-script cmdlets\New-GraphApplication)
@@ -36,7 +38,9 @@
 . (import-script cmdlets\Remove-GraphApplication)
 . (import-script cmdlets\Remove-GraphApplicationCertificate)
 . (import-script cmdlets\Remove-GraphApplicationConsent)
+. (import-script cmdlets\Remove-GraphConnection)
 . (import-script cmdlets\Remove-GraphResource)
+. (import-script cmdlets\Select-GraphProfileSettings)
 . (import-script cmdlets\Set-GraphApplicationConsent)
 . (import-script cmdlets\Set-GraphConnectionStatus)
 . (import-script cmdlets\Set-GraphLogOption)

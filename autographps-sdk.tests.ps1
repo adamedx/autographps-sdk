@@ -40,11 +40,13 @@ Describe "Poshgraph application" {
                 'Get-GraphApplicationCertificate',
                 'Get-GraphApplicationConsent',
                 'Get-GraphApplicationServicePrincipal',
+                'Get-GraphConnection',
                 'Get-GraphConnectionInfo',
                 'Get-GraphError',
                 'Get-GraphResource',
                 'Get-GraphLog',
                 'Get-GraphLogOption',
+                'Get-GraphProfileSettings',
                 'Get-GraphToken',
                 'Invoke-GraphApiRequest',
                 'New-GraphApplication',
@@ -55,7 +57,9 @@ Describe "Poshgraph application" {
                 'Remove-GraphApplication',
                 'Remove-GraphApplicationCertificate',
                 'Remove-GraphApplicationConsent',
+                'Remove-GraphConnection',
                 'Remove-GraphResource',
+                'Select-GraphProfileSettings',
                 'Set-GraphApplicationConsent',
                 'Set-GraphConnectionStatus',
                 'Set-GraphLogOption',
@@ -78,7 +82,7 @@ Describe "Poshgraph application" {
         }
 
         It "should export the exact same set of aliases as are in the set of expected aliases" {
-            $expectedAliases = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
+            $expectedAliases = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl')
 
             $manifest.AliasesToExport.count | Should BeExactly $expectedAliases.length
 
@@ -96,6 +100,7 @@ Describe "Poshgraph application" {
 
         It "Should export the exact same set of variables that are in the set of expected variables" {
             $expectedVariables = @(
+                'AutoGraphColorModePreference'
                 'GraphVerboseOutputPreference'
                 'LastGraphItems'
             )
@@ -110,6 +115,4 @@ Describe "Poshgraph application" {
         }
     }
 }
-
-
 

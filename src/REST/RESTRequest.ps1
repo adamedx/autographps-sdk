@@ -209,7 +209,9 @@ ScriptClass RESTRequest {
         write-verbose "Response Headers:"
         write-verbose "****************`n"
 
-        $responseHeaders = 'HttpUtilities' |::> NormalizeHeaders $response.headers
+        $responseHeaders = if ( $response | gm headers -erroraction ignore ) {
+            'HttpUtilities' |::> NormalizeHeaders $response.headers
+        }
 
         if ( $response -ne $null ) {
             _write-headersverbose $responseHeaders

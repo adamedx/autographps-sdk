@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set-strictmode -version 5
-
-. (import-script cmdlets)
-. (import-script aliases)
-. (import-script formats)
-
+ScriptClass LocalProfileSpec {
+    static {
+        const ProfilesCollection 'profiles'
+        const ConnectionsCollection 'connections'
+        const EndpointsCollection 'endpoints'
+        const ConnectionProperty 'connection'
+        const EndpointProperty 'endpoint'
+    }
+}

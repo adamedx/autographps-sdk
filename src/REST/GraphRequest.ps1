@@ -28,7 +28,21 @@ ScriptClass GraphRequest {
     $DeltaQuery = $false
     $PageSizePreference = 0
 
-    function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null, $clientRequestId, [bool] $noRequestId, [bool] $returnRequest, [bool] $deltaQuery, $deltaToken, $pageSizePreference) {
+    function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null, $clientRequestId, [bool] $noRequestId, [bool] $returnRequest, [bool] $deltaQuery, $deltaToken, $pageSizePreference, [string] $consistencyLevel = 'Auto') {
+        $targetConsistencyLevel = if ( $consistencyLevel -and $consistencyLevel -ne 'Auto' ) {
+                $consistencyLevel
+        } else {
+            $graphConnection.consistencyLevel
+        }
+
+        if ( $targetConsistencyLevel -eq 'Auto' ) {
+            $targetConsistencyLevel = $null
+        }
+
+        if ( $targetConsistencyLevel -and ( $targetConsistencyLevel -notin 'Default', 'Session', 'Eventual' ) ) {
+            throw "The specified consistency level '$targetConsistencyLevel' is not valid -- it must be one of 'Auto', 'Default', 'Session', or 'Eventual'"
+        }
+
         $uriString = if ( $uri.scheme -ne $null ) {
             $uri.AbsoluteUri
         } else {
@@ -77,11 +91,6 @@ ScriptClass GraphRequest {
             @{'Content-Type'='application/json'}
         }
 
-        if ($graphConnection.Identity) {
-            $token = $graphConnection |=> GetToken
-            $this.Headers['Authorization'] = $token.CreateAuthorizationHeader()
-        }
-
         if ( $this.ClientRequestId ) {
             $this.Headers['client-request-id'] = $this.ClientRequestId.tostring()
         }
@@ -89,11 +98,20 @@ ScriptClass GraphRequest {
         if ( $this.PageSizePreference ) {
             $this.Headers['Prefer'] = "Prefer: odata.maxpagesize=$($this.PageSizePreference)"
         }
+
+        if ( $targetConsistencyLevel -and $targetConsistencyLevel -ne 'Default' ) {
+            $this.Headers['ConsistencyLevel'] = $targetConsistencyLevel
+        }
     }
 
     function Invoke($pageStartIndex = $null, $maxResultCount = $null, $logger) {
         if ( $this.Connection.Status -eq ([GraphConnectionStatus]::Offline) ) {
             throw "Web request cannot proceed -- connection status is set to offline"
+        }
+
+        if ( $this.Connection.Identity -and ! $this.Headers.ContainsKey('Authorization') ) {
+            $token = $this.Connection |=> GetToken
+            $this.Headers['Authorization'] = $token.CreateAuthorizationHeader()
         }
 
         $queryParameters = $this.query

@@ -143,4 +143,3 @@ ScriptClass LogicalGraphManager {
     }
 }
 
-$::.LogicalGraphManager |=> __initialize

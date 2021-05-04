@@ -37,7 +37,7 @@ ScriptClass ConsentHelper {
                 foreach ( $scope in $scopes ) {
                     if ( $scope ) {
                         $consentEntries += @{
-                            PermissionType = 'DelegatedUser'
+                            PermissionType = 'Delegated'
                             StartTime = $startTimeOffset
                             Permission = $scope
                             GrantedTo = $grantedTo
@@ -53,7 +53,13 @@ ScriptClass ConsentHelper {
                     $appRoleId
                 }
 
-                $creationTimeOffset = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.creationTimestamp $true
+                $creationTimeOffset = if ( $object | gm creationTimeStamp -erroraction ignore ) {
+                    $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.creationTimestamp $true
+                }
+
+                $principalId = if ( $object | gm PrincipalId -erroraction ignore ) {
+                    $object.PrincipalId
+                }
 
                 $consentEntries += @{
                     PermissionType = 'Application'

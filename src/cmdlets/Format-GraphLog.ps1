@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,55 +14,16 @@
 
 . (import-script ../REST/RequestLog)
 
-$Views = @{
-    Status = @(
-        'RequestTimestamp'
-        'StatusCode'
-        'Method'
-        'Version'
-        'ResourceUri'
-        $::.RequestLogEntry.ERROR_MESSAGE_EXTENDED_FIELD
-    )
-    Timing = @(
-        'RequestTimestamp'
-        'ClientElapsedTime'
-        'StatusCode'
-        'Method'
-        'ResourceUri'
-        'ResponseTimestamp'
-    )
-    Authentication = @(
-        'RequestTimestamp'
-        'AppId'
-        'UserUpn'
-        'UserObjectId'
-        'StatusCode'
-        'Method'
-        'ResourceUri'
-        'Permissions'
-    )
-    Debug = @(
-        'RequestTimestamp'
-        'ClientRequestId'
-        'StatusCode'
-        'Method'
-        'Version'
-        'ResourceUri'
-        'Query'
-        'HasRequestBody'
-        $::.RequestLogEntry.ERROR_MESSAGE_EXTENDED_FIELD
-    )
-}
-
 <#
 .SYNOPSIS
-Formats the output of the Get-GraphLog command for readability and focus.
+Discoverable command to formats the output of the Get-GraphLog command for readability.
 
 .DESCRIPTION
 When a command such as Get-GraphResource or Invoke-GraphApiRequest issues a request to the Graph, the details of that request, including the
 URI, http method, headers, along with details of the response are recorded as entries in a log. The Format-GraphLog command displays
-output returned by Get-GraphLog with additional columns optimized for relevance and readability by default. It also performs
-some formatting on fields that are difficult to read in a tabular format in their native representation.
+output in a tabular form and provides functionality identical to the Format-Table command, except that Format-Table exposes customized views
+for the Graph log output view the View parameter which makes it much easier to discover the specific views registered by the module to
+enhance the log output.
 
 .PARAMETER InputObject
 The object to be displayed by the command
@@ -109,28 +70,28 @@ the output of Format-GraphLog.
 .EXAMPLE
 Get-GraphLog | Format-GraphLog
 
-RequestTimestamp      StatusCode Method Version ResourceUri   ErrorMessage
-----------------      ---------- ------ ------- -----------   ------------
-10/22/2019 8:07:06 PM        200 GET            ping
-10/22/2019 8:07:50 PM        200 GET    v1.0    me
-10/22/2019 8:07:53 PM        200 GET            ping
-10/22/2019 8:08:42 PM        200 GET    beta    organization
-10/22/2019 8:08:47 PM        400 GET    v1.0    me/drive/root Tenant does not have a SPO license.
-10/22/2019 8:12:28 PM        200 GET            ping
+RequestTimestamp      Status Method Version ResourceUri   ErrorMessage
+----------------      ------ ------ ------- -----------   ------------
+10/22/2019 8:07:06 PM    200 GET            ping
+10/22/2019 8:07:50 PM    200 GET    v1.0    me
+10/22/2019 8:07:53 PM    200 GET            ping
+10/22/2019 8:08:42 PM    200 GET    beta    organization
+10/22/2019 8:08:47 PM    400 GET    v1.0    me/drive/root Tenant does not have a SPO license.
+10/22/2019 8:12:28 PM    200 GET            ping
 
 In this example, the default view, Status, is used to view the log.
 
 .EXAMPLE
 Get-GraphLog | Format-GraphLog ResponseTimestamp, StatusCode, AppId, ResourceUri
 
-ResponseTimestamp     StatusCode AppId                                ResourceUri
------------------     ---------- -----                                -----------
-10/22/2019 8:07:06 PM        200                                      ping
-10/22/2019 8:07:50 PM        200 9825d80c-5aa0-42ef-bf13-61e12116704c me
-10/22/2019 8:07:53 PM        200                                      ping
-10/22/2019 8:08:42 PM        200 9825d80c-5aa0-42ef-bf13-61e12116704c organization
-10/22/2019 8:08:47 PM        400 9825d80c-5aa0-42ef-bf13-61e12116704c me/drive/root
-10/22/2019 8:12:29 PM        200                                      ping
+ResponseTimestamp     Status  AppId                                ResourceUri
+-----------------     ------- --- -----                            -----------
+10/22/2019 8:07:06 PM     200                                      ping
+10/22/2019 8:07:50 PM     200 c71d685a-aa77-48e2-9328-b07ab6b0a50a me
+10/22/2019 8:07:53 PM     200                                      ping
+10/22/2019 8:08:42 PM     200 c71d685a-aa77-48e2-9328-b07ab6b0a50a organization
+10/22/2019 8:08:47 PM     400 c71d685a-aa77-48e2-9328-b07ab6b0a50a me/drive/root
+10/22/2019 8:12:29 PM     200                                      ping
 
 In this example, the log entries are shown, but this time the specific fields to display are specified to the
 Format-GraphLog command via the Property argument (which is unnamed since it is the first positional parameter).
@@ -138,14 +99,14 @@ Format-GraphLog command via the Property argument (which is unnamed since it is 
 .EXAMPLE
 Get-GraphLog | Format-GraphLog Vview Debug
 
-RequestTimestamp      ClientRequestId                      StatusCode Method Version ResourceUri   Query HasRequestBody ErrorMessage
-----------------      ---------------                      ---------- ------ ------- -----------   ----- -------------- ------------
-10/22/2019 8:07:06 PM 2fdf8f02-0b28-450c-b906-2f9d68d93e38        200 GET            ping                         False
-10/22/2019 8:07:50 PM 441d4546-db3a-43ae-b11f-7a81cf4b8a67        200 GET    v1.0    me                            True
-10/22/2019 8:07:53 PM d3654d3c-324b-49c7-b3ba-c3df6e6f900d        200 GET            ping                         False
-10/22/2019 8:08:42 PM 1495925b-932b-44b9-97e6-7d85e56f1ffd        200 GET    v1.0    organization                  True
-10/22/2019 8:08:47 PM 6af416ec-1b64-4a5e-9e84-38a0080d4f0a        400 GET    v1.0    me/drive/root                 True Tenant does not have a SPO license.
-10/22/2019 8:12:28 PM f37f5954-c2ac-44cd-ae13-7a7fc5652e78        200 GET            ping                         False
+RequestTimestamp      ClientRequestId                      Status Method Version ResourceUri   Query ResponseContentSize ErrorMessage
+----------------      ---------------                      ------ ------ ------- -----------   ----- ------------------- ------------
+10/22/2019 8:07:06 PM 2fdf8f02-0b28-450c-b906-2f9d68d93e38    200 GET            ping                                163
+10/22/2019 8:07:50 PM 441d4546-db3a-43ae-b11f-7a81cf4b8a67    200 GET    v1.0    me                                  415
+10/22/2019 8:07:53 PM d3654d3c-324b-49c7-b3ba-c3df6e6f900d    200 GET            ping                                163
+10/22/2019 8:08:42 PM 1495925b-932b-44b9-97e6-7d85e56f1ffd    200 GET    v1.0    organization                      35771
+10/22/2019 8:08:47 PM 6af416ec-1b64-4a5e-9e84-38a0080d4f0a    400 GET    v1.0    me/drive/root                           Tenant does not have a SPO license.
+10/22/2019 8:12:28 PM f37f5954-c2ac-44cd-ae13-7a7fc5652e78    200 GET            ping                                163
 
 In this example, the View option is specified with the value Debug. The resulting view displays the ClientRequestId submitted
 with the request which can be used when obtaining support from the Graph Service team.
@@ -181,7 +142,7 @@ function Format-GraphLog {
 
         [parameter(parametersetname='fixedcolumns', mandatory=$true)]
         [ValidateSet('Status', 'Timing', 'Authentication', 'Debug')]
-        $View,
+        $View = 'Status',
 
         [switch] $DisplayError,
 
@@ -200,76 +161,29 @@ function Format-GraphLog {
         [switch] $AutoSize
     )
     begin {
-        $targetProperties = if ( $View ) {
-            $Views[$View]
-        } elseif ( $Property ) {
-            $property
-        } else {
-            $Views['Status']
-        }
-
-        $errorSimpleIncluded = $targetProperties -contains $::.RequestLogEntry.ERROR_MESSAGE_EXTENDED_FIELD
-
         $formatParameters = @{}
 
         $PSBoundParameters.keys | where { @('View') -notcontains $_ } | foreach {
             $formatParameters[$_] = $PSBoundParameters[$_]
         }
 
-        $formatParameters['Property'] = $targetProperties
+        if ( ! $Property ) {
+            $formatParameters['View'] = switch ( $View ) {
+                'Status' { 'GraphStatus' }
+                'Debug' { 'GraphDebug' }
+                'Timing' { 'GraphTiming'}
+                'Authentication' { 'GraphAuthentication' }
+                default {
+                    throw "An unknown view '$View' was specified"
+                }
+            }
+        }
 
         $augmentedInput = @()
     }
 
     process {
-        $propertyMap = @{}
-
-        foreach ( $targetProperty in $targetProperties ) {
-            if ( $targetProperty -ne $::.RequestLogEntry.ERROR_MESSAGE_EXTENDED_FIELD ) {
-                $propertyValue = if ( $InputObject | gm  $targetProperty ) {
-                    $InputObject | select -expandproperty $targetProperty
-                }
-
-                $augmentedValue = if ( $propertyValue -is [DateTimeOffset] ) {
-                    # DateTimeOffset has a very long format that includes the time
-                    # zone offset -- use something shorter to save display space
-                    $propertyValue.ToString('G') # i.e. 10/22/2019 9:22:48 PM
-                } else {
-                    $propertyValue
-                }
-                $propertyMap[$targetProperty] = $augmentedValue
-            }
-        }
-
-        $errorMessage = if ( $InputObject | gm $::.RequestLogEntry.ERROR_RESPONSE_FIELD -erroraction ignore ) {
-            $InputObject.$($::.RequestLogEntry.ERROR_RESPONSE_FIELD)
-        }
-
-        if ( $errorSimpleIncluded -and $errorMessage ) {
-            $errorAsObject = try {
-                # Apparently action ignore still results in errors at times
-                $errorMessage | convertfrom-json -erroraction ignore
-            } catch {
-            }
-
-            $simpleErrorMessage = if ( $errorAsObject ) {
-                $errorMember = if ( $errorAsObject | gm error -erroraction ignore ) {
-                    $errorAsObject.error
-                }
-
-                if ( $errorMember -and ( $errorMember | gm message -erroraction ignore ) ) {
-                    $errorMember.message
-                }
-            }
-
-            $propertyMap[$::.RequestLogEntry.ERROR_MESSAGE_EXTENDED_FIELD] = if ( $simpleErrorMessage ) {
-                $simpleErrorMessage
-            } else {
-                $errorMessage
-            }
-        }
-
-        $augmentedInput += [PSCustomObject] $propertyMap
+        $augmentedInput += $InputObject
     }
 
     end {

@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,13 +23,27 @@
 function Connect-GraphApi {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='msgraph')]
     param(
-        [parameter(parametersetname='msgraph', position=0)]
-        [parameter(parametersetname='cloud', position=0)]
-        [parameter(parametersetname='customendpoint', position=0)]
-        [parameter(parametersetname='cert', position=0)]
-        [parameter(parametersetname='certpath', position=0)]
-        [parameter(parametersetname='autocert', position=0)]
-        [parameter(parametersetname='secret', position=0)]
+        [parameter(parametersetname='msgraphname', position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [ArgumentCompleter({
+        param ( $commandName,
+                $parameterName,
+                $wordToComplete,
+                $commandAst,
+                $fakeBoundParameters )
+                               $::.GraphConnection |=> GetNamedConnection | where Name -like "$($wordToComplete)*" | select-object -expandproperty Name
+                           })]
+        [Alias('Name')]
+        [string] $ConnectionName,
+
+        [parameter(parametersetname='msgraph')]
+        [parameter(parametersetname='msgraphname')]
+        [parameter(parametersetname='cloud')]
+        [parameter(parametersetname='customendpoint')]
+        [parameter(parametersetname='cert')]
+        [parameter(parametersetname='certpath')]
+        [parameter(parametersetname='autocert')]
+        [parameter(parametersetname='secret')]
+        [parameter(parametersetname='current')]
         [String[]] $Permissions = $null,
 
         [parameter(parametersetname='cloud')]
@@ -53,6 +67,12 @@ function Connect-GraphApi {
         [parameter(parametersetname='certpath', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
         [string] $CertificatePath,
+
+        [parameter(parametersetname='certpath')]
+        [PSCredential] $CertCredential,
+
+        [parameter(parametersetname='certpath')]
+        [switch] $NoCertCredential,
 
         [parameter(parametersetname='cert', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
@@ -113,17 +133,25 @@ function Connect-GraphApi {
         [ValidateSet('Auto', 'AzureADOnly', 'AzureADAndPersonalMicrosoftAccount')]
         [string] $AccountType = 'Auto',
 
+        [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
+        [string] $ConsistencyLevel = 'Auto',
+
         [parameter(parametersetname='aadgraph', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
         [switch] $AADGraph,
 
         [string] $UserAgent = $null,
 
+        [switch] $NoProfile,
+
         [parameter(parametersetname='reconnect', mandatory=$true)]
         [Switch] $Reconnect,
 
         [parameter(parametersetname='existingconnection',mandatory=$true)]
-        [PSCustomObject] $Connection = $null
+        [PSCustomObject] $Connection = $null,
+
+        [parameter(parametersetname='currentconnection',mandatory=$true)]
+        [switch] $Current
     )
 
     begin {
@@ -131,6 +159,20 @@ function Connect-GraphApi {
 
     process {
         Enable-ScriptClassVerbosePreference
+
+        if ( $CertificatePath ) {
+            $existingCert = get-item $certificatePath -erroraction ignore
+
+            if ( ! $existingCert ) {
+                throw [ArgumentException]::new("The specified certificate path '$CertificatePath' is not accessible. Correct the path and retry the command")
+            }
+
+            if ( $existingCert -isnot [System.Security.Cryptography.X509Certificates.X509certificate2] ) {
+                if ( ! $NoCertCredential.IsPresent -and ! $CertCredential ) {
+                    throw [ArgumentException]::new("The CertCredential parameter or the NoCertCredential parameter must be specified because a file system path '$CertificatePath' was specified with the CertificatePath parameter. Alternatively, a path to a certificate in the PowerShell certificate drive may be specified if the certificate drive is supported on this platform.")
+                }
+            }
+        }
 
         $validatedCloud = if ( $Cloud ) {
             [GraphCloud] $Cloud
@@ -150,18 +192,28 @@ function Connect-GraphApi {
             throw "No current session -- unable to connect it to Graph"
         }
 
-        $connectionResult = if ( $Connection ) {
+        $targetConnection = if ( $connection ) {
+            $connection
+        } elseif ( $ConnectionName ) {
+            $::.GraphConnection |=> GetNamedConnection $ConnectionName $true
+        } elseif ( $Current.IsPresent -and $context.Connection ) {
+            $context.Connection
+        }
+
+        $connectionResult = if ( $targetConnection ) {
             write-verbose "Explicit connection was specified"
 
-            $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $Connection
+            $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $targetConnection
 
             $::.GraphContext |=> SetCurrentByName $newContext.name
 
-            $Connection
+            $targetConnection |=> Connect
+
+            $targetConnection
         } else {
             write-verbose "Connecting context '$($context.name)'"
             $applicationId = if ( $AppId ) {
-            [Guid] $AppId
+                [Guid] $AppId
             } else {
                 $::.Application.DefaultAppId
             }
@@ -179,9 +231,19 @@ function Connect-GraphApi {
             } else {
                 write-verbose 'No reconnect -- creating a new connection for this context'
 
-                $conditionalArguments = @{}
+                # Get the arguments from the profile -- these will be overridden by
+                # any parameters specified to this command
+                $currentProfile = if ( ! $NoProfile.IsPresent ) {
+                    $::.LocalProfile |=> GetCurrentProfile
+                }
 
-                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction') } | foreach {
+                $conditionalArguments = if ( $currentProfile ) {
+                    $currentProfile |=> ToConnectionParameters
+                } else {
+                    @{}
+                }
+
+                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction', 'ConnectionName', 'CertCredential', 'NoProfile', 'NoCertCredential') } | foreach {
                     $conditionalArguments[$_] = $PSBoundParameters[$_]
                 }
 
@@ -192,7 +254,11 @@ function Connect-GraphApi {
                 }
             }
 
-            $context |=> UpdateConnection $newConnection
+            $certificatePassword = if ( ! $NoCertCredential.IsPresent -and $CertCredential ) {
+                $CertCredential.Password
+            }
+
+            $context |=> UpdateConnection $newConnection $certificatePassword
             $newConnection
         }
 

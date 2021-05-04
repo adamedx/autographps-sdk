@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 . (import-script common/CommandContext)
 
 function Get-GraphApplicationConsent {
-    [cmdletbinding(positionalbinding=$false, defaultparametersetname='TenantOrSpecificPrincipal')]
+    [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='TenantOrSpecificPrincipal')]
     param(
         [parameter(position=0, valuefrompipelinebypropertyname = $true, mandatory=$true)]
         [Guid[]] $AppId,
@@ -31,10 +31,18 @@ function Get-GraphApplicationConsent {
 
         [parameter(parametersetname='specificprincipal', mandatory=$true)]
         [parameter(parametersetname='TenantOrSpecificPrinicpal')]
-        $Principal
+        $Principal,
+
+        [validateset('Any', 'AppOnly', 'Delegated')]
+        [string] $PermissionType = 'Any',
+
+        [switch] $All
     )
 
-    begin {}
+    begin {
+        $includeAppOnly = $PermissionType -in 'Any', 'AppOnly'
+        $includeDelegated = $PermissionType -in 'Any', 'Delegated'
+    }
 
     process {
         Enable-ScriptClassVerbosePreference
@@ -77,9 +85,23 @@ function Get-GraphApplicationConsent {
 
             $filterArgument = @{ Filter = $filter }
 
-            $RawContentArgument = @{ RawContent = $RawContent }
+            $rawContentArgument = @{ RawContent = $RawContent }
 
-            $response = Invoke-GraphApiRequest /oauth2PermissionGrants -method GET -Filter $filter -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
+            $allArgument = @{ All = $All }
+
+            $pagingParameters = @{}
+
+            if ( $pscmdlet.pagingparameters.first ) {
+                $pagingParameters['First'] = $pscmdlet.pagingparameters.first
+            }
+
+            if ( $pscmdlet.pagingparameters.skip ) {
+                $pagingParameters['Skip'] = $pscmdlet.pagingparameters.skip
+            }
+
+            $response = if ( $includeDelegated ) {
+                Invoke-GraphApiRequest /oauth2PermissionGrants -method GET -Filter $filter -version $::.ApplicationAPI.DefaultApplicationApiVersion @rawContentArgument @allArgument @pagingParameters
+            }
 
             if ( $response ) {
                 if ( ! $RawContent.IsPresent ) {
@@ -93,7 +115,9 @@ function Get-GraphApplicationConsent {
                 }
             }
 
-            $roleResponse = Invoke-GraphApiRequest /servicePrincipals/$appSPId/appRoleAssignedTo -method GET -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument
+            $roleResponse = if ( $includeAppOnly ) {
+                Invoke-GraphApiRequest /servicePrincipals/$appSPId/appRoleAssignedTo -method GET -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument @AllArgument @pagingParameters
+            }
 
             if ( $roleResponse ) {
                 if ( ! $RawContent.IsPresent ) {

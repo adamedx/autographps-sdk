@@ -2,12 +2,16 @@
 
 ## To-do items -- prioritized
 
-* Use a new appid hosted in a normal aad tenant rather than a consumer-initiated tenant
+* Change get-graphconnectioninfo to get-graphcurrentconnection and wrap get-graphconnection
+* Adaptive progress meter?
+* View for graph application
+* Should add Add-GraphApplicationCertificate
+* Should add Remove-GraphApplicationCertificate
+* Should implement certificate update using addkey / removekey: https://docs.microsoft.com/en-us/graph/api/application-addkey?view=graph-rest-1.0&tabs=http
+* Remove use of New-GraphConnection from within static methods and replace with internal version that is still mockable.
 * Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
 * When invoke-graphrequest creates an object through post, it should add the id to the uri for the itemcontext
-* Add AllResults option to Get-GraphResource and Invoke-GraphRequest, and corresponding preference variable
 * Add Start-GraphDeltaJob
-* Add Get-LastGraphResponse with view parameters, remove LASTGRAPHITEMS
 * Add output types to as many commands as possible
 * Add batching support
 * Add more command help
@@ -176,6 +180,13 @@
 * Handle 403's in get-graphchilditem
 * Add user consent, tenant consent options to set-graphconsent and new-graphapplication
 * Remove __GetSimpleConnection
+
+### Maybe
+
+* Color for POST / PUT / PATH operations
+* Color for graph consent
+* View for graph application
+* Restore Connect-Graph from Connect-GraphApi -- might not be possible :(
 
 ### Done
 
@@ -369,6 +380,23 @@
 * Make Uri argument a non-array
 * Add delta
 * Parse odata context
+* Use a new appid hosted in a normal aad tenant rather than a consumer-initiated tenant
+* Add Get-GraphProfileSettings, Select-GraphProfile
+* Add Get-GraphConnection, Select-GraphConnection
+* Allow named connections
+* Support certificate paths to certificate files outside of the certificate store to allow apponly support on Linux
+* Add -NoProfile option to Connect-GraphApi to remove impact of profiles on connections
+* Add request and response sizes to basic log level log entries
+* Add AllResults option to Get-GraphResource and Invoke-GraphRequest, and corresponding preference variable
+* Support for eventual consistency options in Graph requests
+* Make public client apps aad only by default for multi-tenant apps
+* Add the Count parameter to Invoke-GraphRequest and Get-GraphResource to return the count of results instead of the results using OData $count when supported
+* Fix intra-entity requests
+* Add Get-LastGraphResponse with view parameters
+* Color for Get-GraphConnectionInfo
+* Enable color schemes
+* Swap method and size fields in get-graphlog default view?
+* Add alias for get-graphconnectioninfo
 
 ### Postponed
 
@@ -384,6 +412,10 @@
 * Remove Get-GraphSchema
 * Remove Get-GraphVersion
 * Add useragent to connection commands
+* Add Get-GraphProfileSettings, Select-GraphProfileSettings
+* Add Get-GraphConnection, Remove-GraphConnection
+* Allow named connections
+* Fix New-GraphApplicationCertificate to correctly handle file system-based certificates
 
 ### Abandoned
 

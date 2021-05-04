@@ -32,25 +32,20 @@ function New-GraphApplication {
 
         [AppTenancy] $Tenancy = ([AppTenancy]::Auto),
 
-        [parameter(parametersetname='publicapp')]
         [String[]] $DelegatedUserPermissions,
 
-        [parameter(parametersetname='confidentialapp', mandatory=$true)]
         [String[]] $ApplicationPermissions,
 
         [parameter(parametersetname='confidentialapp', mandatory=$true)]
         [parameter(parametersetname='confidentialappexistingcertpath', mandatory=$true)]
-        [parameter(parametersetname='confidentialappnewcert', mandatory=$true)]
+        [parameter(parametersetname='confidentialappnewcertexport', mandatory=$true)]
         [parameter(parametersetname='confidentialappexistingcert', mandatory=$true)]
         [switch] $Confidential,
 
         [parameter(parametersetname='publicapp')]
-        [switch] $AADAccountsOnly,
+        [switch] $AllowMSAAccounts,
 
         [parameter(parametersetname='confidentialapp')]
-        [parameter(parametersetname='confidentialappexistingcertpath')]
-        [parameter(parametersetname='confidentialappnewcert')]
-        [parameter(parametersetname='confidentialappexistingcert')]
         [switch] $NoCredential,
 
         [switch] $ConsentForAllUsers,
@@ -65,19 +60,28 @@ function New-GraphApplication {
         $ExistingCertStorePath,
 
         [parameter(parametersetname='confidentialappnewcert')]
+        [parameter(parametersetname='confidentialappnewcertexport')]
         $CertStoreLocation = 'cert:/currentuser/my',
 
         [parameter(parametersetname='confidentialappexistingcert', mandatory=$true)]
         $Certificate,
 
         [parameter(parametersetname='confidentialappnewcert')]
+        [parameter(parametersetname='confidentialappnewcertexport')]
         [TimeSpan] $CertValidityTimeSpan,
 
         [parameter(parametersetname='confidentialappnewcert')]
+        [parameter(parametersetname='confidentialappnewcertexport')]
         [DateTime] $CertValidityStart,
 
-        [parameter(parametersetname='confidentialappnewcert')]
+        [parameter(parametersetname='confidentialappnewcertexport', mandatory=$true)]
         [string] $CertOutputDirectory,
+
+        [parameter(parametersetname='confidentialappnewcertexport')]
+        [PSCredential] $CertCredential,
+
+        [parameter(parametersetname='confidentialappnewcertexport')]
+        [switch] $NoCertCredential,
 
         [string] $UserIdToConsent,
 
@@ -87,8 +91,17 @@ function New-GraphApplication {
     )
     Enable-ScriptClassVerbosePreference
 
-    if ( $CertOutputDirectory -and ! (test-path -pathtype container $CertOutputDirectory) ) {
-        throw [ArgumentException]::new("The CertOutputDirectory parameter value '$CertOutputDirectory' is not a valid directory")
+    $exportedCertCredential = if ( $CertOutputDirectory ) {
+        if (! (test-path -pathtype container $CertOutputDirectory) ) {
+            throw [ArgumentException]::new("The CertOutputDirectory parameter value '$CertOutputDirectory' is not a valid directory")
+        }
+
+        if ( $CertCredential ) {
+            $CertCredential
+        } elseif ( ! $NoCertCredential.IsPresent ) {
+            $userName = if ( $env:user ) { $env:user } else { $env:username }
+            Get-Credential -username $userName
+        }
     }
 
     if ( $SkipTenantRegistration.IsPresent ) {
@@ -112,7 +125,7 @@ function New-GraphApplication {
 
     $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
 
-    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy $AadAccountsOnly.IsPresent $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris
+    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy ( ! $AllowMSAAccounts.IsPresent ) $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris
 
     $newApp = $newAppRegistration |=> CreateNewApp
 
@@ -129,7 +142,11 @@ function New-GraphApplication {
         }
 
         if ( $CertOutputDirectory ) {
-            $certificate |=> Export $CertOutputDirectory
+            $certpassword = if ( $exportedCertCredential ) {
+                $exportedCertCredential.Password
+            }
+
+            $certificate |=> Export $CertOutputDirectory $certPassword
         }
     }
 

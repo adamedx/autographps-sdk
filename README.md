@@ -80,6 +80,16 @@ If your application is packaged as a PowerShell module, simply include it in the
 
 If you're using a script module (`.psm1` file) or simply a plain PowerShell `ps1` script, you should ensure the module has been already been installed on the system using `Install-Module` or a similar deployment mechanism, then add a line `import-module autographps-sdk` to the beginning of your script or script module.
 
+### Configuration and preferences
+
+The module supports the following preference variable:
+
+`AutoGraphColorModePreference`: specify with the value `2bit` to override the default 16-color palette of command output to make it monochrome. Explicitly specifying `4bit` will ensure 16-color output.
+
+#### Settings file
+
+AutoGraphPS-SDK supports the use of a local settings configuration file at the location `~/.autographps/settings.json`. Configuration settings managed by this file include sign-in and credential customization, logging preferences, and API version override among other things. See the specific [settings file documentation](docs/settings/README.md) for more detail on the capabilities and format of the file.
+
 ## Reference
 
 The full list of cmdlets in this module is given below; note that `Invoke-GraphRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-GraphApi` to request additional permissions as described in the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference).
@@ -87,7 +97,7 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Cmdlet (alias)                       | Description                                                                                                                                             |
 |--------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Clear-GraphLog                       | Clear the log of REST requests to Graph made by the module's commands                                                                                   |
-| Connect-GraphApi                     | Establishes authentication and authorization context used across cmdlets for the current graph                                                          |
+| Connect-GraphApi (conga)             | Establishes authentication and authorization context used across cmdlets for the current graph                                                          |
 | Disconnect-GraphApi                  | Clears authentication and authorization context used across cmdlets for the current graph                                                               |
 | Find-GraphLocalCertificate           | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph                                    |
 | Format-GraphLog (fgl)                | Emits the Graph request log to the console in a manner optimized for understanding Graph and troubleshooting requests                                   |
@@ -95,9 +105,9 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Get-GraphApplicationCertificate      | Gets the certificates with public keys configured on the application                                                                                    |
 | Get-GraphApplicationConsent          | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)                                                  |
 | Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                                                                            |
-| Get-GraphConnectionInfo              | Gets information about a connection to a Graph endpoint, including identity and  `Online` or `Offline`                                                  |
+| Get-GraphConnectionInfo (gcon)       | Gets information about the current connection to a Graph endpoint, including identity and  `Online` or `Offline`                                        |
 | Get-GraphError (gge)                 | Retrieves detailed errors returned from Graph in execution of the last command                                                                          |
-| Get-GraphResource  (ggr, gcat, Get-GraphContent) | Given a relative (to the Graph or current location) Uri gets information about the entity                                                               |
+| Get-GraphResource  (ggr, gcat, Get-GraphContent) | Given a relative (to the Graph or current location) Uri gets information about the entity                                                   |
 | Get-GraphLog (ggl)                   | Gets the local log of all requests to Graph made by this module                                                                                         |
 | Get-GraphLogOption                   | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
 | Get-GraphToken                       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) |

@@ -1,4 +1,4 @@
-# Copyright 2018, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,11 +24,13 @@ $cmdlets = @(
     'Get-GraphApplicationCertificate'
     'Get-GraphApplicationConsent'
     'Get-GraphApplicationServicePrincipal'
+    'Get-GraphConnection'
     'Get-GraphConnectionInfo'
     'Get-GraphError'
     'Get-GraphResource'
     'Get-GraphLog'
     'Get-GraphLogOption'
+    'Get-GraphProfileSettings'
     'Get-GraphSchema'
     'Get-GraphToken'
     'Get-GraphVersion'
@@ -41,7 +43,9 @@ $cmdlets = @(
     'Remove-GraphApplication'
     'Remove-GraphApplicationCertificate'
     'Remove-GraphApplicationConsent'
+    'Remove-GraphConnection'
     'Remove-GraphResource'
+    'Select-GraphProfileSettings'
     'Set-GraphApplicationConsent'
     'Set-GraphConnectionStatus'
     'Set-GraphLogOption'
@@ -49,9 +53,9 @@ $cmdlets = @(
     'Unregister-GraphApplication'
 )
 
-$aliases = @('gge', 'ggr', 'gcat', 'Get-GraphContent', 'ggl', 'fgl')
+$aliases = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl')
 
-$variables = @('GraphVerboseOutputPreference', 'LastGraphItems')
+$variables = @('AutoGraphColorModePreference', 'GraphVerboseOutputPreference', 'LastGraphItems')
 
 export-modulemember -function $cmdlets -alias $aliases -variable $variables
 

@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 . (import-script ../graphservice/GraphEndpoint)
 . (import-script ../client/GraphIdentity)
+. (import-script ../common/GraphApplicationCertificate)
 . (import-script ../client/GraphConnection)
 . (import-script common/DynamicParamHelper)
 . (import-script ../common/ScopeHelper)
@@ -45,6 +46,7 @@ function New-GraphConnection {
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
         [parameter(parametersetname='autocert')]
+        [parameter(parametersetname='customendpoint')]
         [Switch] $NoninteractiveAppOnlyAuth,
 
         [String] $TenantId = $null,
@@ -104,12 +106,18 @@ function New-GraphConnection {
         [parameter(parametersetname='cert')]
         [parameter(parametersetname='certpath')]
         [parameter(parametersetname='customendpoint')]
-        [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
+        [ValidateSet('Default', 'v1', 'v2')]
+        [string] $AuthProtocol = 'Default',
 
         [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='customendpoint')]
         [ValidateSet('Auto', 'AzureADOnly', 'AzureADAndPersonalMicrosoftAccount')]
         [string] $AccountType = 'Auto',
+
+        [string] $Name = $null,
+
+        [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
+        [string] $ConsistencyLevel = 'Auto',
 
         [parameter(parametersetname='aadgraph', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
@@ -169,7 +177,7 @@ function New-GraphConnection {
 
         if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
             write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'
-            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $computedAuthProtocol -useragent $UserAgent -allowMSA $allowMSA
+            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $computedAuthProtocol -useragent $UserAgent -allowMSA $allowMSA $ConsistencyLevel
         } else {
             $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
                 write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
@@ -193,8 +201,8 @@ function New-GraphConnection {
                     $appCertificate = $::.GraphApplicationCertificate |=> FindAppCertificate $targetAppId
                     if ( ! $appCertificate ) {
                         throw "NoninteractiveAppOnlyAuth or Confidential was specified, but no password or certificate was specified, and no certificate with the appId '$targetAppId' in the subject name could be found in the default certificate store location. Specify an explicit certificate or password and retry."
-                    } elseif ( ($appCertificate | gm length -erroraction silentlycontinue) -and $appCertificate.length -gt 1 ) {
-                        throw "NoninteractiveAppOnlyAuth or Confidential was specified, and more than one certificate with the appId '$targetAppId' in the subject name could be found in the default certificate store location. Specify an explicity certificate or password and retry."
+                    } elseif ( ($appCertificate -is [object[]] ) -and $appCertificate.length -gt 1 ) {
+                        throw "NoninteractiveAppOnlyAuth or Confidential was specified, and more than one certificate with the appId '$targetAppId' in the subject name could be found in the default certificate store location. Specify an explicit certificate or password and retry. `n$($appCertificate.PSPath)`n"
                     }
                     $appCertificate
                 }
@@ -213,7 +221,7 @@ function New-GraphConnection {
 
             $app = new-so GraphApplication $targetAppId $AppRedirectUri $appSecret $NoninteractiveAppOnlyAuth.IsPresent
             $identity = new-so GraphIdentity $app $graphEndpoint $adjustedTenantId $allowMSA
-            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent
+            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent $Name $ConsistencyLevel
         }
     }
 }

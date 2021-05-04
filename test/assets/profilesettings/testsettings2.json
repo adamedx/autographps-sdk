@@ -1,0 +1,99 @@
+{
+    "defaultProfile":  "StandardSettings2",
+
+    "profiles":  {
+        "defaults":  {
+        },
+        "list":  [
+            {
+                "name": "StandardSettings2",
+                "initialApiVersion": "v1.0"
+            }
+        ]
+    },
+
+    "connections":  {
+        "defaults":  {
+            "appId":  "28830add-2d1b-401f-8762-f7be317e7bd3",
+            "userAgent": "MyWorkstation-MyOrg-PS"
+        },
+
+        "list":  [
+            {
+                "name":  "China",
+                "endpoint":  "ChinaCloud"
+            },
+
+            {
+                "name":  "ProductionAutomated",
+                "confidential":  true,
+                "appId": "15f0a1ae-5d11-4e74-a9aa-655c853a568e",
+                "endpoint":  "Public"
+            },
+
+            {
+                "name":  "Test",
+                "appId":  "dd033dc5-8ef1-4b25-8542-7b6018cccd1d",
+                "endpoint":  "TestProxy"
+            },
+
+            {
+                "name":  "Test2",
+                "appId":  "dd033dc5-8ef1-4b25-8542-7b6018cccd1d",
+                "endpoint":  "TestProxy2"
+            },
+
+            {
+            },
+
+            {
+                "name": "MinimalConnection"
+            },
+
+            {
+                "onlyInvalidPropertiesConnection": "connnectionVal"
+            },
+
+            {
+                "name": "ConnectionWithNonexistentEndpoint",
+                "endpoint":  "nonexistentoendpoint"
+            },
+
+            {
+                "name": "ConnectionWithBadEndpoint",
+                "endpoint":  "MissingGraphUri"
+            },
+
+            {
+                "name": "MalformedAppId",
+                "appId": "notaguid"
+            },
+
+            {
+                "name": "usesmsa",
+                "accountType": "AzureADAndPersonalMicrosoftAccount"
+            }
+        ]
+    },
+    "endpoints":  {
+        "list":  [
+            {
+                "name":  "TestProxy",
+                "graphUri":  "https://graphproxy.myorg.org",
+                "authUri":  "https://authproxy.myorg.org",
+                "resourceUri":  "https://graph.microsoft.com"
+            },
+
+            {
+                "name":  "TestProxy2",
+                "graphUri":  "https://graphproxy2.myorg.org",
+                "authUri":  "https://authproxy2.myorg.org",
+                "resourceUri":  "https://graph.microsoft.com"
+            },
+
+            {
+                "name":  "MissingGraphUri"
+            }
+        ]
+    }
+}
