@@ -1,28 +1,32 @@
 {
     "$schema": "https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/settings.schema.json",
-    "defaultProfile":  "MSFTCORP",
+    "defaultProfile":  "Personal",
 
     "profiles":  {
         "defaults":  {
         },
         "list":  [
             {
-                "name": "MSFTCORP",
-                "connection":  "DesktopPS"
+                "name": "Personal",
+                "connection":  "MSAAllowed"
             },
 
             {
-                "name":  "Afrosoft",
-                "connection": "AfrosoftAutoLogon",
+                "name": "Work",
+                "connection":  "ModulusOrganization"
+            },
+
+            {
+                "name":  "DevEnvironment",
+                "connection": "DevAutomated",
                 "logLevel":  "Full"
             },
 
             {
-                "name": "Canary",
-                "connection": "Canary",
-                "initialApiVersion": "v2.0",
-                "autoConnect": false,
-                "PromptColor": "Red"
+                "name": "Test",
+                "connection": "TestProxy",
+                "initialApiVersion": "beta",
+                "autoConnect": false
             }
         ]
     },
@@ -34,63 +38,43 @@
 
         "list":  [
             {
-                "name":  "DesktopPS",
-                "endpoint":  "Public",
-                "appId": "9825d80c-5aa0-42ef-bf13-61e12116704c"
-            },
-
-            {
-                "name":  "PSCore",
+                "name":  "Personal",
+                "accountType": "AzureADAndPersonalMicrosoftAccount",
                 "endpoint":  "Public"
             },
 
             {
-                "name":  "AzureADPS-MSFTCORP",
-                "endpoint":  "Public",
-                "appId": "1b730954-1685-4b74-9bfd-dac224a7b894",
-                "authProtocol": "v1",
-                "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47"
+                "name":  "ModulusOrganization",
+                "appId": "d57b25fd-4272-48e7-83a7-77596ba8a64d",
+                "endpoint":  "Public"
             },
 
             {
-                "name":  "AfrosoftAutoLogon",
-                "appId": "96505f5d-3610-45ce-8c1a-48fadfc21048",
+                "name":  "DevAutomated",
+                "appId": "0497f38a-aaf5-4acd-a5b0-ae9519bc6604",
                 "confidential":  true,
                 "authType":  "AppOnly",
-                "tenantId":  "cb494bd3-5606-4ab6-bc24-d8187b172b2b"
+                "tenantId":  "98a4f4ce-9213-44d1-918d-e47feaeb1e57"
             },
 
             {
-                "name":  "PPE-AzureADPS",
-                "appId":  "1b730954-1685-4b74-9bfd-dac224a7b894",
-                "authProtocol":   "v1",
-                "tenantId": "microsoft.com",
-                "endpoint":  "PPE"
+                "name":  "Production",
+                "appId":  "0c6b73a2-8bc0-4f6f-867e-f199d2e3f892"
             },
 
             {
-                "name": "Canary",
-                "endpoint": "Canary"
-            },
-
-            {
-                "name": "Personal",
-                "accountType": "AzureADAndPersonalMicrosoftAccount"
+                "name": "TestProxy",
+                "endpoint": "TestProxyServer"
             }
         ]
     },
     "endpoints":  {
         "list":  [
             {
-                "name":  "PPE",
-                "graphUri":  "https://graph.microsoft-ppe.com",
-                "authUri":  "https://login.windows-ppe.net"
-            },
-
-            {
-                "name":  "Canary",
-                "graphUri":  "https://canary.graph.microsoft.com",
-                "authUri":  "https://login.microsoftonline.com"
+                "name":  "TestProxyServer",
+                "graphUri":  "https://graphproxy.modulus.org",
+                "authUri":  "https://login.microsoftonline.com",
+                "resourceUri":  "https://graph.microsoft.com"
             }
         ]
     }
