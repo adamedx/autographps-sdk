@@ -15,8 +15,6 @@
 * SharePoint
 * And many more!
 
-The project is in the earliest stages of development and almost but not quite yet ready for collaborators.
-
 ### System requirements
 
 On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are supported. MacOS has not been tested, but should work with PowerShell 6.1.2 and higher.
