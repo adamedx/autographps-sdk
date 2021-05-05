@@ -80,9 +80,13 @@ If you're using a script module (`.psm1` file) or simply a plain PowerShell `ps1
 
 ### Configuration and preferences
 
-The module supports the following preference variable:
+The module allows for customization through conventional PowerShell preference variables as a configuration file. In general, when a behavior may be specified by both a preference variable and a setting from the configuration file, the preference variable behavior takes precedence, making it easy to change a behavior at runtime without redefining profiles.
 
-`AutoGraphColorModePreference`: specify with the value `2bit` to override the default 16-color palette of command output to make it monochrome. Explicitly specifying `4bit` will ensure 16-color output.
+#### Preference variables
+
+The following preference variable is defined by the module:
+
+* `AutoGraphColorModePreference`: specify with the value `2bit` to override the default 16-color palette of command output to make it monochrome. Explicitly specifying `4bit` will ensure 16-color output.
 
 #### Settings file
 
@@ -103,11 +107,14 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Get-GraphApplicationCertificate      | Gets the certificates with public keys configured on the application                                                                                    |
 | Get-GraphApplicationConsent          | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)                                                  |
 | Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                                                                            |
+| Get-GraphConnection                  | Gets information about all named connections and the current connection                                                                                 |
 | Get-GraphConnectionInfo (gcon)       | Gets information about the current connection to a Graph endpoint, including identity and  `Online` or `Offline`                                        |
 | Get-GraphError (gge)                 | Retrieves detailed errors returned from Graph in execution of the last command                                                                          |
 | Get-GraphResource  (ggr, gcat, Get-GraphContent) | Given a relative (to the Graph or current location) Uri gets information about the entity                                                   |
 | Get-GraphLog (ggl)                   | Gets the local log of all requests to Graph made by this module                                                                                         |
+| Get-GraphLastOutput                  | Gets the value or indexed elmeent of the `$LASTGRAPHITEMS` variable, i.e. the objects returned by the previous invocation of commands like Get-GraphResource or Get-GraphResourceWithMetadata and associates them with an index that can be used with commansd like `Set-GraphLocation` |
 | Get-GraphLogOption                   | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
+| Get-GraphProfileSettings | Gets the list of profiles defined in the [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md) -- these profiles may be enabled by the `Select-GraphProfileSettings` command. |
 | Get-GraphToken                       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) |
 | Invoke-GraphRequest                  | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                                                                      |
 | New-GraphApplication                 | Creates an Azure AD application configured to authenticate to Microsoft Graph                                                                           |
@@ -118,7 +125,9 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Remove-GraphApplication              | Deletes an Azure AD application                                                                                                                         |
 | Remove-GraphApplicationCertificate   | Removes a public key from the application for a certificate allowed to authenticate as that application                                                 |
 | Remove-GraphApplicationConsent       | Removes consent grants for an Azure AD application                                                                                                      |
+| Remove-GraphConnection               | Removes a named graph connection                                                                                                                        |
 | Remove-GraphResource                 | Makes generic ``DELETE`` requests to a specified Graph URI to delete resources                                                                          |
+| Select-GraphProfileSettings | Enables the behaviors mandated by the setting values of the specified profile. Profiles are defined by the user's [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md). |
 | Set-GraphApplicationConsent          | Sets a consent grant for an Azure AD application                                                                                                        |
 | Set-GraphConnectionStatus            | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service                    |
 | Set-GraphLogOption                   | Sets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
@@ -193,7 +202,7 @@ These commmands can also be used when testing modifications you make to AutoGrap
 
 License and authors
 -------------------
-Copyright:: Copyright (c) 2018 Adam Edwards
+Copyright:: Copyright (c) 2021 Adam Edwards
 
 License:: Apache License, Version 2.0
 
