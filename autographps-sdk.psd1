@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.26.0'
+ModuleVersion = '0.26.1'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -244,6 +244,10 @@ PrivateData = @{
 ## AutoGraphPS-SDK 0.26.0 Release Notes
 
 This release adds numerous usability improvements including certificate authentication improvements, profile-based configuration, and color output along with several breaking changes.
+
+### 0.26.1 update
+
+* Fix broken format ps1xml error that only surfaces at module update time
 
 ### New dependencies
 
