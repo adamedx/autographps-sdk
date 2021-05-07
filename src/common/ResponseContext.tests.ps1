@@ -172,6 +172,23 @@ Describe 'ResponseContext class' {
             $responseContext.Root | Should Be 'users'
         }
 
+        It 'Should correctly parse variation of example 10.3 Entity - {context-url}#{entity-set}/$entity where the {entity-set} is a navigation property' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/me/contacts'
+            $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users(123)/contacts/$entity'
+
+            $responseContext = new-so ResponseContext $requestUri $contextUri |=> ToPublicContext
+
+            $responseContext.GraphUri | Should Be '/users/123/contacts'
+            $responseContext.TypelessGraphUri | Should Be '/users/123/contacts'
+            $responseContext.AbsoluteGraphUri | Should Be 'https://graph.microsoft.com/v1.0/users/123/contacts'
+            $responseContext.ContextUrl | Should Be $contextUri
+            $responseContext.RequestUrl | Should Be $requestUri
+            $responseContext.TypeCast | Should Be $null
+            $responseContext.IsEntity | Should Be $true
+            $responseContext.IsCollectionMember | Should Be $true
+            $responseContext.Root | Should Be 'users'
+        }
+
         It "Should correctly parse 10.3 Entity - {context-url}#{type-name} -- can be used in cases when entity is returned from an action or function" {
             $requestUri = 'https://graph.microsoft.com/v1.0/users/someaction'
             $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#graph.user'
