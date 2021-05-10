@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -98,6 +98,7 @@ function Remove-GraphApplicationConsent {
         }
 
         $appFilter = "clientId eq '$appSPId'"
+
         $filterClauses = @($appFilter)
 
         $grantFilter = if ( $ConsentForAllUsers.IsPresent ) {
@@ -111,32 +112,33 @@ function Remove-GraphApplicationConsent {
         }
 
         $filterArgument = if ( ! $consentObject ) {
-            @{Filter = ($filterClauses -join ' and ')}
-        } else {
-            @{}
+            $filterClauses -join ' and '
         }
 
         # For oauth2 grants, we either delete the entire grant (in the case of AllPermissions)
         # or edit an existing matching grant to remove a targeted permission => principal assigment.
         if ( ! $isAppOnly -or $AllPermissions.IsPresent ) {
             $grants = if ( ! $consentObject ) {
-                $commandContext |=> InvokeRequest -uri oauth2PermissionGrants -RESTmethod GET @filterArgument
-            } else {
+                # Rely on the fact that the scopes are specific to MS Graph -- we don't need to query for
+                # the resourceId of the grant to be the Graph service principal because it's implied by the scope names
+                $commandContext |=> InvokeRequest -Uri oauth2PermissionGrants -RESTMethod GET -Filter $filterArgument
+            } elseif ( ! $isAppOnly ) {
                 @($consentObject)
             }
 
             if ( $grants -and ( $grants | gm id -erroraction ignore ) ) {
-                $grants | foreach {
-                    if ( ! $DelegatedUserPermissions ) {
-                        $commandContext |=> InvokeRequest -uri "/oauth2PermissionGrants/$($_.id)" -RESTMethod DELETE | out-null
+                foreach ( $grant in $grants ) {
+                    $reducedPermissions = if ( ! $consentObject -and $DelegatedUserPermissions ) {
+                        $appAPI |=> GetReducedPermissionsString $grant.scope $DelegatedUserPermissions
+                    }
+
+                    if ( $consentObject -or ( ! $DelegatedUserPermissions -or ! $reducedPermissions ) ) {
+                        $commandContext |=> InvokeRequest -uri "/oauth2PermissionGrants/$($grant.id)" -RESTMethod DELETE | out-null
+                    } elseif ( $reducedPermissions -ne $grant.scope ) {
+                        $updatedScope = @{scope = $reducedPermissions}
+                        $commandContext |=> InvokeRequest "/oauth2PermissionGrants/$($grant.id)" -RESTMethod PATCH -body $updatedScope | out-null
                     } else {
-                        $reducedPermissions = $appAPI |=> GetReducedPermissionsString $_.scope $DelegatedUserPermissions
-                        if ( $reducedPermissions ) {
-                            $updatedScope = @{scope = $reducedPermissions}
-                            $commandContext |=> InvokeRequest "/oauth2PermissionGrants/$($_.id)" -RESTMethod PATCH -body $updatedScope | out-null
-                        } else {
-                            write-verbose "Requested permissions were not present in existing grant, no change is necessary, skipping update for grant id='$($_.id)'"
-                        }
+                        write-verbose "Requested permissions were not present in existing grant, no change is necessary, skipping update for grant id='$($grant.id)'"
                     }
                 }
             }
@@ -150,12 +152,14 @@ function Remove-GraphApplicationConsent {
             }
 
             $roleAssignments = if ( ! $consentObject ) {
-                $commandContext |=> InvokeRequest -uri servicePrincipals/$appSPId/appRoleAssignedTo -RESTMethod GET
-            } else {
+                $commandContext |=> InvokeRequest -uri servicePrincipals/$appSPId/appRoleAssignments -RESTMethod GET
+            } elseif ( $isAppOnly ) {
                 $consentObject
             }
 
-            if ( $roleAssignments -and ( $roleAssignments | gm id ) ) {
+            if ( $roleAssignments -and ( $roleAssignments | gm -erroraction ignore id ) ) {
+                # Since the permission id's being tested for are specific to Graph, we
+                # don't need to validate the resourceId to ensure that it is Graph
                 $assignmentsToDelete = $roleAssignments | where {
                     $consentObject -ne $null -or
                     $AllPermissions.IsPresent -or

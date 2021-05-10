@@ -41,7 +41,7 @@ ScriptClass ApplicationAPI {
     }
 
     function CreateApp($appObject) {
-         Invoke-GraphApiRequest /applications -method POST -body $appObject -version $this.version -connection $this.connection
+         Invoke-GraphApiRequest /applications -method POST -body $appObject -version $this.version -connection $this.connection -ConsistencyLevel Session
     }
 
     function AddKeyCredentials($appObject, $appCertificate) {
@@ -63,7 +63,7 @@ ScriptClass ApplicationAPI {
             }
         ) | convertto-json -depth 6
 
-        Invoke-GraphApiRequest "/applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.version -connection $this.connection
+        Invoke-GraphApiRequest "/applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.version -connection $this.connection -ConsistencyLevel Session
     }
 
     function SetKeyCredentials($appId, $keyCredentials) {
@@ -71,17 +71,33 @@ ScriptClass ApplicationAPI {
             keyCredentials = $keyCredentials
         }
 
-        Invoke-GraphApiRequest "/applications/$appId" -method PATCH -Body $keyCredentialPatch -version $this.version -connection $this.connection | out-null
+        Invoke-GraphApiRequest "/applications/$appId" -method PATCH -Body $keyCredentialPatch -version $this.version -connection $this.connection -ConsistencyLevel Session | out-null
     }
 
     function RegisterApplication($appId, $isExternal) {
         write-verbose "Attempting to register existing application '$appId', isExternalTenant: '$isExternal'"
         if ( ! $isExternal ) {
+            # For user experience reasons, when the user believes they are registering an app from their own tenant,
+            # we explicitly check for this. We only skip this check if they specify that they are OK with registering
+            # an application owned by another tenant.
             write-verbose "Looking for existing application '$appId' in this tenant"
-            $existingApp = GetApplicationByAppId $appId
+            $existingApp = $null
+            $retryCount = 3
+            $waitTime = 5
+
+            # The directory does not guarantee read after write, and this method is often invoked after an app is created.
+            # If we need to find the app, it's possible that a newly created app is not accessible by read operations
+            # for some amount of time, so add a reasonable retry just in case.
+            do {
+                $existingApp = GetApplicationByAppId $appId
+                if ( ! $existingApp ) {
+                    start-sleep $waitTime
+                }
+                $waitTime += 10
+            } while ( ! $existingApp -and --$retryCount )
 
             if ( ! $existingApp ) {
-                throw "An application with AppId '$AppId' could not be found in this tenant."
+                throw "An application with AppId '$AppId' could not be found in this tenant -- the application may have just been created but not fully replicated or it may be from a different tenant."
             }
             write-verbose "Found existing application '$appId' in this tenant"
         }
@@ -101,7 +117,7 @@ ScriptClass ApplicationAPI {
     }
 
     function NewAppServicePrincipal($appId) {
-        Invoke-GraphApiRequest /servicePrincipals -method POST -body @{appId=$appId} -Version $this.version -connection $this.connection -erroraction stop
+        Invoke-GraphApiRequest /servicePrincipals -method POST -body @{appId=$appId} -Version $this.version -connection $this.connection -erroraction stop -ConsistencyLevel Session
     }
 
     function GetAppServicePrincipal($appId, $properties, $errorAction = 'stop') {
@@ -109,21 +125,21 @@ ScriptClass ApplicationAPI {
         if ( $properties ) {
             $selectArguments['select'] = $properties
         }
-        $result = Invoke-GraphApiRequest /servicePrincipals -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction @selectArguments
-        __NormalizeResult $result
+        $result = Invoke-GraphApiRequest /servicePrincipals -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction @selectArguments -ConsistencyLevel Session
+        __NormalizeSearchResult $result
     }
 
     function GetApplicationByAppId($appId, $errorAction = 'stop') {
-        $result = Invoke-GraphApiRequest /Applications -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction
-        __NormalizeResult $result
+        $result = Invoke-GraphApiRequest /applications -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction -ConsistencyLevel Session
+        __NormalizeSearchResult $result
     }
 
     function GetApplicationByObjectId($objectId, $errorAction = 'stop') {
-        Invoke-GraphApiRequest "/Applications/$objectId" -method GET -Version $this.version -connection $this.connection -erroraction $errorAction
+        Invoke-GraphApiRequest "/applications/$objectId" -method GET -Version $this.version -connection $this.connection -erroraction $errorAction -ConsistencyLevel Session
     }
 
     function RemoveApplicationByObjectId($objectId, $errorAction = 'stop') {
-        Invoke-GraphApiRequest "/Applications/$objectId" -method DELETE -Version $this.version -connection $this.connection -erroraction $erroraction| out-null
+        Invoke-GraphApiRequest "/applications/$objectId" -method DELETE -Version $this.version -connection $this.connection -erroraction $erroraction -ConsistencyLevel Session | out-null
     }
 
     function GetReducedPermissionsString($permissionsString, $permissionsToRemove) {
@@ -146,7 +162,7 @@ ScriptClass ApplicationAPI {
         $userIdToConsent,
         $consentAllUsers,
         $appWithRequiredResource,
-        $appSP
+        $appServicePrincipalId
     ) {
         $isUserConsentNeeded = $false
         $consentUserId = if ( $userIdToConsent ) {
@@ -173,29 +189,29 @@ ScriptClass ApplicationAPI {
             return
         }
 
-        $appServicePrincipal = if ( $appSP ) {
-            $appSP
-        } else {
-            GetAppServicePrincipal $appId
-        }
-
-        if ( ! $appServicePrincipal -or ! ($appServicePrincipal | gm id -erroraction ignore) ) {
-            throw "Application '$AppId' was not found"
-        }
-
         if ( $isUserConsentNeeded ) {
             write-verbose 'Processing user consent...'
             $grant = GetConsentGrantForApp $appId $consentUserId $DelegatedPermissions $consentRequiredPermissions $appWithRequiredResource
             if ( $grant ) {
-                Invoke-GraphApiRequest /oauth2PermissionGrants -method POST -body $grant -version $this.version -connection $this.connection | out-null
+                Invoke-GraphApiRequest /oauth2PermissionGrants -method POST -body $grant -version $this.version -connection $this.connection -ConsistencyLevel Session | out-null
             } else {
                 write-verbose 'Skipping consent because no consent was specified'
             }
         }
 
         if ( $AppOnlyPermissions -or $consentRequiredPermissions ) {
+            $targetServicePrincipalId = if ( $appServicePrincipalId ) {
+                $appServicePrincipalId
+            } else {
+                $servicePrincipal = GetAppServicePrincipal $appId
+                if ( ! $servicePrincipal -or ! ($servicePrincipal | gm id -erroraction ignore) ) {
+                    throw "Application '$AppId' was not found"
+                }
+                $servicePrincipal.Id
+            }
+
             write-verbose ( 'Processing app-only consent: SpecificPermissionsSpecified: {0}; ConsentRequiredPermissionsSpecified: {1}' -f ($AppOnlyPermissions -ne $null -and $AppOnlyPermissions.length -gt 0), $consentRequiredPermissions )
-            ConsentAppOnlyRolesForTenant $appId $AppOnlyPermissions $consentRequiredPermissions $appWithRequiredResource $appServicePrincipal
+            ConsentAppOnlyRolesForTenant $appId $AppOnlyPermissions $consentRequiredPermissions $appWithRequiredResource $targetServicePrincipalId
         } else {
             write-verbose 'Skipping consent for app only permissions because no permissions are specified'
         }
@@ -249,7 +265,7 @@ ScriptClass ApplicationAPI {
         $appPermissions,
         $ConsentRequiredPermissions,
         $appWithRequiredResource,
-        $appSP
+        $appServicePrincipalId
     ) {
         $targetPermissions = if ( ! $ConsentRequiredPermissions ) {
             foreach ( $roleName in $appPermissions ) {
@@ -271,11 +287,11 @@ ScriptClass ApplicationAPI {
         }
 
         $appRoleAssignments = foreach ( $roleId in $targetPermissions ) {
-            __NewAppRoleAssignment $appSP.Id $roleId
+            __NewAppRoleAssignment $appServicePrincipalId $roleId
         }
 
         foreach ( $assignment in $appRoleAssignments ) {
-            Invoke-GraphApiRequest /servicePrincipals/$($appSP.id)/appRoleAssignments -method POST -body $assignment -version $this.version -connection $this.connection | out-null
+            Invoke-GraphApiRequest /servicePrincipals/$appServicePrincipalId/appRoleAssignments -method POST -body $assignment -version $this.version -connection $this.connection -ConsistencyLevel Session | out-null
         }
     }
 
@@ -332,12 +348,14 @@ ScriptClass ApplicationAPI {
         }
     }
 
-    function __NormalizeResult($result) {
-        if ( $result -and ( $result | gm id ) ) {
+    function __NormalizeSearchResult($result) {
+        # Search results can return empty sets, but the search result itself
+        # is non-empty, so make sure we convert a search result with no items
+        # into a null result to simplify processing for callers -- they won't
+        # need to inspect the payload itself for empty results
+        if ( $result -and ( $result | gm -erroraction ignore id ) ) {
             $result
         }
     }
 }
-
-
 

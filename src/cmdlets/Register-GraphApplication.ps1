@@ -66,11 +66,7 @@ function Register-GraphApplication {
 
     $newAppSP = $appAPI |=> RegisterApplication $AppId $ImportFromOtherTenant.IsPresent
 
-    $appWithAppPermissionsData = if ( $AllPermissions.IsPresent ) {
-        $appAPI |=> GetApplicationByAppId $AppId
-    }
-
-    $appAPI |=> SetConsent $appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentAllUsers.IsPresent $appWithAppPermissionsData
+    $appAPI |=> SetConsent $appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentAllUsers.IsPresent $newAppSP.Id
 
     $newAppSP
 }

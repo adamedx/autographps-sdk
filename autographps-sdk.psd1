@@ -260,6 +260,8 @@ None.
 ### Fixed defects
 
 * Correctly parse @odata.context URIs like https://graph.microsoft.com/v1.0/$metadata#users(userid)/contacts/$entity such that the URI is correclty identified to refer to a member of a collection
+* `Remove-GraphApplicationConsent` failed when input was not taken from the pipeline
+* `New-GraphApplication`, `Set-GraphapplicationConsent` other commands failed when the connection (typically from profile settings) had the non-default value of `Eventual` set for `ConsistencyLevel`. This caused requests that expected read-after-write to reflect the write operation to fail sometimes. This was fixed by ensuring that regardless of the setting used for queries constructed by the user via commands like `Invoke-GraphRequest` and `Get-GraphRequest`, the consistency level of `Session` is always used.
 
 '@
 

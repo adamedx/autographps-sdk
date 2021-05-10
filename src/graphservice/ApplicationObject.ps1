@@ -66,7 +66,7 @@ ScriptClass ApplicationObject {
         $appSP = $this.AppAPI |=> RegisterApplication $this.AppId
 
         if ( $ConsentRequired ) {
-            $this.AppAPI |=> SetConsent $appSP.appId $scopes $roles (! $skipRequiredResourcePermissions) $userIdToConsent $consentAllUsers $appSP
+            $this.AppAPI |=> SetConsent $appSP.appId $scopes $roles (! $skipRequiredResourcePermissions) $userIdToConsent $consentAllUsers $appSP.Id
         }
 
         $appSP

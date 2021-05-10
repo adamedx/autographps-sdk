@@ -116,7 +116,7 @@ function Get-GraphApplicationConsent {
             }
 
             $roleResponse = if ( $includeAppOnly ) {
-                Invoke-GraphApiRequest /servicePrincipals/$appSPId/appRoleAssignedTo -method GET -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument @AllArgument @pagingParameters
+                Invoke-GraphApiRequest /servicePrincipals/$appSPId/appRoleAssignments -method GET -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument @AllArgument @pagingParameters
             }
 
             if ( $roleResponse ) {

@@ -2,6 +2,9 @@
 
 ## To-do items -- prioritized
 
+* Add formatting for get-graphapplicationservieprincipal
+* Fix get-graphmethod -uri to not need graphname
+* fix formatting of get-graphmethod to swap columns
 * Change get-graphconnectioninfo to get-graphcurrentconnection and wrap get-graphconnection
 * Adaptive progress meter?
 * View for graph application

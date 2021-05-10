@@ -50,13 +50,7 @@ function Set-GraphApplicationConsent {
         $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
-        $app = $appAPI |=> GetApplicationByAppId $AppId
-
-        if ( ! $app ) {
-            throw "Unable to find application with id '$AppId'"
-        }
-
-        $appAPI |=> SetConsent $app.appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentForAllUsers.IsPresent $app
+        $appAPI |=> SetConsent $appId $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentForAllUsers.IsPresent
     }
 
     end {}
