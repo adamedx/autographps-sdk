@@ -128,7 +128,8 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Remove-GraphConnection               | Removes a named graph connection                                                                                                                        |
 | Remove-GraphResource                 | Makes generic ``DELETE`` requests to a specified Graph URI to delete resources                                                                          |
 | Select-GraphProfileSettings | Enables the behaviors mandated by the setting values of the specified profile. Profiles are defined by the user's [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md). |
-| Set-GraphApplicationConsent          | Sets a consent grant for an Azure AD application                                                                                                        |
+| Set-GraphApplicationCertificate      | Given the specified certificate or certificate path sets the application's certificates                                             |
+| SetGraphApplicationConsent          | Sets a consent grant for an Azure AD application                                                                                                        |
 | Set-GraphConnectionStatus            | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service                    |
 | Set-GraphLogOption                   | Sets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
 | Test-Graph                           | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint                                                                  |

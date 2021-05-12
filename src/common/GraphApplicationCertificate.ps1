@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ ScriptClass GraphApplicationCertificate {
     $X509Certificate = $null
     $NotBefore = $null
     $validityTimeSpan = $null
+    $certificateFilePath = $null
 
     static {
         const __AppCertificateSubjectParent 'CN=AutoGraphPS, CN=MicrosoftGraph'
@@ -59,6 +60,12 @@ ScriptClass GraphApplicationCertificate {
             }
         }
 
+        function LoadFrom($appId, $objectId, [string] $certificatePath) {
+            $certificate = new-so GraphApplicationCertificate $appId $objectId $null $null $null $null $certificatePath
+            $certificate |=> __Load
+            $certificate
+        }
+
         function __GetAppCertificateSubject($appId) {
             "CN={0}, $($this.__AppCertificateSubjectParent)" -f $appId
         }
@@ -78,16 +85,22 @@ ScriptClass GraphApplicationCertificate {
         }
     }
 
-    function __initialize($appId, $objectId, $displayName, $validityTimeSpan, $notBefore, $certStoreLocation = 'cert:/currentuser/my') {
+    function __initialize($appId, $objectId, $displayName, $validityTimeSpan, $notBefore, $certStoreLocation = 'cert:/currentuser/my', $certificateFilePath) {
         $this.ObjectId = $objectId
         $this.AppId = $appId
         $this.CertLocation = $certStoreLocation
         $this.DisplayName = $displayName
         $this.NotBefore = $NotBefore
         $this.validityTimeSpan = $validityTimeSpan
+        $this.certificateFilePath = $certificateFilePath
     }
 
     function Create {
+
+        if ( $this.certificateFilePath ) {
+            throw "The certificate cannot be created because it was already loaded from the file '$($this.certificateFilePath)'"
+        }
+
         if ( $this.X509Certificate ) {
             throw 'Certificate already created'
         }
@@ -138,5 +151,23 @@ ScriptClass GraphApplicationCertificate {
         }
 
         $content | Set-Content -Encoding byte $destination
+    }
+
+    function __Load {
+        if ( $this.X509Certificate ) {
+            throw "The certificate has already been loaded from path '$($this.certificateFilePath)'"
+        }
+
+        $certificateObject = $::.CertificateHelper |=> GetCertificateFromPath $this.certificateFilePath
+        $displayName = $certificateObject.FriendlyName
+
+        $validityTimeSpan = $certificateObject.NotAfter - $certificateObject.NotBefore
+
+        $this.X509Certificate = $certificateObject
+        $this.ObjectID = $objectId
+        $this.DisplayName = $displayName
+        $this.validityTimeSpan = $validityTimeSpan
+        $this.NotBefore = $certificateObject.NotBefore
+        $this.CertLocation = $null
     }
 }

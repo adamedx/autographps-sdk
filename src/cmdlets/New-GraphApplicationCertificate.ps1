@@ -46,7 +46,6 @@ function New-GraphApplicationCertificate {
         [parameter(parametersetname='objectidexport')]
         [switch] $NoCertCredential,
 
-
         [PSCustomObject] $Connection = $null,
 
         [switch] $SkipApplicationUpdate

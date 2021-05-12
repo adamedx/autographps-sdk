@@ -41,6 +41,7 @@
 . (import-script cmdlets\Remove-GraphConnection)
 . (import-script cmdlets\Remove-GraphResource)
 . (import-script cmdlets\Select-GraphProfileSettings)
+. (import-script cmdlets\Set-GraphApplicationCertificate)
 . (import-script cmdlets\Set-GraphApplicationConsent)
 . (import-script cmdlets\Set-GraphConnectionStatus)
 . (import-script cmdlets\Set-GraphLogOption)
