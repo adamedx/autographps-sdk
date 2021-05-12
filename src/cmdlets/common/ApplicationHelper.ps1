@@ -54,7 +54,7 @@ ScriptClass ApplicationHelper {
                 $::.ApplicationAPI.DefaultApplicationApiVersion
             }
 
-            $uri = '/Applications'
+            $uri = '/applications'
 
             $filter = if ( $ODataFilter ) {
                 $ODataFilter
@@ -98,7 +98,7 @@ ScriptClass ApplicationHelper {
             }
 
             write-verbose "Querying for applications at version $apiVersion' with uri '$uri, filter '$filter', select '$select'"
-            Invoke-GraphApiRequest -Method $method -Uri $uri @requestArguments -All:$all -version $apiVersion
+            Invoke-GraphApiRequest -Method $method -Uri $uri @requestArguments -All:$all -version $apiVersion -ConsistencyLevel Session
         }
     }
 }

@@ -2,7 +2,14 @@
 
 ## To-do items -- prioritized
 
-* Add formatting for get-graphapplicationservieprincipal
+* Add formatting to Get-GraphApplicationCertificate
+* Make app operations default to objectid for efficiency
+* Formatting for get-graphapplicationcertificate
+* Formatting for application
+* Add file output to new-graphlocalcertificate
+* Change size in Get-GraphLog to ResponseContentSize field
+* Add Remove-GraphApplicationCertificate
+* Add formatting for get-graphapplicationserviceprincipal
 * Fix get-graphmethod -uri to not need graphname
 * fix formatting of get-graphmethod to swap columns
 * Change get-graphconnectioninfo to get-graphcurrentconnection and wrap get-graphconnection
@@ -400,6 +407,7 @@
 * Enable color schemes
 * Swap method and size fields in get-graphlog default view?
 * Add alias for get-graphconnectioninfo
+* Add Set-GraphApplicationCertificate
 
 ### Postponed
 

@@ -46,6 +46,7 @@ $cmdlets = @(
     'Remove-GraphConnection'
     'Remove-GraphResource'
     'Select-GraphProfileSettings'
+    'Set-GraphApplicationCertificate'
     'Set-GraphApplicationConsent'
     'Set-GraphConnectionStatus'
     'Set-GraphLogOption'

@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,17 +44,33 @@ ScriptClass ApplicationAPI {
          Invoke-GraphApiRequest /applications -method POST -body $appObject -version $this.version -connection $this.connection -ConsistencyLevel Session
     }
 
-    function AddKeyCredentials($appObject, $appCertificate) {
+    function AddKeyCredentials($appObject, [object[]] $appCertificates, [bool] $preserveExisting, [bool] $isServicePrincipal) {
+        if ( ! $appCertificates -and $preserveExisting ) {
+            throw "No certificates were specified"
+        }
+
         # This should be additive, but methods to add to the collection
         # don't seem to work
         $keyCredentials = @()
 
-        $encodedCertificate = $appCertificate |=> GetEncodedPublicCertificate
+        if ( $preserveExisting -and ($appObject.keyCredentials | measure-object).count ) {
+            $appObject.keyCredentials | foreach {
+                $keyCredentials += $_
+            }
+        }
 
-        $keyCredentials += [PSCustomObject] @{
-            type = 'AsymmetricX509Cert'
-            usage = 'Verify'
-            key = $encodedCertificate
+        foreach ( $appCertificate in $appCertificates ) {
+            $encodedCertificate = if ( $appCertificate -is [System.Security.Cryptography.X509Certificates.X509Certificate2 ] ) {
+                $::.CertificateHelper |=> GetEncodedPublicCertificateData $appCertificate
+            } else {
+                $appCertificate |=> GetEncodedPublicCertificate
+            }
+
+            $keyCredentials += [PSCustomObject] @{
+                type = 'AsymmetricX509Cert'
+                usage = 'Verify'
+                key = $encodedCertificate
+            }
         }
 
         $appPatch = (
@@ -63,7 +79,13 @@ ScriptClass ApplicationAPI {
             }
         ) | convertto-json -depth 6
 
-        Invoke-GraphApiRequest "/applications/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.version -connection $this.connection -ConsistencyLevel Session
+        $targetClass = if ( $isServicePrincipal ) {
+            'servicePrincipals'
+        } else {
+            'applications'
+        }
+
+        Invoke-GraphApiRequest "/$targetClass/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.version -connection $this.connection -ConsistencyLevel Session
     }
 
     function SetKeyCredentials($appId, $keyCredentials) {
@@ -129,13 +151,33 @@ ScriptClass ApplicationAPI {
         __NormalizeSearchResult $result
     }
 
-    function GetApplicationByAppId($appId, $errorAction = 'stop') {
-        $result = Invoke-GraphApiRequest /applications -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction -ConsistencyLevel Session
+    function GetApplicationByAppId($appId, $getServicePrincipal, $errorAction = 'stop') {
+        $targetClass = if ( $getServicePrincipal ) {
+            'servicePrincipals'
+        } else {
+            'applications'
+        }
+
+        $result = Invoke-GraphApiRequest "/$targetClass" -method GET -Filter "appId eq '$appId'" -Version $this.version -connection $this.connection -erroraction $errorAction -ConsistencyLevel Session
         __NormalizeSearchResult $result
     }
 
-    function GetApplicationByObjectId($objectId, $errorAction = 'stop') {
-        Invoke-GraphApiRequest "/applications/$objectId" -method GET -Version $this.version -connection $this.connection -erroraction $errorAction -ConsistencyLevel Session
+    function GetApplicationByObjectId($objectId, $getServicePrincipal, $errorAction = 'stop') {
+        $targetClass = if ( $getServicePrincipal ) {
+            'servicePrincipals'
+        } else {
+            'applications'
+        }
+
+        Invoke-GraphApiRequest "/$targetClass/$objectId" -method GET -Version $this.version -connection $this.connection -erroraction $errorAction -ConsistencyLevel Session
+    }
+
+    function GetApplicationByObjectIdOrAppId($objectId, $appId, $getServicePrincipal, $errorAction = 'stop') {
+        if ( $objectId ) {
+            GetApplicationByObjectId $objectId $getServicePrincipal $errorAction
+        } else {
+            GetApplicationByAppId $appId $getServicePrincipal $errorAction
+        }
     }
 
     function RemoveApplicationByObjectId($objectId, $errorAction = 'stop') {

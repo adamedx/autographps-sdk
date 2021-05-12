@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.26.2'
+ModuleVersion = '0.27.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -99,6 +99,7 @@ FunctionsToExport = @(
     'Remove-GraphConnection'
     'Remove-GraphResource'
     'Select-GraphProfileSettings'
+    'Set-GraphApplicationCertificate'
     'Set-GraphApplicationConsent'
     'Set-GraphConnectionStatus'
     'Set-GraphLogOption'
@@ -177,6 +178,7 @@ AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphCont
         '.\src\cmdlets\Remove-GraphConnection.ps1'
         '.\src\cmdlets\Remove-GraphResource.ps1'
         '.\src\cmdlets\Select-GraphProfileSettings.ps1'
+        '.\src\cmdlets\Set-GraphApplicationCertificate.ps1'
         '.\src\cmdlets\Set-GraphApplicationConsent.ps1'
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1'
         '.\src\cmdlets\Set-GraphLogOption.ps1'
@@ -193,6 +195,7 @@ AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphCont
         '.\src\cmdlets\common\ParameterCompleter.ps1'
         '.\src\cmdlets\common\PermissionParameterCompleter.ps1'
         '.\src\cmdlets\common\QueryHelper.ps1'
+        '.\src\common\CertificateHelper.ps1'
         '.\src\common\ColorString.ps1'
         '.\src\common\ColorScheme.ps1'
         '.\src\common\DefaultScopeData.ps1'
@@ -241,9 +244,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.26.2 Release Notes
+## AutoGraphPS-SDK 0.27.0 Release Notes
 
-This release adds fixes for defects identified in 0.26.1
+This release adds fixes for defects identified in 0.26.1 as well as new features related to application certificate management
 
 ### New dependencies
 
@@ -255,7 +258,7 @@ None.
 
 ### New features
 
-None.
+* New `Set-GraphApplicationCertificate` command that supports specifying an existing public key certificate in the file system (both .cer and .pfx formats) or those from the Windows certificate store.
 
 ### Fixed defects
 
