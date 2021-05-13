@@ -195,6 +195,7 @@ AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphCont
         '.\src\cmdlets\common\ParameterCompleter.ps1'
         '.\src\cmdlets\common\PermissionParameterCompleter.ps1'
         '.\src\cmdlets\common\QueryHelper.ps1'
+        '.\src\common\CertificateHelper.ps1'
         '.\src\common\ColorString.ps1'
         '.\src\common\ColorScheme.ps1'
         '.\src\common\DefaultScopeData.ps1'
