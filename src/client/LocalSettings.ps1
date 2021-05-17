@@ -349,7 +349,7 @@ ScriptClass LocalSettings {
             }
             CertificatePathValidator = {
                 param($value, $context)
-                if ( $value -like "cert:*" -or $value -like "*.pfx" ) {
+                if ( $value -like 'cert:*' -or $value -like '*.pfx' -or $value -like '*.pem' ) {
                     @{ Value = $value }
                 } else {
                     @{ Error = "The specified certificate path '$value' is not a valid file system path or PowerShell cert: drive path" }

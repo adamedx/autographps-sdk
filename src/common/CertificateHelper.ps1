@@ -15,8 +15,8 @@
 ScriptClass CertificateHelper {
     static {
         function GetCertificateFromFile([string] $certificatePath, [bool] $private, [PSCredential] $certPassword) {
-            if ( $certificatePath -notlike '*.pfx' -and $private ) {
-                throw "A certificate with private data is required, but the specified certificate path '$certificatePath' is not a '.pfx' file"
+            if ( $certificatePath -notlike '*.pfx' -and $certificatePath -notlike '*.pem' -and $private ) {
+                throw "A certificate with private data is required, but the specified certificate path '$certificatePath' is not a '.pfx' or '.pem' file"
             }
 
             if ( $certPassword ) {
@@ -35,51 +35,41 @@ ScriptClass CertificateHelper {
             [Convert]::ToBase64String($certificate.thumbprint)
         }
 
-        function GetCertificateItemFromPath([string] $certificatePath, [string] $certStoreLocation) {
-            $useCertStore = $null
-            $certificatePath, $certStoreLocation | foreach {
-                $targetPath = $_
-                if ( $targetPath ) {
-                    $isCertStorePath = $targetPath -like 'cert:*'
-
-                    if ( $useCertStore -ne $null ) {
-                        if ( $useCertStore -ne $isCertStorePath ) {
-                            throw "The specified set of certificates contains a mix of certificates stored in the file system and in the certificate store -- the set must contain certificates from only one of these locations"
-                        }
-                    } else {
-                        $useCertStore = $isCertStorePath
-                    }
-
-                    if ( $isCertStorePath -and [System.Environment]::OSversion.Platform -ne 'Win32NT' ) {
-                        throw "The Windows certificate store path '$targetPath' is only valid on the Windows platform, and this session is hosted on the $($[System.Environment]::OSVersion.Platform). Instead, specify a path to a certificate file stored in the file system which is supported on all platforms."
-                    }
+        function GetCertificateItemFromPath([string] $certificatePath, [string] $certStoreLocation, [string] $fileSystemLocation) {
+            $parentPath = if ( ! ( split-path -isabsolute $certificatePath ) ) {
+                if ( $certStoreLocation -and ! $certificatePath.Contains('.') ) {
+                    $certStoreLocation
+                } elseif ( $fileSystemLocation ) {
+                    $fileSystemLocation
                 }
             }
 
-            $pathPrefix = if ( $certStoreLocation ) {
-                $certStoreLocation
-            }
-
-            $targetPath = if ( $pathPrefix ) {
-                join-path $pathPrefix $certificatePath
+            $targetPath = if ( $parentPath ) {
+                join-path $certStoreLocation $certificatePath
             } else {
                 $certificatePath
             }
 
+            $isCertStorePath = ( split-path -qualifier $targetPath ) -eq 'cert:'
+
+            if ( $isCertStorePath -and [System.Environment]::OSversion.Platform -ne 'Win32NT' ) {
+                throw [ArgumentException]::new("The Windows certificate store path '$targetPath' is only valid on the Windows platform, and this session is hosted on the $($[System.Environment]::OSVersion.Platform). Instead, specify a path to a certificate file stored in the file system which is supported on all platforms.")
+            }
+
             if ( ! ( test-path $targetPath ) ) {
-                throw "The specified path '$targetPath' could not be found."
+                throw "The specified path '$targetPath' for the certificate is not a valid file system path or secret store path and could not be found."
             }
 
             get-item $targetPath
         }
 
         function GetCertificateFromPath([string] $certificatePath, [string] $certStoreLocation, [bool] $private, [PSCredential] $certPassword) {
-            $targetItem = GetCertificateItemFromPath $certificatePath $certStoreLocation $private $certPassword
+            $targetItem = GetCertificateItemFromPath $certificatePath $certStoreLocation
 
             if ( $targetItem -is [System.Security.Cryptography.X509Certificates.X509Certificate2] ) {
                 $targetItem
             } else {
-                GetCertificateFromFile $targetItem.FullName
+                GetCertificateFromFile $targetItem.FullName $private $certPassword
             }
         }
     }

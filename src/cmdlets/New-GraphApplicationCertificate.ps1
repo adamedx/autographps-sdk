@@ -61,7 +61,7 @@ function New-GraphApplicationCertificate {
             $CertCredential
         } elseif ( ! $NoCertCredential.IsPresent ) {
             $userName = if ( $env:user ) { $env:user } else { $env:username }
-            Get-Credential -username $userName
+            Get-Credential -username $userName -Message "Enter password for certificate to be stored in output directory '$CertOutputDirectory'"
         }
     }
 
@@ -87,7 +87,7 @@ function New-GraphApplicationCertificate {
     try {
         $appAPI |=> AddKeyCredentials $targetApp $certificate | out-null
     } catch {
-        $certificate.X509Certificate | rm
+        $certificate.X509Certificate | remove-item
         throw
     }
 

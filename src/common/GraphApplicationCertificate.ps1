@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script CertificateHelper)
+
 ScriptClass GraphApplicationCertificate {
 
     $AppId = $null
@@ -125,23 +127,26 @@ ScriptClass GraphApplicationCertificate {
         $notAfter = $notBefore + $validityTimeSpan
 
         write-verbose "Creating certificate with subject '$subject'"
+        if ( ! ( get-command New-SelfSignedCertificate -erroraction ignore ) ) {
+            throw "The platform does not support the New-SelfSignedCertificate command used to create certificates. Use a platform supported method to create a certificate such as the 'openssl' command if it is available and retry this operation specifying the path to the created certificate."
+        }
+
         $this.X509Certificate = New-SelfSignedCertificate -Subject $subject -friendlyname $description -provider 'Microsoft Enhanced RSA and AES Cryptographic Provider' -CertStoreLocation $certStoreDestination -NotBefore $notBefore -NotAfter $notAfter
     }
 
-    function GetEncodedPublicCertificate {
-        $certBytes = $this.X509Certificate.GetRawCertData()
-        [Convert]::ToBase64String($certBytes)
+    function GetEncodedPublicCertificateData {
+        $::.CertificateHelper |=> GetEncodedPublicCertificateData $this.X509Certificate
     }
 
     function GetEncodedCertificateThumbprint {
-        [Convert]::ToBase64String($this.X509Certificate.thumbprint)
+        $::.CertificateHelper |=> GetEncodedCertificateThumbprint $this.X509Certificate
     }
 
     function Export($outputDirectory, [SecureString] $certPassword) {
         $destination = join-path $outputDirectory "GraphApp-$($this.appid).pfx"
 
         if ( test-path $destination ) {
-            throw [ArgumentError]::new("An exported certificate for appid '$($this.appid)' already exists at the specified directory location '$outputDirectory'")
+            throw [ArgumentError]::new("An exported certificate for appid '$($this.appid)' already exists at the specified Directory location '$outputDirectory'")
         }
 
         $content = if ( $certPassword ) {
