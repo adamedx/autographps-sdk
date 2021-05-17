@@ -63,7 +63,7 @@ ScriptClass ApplicationAPI {
             $encodedCertificate = if ( $appCertificate -is [System.Security.Cryptography.X509Certificates.X509Certificate2 ] ) {
                 $::.CertificateHelper |=> GetEncodedPublicCertificateData $appCertificate
             } else {
-                $appCertificate |=> GetEncodedPublicCertificate
+                $appCertificate |=> GetEncodedPublicCertificateData
             }
 
             $keyCredentials += [PSCustomObject] @{
