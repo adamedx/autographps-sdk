@@ -18,32 +18,26 @@
 function Remove-GraphApplication {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='High', positionalbinding=$false)]
     param(
-        [parameter(parametersetname='FromApp', position=0, valuefrompipeline=$true, mandatory=$true)]
-        $App = $null,
-
-        [parameter(parametersetname='FromAppId', mandatory=$true)]
+        [parameter(position=0, parametersetname='FromAppId', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='FromObjectId', valuefrompipelinebypropertyname=$true)]
         [Guid] $AppId,
 
-        [parameter(parametersetname='FromObjectId', mandatory=$true)]
+        [parameter(parametersetname='FromObjectId', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('Id')]
         [Guid] $ObjectId,
-
-        [String] $Version = $null,
 
         [PSCustomObject] $Connection = $null
     )
 
-    # Note that PowerShell requires us to use the begin / process / end structure here
-    # in order to process more than one element of the pipeline via $App
-
     begin {
-        $commandContext = new-so CommandContext $connection $version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+        $commandContext = new-so CommandContext $connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
     }
 
     process {
         Enable-ScriptClassVerbosePreference
 
-        $targetAppDescription = ''
+        $targetAppId = $AppId
         $appObjectId = $null
 
         if ( $ObjectId ) {
@@ -61,24 +55,16 @@ function Remove-GraphApplication {
                 throw "Application with appid '$AppId' not found"
             }
 
-            $targetAppDescription = "with app id '$AppId' "
             $appObjectId = $appObject.id
-        } else {
-            if ( ! ( $app | gm id -erroraction ignore ) ) {
-                throw [ArgumentException]::new("Specified pipeline object was not a valid graph object")
-            }
-
-            # Make sure it's an app -- it must at least have an appId property
-            if ( ! ( $app | gm appid -erroraction ignore ) ) {
-                throw [ArgumentException]::new("Specified pipeline object was not a valid application object")
-            }
-
-            $targetAppDescription = "with app id '$($app.appId)' "
-
-            $appObjectId = $app.id
         }
 
-        if ( $pscmdlet.shouldprocess("Application AppId = $AppId, objectId = $appObjectId", 'DELETE') ) {
+        $targetAppDescription = if ( $targetAppId ) {
+            $targetAppId
+        } else {
+            'Unspecified App ID'
+        }
+
+        if ( $pscmdlet.shouldprocess("Application ID = '$targetAppDescription', Object ID = '$appObjectId'", 'DELETE') ) {
             $appAPI |=> RemoveApplicationByObjectId $appObjectId
         }
     }

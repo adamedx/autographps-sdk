@@ -103,7 +103,7 @@ ScriptClass LocalCertificate {
         }
 
         function IsCertStorePath($certificatePath) {
-            $isCertStorePath = ( split-path -qualifier $certificatePath ) -eq 'cert:'
+            (get-item $certificatePath) -is [System.Security.Cryptography.X509Certificates.X509Certificate2]
         }
 
         function ValidateCertificateCreationCapability {

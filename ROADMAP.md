@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Add description to New-GraphApplication
 * Make GraphConnectionStatus commands not return connection info :(
 * Add Select-GraphConnection
 * Add thumbprint option to Set-GraphApplicationCertificate
@@ -11,7 +12,6 @@
 * Make app operations default to objectid for efficiency
 * Formatting for get-graphapplicationcertificate
 * Formatting for application
-* Change size in Get-GraphLog to ResponseContentSize field
 * Add Remove-GraphApplicationCertificate
 * Add formatting for get-graphapplicationserviceprincipal
 * Fix get-graphmethod -uri to not need graphname
@@ -414,6 +414,7 @@
 * Add file output to new-graphlocalcertificate
 * Should add Remove-GraphApplicationCertificate
 * Disable auto-cert generation for apps, make it opt-in everywhere (not just Linux) and add warnings
+* Change size in Get-GraphLog to ResponseRawContentSize field
 
 ### Postponed
 
