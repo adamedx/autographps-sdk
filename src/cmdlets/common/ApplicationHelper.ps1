@@ -26,8 +26,17 @@ ScriptClass ApplicationHelper {
         }
 
         function ToDisplayableObject($object) {
+            # Yes, this is changing an existing property and overwriting it with a new version of itself!
+            # Terrible in some ways, but this makes up for the fact that the deserializer is unsophisticated --
+            # it doesn't know the API schema so strings that represent time for instance simply remain strings
+            # rather then being converted to the type described in the schema. This is a bespoke approach to
+            # compensating for this in a specific case where we use knowledge of the schema to perform an explicit
+            # conversion.
             $object.createdDateTime = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.createdDateTime $true
-            $this.appFormatter |=> DeserializedGraphObjectToDisplayableObject $object
+
+            $result = $this.appFormatter |=> DeserializedGraphObjectToDisplayableObject $object
+            $result.pstypenames.insert(0, 'GraphApplication')
+            $result
         }
 
         function KeyCredentialToDisplayableObject($object, $appId, $appObjectId) {
