@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,13 +57,13 @@ function New-GraphLocalCertificate {
     )
     Enable-ScriptClassVerbosePreference
 
-    $appCert = new-so ApplicationCertificate $AppId $ObjectId $ApplicationName $CertValidityTimespan $CertValidityStart
+    $certHelper = new-so CertificateHelper $AppId $ObjectId $ApplicationName $CertValidityTimespan $CertValidityStart
 
-    $certificateResult = $appCert |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $false
+    $certificateResult = $certHelper |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $false
     $X509Certificate = $certificateResult.Certificate.X509Certificate
 
     if ( ! $AsX509Certificate.IsPresent ) {
-        $::.ApplicationCertificate |=> CertificateToDisplayableObject $X509Certificate $appCert.appId $appCert.objectId $certificateResult.ExportedLocation
+        $::.CertificateHelper |=> CertificateToDisplayableObject $X509Certificate $certHelper.appId $certHelper.objectId $certificateResult.ExportedLocation
     } else {
         $X509Certificate
     }

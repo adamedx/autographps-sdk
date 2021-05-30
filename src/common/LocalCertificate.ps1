@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ScriptClass CertificateHelper {
+ScriptClass LocalCertificate {
     static {
         function GetCertificateFromFile([string] $certificatePath, [bool] $private, [SecureString] $certPassword) {
             if ( $certificatePath -notlike '*.pfx' -and $certificatePath -and $private ) {
-                write-warning "A certificate with private data is required, but the specified certificate path '$certificatePath' is not a '.pfx' or '.pfx' file"
+                write-warning "A certificate with private data is required, but the specified certificate path '$certificatePath' is not a '.pfx file"
             }
 
             if ( $certPassword ) {

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script common/ApplicationCertificate)
+. (import-script common/CertificateHelper)
 
 function New-GraphApplicationCertificate {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='high', positionalbinding=$false)]
@@ -60,13 +60,13 @@ function New-GraphApplicationCertificate {
     )
     Enable-ScriptClassVerbosePreference
 
-    $appCert = new-so ApplicationCertificate $AppId $ObjectId $null $CertValidityTimespan $CertValidityStart
+    $certHelper = new-so CertificateHelper $AppId $ObjectId $null $CertValidityTimespan $CertValidityStart
 
-    $certificateResult = $appCert |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $true
+    $certificateResult = $certHelper |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $true
     $X509Certificate = $certificateResult.Certificate.X509Certificate
 
     if ( ! $AsX509Certificate.IsPresent ) {
-        $::.ApplicationCertificate |=> CertificateToDisplayableObject $X509Certificate $appCert.appId $appCert.objectId $certificateResult.ExportedLocation
+        $::.CertificateHelper |=> CertificateToDisplayableObject $X509Certificate $certHelper.appId $certHelper.objectId $certificateResult.ExportedLocation
     } else {
         $X509Certificate
     }

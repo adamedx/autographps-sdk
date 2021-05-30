@@ -13,7 +13,7 @@
 # limitations under the License.
 
 . (import-script ../cmdlets/Invoke-GraphApiRequest)
-. (import-script ../common/GraphApplicationCertificate)
+. (import-script ../common/LocalCertificate)
 . (import-script ../common/ScopeHelper)
 
 enum AppTenancy {
@@ -61,7 +61,7 @@ ScriptClass ApplicationAPI {
 
         foreach ( $appCertificate in $appCertificates ) {
             $encodedCertificate = if ( $appCertificate -is [System.Security.Cryptography.X509Certificates.X509Certificate2 ] ) {
-                $::.CertificateHelper |=> GetEncodedPublicCertificateData $appCertificate
+                $::.LocalCertificate |=> GetEncodedPublicCertificateData $appCertificate
             } else {
                 $appCertificate |=> GetEncodedPublicCertificateData
             }

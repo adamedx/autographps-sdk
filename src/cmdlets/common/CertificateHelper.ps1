@@ -14,11 +14,12 @@
 
 . (import-script DisplayTypeFormatter)
 . (import-script ../../graphservice/ApplicationAPI)
+. (import-script ../../common/LocalCertificate)
 . (import-script ../../common/GraphApplicationCertificate)
 . (import-script CommandContext)
 . (import-script ../Set-GraphApplicationCertificate)
 
-ScriptClass ApplicationCertificate {
+ScriptClass CertificateHelper {
     $appId = $null
     $objectId = $null
     $applicationName = $null
@@ -180,7 +181,7 @@ ScriptClass ApplicationCertificate {
                 $targetCertificatePath = $connection |=> GetCertificatePath
 
                 $targetCertCredential = if ( $promptForCertCredentialIfNeeded -and $targetCertificatePath ) {
-                    $::.CertificateHelper |=> PromptForCertificateCredential $targetCertificatePath
+                    $::.LocalCertificate |=> PromptForCertificateCredential $targetCertificatePath
                 } else {
                     $certCredential
                 }
@@ -190,4 +191,4 @@ ScriptClass ApplicationCertificate {
     }
 }
 
-$::.ApplicationCertificate |=> __initialize
+$::.CertificateHelper |=> __initialize
