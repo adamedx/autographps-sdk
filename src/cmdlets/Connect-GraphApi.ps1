@@ -18,6 +18,7 @@
 . (import-script New-GraphConnection)
 . (import-script common/DynamicParamHelper)
 . (import-script ../common/ScopeHelper)
+. (import-script common/ApplicationCertificate)
 . (import-script common/PermissionParameterCompleter)
 
 function Connect-GraphApi {
@@ -150,6 +151,8 @@ function Connect-GraphApi {
         [parameter(parametersetname='existingconnection',mandatory=$true)]
         [PSCustomObject] $Connection = $null,
 
+        [Switch] $PromptForCertCredential,
+
         [parameter(parametersetname='currentconnection',mandatory=$true)]
         [switch] $Current
     )
@@ -168,8 +171,8 @@ function Connect-GraphApi {
             }
 
             if ( $existingCert -isnot [System.Security.Cryptography.X509Certificates.X509certificate2] ) {
-                if ( ! $NoCertCredential.IsPresent -and ! $CertCredential ) {
-                    throw [ArgumentException]::new("The CertCredential parameter or the NoCertCredential parameter must be specified because a file system path '$CertificatePath' was specified with the CertificatePath parameter. Alternatively, a path to a certificate in the PowerShell certificate drive may be specified if the certificate drive is supported on this platform.")
+                if ( ! $NoCertCredential.IsPresent -and ! $CertCredential -and ! $PromptForCertCredential.IsPresent ) {
+                    throw [ArgumentException]::new("One of the CertCredential, NoCertCredential, or PromptForCertCredential parameters must be specified because a file system path '$CertificatePath' was specified with the CertificatePath parameter. Alternatively, a path to a certificate in the PowerShell certificate drive may be specified if the certificate drive is supported on this platform.")
                 }
             }
         }
@@ -207,7 +210,9 @@ function Connect-GraphApi {
 
             $::.GraphContext |=> SetCurrentByName $newContext.name
 
-            $targetConnection |=> Connect
+            $certificatePassword = $::.ApplicationCertificate |=> GetConnectionCertCredential $targetConnection $CertCredential $PromptForCertCredential.IsPresent $NoCertCredential.IsPresent
+
+            $targetConnection |=> Connect $certificatePassword
 
             $targetConnection
         } else {
@@ -243,7 +248,7 @@ function Connect-GraphApi {
                     @{}
                 }
 
-                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction', 'ConnectionName', 'CertCredential', 'NoProfile', 'NoCertCredential') } | foreach {
+                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction', 'ConnectionName', 'CertCredential', 'NoProfile', 'NoCertCredential', 'PromptForCertCredential' ) } | foreach {
                     $conditionalArguments[$_] = $PSBoundParameters[$_]
                 }
 
@@ -254,9 +259,7 @@ function Connect-GraphApi {
                 }
             }
 
-            $certificatePassword = if ( ! $NoCertCredential.IsPresent -and $CertCredential ) {
-                $CertCredential.Password
-            }
+            $certificatePassword = $::.ApplicationCertificate |=> GetConnectionCertCredential $newConnection $CertCredential $PromptForCertCredential.IsPresent $NoCertCredential.IsPresent
 
             $context |=> UpdateConnection $newConnection $certificatePassword
             $newConnection

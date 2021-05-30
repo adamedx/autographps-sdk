@@ -17,23 +17,54 @@
 function New-GraphLocalCertificate {
     [cmdletbinding(positionalbinding=$false)]
     param(
-        [parameter(position=0, mandatory=$true)]
+        [parameter(parametersetname='pipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='pipelineexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='appid', mandatory=$true)]
         [Guid] $AppId,
 
-        [parameter(position=1, mandatory=$true)]
-        [string] $ApplicationName,
+        [parameter(parametersetname='pipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='pipelineexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='objectid', mandatory=$true)]
+        [Alias('Id')]
+        [Guid] $ObjectId,
 
-        [parameter(position=2)]
+        [parameter(position=1)]
+        [Alias('Name')]
+        [string] $ApplicationName = 'AutoGraphPS Application',
+
         [TimeSpan] $CertValidityTimeSpan,
 
         [DateTime] $CertValidityStart,
 
-        $CertStoreLocation = 'cert:/currentuser/my'
+        $CertStoreLocation = 'cert:/currentuser/my',
+
+        [parameter(parametersetname='pipelineexport', mandatory=$true)]
+        [parameter(parametersetname='appidexport', mandatory=$true)]
+        [parameter(parametersetname='objectidexport', mandatory=$true)]
+        [string] $CertOutputDirectory,
+
+        [parameter(parametersetname='pipelineexport')]
+        [parameter(parametersetname='appidexport')]
+        [parameter(parametersetname='objectidexport')]
+        [PSCredential] $CertCredential,
+
+        [parameter(parametersetname='pipelineexport')]
+        [parameter(parametersetname='appidexport')]
+        [parameter(parametersetname='objectidexport')]
+        [switch] $NoCertCredential,
+
+        [switch] $AsX509Certificate
     )
     Enable-ScriptClassVerbosePreference
 
-    $certificate = new-so GraphApplicationCertificate $AppId $null $ApplicationName $CertValidityTimeSpan $CertValidityStart $CertStoreLocation
+    $appCert = new-so ApplicationCertificate $AppId $ObjectId $ApplicationName $CertValidityTimespan $CertValidityStart
 
-    $certificate |=> Create
-    $certificate.X509Certificate
+    $certificateResult = $appCert |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $false
+    $X509Certificate = $certificateResult.Certificate.X509Certificate
+
+    if ( ! $AsX509Certificate.IsPresent ) {
+        $::.ApplicationCertificate |=> CertificateToDisplayableObject $X509Certificate $appCert.appId $appCert.objectId $certificateResult.ExportedLocation
+    } else {
+        $X509Certificate
+    }
 }

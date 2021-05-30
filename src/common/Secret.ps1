@@ -61,6 +61,10 @@ ScriptClass Secret {
         }
     }
 
+    function GetCertificatePath {
+        $this.certificateFilePath
+    }
+
     function GetSecretData([securestring] $secretPassword) {
         switch ( $this.type ) {
             ([SecretType]::Certificate) {

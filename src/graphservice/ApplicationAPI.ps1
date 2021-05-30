@@ -44,8 +44,8 @@ ScriptClass ApplicationAPI {
          Invoke-GraphApiRequest /applications -method POST -body $appObject -version $this.version -connection $this.connection -ConsistencyLevel Session
     }
 
-    function AddKeyCredentials($appObject, [object[]] $appCertificates, [bool] $preserveExisting, [bool] $isServicePrincipal) {
-        if ( ! $appCertificates -and $preserveExisting ) {
+    function AddKeyCredentials($appObjectId, $existingKeyCredentials, [object[]] $appCertificates, [bool] $preserveExisting, [bool] $isServicePrincipal) {
+        if ( ! $appCertificates -and $preserveExisting -and ( $existingKeyCredentials -eq $null ) ) {
             throw "No certificates were specified"
         }
 
@@ -53,8 +53,8 @@ ScriptClass ApplicationAPI {
         # don't seem to work
         $keyCredentials = @()
 
-        if ( $preserveExisting -and ($appObject.keyCredentials | measure-object).count ) {
-            $appObject.keyCredentials | foreach {
+        if ( $preserveExisting -and ($existingkeyCredentials | measure-object).count ) {
+            $existingkeyCredentials | foreach {
                 $keyCredentials += $_
             }
         }
@@ -85,15 +85,11 @@ ScriptClass ApplicationAPI {
             'applications'
         }
 
-        Invoke-GraphApiRequest "/$targetClass/$($appObject.Id)" -method PATCH -Body $appPatch -version $this.version -connection $this.connection -ConsistencyLevel Session
+        Invoke-GraphApiRequest "/$targetClass/$appObjectId" -method PATCH -Body $appPatch -version $this.version -connection $this.connection -ConsistencyLevel Session | out-null
     }
 
-    function SetKeyCredentials($appId, $keyCredentials) {
-        $keyCredentialPatch = [PSCustomObject] @{
-            keyCredentials = $keyCredentials
-        }
-
-        Invoke-GraphApiRequest "/applications/$appId" -method PATCH -Body $keyCredentialPatch -version $this.version -connection $this.connection -ConsistencyLevel Session | out-null
+    function SetKeyCredentials($appObjectId, $keyCredentials, [bool] $isServicePrincipal) {
+        AddKeyCredentials $appObjectId $keyCredentials $null $true $isServicePrincipal
     }
 
     function RegisterApplication($appId, $isExternal) {

@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,29 +18,29 @@
 function Remove-GraphApplicationCertificate {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='High', positionalbinding=$false)]
     param(
-        [parameter(parametersetname='FromUniqueId', position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(parametersetname='FromUniqueIdExistingConnection', position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(parametersetname='FromThumbprint', position=0, mandatory=$true)]
-        [parameter(parametersetname='FromThumbprintExistingConnection', position=0, mandatory=$true)]
-        [parameter(parametersetname='AllCertificatesExistingConnection', position=0, mandatory=$true)]
+        [parameter(parametersetname='AppIdFromUniqueId', position=0, mandatory=$true)]
+        [parameter(parametersetname='AppIdFromThumbprint', position=0, mandatory=$true)]
+        [parameter(parametersetname='AppIdAllCertificates', position=0, mandatory=$true)]
         [Guid] $AppId,
 
-        [parameter(parametersetname='FromUniqueId', position=1, valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(parametersetname='FromUniqueIdExistingConnection', position=1, valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='ObjectIdFromUniqueId', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='ObjectIdFromThumbprint', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='ObjectIdAllCertificates', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('Id')]
+        [Guid] $AppObjectId,
+
+        [parameter(parametersetname='AppIdFromUniqueId', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='ObjectIdFromUniqueId', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Guid] $KeyId,
 
-        [parameter(parametersetname='FromThumbprint', mandatory=$true)]
-        [parameter(parametersetname='FromThumbprintExistingConnection', mandatory=$true)]
+        [parameter(parametersetname='AppIdFromThumbprint', position=1, mandatory=$true)]
+        [parameter(parametersetname='ObjectIdFromThumbprint', position=1, mandatory=$true)]
         $Thumbprint = $null,
 
-        [parameter(parametersetname='AllCertificatesExistingConnection', mandatory=$true)]
+        [parameter(parametersetname='AppIdAllCertificates', mandatory=$true)]
+        [parameter(parametersetname='ObjectIdAllCertificates', mandatory=$true)]
         [switch] $AllCertificates,
 
-        [String] $Version = $null,
-
-        [parameter(parametersetname='FromUniqueIdExistingConnection', mandatory=$true)]
-        [parameter(parametersetname='FromThumbprintExistingConnection', mandatory=$true)]
-        [parameter(parametersetname='AllCertificatesExistingConnection')]
         [PSCustomObject] $Connection = $null
     )
 
@@ -48,43 +48,63 @@ function Remove-GraphApplicationCertificate {
     # in order to process more than one element of the pipeline via $App
 
     begin {
-        throw [NotImplementedException]::new("This method is not yet implemented due to missing functionality in the Graph application API")
-
-        $commandContext = new-so CommandContext $connection $version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+        $commandContext = new-so CommandContext $connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
+        $appToCredentials = @()
     }
 
     process {
         Enable-ScriptClassVerbosePreference
 
-        $keyClientFilter = if ( $AllCertificates.IsPresent ) {
-            { $true }
-        } elseif ( $KeyId ) {
-            { $_.KeyId -eq $KeyId }
-        } elseif ( $Thumbprint ) {
-            { $_.CustomKeyId -eq $Thumbprint }
+        $remainingCredentials = $null
+
+        $targetObjectId = if ( $AppObjectId ) {
+            $AppObjectId
+        } elseif ($AppId ) {
+            $appAPI |=> GetApplicationByAppId $AppId | select -expandproperty id
         } else {
-            throw [ArgumentException]::new("An AppId with Thumbprint or KeyId was not specified or AllCertificates was not specified")
+            throw "Unexpected argument -- an app id or object id must be specified"
         }
 
-        $keyCredentials = $::.ApplicationHelper |=> QueryApplications $AppId $null $null $null $null $commandContext.version $null null $commandContext.connection keyCredentials |
-          select -expandproperty keyCredentials
+        if ( ! $AllCertificates.IsPresent ) {
+            $keyClientFilter = if ( $KeyId ) {
+                { $_.KeyId -eq $KeyId }
+            } elseif ( $Thumbprint ) {
+                { $_.CustomKeyIdentifier -eq $Thumbprint }
+            } else {
+                throw [ArgumentException]::new("An AppId with Thumbprint or KeyId was not specified or AllCertificates was not specified")
+            }
 
-        $keyToRemove = if ( ! $keyCredentials -and ! ($keyCredentials | gm id -erroraction ignore ) ) {
-            throw [ArgumentException]::new("No certificates could be found for AppId '$AppId'")
-        } else {
-            $keyCredentials | where $keyClientFilter
+            $keyCredentials = $::.ApplicationHelper |=> QueryApplications $null $targetObjectId $null $null $null $commandContext.version $null null $commandContext.connection keyCredentials |
+              select -expandproperty keyCredentials
+
+            $keyToRemove = if ( ! $keyCredentials -and ! ($keyCredentials | gm id -erroraction ignore ) ) {
+                throw [ArgumentException]::new("No certificates could be found for AppId '$AppId'")
+            } else {
+                $keyCredentials | where $keyClientFilter
+            }
+
+            if ( ! $keyToRemove ) {
+                throw [ArgumentException]::new("The specified certificate could not be found for AppId '$AppId'")
+            }
+
+            $remainingCredentials = $keyCredentials | where KeyId -notin $keyToRemove.keyId
         }
 
-        if ( ! $keyToRemove ) {
-            throw [ArgumentException]::new("The specified certificate could not be found for AppId '$AppId'")
+        if ( $remainingCredentials -eq $null ) {
+            $remainingCredentials = @()
         }
 
-        $remainingCredentials = $keyCredentials | where KeyId -ne $keyToRemove.keyId
-
-        $appAPI |=> SetKeyCredentials $AppId $remainingCredentials
+        $appToCredentials += @{
+            AppObjectId = $targetObjectId
+            RemainingCredentials = $remainingCredentials
+        }
     }
 
-    end {}
+    end {
+        foreach ( $appCredential in $appToCredentials ) {
+            $appAPI |=> SetKeyCredentials $appCredential.AppObjectId $appCredential.remainingCredentials
+        }
+    }
 }
 
