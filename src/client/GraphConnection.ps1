@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -106,6 +106,12 @@ ScriptClass GraphConnection {
 
     function GetStatus() {
         $this.Status
+    }
+
+    function GetCertificatePath {
+        if ( $this.identity -and $this.identity.app ) {
+            $this.identity.app.secret |=> GetCertificatePath
+        }
     }
 
     function Disconnect {

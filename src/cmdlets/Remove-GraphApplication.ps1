@@ -35,13 +35,13 @@ function Remove-GraphApplication {
     # Note that PowerShell requires us to use the begin / process / end structure here
     # in order to process more than one element of the pipeline via $App
 
-    begin {}
+    begin {
+        $commandContext = new-so CommandContext $connection $version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+        $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
+    }
 
     process {
         Enable-ScriptClassVerbosePreference
-
-        $commandContext = new-so CommandContext $connection $version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
-        $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
         $targetAppDescription = ''
         $appObjectId = $null

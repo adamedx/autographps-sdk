@@ -14,13 +14,16 @@
 
 ScriptClass CertificateHelper {
     static {
-        function GetCertificateFromFile([string] $certificatePath, [bool] $private, [PSCredential] $certPassword) {
-            if ( $certificatePath -notlike '*.pfx' -and $certificatePath -notlike '*.pem' -and $private ) {
-                throw "A certificate with private data is required, but the specified certificate path '$certificatePath' is not a '.pfx' or '.pem' file"
+        function GetCertificateFromFile([string] $certificatePath, [bool] $private, [SecureString] $certPassword) {
+            if ( $certificatePath -notlike '*.pfx' -and $certificatePath -and $private ) {
+                write-warning "A certificate with private data is required, but the specified certificate path '$certificatePath' is not a '.pfx' or '.pfx' file"
             }
 
             if ( $certPassword ) {
-                [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($certificatePath, $certPassword)
+                $pscred = new-object PSCredential '.', $certPassword
+                $decryptedPassword = $pscred.GetNetworkCredential().Password
+
+                [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($certificatePath, $decryptedPassword)
             } else {
                 [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($certificatePath)
             }
@@ -50,7 +53,7 @@ ScriptClass CertificateHelper {
                 $certificatePath
             }
 
-            $isCertStorePath = ( split-path -qualifier $targetPath ) -eq 'cert:'
+            $isCertStorePath = IsCertStorePath $targetPath
 
             if ( $isCertStorePath -and [System.Environment]::OSversion.Platform -ne 'Win32NT' ) {
                 throw [ArgumentException]::new("The Windows certificate store path '$targetPath' is only valid on the Windows platform, and this session is hosted on the $($[System.Environment]::OSVersion.Platform). Instead, specify a path to a certificate file stored in the file system which is supported on all platforms.")
@@ -63,7 +66,7 @@ ScriptClass CertificateHelper {
             get-item $targetPath
         }
 
-        function GetCertificateFromPath([string] $certificatePath, [string] $certStoreLocation, [bool] $private, [PSCredential] $certPassword) {
+        function GetCertificateFromPath([string] $certificatePath, [string] $certStoreLocation, [bool] $private, [SecureString] $certPassword) {
             $targetItem = GetCertificateItemFromPath $certificatePath $certStoreLocation
 
             if ( $targetItem -is [System.Security.Cryptography.X509Certificates.X509Certificate2] ) {
@@ -71,6 +74,36 @@ ScriptClass CertificateHelper {
             } else {
                 GetCertificateFromFile $targetItem.FullName $private $certPassword
             }
+        }
+
+        function PromptForCertificateCredential($certificatePath, $promptMessage, $userName) {
+            if ( ! ( IsCertStorePath $certificatePath ) ) {
+                $targetUser = if ( $userName ) {
+                    $userName
+                } else {
+                    if ( $env:user ) {
+                        $env:user
+                    } elseif ( $env:username ) {
+                        $env:username
+                    } elseif ( $env:USER ) {
+                        $env:USER
+                    } else {
+                        'User'
+                    }
+                }
+
+                $targetPromptMessage = if ( $promptMessage ) {
+                    $promptMessage
+                } else {
+                    "Enter the password for the certificate at '$certificatePath' or enter nothing if there is no password"
+                }
+
+                Get-Credential -username $targetUser -Message $targetPromptMessage
+            }
+        }
+
+        function IsCertStorePath($certificatePath) {
+            $isCertStorePath = ( split-path -qualifier $certificatePath ) -eq 'cert:'
         }
     }
 }

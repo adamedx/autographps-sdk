@@ -246,7 +246,17 @@ ScriptClass GraphIdentity {
         }
 
         if ( ! $tenantId ) {
-            $tenantId = $parsedTenantId
+            if ( $parsedTenantId ) {
+                $tenantId = $parsedTenantId
+            } else {
+                # Last resort is to hope that the tenant name is actually
+                # the same as the tenant id -- this is quite often the case
+                $tenantGuid = (new-guid).guid
+                $isTenantNameGuid = [guid]::TryParse($tenantName, [ref] $tenantGuid)
+                if ( $isTenantNameGuid ) {
+                    $tenantId = $tenantGuid
+                }
+            }
         }
 
         $this.tenantDisplayId = $tenantId

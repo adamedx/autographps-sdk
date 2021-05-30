@@ -62,9 +62,9 @@ ScriptClass GraphApplicationCertificate {
             }
         }
 
-        function LoadFrom($appId, $objectId, [string] $certificatePath) {
-            $certificate = new-so GraphApplicationCertificate $appId $objectId $null $null $null $null $certificatePath
-            $certificate |=> __Load
+        function LoadFrom($appId, $objectId, [string] $certificatePath, [string] $certStoreLocation, [PSCredential] $certCredential) {
+            $certificate = new-so GraphApplicationCertificate $appId $objectId $null $null $null $certStoreLocation $certificatePath
+            $certificate |=> __Load $certCredential
             $certificate
         }
 
@@ -146,7 +146,7 @@ ScriptClass GraphApplicationCertificate {
         $destination = join-path $outputDirectory "GraphApp-$($this.appid).pfx"
 
         if ( test-path $destination ) {
-            throw [ArgumentError]::new("An exported certificate for appid '$($this.appid)' already exists at the specified Directory location '$outputDirectory'")
+            throw [ArgumentException]::new("An exported certificate for appid '$($this.appid)' already exists at the specified Directory location '$outputDirectory'")
         }
 
         $content = if ( $certPassword ) {
@@ -156,14 +156,20 @@ ScriptClass GraphApplicationCertificate {
         }
 
         $content | Set-Content -Encoding byte $destination
+
+        $destination
     }
 
-    function __Load {
+    function __Load([PSCredential] $certCredential) {
         if ( $this.X509Certificate ) {
             throw "The certificate has already been loaded from path '$($this.certificateFilePath)'"
         }
 
-        $certificateObject = $::.CertificateHelper |=> GetCertificateFromPath $this.certificateFilePath
+        $certPassword = if ( $certCredential ) {
+            $certCredential.Password
+        }
+
+        $certificateObject = $::.CertificateHelper |=> GetCertificateFromPath $this.certificateFilePath $null $false $certPassword
         $displayName = $certificateObject.FriendlyName
 
         $validityTimeSpan = $certificateObject.NotAfter - $certificateObject.NotBefore

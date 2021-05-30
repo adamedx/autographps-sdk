@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../graphservice/ApplicationAPI)
-. (import-script ../common/GraphApplicationCertificate)
-. (import-script common/CommandContext)
+. (import-script common/ApplicationCertificate)
 
 function New-GraphApplicationCertificate {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='high', positionalbinding=$false)]
     param(
-        [parameter(parametersetname='appid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
-        [parameter(parametersetname='appidexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='app', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='appexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='appid', mandatory=$true)]
+        [parameter(position=0, parametersetname='appidexport', mandatory=$true)]
         [Guid] $AppId,
 
         [parameter(position=1)]
@@ -28,77 +28,47 @@ function New-GraphApplicationCertificate {
 
         [DateTime] $CertValidityStart,
 
+        # Note that since this creates a new certificate, we want to ensure that only app objects are piped in,
+        # not certificate objects -- those do not have an objectid property, so we make the objectid mandatory
+        [parameter(parametersetname='app', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='appexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='objectid', mandatory=$true)]
-        [parameter(parametersetname='objectidexport', mandatory=$true)]
+        [parameter(parametersetname='objectidexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('Id')]
         [Guid] $ObjectId,
 
         $CertStoreLocation = 'cert:/currentuser/my',
 
+        [parameter(parametersetname='appexport', mandatory=$true)]
         [parameter(parametersetname='appidexport', mandatory=$true)]
         [parameter(parametersetname='objectidexport', mandatory=$true)]
         [string] $CertOutputDirectory,
 
+        [parameter(parametersetname='appexport')]
         [parameter(parametersetname='appidexport')]
         [parameter(parametersetname='objectidexport')]
         [PSCredential] $CertCredential,
 
+        [parameter(parametersetname='appexport')]
         [parameter(parametersetname='appidexport')]
         [parameter(parametersetname='objectidexport')]
         [switch] $NoCertCredential,
 
-        [PSCustomObject] $Connection = $null,
+        [switch] $AsX509Certificate,
 
-        [switch] $SkipApplicationUpdate
+        [PSCustomObject] $Connection = $null
     )
     Enable-ScriptClassVerbosePreference
 
-    $exportedCertCredential = if ( $CertOutputDirectory ) {
-        if (! (test-path -pathtype container $CertOutputDirectory) ) {
-            throw [ArgumentException]::new("The CertOutputDirectory parameter value '$CertOutputDirectory' is not a valid directory")
-        }
+    $appCert = new-so ApplicationCertificate $AppId $ObjectId $null $CertValidityTimespan $CertValidityStart
 
-        if ( $CertCredential ) {
-            $CertCredential
-        } elseif ( ! $NoCertCredential.IsPresent ) {
-            $userName = if ( $env:user ) { $env:user } else { $env:username }
-            Get-Credential -username $userName -Message "Enter password for certificate to be stored in output directory '$CertOutputDirectory'"
-        }
-    }
+    $certificateResult = $appCert |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $true
+    $X509Certificate = $certificateResult.Certificate.X509Certificate
 
-    $targetObjectId = $ObjectId
-
-    $commandContext = new-so CommandContext $connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
-
-    $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
-
-    $targetApp = if( $AppId ) {
-        $appAPI |=> GetApplicationByAppId $AppId
+    if ( ! $AsX509Certificate.IsPresent ) {
+        $::.ApplicationCertificate |=> CertificateToDisplayableObject $X509Certificate $appCert.appId $appCert.objectId $certificateResult.ExportedLocation
     } else {
-        $appAPI |=> GetApplicationByObjectId $ObjectId
+        $X509Certificate
     }
-
-    if ( ! $pscmdlet.shouldprocess("Application id=$($targetApp.AppId)", 'DESTRUCTIVE overwrite of existing certificates due to current defects in the Graph API') ) {
-        return
-    }
-
-    $certificate = new-so GraphApplicationCertificate $targetApp.AppId $ObjectId $targetApp.displayName $CertValidityTimeSpan $CertValidityStart $CertStoreLocation
-    $certificate |=> Create
-
-    try {
-        $appAPI |=> AddKeyCredentials $targetApp $certificate | out-null
-    } catch {
-        $certificate.X509Certificate | remove-item
-        throw
-    }
-
-    if ( $CertOutputDirectory ) {
-        $certpassword = if ( $CertCredential ) {
-            $CertCredential.Password
-        }
-
-        $certificate |=> Export $CertOutputDirectory $certPassword
-    }
-
-    $certificate.X509Certificate
 }
 

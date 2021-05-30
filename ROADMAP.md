@@ -2,11 +2,16 @@
 
 ## To-do items -- prioritized
 
+* Make GraphConnectionStatus commands not return connection info :(
+* Add Select-GraphConnection
+* Add thumbprint option to Set-GraphApplicationCertificate
+* Add CertificatePath option to New-GraphLocalCertificate and New-GraphApplicationCertificate
+* Fix Get-GraphError to just use the log
+* Disable auto-cert generation for apps, make it opt-in Linux
 * Add formatting to Get-GraphApplicationCertificate
 * Make app operations default to objectid for efficiency
 * Formatting for get-graphapplicationcertificate
 * Formatting for application
-* Add file output to new-graphlocalcertificate
 * Change size in Get-GraphLog to ResponseContentSize field
 * Add Remove-GraphApplicationCertificate
 * Add formatting for get-graphapplicationserviceprincipal
@@ -16,7 +21,6 @@
 * Adaptive progress meter?
 * View for graph application
 * Should add Add-GraphApplicationCertificate
-* Should add Remove-GraphApplicationCertificate
 * Should implement certificate update using addkey / removekey: https://docs.microsoft.com/en-us/graph/api/application-addkey?view=graph-rest-1.0&tabs=http
 * Remove use of New-GraphConnection from within static methods and replace with internal version that is still mockable.
 * Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
@@ -408,6 +412,8 @@
 * Swap method and size fields in get-graphlog default view?
 * Add alias for get-graphconnectioninfo
 * Add Set-GraphApplicationCertificate
+* Add file output to new-graphlocalcertificate
+* Should add Remove-GraphApplicationCertificate
 
 ### Postponed
 

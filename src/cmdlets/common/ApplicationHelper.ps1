@@ -30,11 +30,12 @@ ScriptClass ApplicationHelper {
             $this.appFormatter |=> DeserializedGraphObjectToDisplayableObject $object
         }
 
-        function KeyCredentialToDisplayableObject($object, $appId) {
+        function KeyCredentialToDisplayableObject($object, $appId, $appObjectId) {
             $notAfter = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.endDateTime $true
             $notBefore = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.startDateTime $true
 
             $remappedObject = [PSCustomObject] @{
+                AppObjectId = $appObjectId
                 AppId = $appId
                 KeyId = $object.KeyId
                 Thumbprint = $object.customKeyIdentifier
@@ -45,6 +46,36 @@ ScriptClass ApplicationHelper {
             }
 
             $this.keyFormatter |=> DeserializedGraphObjectToDisplayableObject $remappedObject
+        }
+
+        function CertificateToDisplayableObject($x509Certificate, $appId, $appObjectId, $certificateFilePath) {
+            $notAfter = [DateTimeOffset]::new($x509Certificate.notAfter)
+            $notBefore = [DateTimeOffset]::new($x509Certificate.notBefore)
+
+            $targetPath = if ( $certificateFilePath ) {
+                $certificateFilePath
+            } else {
+                $certStorePath = $x509Certificate.PSPath -split '::'
+                $components = $certStorePath -split '::'
+                $componentCount = ( $components | measure-object ).count
+                if ( $componentCount -gt 1) {
+                    join-path 'cert:' ( $components[1..($componentCount - 1)] -join ( [System.IO.Path]::DirectorySeparatorChar ) )
+                } else {
+                    $cerStorePath
+                }
+            }
+
+            $remappedObject = [PSCustomObject] @{
+                AppObjectId = $appObjectId
+                AppId = $appId
+                Thumbprint = $x509Certificate.Thumbprint
+                NotAfter = $notAfter
+                NotBefore = $notBefore
+                FriendlyName = $x509Certificate.FriendlyName
+                CertificatePath = $targetPath
+            }
+
+            $this.certFormatter |=> DeserializedGraphObjectToDisplayableObject $remappedObject
         }
 
         function QueryApplications($appId, $objectId, $odataFilter, $name, [object] $rawContent, $version, $permissions, $cloud, $connection, $select, $queryMethod, $first, $skip, [bool] $all) {
@@ -72,11 +103,10 @@ ScriptClass ApplicationHelper {
                 '*'
             }
 
-            $requestArguments = @{
-                RawContent = $rawContent
-                Filter = $filter
-                Permissions = $permissions
-                Select = $targetSelect
+            $requestArguments = @{}
+
+            'RawContent', 'Filter', 'Permissions', 'Select' | where { (get-variable $_ -value ) -ne $null } | foreach {
+                $requestArguments.Add($_, (get-variable $_ -value))
             }
 
             if ( $connection ) {

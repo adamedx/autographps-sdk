@@ -184,6 +184,7 @@ AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphCont
         '.\src\cmdlets\Set-GraphLogOption.ps1'
         '.\src\cmdlets\Test-Graph.ps1'
         '.\src\cmdlets\Unregister-GraphApplication.ps1'
+        '.\src\cmdlets\common\ApplicationCertificate.ps1'
         '.\src\cmdlets\common\ApplicationHelper.ps1'
         '.\src\cmdlets\common\CommandContext.ps1'
         '.\src\cmdlets\common\ConsentHelper.ps1'
