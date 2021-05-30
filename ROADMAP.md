@@ -7,7 +7,6 @@
 * Add thumbprint option to Set-GraphApplicationCertificate
 * Add CertificatePath option to New-GraphLocalCertificate and New-GraphApplicationCertificate
 * Fix Get-GraphError to just use the log
-* Disable auto-cert generation for apps, make it opt-in Linux
 * Add formatting to Get-GraphApplicationCertificate
 * Make app operations default to objectid for efficiency
 * Formatting for get-graphapplicationcertificate
@@ -414,6 +413,7 @@
 * Add Set-GraphApplicationCertificate
 * Add file output to new-graphlocalcertificate
 * Should add Remove-GraphApplicationCertificate
+* Disable auto-cert generation for apps, make it opt-in everywhere (not just Linux) and add warnings
 
 ### Postponed
 

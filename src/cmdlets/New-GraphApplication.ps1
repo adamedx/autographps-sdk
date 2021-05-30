@@ -37,6 +37,7 @@ function New-GraphApplication {
         [String[]] $ApplicationPermissions,
 
         [parameter(parametersetname='confidentialapp', mandatory=$true)]
+        [parameter(parametersetname='confidentialappnewcert', mandatory=$true)]
         [parameter(parametersetname='confidentialappnewcertexport', mandatory=$true)]
         [parameter(parametersetname='confidentialappexistingcert', mandatory=$true)]
         [switch] $Confidential,
@@ -44,8 +45,12 @@ function New-GraphApplication {
         [parameter(parametersetname='publicapp')]
         [switch] $AllowMSAAccounts,
 
+        [parameter(parametersetname='confidentialappnewcert', mandatory=$true)]
+        [parameter(parametersetname='confidentialappnewcertexport', mandatory=$true)]
+        [switch] $NewCredential,
+
         [parameter(parametersetname='confidentialapp')]
-        [switch] $NoCredential,
+        [switch] $SuppressCredentialWarning,
 
         [switch] $ConsentForAllUsers,
 
@@ -93,6 +98,10 @@ function New-GraphApplication {
         }
     }
 
+    if ( $NewCredential.IsPresent ) {
+        $::.LocalCertificate |=> ValidateCertificateCreationCapability
+    }
+
     $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
 
     $::.ScopeHelper |=> ValidatePermissions $ApplicationPermissions $true $SkipPermissionNameCheck.IsPresent $commandContext.connection
@@ -113,25 +122,29 @@ function New-GraphApplication {
 
     $newApp = $newAppRegistration |=> CreateNewApp
 
-    if ( $Confidential.IsPresent -and ! $NoCredential.IsPresent ) {
-        $newCertificateParameters = @{
-            AppId = $newApp.appId
-            ObjectId = $newApp.Id
-        }
-
-        'CertCredential', 'CertValidityTimeSpan', 'CertValidityStart', 'CertStoreLocation', 'CertOutputDirectory', 'NoCertCredential' | foreach {
-            $parameterValue = $PSBoundParameters[$_]
-            if ( $parameterValue -ne $null ) {
-                $newCertificateParameters.Add($_, $parameterValue)
+    if ( $Confidential.IsPresent ) {
+        if ( $NewCredential.IsPresent ) {
+            $newCertificateParameters = @{
+                AppId = $newApp.appId
+                ObjectId = $newApp.Id
             }
-        }
 
-        $certificate = try {
-            New-GraphApplicationCertificate @newCertificateParameters
-        } catch {
-            $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | remove-item -erroraction ignore
-            $appAPI |=> RemoveApplicationByObjectId $newApp.Id ignore
-            throw
+            'CertCredential', 'CertValidityTimeSpan', 'CertValidityStart', 'CertStoreLocation', 'CertOutputDirectory', 'NoCertCredential' | foreach {
+                $parameterValue = $PSBoundParameters[$_]
+                if ( $parameterValue -ne $null ) {
+                    $newCertificateParameters.Add($_, $parameterValue)
+                }
+            }
+
+            $certificate = try {
+                New-GraphApplicationCertificate @newCertificateParameters
+            } catch {
+                $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | remove-item -erroraction ignore
+                $appAPI |=> RemoveApplicationByObjectId $newApp.Id ignore
+                throw
+            }
+        } elseif ( ! $SuppressCredentialWarning.IsPresent ) {
+            write-warning "The 'NewCredential' parameter was not specified to the New-GraphApplication command, so this Confidential application cannot sign in until you use issue a subsequent command such as New-GraphApplicationCertificate, Set-GraphApplicationCertificate, or some other method of configuring this application's sign in credential. You can use the 'SuppressCredentialWarning' parameter of New-GraphApplication to silence this warning message."
         }
     }
 
