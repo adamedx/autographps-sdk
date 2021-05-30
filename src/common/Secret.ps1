@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script CertificateHelper)
+. (import-script LocalCertificate)
 
 enum SecretType {
     Certificate
@@ -38,7 +38,7 @@ ScriptClass Secret {
             $certificate = if ( $secret -is [System.Security.Cryptography.X509Certificates.X509Certificate2] ) {
                 $secret
             } elseif ( $secret -is [string] ) {
-                $certItem = $::.CertificateHelper |=> GetCertificateItemFromPath $secret 'Cert:\CurrentUser\my'
+                $certItem = $::.LocalCertificate |=> GetCertificateItemFromPath $secret 'Cert:\CurrentUser\my'
 
                 if ( $certItem -is [System.Security.Cryptography.X509Certificates.X509Certificate2] ) {
                     $certItem
@@ -69,7 +69,7 @@ ScriptClass Secret {
         switch ( $this.type ) {
             ([SecretType]::Certificate) {
                 if ( ! $this.data -and $this.certificateFilePath ) {
-                    $this.data = $::.CertificateHelper |=> GetCertificateFromPath $this.certificateFilePath $null $true $secretPassword
+                    $this.data = $::.LocalCertificate |=> GetCertificateFromPath $this.certificateFilePath $null $true $secretPassword
                 }
 
                 $this.data

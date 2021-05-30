@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script CertificateHelper)
+. (import-script LocalCertificate)
 
 ScriptClass GraphApplicationCertificate {
 
@@ -135,11 +135,11 @@ ScriptClass GraphApplicationCertificate {
     }
 
     function GetEncodedPublicCertificateData {
-        $::.CertificateHelper |=> GetEncodedPublicCertificateData $this.X509Certificate
+        $::.LocalCertificate |=> GetEncodedPublicCertificateData $this.X509Certificate
     }
 
     function GetEncodedCertificateThumbprint {
-        $::.CertificateHelper |=> GetEncodedCertificateThumbprint $this.X509Certificate
+        $::.LocalCertificate |=> GetEncodedCertificateThumbprint $this.X509Certificate
     }
 
     function Export($outputDirectory, [SecureString] $certPassword) {
@@ -169,7 +169,7 @@ ScriptClass GraphApplicationCertificate {
             $certCredential.Password
         }
 
-        $certificateObject = $::.CertificateHelper |=> GetCertificateFromPath $this.certificateFilePath $null $false $certPassword
+        $certificateObject = $::.LocalCertificate |=> GetCertificateFromPath $this.certificateFilePath $null $false $certPassword
         $displayName = $certificateObject.FriendlyName
 
         $validityTimeSpan = $certificateObject.NotAfter - $certificateObject.NotBefore

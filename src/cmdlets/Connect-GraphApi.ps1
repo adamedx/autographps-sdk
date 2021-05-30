@@ -18,7 +18,7 @@
 . (import-script New-GraphConnection)
 . (import-script common/DynamicParamHelper)
 . (import-script ../common/ScopeHelper)
-. (import-script common/ApplicationCertificate)
+. (import-script common/CertificateHelper)
 . (import-script common/PermissionParameterCompleter)
 
 function Connect-GraphApi {
@@ -210,7 +210,7 @@ function Connect-GraphApi {
 
             $::.GraphContext |=> SetCurrentByName $newContext.name
 
-            $certificatePassword = $::.ApplicationCertificate |=> GetConnectionCertCredential $targetConnection $CertCredential $PromptForCertCredential.IsPresent $NoCertCredential.IsPresent
+            $certificatePassword = $::.CertificateHelper |=> GetConnectionCertCredential $targetConnection $CertCredential $PromptForCertCredential.IsPresent $NoCertCredential.IsPresent
 
             $targetConnection |=> Connect $certificatePassword
 
@@ -259,7 +259,7 @@ function Connect-GraphApi {
                 }
             }
 
-            $certificatePassword = $::.ApplicationCertificate |=> GetConnectionCertCredential $newConnection $CertCredential $PromptForCertCredential.IsPresent $NoCertCredential.IsPresent
+            $certificatePassword = $::.CertificateHelper |=> GetConnectionCertCredential $newConnection $CertCredential $PromptForCertCredential.IsPresent $NoCertCredential.IsPresent
 
             $context |=> UpdateConnection $newConnection $certificatePassword
             $newConnection

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 . (import-script ../graphservice/ApplicationAPI)
-. (import-script ../common/CertificateHelper)
+. (import-script ../common/LocalCertificate)
 . (import-script common/CommandContext)
 
 function Set-GraphApplicationCertificate {
@@ -93,7 +93,7 @@ function Set-GraphApplicationCertificate {
                         $CertCredential
                     }
                 } elseif ( $PromptForCertCredential.IsPresent ) {
-                    $::.CertificateHelper |=> PromptForCertificateCredential $certificatePathElement
+                    $::.LocalCertificate |=> PromptForCertificateCredential $certificatePathElement
                 }
 
                 $::.GraphApplicationCertificate |=> LoadFrom $targetAppId $targetObjectId $certificatePathElement $null $targetCertCredential
