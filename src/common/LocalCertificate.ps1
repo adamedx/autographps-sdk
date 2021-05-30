@@ -105,5 +105,11 @@ ScriptClass LocalCertificate {
         function IsCertStorePath($certificatePath) {
             $isCertStorePath = ( split-path -qualifier $certificatePath ) -eq 'cert:'
         }
+
+        function ValidateCertificateCreationCapability {
+            if ( ! ( get-command New-SelfSignedCertificate -erroraction ignore ) ) {
+                throw "The platform does not support the New-SelfSignedCertificate command used to create certificates. Use a platform supported method to create a certificate such as the 'openssl' command if it is available and retry this operation specifying the path to the created certificate. Alternatively, execute this operation on the Windows platform which is known to support the New-SelfSignedCertificate command."
+            }
+        }
     }
 }

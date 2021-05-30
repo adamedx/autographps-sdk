@@ -98,6 +98,7 @@ ScriptClass GraphApplicationCertificate {
     }
 
     function Create {
+        $::.LocalCertificate |=> ValidateCertificateCreationCapability
 
         if ( $this.certificateFilePath ) {
             throw "The certificate cannot be created because it was already loaded from the file '$($this.certificateFilePath)'"
@@ -127,9 +128,6 @@ ScriptClass GraphApplicationCertificate {
         $notAfter = $notBefore + $validityTimeSpan
 
         write-verbose "Creating certificate with subject '$subject'"
-        if ( ! ( get-command New-SelfSignedCertificate -erroraction ignore ) ) {
-            throw "The platform does not support the New-SelfSignedCertificate command used to create certificates. Use a platform supported method to create a certificate such as the 'openssl' command if it is available and retry this operation specifying the path to the created certificate."
-        }
 
         $this.X509Certificate = New-SelfSignedCertificate -Subject $subject -friendlyname $description -provider 'Microsoft Enhanced RSA and AES Cryptographic Provider' -CertStoreLocation $certStoreDestination -NotBefore $notBefore -NotAfter $notAfter
     }

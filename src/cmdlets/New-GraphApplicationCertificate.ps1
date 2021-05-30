@@ -60,6 +60,8 @@ function New-GraphApplicationCertificate {
     )
     Enable-ScriptClassVerbosePreference
 
+    $::.LocalCertificate |=> ValidateCertificateCreationCapability
+
     $certHelper = new-so CertificateHelper $AppId $ObjectId $null $CertValidityTimespan $CertValidityStart
 
     $certificateResult = $certHelper |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $true
