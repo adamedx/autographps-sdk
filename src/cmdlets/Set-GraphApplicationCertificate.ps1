@@ -30,8 +30,8 @@ function Set-GraphApplicationCertificate {
         [Alias('Id')]
         [Guid] $ObjectId,
 
-        [parameter(position=1, parametersetname='appid', mandatory=$true)]
-        [parameter(position=1, parametersetname='objectid', mandatory=$true)]
+        [parameter(position=1, parametersetname='appid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=1, parametersetname='objectid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [string[]] $CertificatePath,
 
         [parameter(position=2)]

@@ -203,7 +203,7 @@ function Connect-GraphApi {
             $context.Connection
         }
 
-        $connectionResult = if ( $targetConnection ) {
+        if ( $targetConnection ) {
             write-verbose "Explicit connection was specified"
 
             $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $targetConnection
@@ -264,8 +264,6 @@ function Connect-GraphApi {
             $context |=> UpdateConnection $newConnection $certificatePassword
             $newConnection
         }
-
-        $::.GraphConnection |=> ToConnectionInfo $connectionResult
     }
 }
 

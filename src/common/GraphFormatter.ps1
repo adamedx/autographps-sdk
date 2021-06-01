@@ -31,7 +31,10 @@ ScriptClass GraphFormatter {
                     'REST-Method-PATCH'
                     'Time-Elapsed-Normal'
                     'Time-Elapsed-Slow'
-                    'Time-Elapsed-ExtraSlow'
+                    'Time-Elapsed-ExtraSlow',
+                    'Resource-TimeWindow-Expired',
+                    'Resource-TimeWindow-NotYetActive',
+                    'Resource-TimeWindow-Valid'
                 ),
                 'autographps-sdk'
             )
@@ -51,6 +54,9 @@ ScriptClass GraphFormatter {
                     'Time-Elapsed-Normal' = 10
                     'Time-Elapsed-Slow' = 11
                     'Time-Elapsed-ExtraSlow' = 9
+                    'Resource-TimeWindow-Expired' = 9
+                    'Resource-TimeWindow-NotYetActive' = 1
+                    'Resource-TimeWindow-Valid' = 10
                 }
             }
 
@@ -109,6 +115,17 @@ ScriptClass GraphFormatter {
                 'Time-Elapsed-ExtraSlow'
             }
             $::.ColorString.ToStandardColorString($elapsed.ToString(), 'Scheme', $colorName, $null, $null)
+        }
+
+        function ResourceInTimeWindow($resourceTime, $windowStart, $windowEnd) {
+            $colorName = if ( $windowStart -and $resourceTime -lt $windowStart ) {
+                'Resource-TimeWindow-NotYetActive'
+            } elseif ( $windowEnd -and $resourceTime -gt $windowEnd ) {
+                'Resource-TimeWindow-Expired'
+            } else {
+                'Resource-TimeWindow-Valid'
+            }
+            $::.ColorString.ToStandardColorString($resourceTime.ToString(), 'Scheme', $colorName, $null, $null)
         }
     }
 }

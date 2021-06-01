@@ -15,6 +15,7 @@
 . (import-script DisplayTypeFormatter)
 . (import-script ../../graphservice/ApplicationAPI)
 . (import-script ../../common/LocalCertificate)
+. (import-script ../../common/Secret)
 . (import-script ../../common/GraphApplicationCertificate)
 . (import-script CommandContext)
 . (import-script ../Set-GraphApplicationCertificate)
@@ -140,13 +141,18 @@ ScriptClass CertificateHelper {
     }
 
     static {
-        $certFormatter = $null
+        const CERTIFICATE_DISPLAY_TYPE 'AutoGraph.Certificate'
 
         function __initialize {
-            $this.certFormatter = new-so DisplayTypeFormatter GraphAppCertDisplayType 'Thumbprint', 'NotAfter', 'AppId', 'CertificatePath'
+            __RegisterDisplayType
         }
 
-        function CertificateToDisplayableObject($x509Certificate, $appId, $appObjectId, $certificateFilePath) {
+
+        function CertificateInfoToDisplayableObject($friendlyName, $subject, $graphKeyId, $appId, $appObjectId, $notBefore, $notAfter, $thumbprint, $certificatePath) {
+            $::.Secret |=> ToDisplayableSecretInfo Certificate $friendlyName $subject $graphKeyId $appId $appObjectId $notBefore $notAfter $thumbprint $certificatePath $CERTIFICATE_DISPLAY_TYPE
+        }
+
+        function CertificateToDisplayableObject($x509Certificate, $appId, $appObjectId, $certificateFilePath, $keyId) {
             $notAfter = [DateTimeOffset]::new($x509Certificate.notAfter)
             $notBefore = [DateTimeOffset]::new($x509Certificate.notBefore)
 
@@ -159,21 +165,11 @@ ScriptClass CertificateHelper {
                 if ( $componentCount -gt 1) {
                     join-path 'cert:' ( $components[1..($componentCount - 1)] -join ( [System.IO.Path]::DirectorySeparatorChar ) )
                 } else {
-                    $cerStorePath
+                    $certStorePath
                 }
             }
 
-            $remappedObject = [PSCustomObject] @{
-                AppObjectId = $appObjectId
-                AppId = $appId
-                Thumbprint = $x509Certificate.Thumbprint
-                NotAfter = $notAfter
-                NotBefore = $notBefore
-                FriendlyName = $x509Certificate.FriendlyName
-                CertificatePath = $targetPath
-            }
-
-            $this.certFormatter |=> DeserializedGraphObjectToDisplayableObject $remappedObject
+            CertificateInfoToDisplayableObject $x509Certificate.FriendlyName $x509Certificate.Subject $null $appId $appObjectId $notBefore $notAfter $x509Certificate.Thumbprint $targetPath
         }
 
         function GetConnectionCertCredential($connection, [PSCredential] $certCredential, [boolean] $promptForCertCredentialIfNeeded, [boolean] $noCertCredential) {
@@ -187,6 +183,24 @@ ScriptClass CertificateHelper {
                 }
                 $targetCertCredential.Password
             }
+        }
+
+        function __RegisterDisplayType {
+            $typeProperties = @(
+                'Thumbprint'
+                'AppId'
+                'KeyId'
+                'FriendlyName'
+                'Subject'
+                'NotAfter'
+                'AppId'
+                'KeyId'
+                'CertificatePath'
+                'NotBefore'
+                'AppObjectId'
+            )
+
+            $::.DisplayTypeFormatter |=> RegisterDisplayType $CERTIFICATE_DISPLAY_TYPE $typeProperties $true
         }
     }
 }

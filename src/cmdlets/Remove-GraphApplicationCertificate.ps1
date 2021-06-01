@@ -44,13 +44,10 @@ function Remove-GraphApplicationCertificate {
         [PSCustomObject] $Connection = $null
     )
 
-    # Note that PowerShell requires us to use the begin / process / end structure here
-    # in order to process more than one element of the pipeline via $App
-
     begin {
         $commandContext = new-so CommandContext $connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
-        $appToCredentials = @()
+        $appToCredentials = @{}
     }
 
     process {
@@ -66,44 +63,72 @@ function Remove-GraphApplicationCertificate {
             throw "Unexpected argument -- an app id or object id must be specified"
         }
 
-        if ( ! $AllCertificates.IsPresent ) {
-            $keyClientFilter = if ( $KeyId ) {
-                { $_.KeyId -eq $KeyId }
-            } elseif ( $Thumbprint ) {
-                { $_.CustomKeyIdentifier -eq $Thumbprint }
-            } else {
-                throw [ArgumentException]::new("An AppId with Thumbprint or KeyId was not specified or AllCertificates was not specified")
-            }
-
-            $keyCredentials = $::.ApplicationHelper |=> QueryApplications $null $targetObjectId $null $null $null $commandContext.version $null null $commandContext.connection keyCredentials |
-              select -expandproperty keyCredentials
-
-            $keyToRemove = if ( ! $keyCredentials -and ! ($keyCredentials | gm id -erroraction ignore ) ) {
-                throw [ArgumentException]::new("No certificates could be found for AppId '$AppId'")
-            } else {
-                $keyCredentials | where $keyClientFilter
-            }
-
-            if ( ! $keyToRemove ) {
-                throw [ArgumentException]::new("The specified certificate could not be found for AppId '$AppId'")
-            }
-
-            $remainingCredentials = $keyCredentials | where KeyId -notin $keyToRemove.keyId
+        $keyClientFilter = if ( $AllCertificates.IsPresent ) {
+            { $true }
+        } elseif ( $KeyId ) {
+            { $_.KeyId -eq $KeyId }
+        } elseif ( $Thumbprint ) {
+            { $_.CustomKeyIdentifier -eq $Thumbprint }
+        } else {
+            throw [ArgumentException]::new("An AppId with Thumbprint or KeyId was not specified or AllCertificates was not specified")
         }
+
+        # This returns ALL credentials, not just certificates. If it didn't, the naive API used to add certificates
+        # (or just replace only the certs and leave other credential types alone) would remove anything that wasn't
+        # a certificate.
+        $keyCredentials = $::.ApplicationHelper |=> QueryApplications $null $targetObjectId $null $null $null $commandContext.version $null null $commandContext.connection keyCredentials |
+          select -expandproperty keyCredentials
+
+        $certToRemove = if ( ! $keyCredentials -and ! ($keyCredentials | gm id -erroraction ignore ) ) {
+            throw [ArgumentException]::new("No certificates could be found for application with object identifier '$targetObjectId'")
+        } else {
+            # Limit the removal to only the certificates with a filter on credential type
+            $keyCredentials | where $keyClientFilter | where type -eq 'AsymmetricX509Cert'
+        }
+
+        if ( ! $certToRemove ) {
+            throw [ArgumentException]::new("The specified certificate could not be found for the application with object identifier '$targetObjectId'")
+        }
+
+        # Excise the certs to be removed from the set of all credentials -- this leaves
+        # all the non-certificates and any certificates not targeted by this command
+        $remainingCredentials = $keyCredentials | where KeyId -notin $certToRemove.keyId
+
+        # Now group all the apps together with a dictionary to avoid duplicates.
+        # Within each app's dictionary entry, include all the remaining credentials
+        # within a nested hash table that again prevents duplicates. Duplicates can happen
+        # when the same application is specified in the pipeline with a different cert, quite
+        # possibly due to a certificate object being supplied to the command with the parameters
+        # for the application's object id and key id being bound as parameters for instance.
 
         if ( $remainingCredentials -eq $null ) {
             $remainingCredentials = @()
         }
 
-        $appToCredentials += @{
-            AppObjectId = $targetObjectId
-            RemainingCredentials = $remainingCredentials
+        $newApp = $false
+        $currentAppCredentials = $appToCredentials[$targetObjectId]
+
+        if ( ! $currentAppCredentials ) {
+            $newApp = $true
+            $currentAppCredentials = @{
+                AppObjectId = $targetObjectId
+                RemainingCredentials = @{}
+            }
+        }
+
+        foreach ( $remainingCert in $remainingCredentials ) {
+            $currentAppCredentials.RemainingCredentials[$remainingCert.KeyId] = $remainingCert
+        }
+
+        if ( $newApp ) {
+            $appToCredentials[$targetObjectId] = $currentAppCredentials
         }
     }
 
     end {
-        foreach ( $appCredential in $appToCredentials ) {
-            $appAPI |=> SetKeyCredentials $appCredential.AppObjectId $appCredential.remainingCredentials
+        # Now for each app, update the credentials according to the remaining credentials
+        foreach ( $appCredentials in $appToCredentials.Values ) {
+            $appAPI |=> SetKeyCredentials $appCredentials.AppObjectId $appCredential.RemainingCredentials.Values
         }
     }
 }

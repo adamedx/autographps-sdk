@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -107,6 +107,37 @@ ScriptClass Secret {
 
         if ( $certificate.NotBefore.CompareTo($currentTime) -gt 0 ) {
             write-warning ("Certificate '$certDescription': Current time is {0}, specified certificate is not valid before {1}" -f $currentTime, $certificate.NotBefore)
+        }
+    }
+
+    static {
+        function ToDisplayableSecretInfo($secretType, $displayName, $subject, $graphKeyId, $appId, $appObjectId, $notBefore, $notAfter, $customKeyId, $localPath, $typeName) {
+
+            $certificatePath = if ( $secretType -eq 'Certificate' ) {
+                $localPath
+                if ( $localPath ) {
+                }
+            }
+
+            # TODO: Make this generic, right now it assumes
+            # this is a certificate
+            $remappedObject = [PSCustomObject] @{
+                Thumbprint = $customKeyId
+                AppId = $appId
+                KeyId = $graphKeyId
+                FriendlyName = $displayName
+                Subject = $subject
+                NotAfter = $notAfter
+                NotBefore = $notBefore
+                CertificatePath = $certificatePath
+                AppObjectId = $appObjectId
+            }
+
+            if ( $typeName ) {
+                $remappedObject.pstypenames.insert(0, $typeName)
+            }
+
+            $remappedObject
         }
     }
 }

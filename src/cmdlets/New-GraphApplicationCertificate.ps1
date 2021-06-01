@@ -16,6 +16,7 @@
 
 function New-GraphApplicationCertificate {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='high', positionalbinding=$false)]
+    [OutputType('AutoGraph.Certificate')]
     param(
         [parameter(position=0, parametersetname='app', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='appexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]

@@ -16,6 +16,7 @@
 
 function Find-GraphLocalCertificate {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='appid')]
+    [OutputType('System.Security.Cryptography.X509Certificates.X509Certificate2')]
     param(
         [parameter(position=0, parametersetname='appid', valuefrompipelinebypropertyname=$true)]
         [Guid] $AppId,

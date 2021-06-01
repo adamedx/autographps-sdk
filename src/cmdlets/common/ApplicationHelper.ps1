@@ -12,17 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../../common/Secret)
 . (import-script DisplayTypeFormatter)
 . (import-script ../Invoke-GraphApiRequest)
 
 ScriptClass ApplicationHelper {
     static {
+        const APPLICATION_DISPLAY_TYPE AutoGraph.Application
+
         $appFormatter = $null
-        $keyFormatter = $null
 
         function __initialize {
             $this.appFormatter = new-so DisplayTypeFormatter GraphApplicationDisplayType 'AppId', 'DisplayName', 'CreatedDateTime', 'Id'
-            $this.keyFormatter = new-so DisplayTypeFormatter GraphAppCertDisplayType 'Thumbprint', 'NotAfter', 'KeyId', 'AppId'
+            __RegisterDisplayType
         }
 
         function ToDisplayableObject($object) {
@@ -35,56 +37,19 @@ ScriptClass ApplicationHelper {
             $object.createdDateTime = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.createdDateTime $true
 
             $result = $this.appFormatter |=> DeserializedGraphObjectToDisplayableObject $object
-            $result.pstypenames.insert(0, 'GraphApplication')
+            $result.pstypenames.insert(0, $APPLICATION_DISPLAY_TYPE)
             $result
         }
 
         function KeyCredentialToDisplayableObject($object, $appId, $appObjectId) {
-            $notAfter = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.endDateTime $true
-            $notBefore = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.startDateTime $true
+            if ( $object.Type -eq 'AsymmetricX509Cert' ) {
+                $notAfter = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.endDateTime $true
+                $notBefore = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.startDateTime $true
 
-            $remappedObject = [PSCustomObject] @{
-                AppObjectId = $appObjectId
-                AppId = $appId
-                KeyId = $object.KeyId
-                Thumbprint = $object.customKeyIdentifier
-                NotAfter = $notAfter
-                NotBefore = $notBefore
-                FriendlyName = $object.displayName
-                Content = [PSCustomObject] $object
-            }
-
-            $this.keyFormatter |=> DeserializedGraphObjectToDisplayableObject $remappedObject
-        }
-
-        function CertificateToDisplayableObject($x509Certificate, $appId, $appObjectId, $certificateFilePath) {
-            $notAfter = [DateTimeOffset]::new($x509Certificate.notAfter)
-            $notBefore = [DateTimeOffset]::new($x509Certificate.notBefore)
-
-            $targetPath = if ( $certificateFilePath ) {
-                $certificateFilePath
+                $::.CertificateHelper |=> CertificateInfoToDisplayableObject $object.displayName $object.displayName $object.KeyId $appId $appObjectId $notBefore $notAfter $object.customKeyIdentifier $null
             } else {
-                $certStorePath = $x509Certificate.PSPath -split '::'
-                $components = $certStorePath -split '::'
-                $componentCount = ( $components | measure-object ).count
-                if ( $componentCount -gt 1) {
-                    join-path 'cert:' ( $components[1..($componentCount - 1)] -join ( [System.IO.Path]::DirectorySeparatorChar ) )
-                } else {
-                    $cerStorePath
-                }
+                $::.Secret |=> ToDisplayableSecretInfo Password $$object.displayName $null $object.keyId $appId $appObjectId $null $null $object.customKeyIdentifier $null
             }
-
-            $remappedObject = [PSCustomObject] @{
-                AppObjectId = $appObjectId
-                AppId = $appId
-                Thumbprint = $x509Certificate.Thumbprint
-                NotAfter = $notAfter
-                NotBefore = $notBefore
-                FriendlyName = $x509Certificate.FriendlyName
-                CertificatePath = $targetPath
-            }
-
-            $this.certFormatter |=> DeserializedGraphObjectToDisplayableObject $remappedObject
         }
 
         function QueryApplications($appId, $objectId, $odataFilter, $name, [object] $rawContent, $version, $permissions, $cloud, $connection, $select, $queryMethod, $first, $skip, [bool] $all) {
@@ -138,6 +103,44 @@ ScriptClass ApplicationHelper {
 
             write-verbose "Querying for applications at version $apiVersion' with uri '$uri, filter '$filter', select '$select'"
             Invoke-GraphApiRequest -Method $method -Uri $uri @requestArguments -All:$all -version $apiVersion -ConsistencyLevel Session
+        }
+
+        function __RegisterDisplayType {
+            $typeProperties = @(
+                'addIns'
+                'api'
+                'appId'
+                'applicationTemplateId'
+                'appRoles'
+                'createdDateTime'
+                'defaultRedirectUri'
+                'deletedDateTime'
+                'description'
+                'disabledByMicrosoftStatus'
+                'displayName'
+                'groupMembershipClaims'
+                'id'
+                'identifierUris'
+                'info'
+                'isDeviceOnlyAuthSupported'
+                'isFallbackPublicClient'
+                'keyCredentials'
+                'notes'
+                'optionalClaims'
+                'parentalControlSettings'
+                'passwordCredentials'
+                'publicClient'
+                'publisherDomain'
+                'requiredResourceAccess'
+                'signInAudience'
+                'spa'
+                'tags'
+                'tokenEncryptionKeyId'
+                'verifiedPublisher'
+                'web'
+            )
+
+            $::.DisplayTypeFormatter |=> RegisterDisplayType $APPLICATION_DISPLAY_TYPE $typeProperties $true
         }
     }
 }

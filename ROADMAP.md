@@ -2,17 +2,13 @@
 
 ## To-do items -- prioritized
 
+* Add formatting and output type for servicePrincipal
 * Add description to New-GraphApplication
-* Make GraphConnectionStatus commands not return connection info :(
 * Add Select-GraphConnection
 * Add thumbprint option to Set-GraphApplicationCertificate
 * Add CertificatePath option to New-GraphLocalCertificate and New-GraphApplicationCertificate
 * Fix Get-GraphError to just use the log
-* Add formatting to Get-GraphApplicationCertificate
 * Make app operations default to objectid for efficiency
-* Formatting for get-graphapplicationcertificate
-* Formatting for application
-* Add Remove-GraphApplicationCertificate
 * Add formatting for get-graphapplicationserviceprincipal
 * Fix get-graphmethod -uri to not need graphname
 * fix formatting of get-graphmethod to swap columns
@@ -415,6 +411,11 @@
 * Should add Remove-GraphApplicationCertificate
 * Disable auto-cert generation for apps, make it opt-in everywhere (not just Linux) and add warnings
 * Change size in Get-GraphLog to ResponseRawContentSize field
+* Add formatting to Get-GraphApplicationCertificate
+* Formatting for get-graphapplicationcertificate
+* Outputtype for application certificate commands
+* outputtype for application commands
+* Make GraphConnectionStatus commands not return connection info :(
 
 ### Postponed
 
@@ -434,6 +435,9 @@
 * Add Get-GraphConnection, Remove-GraphConnection
 * Allow named connections
 * Fix New-GraphApplicationCertificate to correctly handle file system-based certificates
+* Formatting for application
+* Add Remove-GraphApplicationCertificate
+* Fix $app | get-graphapplicationcertificate | remove-graphapplicationcertificate
 
 ### Abandoned
 

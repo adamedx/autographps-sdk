@@ -88,8 +88,20 @@ ScriptClass ApplicationAPI {
         Invoke-GraphApiRequest "/$targetClass/$appObjectId" -method PATCH -Body $appPatch -version $this.version -connection $this.connection -ConsistencyLevel Session | out-null
     }
 
+    function GetKeyCredentials($appObjectId, [bool] $isServicePrincipal) {
+        $targetClass = if ( $isServicePrincipal ) {
+            'servicePrincipals'
+        } else {
+            'applications'
+        }
+
+        $targetUri = "/$targetClass/$appObjectId/keyCredentials"
+
+        Invoke-GraphApiRequest "/$targetUri" -method GET -version $this.version -connection $this.connection -ConsistencyLevel Session
+    }
+
     function SetKeyCredentials($appObjectId, $keyCredentials, [bool] $isServicePrincipal) {
-        AddKeyCredentials $appObjectId $keyCredentials $null $true $isServicePrincipal
+        AddKeyCredentials $appObjectId $keyCredentials $null $false $isServicePrincipal
     }
 
     function RegisterApplication($appId, $isExternal) {

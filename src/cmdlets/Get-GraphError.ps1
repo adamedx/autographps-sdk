@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script ../REST/GraphErrorRecorder)
+. (import-script Get-GraphLog)
 
 <#
 .SYNOPSIS
@@ -67,53 +67,35 @@ Invoke-GraphApiRequest
 Remove-GraphResource
 #>
 function Get-GraphError {
-    [cmdletbinding()]
-    param()
-    Enable-ScriptClassVerbosePreference
+    [cmdletbinding(positionalbinding=$false)]
+    param(
+        [parameter(position=0, parametersetname='bycount')]
+        $First = 1,
 
-    $graphErrors = $::.GraphErrorRecorder |=> GetLastRecordedErrors
+        [parameter(parametersetname='bycount')]
+        [switch] $Oldest,
 
-    $afterTimeUtc = $graphErrors.AfterTimeUtc
-    $afterTimeLocal = $graphErrors.AfterTimeLocal
+        [parameter(parametersetname='all', mandatory=$true)]
+        [switch] $All
+    )
 
-    $graphErrors.ErrorRecords | foreach {
-        $headerOutput = @{}
-        $errorValue = $_.ErrorRecord
-        $responseStream = $_.ResponseStream
-        $headers = try {
-            $errorValue.exception.response.headers
-        } catch {
+    begin {
+        Enable-ScriptClassVerbosePreference
+    }
+
+    process {
+        $parameters = if ( $All.IsPresent ) {
+            @{All = $All}
+        } elseif ( $Oldest.IsPresent ) {
+            @{Oldest = $First}
+        } else {
+            @{Newest = $First}
         }
 
-        # Headers at times are a dictionary, and in other
-        # cases an array. In the latter case, each element
-        # seems to be simply the name of the header and
-        # not its value, which is regrettable from a diagnostic
-        # standpoint.
-        if ( $headers -ne $null ) {
-            if ( $headers | gm keys ) {
-                $headers.keys | foreach {
-                    $headerOutput[$_] = $headers[$_]
-                }
-            } else {
-                $headers | foreach {
-                    $headerOutput[$_] = $_
-                }
-            }
-        }
+        Get-GraphLog @parameters -StatusFilter Error
+    }
 
-        [PSCustomObject] (
-            [ordered] @{
-                AfterTimeLocal = $afterTimeLocal
-                AfterTimeUtc = $afterTimeUtc
-                PSErrorRecord = $errorValue
-                Response = [PSCustomObject] $errorValue.Exception.Response
-                ResponseHeaders = [PSCustomObject] $headerOutput
-                ResponseStream = $_.ResponseStream
-                StatusCode = $errorValue.Exception.Response.StatusCode
-                StatusDescription = $errorValue.Exception.Response.StatusDescription
-            }
-        )
+    end {
     }
 }
 

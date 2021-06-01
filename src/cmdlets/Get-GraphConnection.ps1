@@ -47,12 +47,5 @@ function Get-GraphConnection {
         }
     }
 
-    $results = [ordered] @{}
-
-    foreach ( $matchingConnection in $connections ) {
-        $result = $::.GraphConnection |=> ToConnectionInfo $matchingConnection
-        $results[$result.Id] = $result
-    }
-
-    $results.Values
+    $connections
 }

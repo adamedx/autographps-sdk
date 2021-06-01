@@ -120,7 +120,7 @@ Describe 'GraphContext class' {
 
             Assert-VerifiableMock
 
-            $secondConnection = (Get-GraphConnectionInfo).connection
+            $secondConnection = (Get-GraphConnectionInfo)
             $secondResult = $mockAuthResult.Result
 
             # Make sure that when reconnecting, we obtained a new token for the second
