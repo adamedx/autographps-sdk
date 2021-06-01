@@ -16,6 +16,7 @@
 
 function New-GraphApplicationCertificate {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='high', positionalbinding=$false)]
+    [OutputType('AutoGraph.Certificate')]
     param(
         [parameter(position=0, parametersetname='app', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='appexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
@@ -68,7 +69,7 @@ function New-GraphApplicationCertificate {
     $X509Certificate = $certificateResult.Certificate.X509Certificate
 
     if ( ! $AsX509Certificate.IsPresent ) {
-        $::.CertificateHelper |=> CertificateToDisplayableObject $X509Certificate $certHelper.appId $certHelper.objectId $certificateResult.ExportedLocation
+        $::.CertificateHelper |=> CertificateToDisplayableObject $X509Certificate $certHelper.appId $certHelper.objectId $certificateResult.ExportedLocation NewQueryRequired
     } else {
         $X509Certificate
     }

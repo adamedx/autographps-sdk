@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Make Renove-GraphApplication process everything in the end since it has no output
+* Fix $app | get-graphapplicationcertificate | remove-graphapplicationcertificate
 * Add description to New-GraphApplication
 * Make GraphConnectionStatus commands not return connection info :(
 * Add Select-GraphConnection

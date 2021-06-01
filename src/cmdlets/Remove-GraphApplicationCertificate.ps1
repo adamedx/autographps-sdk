@@ -44,9 +44,6 @@ function Remove-GraphApplicationCertificate {
         [PSCustomObject] $Connection = $null
     )
 
-    # Note that PowerShell requires us to use the begin / process / end structure here
-    # in order to process more than one element of the pipeline via $App
-
     begin {
         $commandContext = new-so CommandContext $connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
@@ -66,30 +63,31 @@ function Remove-GraphApplicationCertificate {
             throw "Unexpected argument -- an app id or object id must be specified"
         }
 
-        if ( ! $AllCertificates.IsPresent ) {
-            $keyClientFilter = if ( $KeyId ) {
-                { $_.KeyId -eq $KeyId }
-            } elseif ( $Thumbprint ) {
-                { $_.CustomKeyIdentifier -eq $Thumbprint }
-            } else {
-                throw [ArgumentException]::new("An AppId with Thumbprint or KeyId was not specified or AllCertificates was not specified")
-            }
-
-            $keyCredentials = $::.ApplicationHelper |=> QueryApplications $null $targetObjectId $null $null $null $commandContext.version $null null $commandContext.connection keyCredentials |
-              select -expandproperty keyCredentials
-
-            $keyToRemove = if ( ! $keyCredentials -and ! ($keyCredentials | gm id -erroraction ignore ) ) {
-                throw [ArgumentException]::new("No certificates could be found for AppId '$AppId'")
-            } else {
-                $keyCredentials | where $keyClientFilter
-            }
-
-            if ( ! $keyToRemove ) {
-                throw [ArgumentException]::new("The specified certificate could not be found for AppId '$AppId'")
-            }
-
-            $remainingCredentials = $keyCredentials | where KeyId -notin $keyToRemove.keyId
+        $keyClientFilter = if ( $AllCertificates.IsPresent ) {
+            { $true }
+        } elseif ( $KeyId ) {
+            { $_.KeyId -eq $KeyId }
+        } elseif ( $Thumbprint ) {
+            { $_.CustomKeyIdentifier -eq $Thumbprint }
+        } else {
+            throw [ArgumentException]::new("An AppId with Thumbprint or KeyId was not specified or AllCertificates was not specified")
         }
+
+        $keyCredentials = $::.ApplicationHelper |=> QueryApplications $null $targetObjectId $null $null $null $commandContext.version $null null $commandContext.connection keyCredentials |
+          select -expandproperty keyCredentials
+
+        $keyToRemove = if ( ! $keyCredentials -and ! ($keyCredentials | gm id -erroraction ignore ) ) {
+            throw [ArgumentException]::new("No certificates could be found for AppId '$AppId'")
+        } else {
+            $keyCredentials | where $keyClientFilter | where type -eq 'AsymmetricX509Cert'
+        }
+
+        if ( ! $keyToRemove ) {
+            throw [ArgumentException]::new("The specified certificate could not be found for AppId '$AppId'")
+        }
+
+        $remainingCredentials = $keyCredentials | where KeyId -notin $keyToRemove.keyId
+
 
         if ( $remainingCredentials -eq $null ) {
             $remainingCredentials = @()

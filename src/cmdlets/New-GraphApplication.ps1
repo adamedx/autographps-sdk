@@ -152,7 +152,7 @@ function New-GraphApplication {
         $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $UserIdToConsent $ConsentForAllUsers.IsPresent $DelegatedUserPermissions $ApplicationPermissions | out-null
     }
 
-    $newApp
+    $::.ApplicationHelper |=> ToDisplayableObject $newApp
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication DelegatedUserPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))

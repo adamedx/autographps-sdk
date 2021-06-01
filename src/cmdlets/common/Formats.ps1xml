@@ -615,8 +615,126 @@ limitations under the License.
     </View>
 
 
+    
+
+    <View>
+      <Name>GraphCertificate</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Certificate</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <Label>Application (client) ID</Label>
+        <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+      </GroupBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Thumbprint</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>NotAfter</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>KeyId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Subject</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Thumbprint, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.GraphFormatter.ResourceInTimeWindow($_.NotAfter, [DateTimeOffset]::UtcNow, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>KeyId</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Subject</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
 
 
+    <View>
+      <Name>GraphCertificateDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Certificate</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <Label>Application (client) ID</Label>
+        <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+      </GroupBy>
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>Thumbprint</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Thumbprint, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AppId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Subject</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.Subject -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Subject, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>FriendlyName</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.FriendlyName -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.FriendlyName, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>NotBefore</Label>
+                <ScriptBlock>$::.GraphFormatter.ResourceInTimeWindow($_.NotBefore, $null, [DateTimeOffset]::UtcNow)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>NotAfter</Label>
+                <ScriptBlock>$::.GraphFormatter.ResourceInTimeWindow($_.NotAfter, [DateTimeOffset]::UtcNow, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.CertificatePath -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <Label>CertificatePath</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.CertificatePath, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.KeyId -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>KeyId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.AppObjectId -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>AppObjectId</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+
+
+    
     
   </ViewDefinitions>
 

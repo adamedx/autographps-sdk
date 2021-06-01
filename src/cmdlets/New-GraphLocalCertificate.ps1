@@ -16,6 +16,7 @@
 
 function New-GraphLocalCertificate {
     [cmdletbinding(positionalbinding=$false)]
+    [OutputType('AutoGraph.Certificate')]
     param(
         [parameter(parametersetname='pipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='pipelineexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]

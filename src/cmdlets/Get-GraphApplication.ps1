@@ -45,7 +45,7 @@ function Get-GraphApplication {
     }
 
     process {
-        $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $Filter $Name $RawContent $Version $null $null $commandContext.connection $null $null $pscmdlet.pagingparameters.First $pscmdlet.pagingparameters.Skip $All.IsPresent
+        $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $Filter $Name $RawContent $null $null $null $commandContext.connection $null $null $pscmdlet.pagingparameters.First $pscmdlet.pagingparameters.Skip $All.IsPresent
 
         $displayableResult = if ( $result ) {
             if ( $RawContent.IsPresent ) {
