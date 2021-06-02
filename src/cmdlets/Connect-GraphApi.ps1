@@ -258,7 +258,8 @@ function Connect-GraphApi {
                 }
 
                 try {
-                    new-graphconnection @conditionalArguments -erroraction stop
+                    $publicConnection = new-graphconnection @conditionalArguments -erroraction stop
+                    $publicConnection.Connection
                 } catch {
                     throw
                 }

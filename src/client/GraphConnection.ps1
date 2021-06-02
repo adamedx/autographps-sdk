@@ -225,7 +225,7 @@ ScriptClass GraphConnection {
                 'ConsistencyLevel'
             )
 
-           remove-typedata -typename $CONNECTION_DISPLAY_TYPE -erroraction ignore
+            remove-typedata -typename $CONNECTION_DISPLAY_TYPE -erroraction ignore
 
             $DisplayTypeArguments = @{
                 TypeName = $CONNECTION_DISPLAY_TYPE
