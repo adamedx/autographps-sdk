@@ -40,10 +40,15 @@ Function Get-GraphApplicationCertificate {
         [parameter(parametersetname='name', mandatory=$true)]
         $Name,
 
-        [PSCustomObject] $Connection = $null
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo = $null
     )
 
     begin {
+        $Connection = if ( $ConnectionInfo ) {
+            $ConnectionInfo.Connection
+        }
+
         $commandContext = new-so CommandContext $connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
     }
 

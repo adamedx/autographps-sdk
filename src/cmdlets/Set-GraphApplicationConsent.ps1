@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,12 +37,17 @@ function Set-GraphApplicationConsent {
 
         $UserIdToConsent,
 
-        $Connection,
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo,
 
         $Version
     )
 
-    begin {}
+    begin {
+        $Connection = if ( $ConnectionInfo ) {
+            $ConnectionInfo.Connection
+        }
+    }
 
     process {
         Enable-ScriptClassVerbosePreference

@@ -57,9 +57,14 @@ function New-GraphApplicationCertificate {
 
         [switch] $AsX509Certificate,
 
-        [PSCustomObject] $Connection = $null
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo = $null
     )
     Enable-ScriptClassVerbosePreference
+
+    $Connection = if ( $ConnectionInfo ) {
+        $ConnectionInfo.Connection
+    }
 
     $::.LocalCertificate |=> ValidateCertificateCreationCapability
 

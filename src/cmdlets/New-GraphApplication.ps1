@@ -89,9 +89,14 @@ function New-GraphApplication {
 
         [String] $Version = $null,
 
-        [PSCustomObject] $Connection = $null
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo = $null
     )
     Enable-ScriptClassVerbosePreference
+
+    $Connection = if ( $ConnectionInfo ) {
+        $ConnectionInfo.Connection
+    }
 
     if ( $SkipTenantRegistration.IsPresent ) {
         if ( $UserIdToConsent -or $ConsentForAllUsers.IsPresent ) {

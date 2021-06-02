@@ -22,6 +22,7 @@
 
 function New-GraphConnection {
     [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='msgraph')]
+    [OutputType('GraphConnectionInfo')]
     param(
         [parameter(parametersetname='msgraph', position=0)]
         [parameter(parametersetname='cloud', position=0)]
@@ -175,7 +176,7 @@ function New-GraphConnection {
             $allowMSA = $noAppSpecified
         }
 
-        if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
+        $connectionResult = if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
             write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'
             $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $computedAuthProtocol -useragent $UserAgent -allowMSA $allowMSA $ConsistencyLevel
         } else {
@@ -223,6 +224,8 @@ function New-GraphConnection {
             $identity = new-so GraphIdentity $app $graphEndpoint $adjustedTenantId $allowMSA
             new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent $Name $ConsistencyLevel
         }
+
+        $::.GraphConnection |=> ToConnectionInfo $connectionResult
     }
 }
 

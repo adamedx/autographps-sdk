@@ -23,6 +23,7 @@
 
 function Connect-GraphApi {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='msgraph')]
+    [OutputType('GraphConnectionInfo')]
     param(
         [parameter(parametersetname='msgraphname', position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [ArgumentCompleter({
@@ -149,7 +150,8 @@ function Connect-GraphApi {
         [Switch] $Reconnect,
 
         [parameter(parametersetname='existingconnection',mandatory=$true)]
-        [PSCustomObject] $Connection = $null,
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo = $null,
 
         [Switch] $PromptForCertCredential,
 
@@ -158,6 +160,9 @@ function Connect-GraphApi {
     )
 
     begin {
+        $Connection = if ( $ConnectionInfo ) {
+            $ConnectionInfo.Connection
+        }
     }
 
     process {

@@ -44,12 +44,17 @@ function Remove-GraphApplicationConsent {
         [parameter(parametersetname='allpermissions', mandatory=$true)]
         [switch] $AllPermissions,
 
-        $Connection,
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo,
 
         $Version
     )
 
     begin {
+        $Connection = if ( $ConnectionInfo ) {
+            $ConnectionInfo.Connection
+        }
+
         # This is only for the AllPermissions case and is required to delete multiple oauth2Grants
         # (i.e. delegated permission consents) being passed to the pipeline. This is due to the fact
         # the graph API records multiple permissions per oauth2Grant object, but Get-GraphApplicationConsent

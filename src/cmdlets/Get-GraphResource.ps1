@@ -199,7 +199,8 @@ function Get-GraphResource {
         [Guid] $ClientRequestId,
 
         [parameter(parametersetname='ExistingConnection', mandatory=$true)]
-        [PSCustomObject] $Connection = $null,
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo = $null,
 
         [parameter(parametersetname='MSGraphNewConnection')]
         [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
@@ -231,6 +232,11 @@ function Get-GraphResource {
 
     begin {
         Enable-ScriptClassVerbosePreference
+
+        $Connection = if ( $ConnectionInfo ) {
+            $ConnectionInfo.Connection
+        }
+
         $uris = @()
 
         $requestArguments = @{

@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,9 +23,14 @@ function Unregister-GraphApplication {
 
         [String] $Version = $null,
 
-        [PSCustomObject] $Connection = $null
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo = $null
     )
     Enable-ScriptClassVerbosePreference
+
+    $Connection = if ( $ConnectionInfo ) {
+        $ConnectionInfo.Connection
+    }
 
     $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
     $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version

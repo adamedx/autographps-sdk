@@ -6,7 +6,6 @@
 * Make Renove-GraphApplication process everything in the end since it has no output
 * Fix $app | get-graphapplicationcertificate | remove-graphapplicationcertificate
 * Add description to New-GraphApplication
-* Make GraphConnectionStatus commands not return connection info :(
 * Add Select-GraphConnection
 * Add thumbprint option to Set-GraphApplicationCertificate
 * Add CertificatePath option to New-GraphLocalCertificate and New-GraphApplicationCertificate
@@ -439,6 +438,7 @@
 * Fix New-GraphApplicationCertificate to correctly handle file system-based certificates
 * Formatting for application
 * Add Remove-GraphApplicationCertificate
+* Make all connection commans return connectioninfo instead of connection, take it as param
 
 ### Abandoned
 

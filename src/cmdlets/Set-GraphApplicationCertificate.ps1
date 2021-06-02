@@ -50,10 +50,15 @@ function Set-GraphApplicationCertificate {
         [parameter(parametersetname='objectid')]
         [Switch] $PromptForCertCredential,
 
-        [PSCustomObject] $Connection = $null
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo = $null
     )
 
     begin {
+        $Connection = if ( $ConnectionInfo ) {
+            $ConnectionInfo.Connection
+        }
+
         $commandContext = new-so CommandContext $connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
     }

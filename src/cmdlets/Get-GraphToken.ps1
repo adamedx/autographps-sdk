@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -108,11 +108,16 @@ function Get-GraphToken {
         [Switch] $Current,
 
         [parameter(parametersetname='existingconnection', mandatory=$true)]
-        $Connection,
+        [Alias('Connection')]
+        $ConnectionInfo,
 
         [Switch] $AsObject
     )
     Enable-ScriptClassVerbosePreference
+
+    $Connection = if ( $ConnectionInfo ) {
+        $ConnectionInfo.Connection
+    }
 
     $targetConnection = if ( $connection ) {
         $connection

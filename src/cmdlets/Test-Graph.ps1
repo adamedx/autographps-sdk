@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -97,7 +97,8 @@ function Test-Graph {
         [string] $Cloud,
 
         [parameter(parametersetname='Connection', mandatory=$true)]
-        [PSCustomObject] $Connection,
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo,
 
         [parameter(parametersetname='CustomEndpoint', mandatory=$true)]
         [Uri] $EndpointUri,
@@ -105,6 +106,10 @@ function Test-Graph {
         [switch] $RawContent
     )
     Enable-ScriptClassVerbosePreference
+
+    $Connection = if ( $ConnectionInfo ) {
+        $ConnectionInfo.Connection
+    }
 
     $logger = $::.RequestLog |=> GetDefault
 

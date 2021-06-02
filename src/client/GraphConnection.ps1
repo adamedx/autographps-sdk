@@ -131,8 +131,11 @@ ScriptClass GraphConnection {
     }
 
     static {
+        const CONNECTION_DISPLAY_TYPE GraphConnectionInfo
+
         $connections = $null
         function __initialize {
+            __RegisterDisplayType
             $this.connections = @{}
         }
 
@@ -174,7 +177,7 @@ ScriptClass GraphConnection {
                 Connection = $connection
             }
 
-            $info.pstypenames.insert(0, 'GraphConnectionInfo')
+            $info.pstypenames.insert(0, $CONNECTION_DISPLAY_TYPE)
 
             $info
         }
@@ -204,6 +207,42 @@ ScriptClass GraphConnection {
 
             if ( $connection ) {
                 $this.connections.Remove($name)
+            }
+        }
+
+        function __RegisterDisplayType {
+            $typeProperties = @(
+                'Name'
+                'AppId'
+                'OrganizationName'
+                'Endpoint'
+                'Id'
+                'AuthType'
+                'Tenant'
+                'User'
+                'Connected'
+                'Status'
+                'ConsistencyLevel'
+            )
+
+           remove-typedata -typename $CONNECTION_DISPLAY_TYPE -erroraction ignore
+
+            $DisplayTypeArguments = @{
+                TypeName = $CONNECTION_DISPLAY_TYPE
+                DefaultDisplayPropertySet = $typeProperties
+            }
+
+            Update-TypeData -force @DisplayTypeArguments
+
+            $typeProperties | foreach {
+                $memberArgs = @{
+                    TypeName = $CONNECTION_DISPLAY_TYPE
+                    MemberType = 'NoteProperty'
+                    MemberName = $_
+                    Value = $null
+                }
+
+                Update-typedata @memberArgs -force
             }
         }
     }

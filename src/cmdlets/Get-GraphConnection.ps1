@@ -17,6 +17,7 @@
 
 function Get-GraphConnection {
     [cmdletbinding(positionalbinding=$false)]
+    [OutputType('GraphConnectionInfo')]
     param(
         [parameter(position=0, parametersetname='byname', mandatory=$true)]
         [ArgumentCompleter({

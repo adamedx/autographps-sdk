@@ -42,9 +42,14 @@ Get-GraphConnectionInfo
 function Disconnect-GraphApi {
     [cmdletbinding()]
     param(
-        [PSTypeName('GraphConnection')] $Connection
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo
     )
     Enable-ScriptClassVerbosePreference
+
+    $Connection = if ( $ConnectionInfo ) {
+        $ConnectionInfo.Connection
+    }
 
     if ( $Connection ) {
         $Connection |=> Disconnect

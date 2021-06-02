@@ -151,7 +151,7 @@ $NewGraphConnectionMockScript = {
 
     $mockConnections.Add($connection.Id, $connection)
 
-    $connection
+    $::.GraphConnection |=> ToConnectionInfo $connection
 }
 
 

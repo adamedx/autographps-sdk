@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -102,13 +102,18 @@ function Remove-GraphResource {
 
         [parameter(parametersetname='FromUriExistingConnection', mandatory=$true)]
         [parameter(parametersetname='FromObjectsExistingConnection', mandatory=$true)]
-        [PSCustomObject] $Connection = $null
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo = $null
     )
 
     # Note that PowerShell requires us to use the begin / process / end structure here
     # in order to process more than one element of the pipeline via $TargetItem
 
-    begin {}
+    begin {
+        $Connection = if ( $ConnectionInfo ) {
+            $ConnectionInfo.Connection
+        }
+    }
 
     process {
         Enable-ScriptClassVerbosePreference

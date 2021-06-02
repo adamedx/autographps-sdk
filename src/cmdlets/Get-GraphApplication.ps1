@@ -37,11 +37,16 @@ function Get-GraphApplication {
         [parameter(parametersetname='All')]
         [switch] $All,
 
-        [PSCustomObject] $Connection = $null
+        [Alias('Connection')]
+        [PSCustomObject] $ConnectionInfo = $null
     )
 
     begin {
         Enable-ScriptClassVerbosePreference
+
+        $Connection = if ( $ConnectionInfo ) {
+            $ConnectionInfo.Connection
+        }
 
         $commandContext = new-so CommandContext $connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
     }
