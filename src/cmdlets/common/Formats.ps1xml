@@ -457,7 +457,7 @@ limitations under the License.
     <View>
       <Name>GraphApplication</Name>
       <ViewSelectedBy>
-        <TypeName>GraphApplication</TypeName>
+        <TypeName>AutoGraph.Application</TypeName>
       </ViewSelectedBy>
       <TableControl>
         <TableHeaders>
@@ -505,7 +505,7 @@ limitations under the License.
     <View>
       <Name>GraphApplicationDetail</Name>
       <ViewSelectedBy>
-        <TypeName>GraphApplication</TypeName>
+        <TypeName>AutoGraph.Application</TypeName>
       </ViewSelectedBy>
       <GroupBy>
         <PropertyName>AppId</PropertyName>

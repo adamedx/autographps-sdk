@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 
 function New-GraphApplication {
     [cmdletbinding(defaultparametersetname='publicapp', positionalbinding=$false)]
+    [OutputType('AutoGraph.Application')]
     param(
         [parameter(position=0, mandatory=$true)]
         [string] $Name,

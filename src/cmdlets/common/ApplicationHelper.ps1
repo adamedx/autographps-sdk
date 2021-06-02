@@ -18,12 +18,13 @@
 
 ScriptClass ApplicationHelper {
     static {
+        const APPLICATION_DISPLAY_TYPE AutoGraph.Application
+
         $appFormatter = $null
-        $keyFormatter = $null
 
         function __initialize {
             $this.appFormatter = new-so DisplayTypeFormatter GraphApplicationDisplayType 'AppId', 'DisplayName', 'CreatedDateTime', 'Id'
-            $this.keyFormatter = new-so DisplayTypeFormatter GraphAppCertDisplayType 'Thumbprint', 'NotAfter', 'KeyId', 'AppId'
+            __RegisterDisplayType
         }
 
         function ToDisplayableObject($object) {
@@ -36,7 +37,7 @@ ScriptClass ApplicationHelper {
             $object.createdDateTime = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.createdDateTime $true
 
             $result = $this.appFormatter |=> DeserializedGraphObjectToDisplayableObject $object
-            $result.pstypenames.insert(0, 'GraphApplication')
+            $result.pstypenames.insert(0, $APPLICATION_DISPLAY_TYPE)
             $result
         }
 
@@ -102,6 +103,44 @@ ScriptClass ApplicationHelper {
 
             write-verbose "Querying for applications at version $apiVersion' with uri '$uri, filter '$filter', select '$select'"
             Invoke-GraphApiRequest -Method $method -Uri $uri @requestArguments -All:$all -version $apiVersion -ConsistencyLevel Session
+        }
+
+        function __RegisterDisplayType {
+            $typeProperties = @(
+                'addIns'
+                'api'
+                'appId'
+                'applicationTemplateId'
+                'appRoles'
+                'createdDateTime'
+                'defaultRedirectUri'
+                'deletedDateTime'
+                'description'
+                'disabledByMicrosoftStatus'
+                'displayName'
+                'groupMembershipClaims'
+                'id'
+                'identifierUris'
+                'info'
+                'isDeviceOnlyAuthSupported'
+                'isFallbackPublicClient'
+                'keyCredentials'
+                'notes'
+                'optionalClaims'
+                'parentalControlSettings'
+                'passwordCredentials'
+                'publicClient'
+                'publisherDomain'
+                'requiredResourceAccess'
+                'signInAudience'
+                'spa'
+                'tags'
+                'tokenEncryptionKeyId'
+                'verifiedPublisher'
+                'web'
+            )
+
+            $::.DisplayTypeFormatter |=> RegisterDisplayType $APPLICATION_DISPLAY_TYPE $typeProperties $true
         }
     }
 }

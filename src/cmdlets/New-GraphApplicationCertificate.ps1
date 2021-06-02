@@ -69,7 +69,7 @@ function New-GraphApplicationCertificate {
     $X509Certificate = $certificateResult.Certificate.X509Certificate
 
     if ( ! $AsX509Certificate.IsPresent ) {
-        $::.CertificateHelper |=> CertificateToDisplayableObject $X509Certificate $certHelper.appId $certHelper.objectId $certificateResult.ExportedLocation NewQueryRequired
+        $::.CertificateHelper |=> CertificateToDisplayableObject $X509Certificate $certHelper.appId $certHelper.objectId $certificateResult.ExportedLocation
     } else {
         $X509Certificate
     }
