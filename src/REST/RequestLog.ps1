@@ -123,7 +123,10 @@ ScriptClass RequestLog {
             } else {
                 $currentUnbounded
             }
-            $entryCount++
+
+            if ( $emitEntry ) {
+                $entryCount++
+            }
         }
     }
 

@@ -371,6 +371,7 @@ limitations under the License.
       <Name>GraphLogDetail</Name>
       <ViewSelectedBy>
         <TypeName>GraphLogEntryDisplayType</TypeName>
+        <TypeName>GraphErrorDetail</TypeName>
       </ViewSelectedBy>
 
       <ListControl>

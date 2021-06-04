@@ -212,7 +212,6 @@ AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphCont
         '.\src\graphservice\ApplicationAPI.ps1'
         '.\src\graphservice\ApplicationObject.ps1'
         '.\src\graphservice\GraphEndpoint.ps1'
-        '.\src\REST\GraphErrorRecorder.ps1'
         '.\src\REST\GraphRequest.ps1'
         '.\src\REST\GraphResponse.ps1'
         '.\src\REST\HttpUtilities.ps1'

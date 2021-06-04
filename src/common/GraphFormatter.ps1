@@ -50,7 +50,7 @@ ScriptClass GraphFormatter {
                     'REST-Method-PUT' = 5
                     'REST-Method-GET' = 12
                     'REST-Method-DELETE' = 11
-                    'REST-Method-PATCH' = 3
+                    'REST-Method-PATCH' = 14
                     'Time-Elapsed-Normal' = 10
                     'Time-Elapsed-Slow' = 11
                     'Time-Elapsed-ExtraSlow' = 9

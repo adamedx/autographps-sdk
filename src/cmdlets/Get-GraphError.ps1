@@ -27,39 +27,40 @@ If the last Graph request from this module was successful, this command returns 
 .EXAMPLE
 Get-GraphError
 
-AfterTimeLocal    : 1/25/2019 5:48:38 AM
-AfterTimeUtc      : 1/25/2019 1:48:38 PM
-PSErrorRecord     : The remote server returned an error: (400) Bad Request.
-Response          : System.Net.HttpWebResponse
-ResponseHeaders   : @{x-ms-ags-diagnostic=x-ms-ags-diagnostic;
-                    Transfer-Encoding=Transfer-Encoding; request-id=request-id;
-                    Content-Type=Content-Type; Cache-Control=Cache-Control;
-                    Strict-Transport-Security=Strict-Transport-Security; Date=Date;
-                    Duration=Duration; client-request-id=client-request-id}
-ResponseStream    : {
-                      "error": {
-                        "code": "RequestBodyRead",
-                        "message": "The property 'firstName' does not exist on type
-                    'Microsoft.OutlookServices.Contact'. Make sure to only use property names
-                    that are defined by the type or mark the type as open type.",
-                        "innerError": {
-                          "request-id": "b01e4465-3543-4eda-abd8-b26d1ffb9a82",
-                          "date": "2019-01-25T13:48:39"
-                        }
-                      }
-                    }
-StatusCode        : BadRequest
-StatusDescription : Bad Request
+RequestTimestamp        : 6/1/2021 09:21:15 PM -07:00
+Status                  : 400
+ErrorResponse           : {"error":{"code":"Request_BadRequest","message":"A value is required for property
+                          'securityEnabled' of resource 'Group'.","innerError":{"date":"2021-06-04T12:39:23","request-i
+                          ":"b9a624e0-8b97-4888-81f7-23976c0488d0","client-request-id":"a17ecfec-99c9-4578-a1db-a194a6
+                          b6abbf"}}}
+Method                  : POST
+Uri                     : https://graph.microsoft.com/v1.0/groups
+RequestBodySize         : 0
+ClientElapsedTime       : 00:00:00.1098080
+RequestHeaders          : {Authorization, Content-Type, client-request-id, ConsistencyLevel}
+ClientRequestId         : b01e4465-3543-4eda-abd8-b26d1ffb9a82
+AppId                   : 6afd9af6-a06a-4522-b06b-59142f41306d
+TenantId                : a764b39d-c66a-4166-b1ef-5cdfb5259d3e
+serUpn                  : cleo@hotline.org
+UserObjectId            : 95230052-9ee3-3ee3-0001-fa3829ec1399
+AuthType                : Delegated
+ResourceUri             : groups
+Query                   :
+ResponseTimestamp       : 6/1/2021 09:21:17 PM -07:00
+ResponseClientRequestId : b01e4465-3543-4eda-abd8-b26d1ffb9a82
+ResponseHeaders         : {x-ms-ags-diagnostic, Transfer-Encoding, request-id, Content-Type...}
 
 The Get-GraphError command was invoked after the following Graph command failed:
 
-    Invoke-GraphApiRequest -Method POST me/contacts -Body @{firstName='Cleopatra';surname='Jones'}
+    Invoke-GraphApiRequest -Method POST groups -Body @{mailNickName='datasec';displayName='Data Security Team';mailEnabled=$false}
 
-Invoke-GraphApiRequest was invoked to POST to the 'me/contacts' relative URI of https://graph.microsoft.com/v1.0 with a Body parameter that specifies the first and last name of a personal contact. The command should create a new contact resource, but received a 'BadRequest' status code of 400 from Graph and threw and exception.
+Invoke-GraphApiRequest was invoked to POST to the 'groups' relative URI of https://graph.microsoft.com/v1.0 with a Body parameter that specifies the mailNickName, displayName, and boolean securityEnabled properties of an Azure Active Directory group. According to intent, the command should create a new group resource, but received a 'BadRequest' status code of 400 from Graph and returned an error instead.
 
-By executing the Get-GraphError command after the failed command, the operator is able to see additional information beyond the status code and the line number on which the error occurred. The ResponseStream property often has detailed information about the error, and in this case it contains an error message "The property 'firstName' does not exist on type 'Microsoft.OutlookServices.Contact'". This guides the operator to look more clsoely at the documentation for the contat resource, which instead of a 'firstName' property contains a 'givenName' property.
+By executing the Get-GraphError command after the failed command, the operator is able to see additional information beyond the status code and the line number on which the error occurred. The ErrorResponse property often has detailed information about the error, and in this case it contains an error message "A value is required for property 'securityEnabled' of resource 'Group'". This guides the operator to retry the command by specifying that 'securityEnabled' property after consulting with the documentation for the group resource which confirms that this property must be specified when creating a group.
 
-The operator can then correct the error in the original Invoke-GraphApiRequest command, replacing 'firstName' with 'givenName' in the Body parameter and the command will succeed.
+The subsequent retry with the corrected command issued below succeeds and a group is successfully created:
+
+    Invoke-GraphApiRequest -Method POST groups -Body @{mailNickName='datasec';displayName='Data Security Team';mailEnabled=$false;securityEnabled=$true}
 
 .LINK
 Get-GraphResource
@@ -92,7 +93,10 @@ function Get-GraphError {
             @{Newest = $First}
         }
 
-        Get-GraphLog @parameters -StatusFilter Error
+        Get-GraphLog @parameters -StatusFilter Error | foreach {
+            $_.pstypenames.insert(0, 'GraphErrorDetail')
+            $_
+        }
     }
 
     end {

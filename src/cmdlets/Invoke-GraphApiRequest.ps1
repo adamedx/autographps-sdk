@@ -18,7 +18,6 @@
 . (import-script common/ItemResultHelper)
 . (import-script ../REST/GraphRequest)
 . (import-script ../REST/RequestLog)
-. (import-script ../REST/GraphErrorRecorder)
 . (import-script common/GraphOutputFile)
 . (import-script common/PermissionParameterCompleter)
 
@@ -365,8 +364,6 @@ function Invoke-GraphApiRequest {
         }
 
         $useRawContent = $RawContent.IsPresent -or $Value.IsPresent -or $Count.IsPresent
-
-        $::.GraphErrorRecorder |=> StartRecording
 
         if ( $Query ) {
             if ( $Search -or $Filter -or $Select -or $OrderBy ) {
