@@ -17,7 +17,8 @@ set-alias fgl Format-GraphLog
 set-alias gge Get-GraphError
 set-alias ggr Get-GraphResource
 set-alias gcat Get-GraphResource
-set-alias gcon Get-GraphConnectionInfo
+set-alias gcon Get-GraphConnection
+set-alias gcur Get-GraphCurrentConnection
 set-alias Get-GraphContent Get-GraphResource
 set-alias ggl Get-GraphLog
 set-alias scon Select-GraphConnection

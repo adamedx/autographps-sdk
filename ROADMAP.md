@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Rename *-grapphprofilesettings to *-graphprofile
 * Add description to New-GraphApplication
 * Add thumbprint option to Set-GraphApplicationCertificate
 * Add CertificatePath option to New-GraphLocalCertificate and New-GraphApplicationCertificate
@@ -9,7 +10,6 @@
 * Add formatting for get-graphapplicationserviceprincipal
 * Fix get-graphmethod -uri to not need graphname
 * fix formatting of get-graphmethod to swap columns
-* Change get-graphconnectioninfo to get-graphcurrentconnection and wrap get-graphconnection
 * Adaptive progress meter?
 * View for graph application
 * Should add Add-GraphApplicationCertificate
@@ -430,6 +430,7 @@
 * outputtype for application commands
 * Make GraphConnectionStatus commands not return connection info :(
 * Add Select-GraphConnection
+* Change get-graphconnectioninfo to get-graphcurrentconnection
 
 ### Postponed
 

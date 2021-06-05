@@ -85,7 +85,7 @@ Test-Graph -RawContent
 This command returns the same information as in the first example, but by specifying the RawContent parameter the command is directed not to output the response as deserialized structured objects, but in the exact format in which it was returned by Graph, in this case JSON.
 
 .LINK
-Get-GraphConnectionInfo
+Get-GraphCurrentConnection
 New-GraphConnection
 Connect-GraphApi
 #>

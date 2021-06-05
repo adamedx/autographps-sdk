@@ -111,7 +111,7 @@ Describe 'GraphContext class' {
             # This will get an auth token
             Invoke-GraphApiRequest me | out-null
 
-            $firstConnection = (Get-GraphConnectionInfo).connection
+            $firstConnection = (Get-GraphCurrentConnection).connection
             $firstResult = $mockAuthResult.Result
 
             # This will reconnect and should get a different token
@@ -120,7 +120,7 @@ Describe 'GraphContext class' {
 
             Assert-VerifiableMock
 
-            $secondConnection = (Get-GraphConnectionInfo)
+            $secondConnection = (Get-GraphCurrentConnection)
             $secondResult = $mockAuthResult.Result
 
             # Make sure that when reconnecting, we obtained a new token for the second

@@ -80,7 +80,7 @@ FunctionsToExport = @(
     'Get-GraphApplicationConsent'
     'Get-GraphApplicationServicePrincipal'
     'Get-GraphConnection'
-    'Get-GraphConnectionInfo'
+    'Get-GraphCurrentConnection'
     'Get-GraphError'
     'Get-GraphResource'
     'Get-GraphLog'
@@ -119,7 +119,7 @@ CmdletsToExport = @()
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl', 'scon')
+    AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'gcur', 'Get-GraphContent', 'ggl', 'scon')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -160,7 +160,7 @@ AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphCont
         '.\src\cmdlets\Get-GraphApplicationConsent.ps1'
         '.\src\cmdlets\Get-GraphApplicationServicePrincipal.ps1'
         '.\src\cmdlets\Get-GraphConnection.ps1'
-        '.\src\cmdlets\Get-GraphConnectionInfo.ps1'
+        '.\src\cmdlets\Get-GraphCurrentConnection.ps1'
         '.\src\cmdlets\Get-GraphError.ps1'
         '.\src\cmdlets\Get-GraphResource.ps1'
         '.\src\cmdlets\Get-GraphLog.ps1'
@@ -256,7 +256,7 @@ None.
 
 ### Breaking changes
 
-None.
+* `Get-GraphConnectionInfo` has been renamed to `Get-GraphCurrentConnection`
 
 ### New features
 

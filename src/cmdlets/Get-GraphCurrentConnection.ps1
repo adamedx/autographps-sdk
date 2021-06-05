@@ -27,10 +27,10 @@ To access Microsoft Graph, the module's commands maintain a state known as a "Gr
 * The AppId of the Aure Active Directory application used to obtain an access token for the endpoint URI
 * The access token used to access the Graph if one has already been granted.
 
-The Get-GraphConnectionInfo command returns a structure that represents the information described above.
+The Get-GraphCurrentConnection command returns a structure that represents the information described above.
 
 .PARAMETER Graph
-By default, Get-GraphConnectionInfo returns information about the current Graph; the Graph parameter allows this to be overridden so that information may be returned about an arbitrary Graph.
+By default, Get-GraphCurrentConnection returns information about the current Graph; the Graph parameter allows this to be overridden so that information may be returned about an arbitrary Graph.
 
 .OUTPUTS
 A PSCustomObject that contains the following fields:
@@ -45,7 +45,7 @@ A PSCustomObject that contains the following fields:
 In this module, there are no commands to create or find new Graph objects; the module does export interfaces for use in building commands that do this. So by default there is only one active Graph, and it points to the v1.0 Graph API version. Commands such as Get-GraphResource and Invoke-GraphApiRequest allow you to override the API version with a Version parameter while continuing to use the current Graph's connection information to access the Graph service.
 
 .EXAMPLE
-Get-GraphConnectionInfo
+Get-GraphCurrentConnection
 
 AppId      : 9825d80c-5aa0-42ef-bf13-61e12116704c
 Endpoint   : https://graph.microsoft.com/
@@ -58,25 +58,25 @@ Connection : @{ScriptClass=; NoBrowserUI=False; Scopes=System.String[]; Connecte
 Connect-GraphApi
 New-GraphConnection
 #>
-function Get-GraphConnectionInfo {
-    [cmdletbinding()]
+function Get-GraphCurrentConnection {
+    [cmdletbinding(positionalbinding=$false, defaultparametersetname='GraphName')]
     param(
-        [parameter(position=0, valuefrompipeline=$true)]
-        $Graph = $null
+        [parameter(parametersetname='GraphName')]
+        [string]
+        $GraphName = $null,
+
+        [parameter(parametersetname='Graph', valuefrompipeline=$true)]
+        [PSTypeName('GraphContextDisplayType')] # Not defined in this module :(
+        $Graph
     )
     Enable-ScriptClassVerbosePreference
 
     $context = if ( $Graph ) {
-        if ( $Graph -is [String] ) {
-            $specificContext = $::.LogicalGraphManager |=> Get |=> GetContext $Graph
-            if (! $specificContext ) {
-                throw "The specified Graph '$Graph' could not be found"
-            }
-            $specificContext
-        } elseif ( $graph | gm Details -erroraction ignore ) {
-            $Graph.details
-        } else {
-            throw "Specified Graph argument '$Graph' is not a valid type returned by Get-Graph"
+        $Graph
+    } elseif ( $GraphName ) {
+        $namedContext = $::.LogicalGraphManager |=> Get |=> GetContext $GraphName
+        if (! $namedContext ) {
+            throw "The specified Graph '$GraphName' could not be found"
         }
     } else {
         $::.GraphContext |=> GetCurrent
