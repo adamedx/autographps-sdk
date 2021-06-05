@@ -98,6 +98,7 @@ FunctionsToExport = @(
     'Remove-GraphApplicationConsent'
     'Remove-GraphConnection'
     'Remove-GraphResource'
+    'Select-GraphConnection'
     'Select-GraphProfileSettings'
     'Set-GraphApplicationCertificate'
     'Set-GraphApplicationConsent'
@@ -118,7 +119,7 @@ CmdletsToExport = @()
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl')
+AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl', 'scon')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -177,6 +178,7 @@ AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphCont
         '.\src\cmdlets\Remove-GraphApplicationConsent.ps1'
         '.\src\cmdlets\Remove-GraphConnection.ps1'
         '.\src\cmdlets\Remove-GraphResource.ps1'
+        '.\src\cmdlets\Select-GraphConnection.ps1'
         '.\src\cmdlets\Select-GraphProfileSettings.ps1'
         '.\src\cmdlets\Set-GraphApplicationCertificate.ps1'
         '.\src\cmdlets\Set-GraphApplicationConsent.ps1'
@@ -259,6 +261,7 @@ None.
 ### New features
 
 * New `Set-GraphApplicationCertificate` command that supports specifying an existing public key certificate in the file system (both .cer and .pfx formats) or those from the Windows certificate store.
+* New `Select-GraphConnection` command to switch between connections without connecting to them
 
 ### Fixed defects
 

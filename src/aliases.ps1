@@ -20,4 +20,5 @@ set-alias gcat Get-GraphResource
 set-alias gcon Get-GraphConnectionInfo
 set-alias Get-GraphContent Get-GraphResource
 set-alias ggl Get-GraphLog
+set-alias scon Select-GraphConnection
 

@@ -30,7 +30,7 @@ Get-GraphError
 RequestTimestamp        : 6/1/2021 09:21:15 PM -07:00
 Status                  : 400
 ErrorResponse           : {"error":{"code":"Request_BadRequest","message":"A value is required for property
-                          'securityEnabled' of resource 'Group'.","innerError":{"date":"2021-06-04T12:39:23","request-i
+                          'securityEnabled' of resource 'Group'.","innerError":{"date":"2021-06-01T09:21:16","request-i
                           ":"b9a624e0-8b97-4888-81f7-23976c0488d0","client-request-id":"a17ecfec-99c9-4578-a1db-a194a6
                           b6abbf"}}}
 Method                  : POST
@@ -41,7 +41,7 @@ RequestHeaders          : {Authorization, Content-Type, client-request-id, Consi
 ClientRequestId         : b01e4465-3543-4eda-abd8-b26d1ffb9a82
 AppId                   : 6afd9af6-a06a-4522-b06b-59142f41306d
 TenantId                : a764b39d-c66a-4166-b1ef-5cdfb5259d3e
-serUpn                  : cleo@hotline.org
+UserUpn                 : cleo@hotline.org
 UserObjectId            : 95230052-9ee3-3ee3-0001-fa3829ec1399
 AuthType                : Delegated
 ResourceUri             : groups

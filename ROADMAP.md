@@ -2,12 +2,9 @@
 
 ## To-do items -- prioritized
 
-* Add formatting and output type for servicePrincipal
 * Add description to New-GraphApplication
-* Add Select-GraphConnection
 * Add thumbprint option to Set-GraphApplicationCertificate
 * Add CertificatePath option to New-GraphLocalCertificate and New-GraphApplicationCertificate
-* Fix Get-GraphError to just use the log
 * Make app operations default to objectid for efficiency
 * Add formatting for get-graphapplicationserviceprincipal
 * Fix get-graphmethod -uri to not need graphname
@@ -366,6 +363,8 @@
 * Fix psm1
 * Fix copyrights
 * Update README
+* Remove Get-GraphSchema
+* Remove Get-GraphVersion
 * Fix bug in scopehelper where we return all scopes when asked only for delegated
 * Get module to install and function on Linux
 * Fix output for remote ps sessions in device code login
@@ -390,6 +389,9 @@
 * Add delta
 * Parse odata context
 * Use a new appid hosted in a normal aad tenant rather than a consumer-initiated tenant
+* Add useragent to connection commands
+* Add Get-GraphProfileSettings, Select-GraphProfileSettings
+* Add Get-GraphConnection, Remove-GraphConnection
 * Add Get-GraphProfileSettings, Select-GraphProfile
 * Add Get-GraphConnection, Select-GraphConnection
 * Allow named connections
@@ -411,23 +413,6 @@
 * Should add Remove-GraphApplicationCertificate
 * Disable auto-cert generation for apps, make it opt-in everywhere (not just Linux) and add warnings
 * Change size in Get-GraphLog to ResponseRawContentSize field
-* Add formatting to Get-GraphApplicationCertificate
-* Formatting for get-graphapplicationcertificate
-* Outputtype for application certificate commands
-* outputtype for application commands
-* Make GraphConnectionStatus commands not return connection info :(
-
-### Postponed
-
-* transform schema, version objects to hashtables
-* Delay schema parsing at startup -- this didn't seem to improve startup perf, and the sleep we inserted took effect after the module was available for user input, which itself had a 10s + delay. Optimizing that delay would seem to be in order before putting in a delay to processing.
-* Make content column actually add the columns
-* Add -filter to get-graphitem
-* Add -filter to get-graphschema
-* Add hint of additional records
-* Add continue feature?
-* Test Release
-* Remove enums
 * Remove Get-GraphSchema
 * Remove Get-GraphVersion
 * Add useragent to connection commands
@@ -438,6 +423,24 @@
 * Formatting for application
 * Add Remove-GraphApplicationCertificate
 * Fix $app | get-graphapplicationcertificate | remove-graphapplicationcertificate
+* Fix Get-GraphError to just use the log
+* Add formatting to Get-GraphApplicationCertificate
+* Formatting for get-graphapplicationcertificate
+* Outputtype for application certificate commands
+* outputtype for application commands
+* Make GraphConnectionStatus commands not return connection info :(
+* Add Select-GraphConnection
+
+### Postponed
+
+* transform schema, version objects to hashtables
+* Delay schema parsing at startup -- this didn't seem to improve startup perf, and the sleep we inserted took effect after the module was available for user input, which itself had a 10s + delay. Optimizing that delay would seem to be in order before putting in a delay to processing.
+* Make content column actually add the columns
+* Add hint of additional records
+* Add continue feature?
+* Test Release
+* Remove enums
+
 
 ### Abandoned
 
@@ -453,6 +456,7 @@
 * Use argumentcompleter advanced parameter rather than registerparametercompleter
 * Emit header object in get-graphchilditem ? -- handled with ps format xml
 * Add $ref? Is this New-GraphItemReference, or New-GraphItem with a reference option? -- handled with other commands in another module
+* Add -filter to get-graphschema
 
 #### Stdposh improvements
 

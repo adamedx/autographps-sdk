@@ -59,6 +59,7 @@ Describe "Poshgraph application" {
                 'Remove-GraphApplicationConsent',
                 'Remove-GraphConnection',
                 'Remove-GraphResource',
+                'Select-GraphConnection',
                 'Select-GraphProfileSettings',
                 'Set-GraphApplicationCertificate',
                 'Set-GraphApplicationConsent',
@@ -83,7 +84,7 @@ Describe "Poshgraph application" {
         }
 
         It "should export the exact same set of aliases as are in the set of expected aliases" {
-            $expectedAliases = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl')
+            $expectedAliases = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl', 'scon')
 
             $manifest.AliasesToExport.count | Should BeExactly $expectedAliases.length
 
