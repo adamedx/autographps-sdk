@@ -85,7 +85,7 @@ FunctionsToExport = @(
     'Get-GraphResource'
     'Get-GraphLog'
     'Get-GraphLogOption'
-    'Get-GraphProfileSettings'
+    'Get-GraphProfile'
     'Get-GraphToken'
     'Invoke-GraphApiRequest'
     'New-GraphApplication'
@@ -99,7 +99,7 @@ FunctionsToExport = @(
     'Remove-GraphConnection'
     'Remove-GraphResource'
     'Select-GraphConnection'
-    'Select-GraphProfileSettings'
+    'Select-GraphProfile'
     'Set-GraphApplicationCertificate'
     'Set-GraphApplicationConsent'
     'Set-GraphConnectionStatus'
@@ -165,7 +165,7 @@ CmdletsToExport = @()
         '.\src\cmdlets\Get-GraphResource.ps1'
         '.\src\cmdlets\Get-GraphLog.ps1'
         '.\src\cmdlets\Get-GraphLogOption.ps1'
-        '.\src\cmdlets\Get-GraphProfileSettings.ps1'
+        '.\src\cmdlets\Get-GraphProfile.ps1'
         '.\src\cmdlets\Get-GraphToken.ps1'
         '.\src\cmdlets\Invoke-GraphApiRequest.ps1'
         '.\src\cmdlets\New-GraphApplication.ps1'
@@ -179,7 +179,7 @@ CmdletsToExport = @()
         '.\src\cmdlets\Remove-GraphConnection.ps1'
         '.\src\cmdlets\Remove-GraphResource.ps1'
         '.\src\cmdlets\Select-GraphConnection.ps1'
-        '.\src\cmdlets\Select-GraphProfileSettings.ps1'
+        '.\src\cmdlets\Select-GraphProfile.ps1'
         '.\src\cmdlets\Set-GraphApplicationCertificate.ps1'
         '.\src\cmdlets\Set-GraphApplicationConsent.ps1'
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1'
@@ -257,6 +257,8 @@ None.
 ### Breaking changes
 
 * `Get-GraphConnectionInfo` has been renamed to `Get-GraphCurrentConnection`
+* `Get-GraphProfileSettings` renamed to `Get-GraphProfile`
+* `Select-GraphProfileSettings` renamed to `Select-GraphProfile`
 
 ### New features
 

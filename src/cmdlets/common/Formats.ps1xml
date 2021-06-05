@@ -468,6 +468,49 @@ limitations under the License.
     </View>
 
     <View>
+      <Name>GraphProfile</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphProfileSettings</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <Label>ProfileName</Label>
+        <ScriptBlock>$::.ColorString.ToStandardColorString($_.ProfileName, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+      </GroupBy>
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+
+              <ListItem>
+                <Label>Connection</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Connection, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>IsDefault</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.IsDefault, 'EnabledState', $null, $true, $false)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AutoConnect</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>NoBrowserSigninUI</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>InitialApiVersion</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LogLevel</PropertyName>
+              </ListItem>
+
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
       <Name>GraphApplication</Name>
       <ViewSelectedBy>
         <TypeName>AutoGraph.Application</TypeName>

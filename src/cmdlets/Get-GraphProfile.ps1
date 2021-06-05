@@ -14,7 +14,7 @@
 
 . (import-script ../client/LocalProfile)
 
-function Get-GraphProfileSettings {
+function Get-GraphProfile {
     [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(position=0, parametersetname='byname', mandatory=$true)]

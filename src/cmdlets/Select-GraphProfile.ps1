@@ -14,7 +14,7 @@
 
 . (import-script ../client/LocalProfile)
 
-function Select-GraphProfileSettings {
+function Select-GraphProfile {
     [cmdletbinding(positionalbinding=$false)]
     param(
         [parameter(position=0, valuefrompipelinebypropertyname=$true, mandatory=$true)]

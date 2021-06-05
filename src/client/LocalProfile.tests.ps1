@@ -179,13 +179,13 @@ Describe 'LocalProfile class' {
             test-path env:AUTOGRAPH_SETTINGS_FILE | Should Be $false
         }
 
-        It 'Should result in no profiles returned to the Get-GraphProfileSettings command and no errors' {
-            { Get-GraphProfileSettings | out-null } | Should Not Throw
-            Get-GraphProfileSettings | Should Be $null
+        It 'Should result in no profiles returned to the Get-GraphProfile command and no errors' {
+            { Get-GraphProfile | out-null } | Should Not Throw
+            Get-GraphProfile | Should Be $null
         }
 
         It 'Should result in the default profile being returned as $null' {
-            Get-GraphProfileSettings -current | Should Be $null
+            Get-GraphProfile -current | Should Be $null
         }
 
         It 'Should result in an error when any profile name is specified to Select-GraphProfileSettings' {
@@ -258,7 +258,7 @@ Describe 'LocalProfile class' {
         }
 
         It "Should have the expected default profile" {
-            $profileSettings = Get-GraphProfileSettings -current
+            $profileSettings = Get-GraphProfile -current
             $profileSettings.ProfileName | Should Be $testSettings.defaultProfile
             $profileSettings.InitialApiVersion | Should Be ( $testSettings.profiles.list |
               where {
@@ -269,14 +269,14 @@ Describe 'LocalProfile class' {
         }
 
         It "Should return the expected set of profiles from GetProfiles sorted alphabetically by profile name" {
-            $profiles = Get-GraphProfileSettings
+            $profiles = Get-GraphProfile
 
             $expectedProfileNames = $testSettings.profiles.list | where { $_ | gm name -erroraction ignore } | select -expandproperty name | select-object -unique | sort-object
             Compare-object $expectedProfileNames $profiles.ProfileName -syncwindow 0 | Should Be $null
         }
 
         It "Should ignore settings from a duplicated profile" {
-            $profiles = Get-GraphProfileSettings
+            $profiles = Get-GraphProfile
 
             $expectedProfileData = $testSettings.profiles.list |
               where {
@@ -319,7 +319,7 @@ Describe 'LocalProfile class' {
         }
 
         It "Should include the initial api version of beta in all versions except when overridden due to inclusion of initialApi version of beta in the defaults section" {
-            $profiles = Get-GraphProfileSettings
+            $profiles = Get-GraphProfile
             foreach ( $profileSettings in $profiles ) {
                 $profileData = $testSettings.profiles.list |
                   where {
@@ -339,7 +339,7 @@ Describe 'LocalProfile class' {
         }
 
         It "Should have the expected settings for each profile" {
-            $profiles = Get-GraphProfileSettings
+            $profiles = Get-GraphProfile
             $defaultProfile = $testSettings.defaultProfile
 
             foreach ( $actualProfile in $profiles ) {

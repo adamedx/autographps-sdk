@@ -113,7 +113,7 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Get-GraphResource  (ggr, gcat, Get-GraphContent) | Given a relative (to the Graph or current location) Uri gets information about the entity                                                   |
 | Get-GraphLog (ggl)                   | Gets the local log of all requests to Graph made by this module                                                                                         |
 | Get-GraphLogOption                   | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
-| Get-GraphProfileSettings | Gets the list of profiles defined in the [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md) -- these profiles may be enabled by the `Select-GraphProfileSettings` command. |
+| Get-GraphProfile                     | Gets the list of profiles defined in the [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md) -- these profiles may be enabled by the `Select-GraphProfileSettings` command. |
 | Get-GraphToken                       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) |
 | Invoke-GraphRequest                  | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                                                                      |
 | New-GraphApplication                 | Creates an Azure AD application configured to authenticate to Microsoft Graph                                                                           |
@@ -127,7 +127,7 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Remove-GraphConnection               | Removes a named graph connection                                                                                                                        |
 | Remove-GraphResource                 | Makes generic ``DELETE`` requests to a specified Graph URI to delete resources                                                                          |
 | Select-GraphConnection (scon)              | Sets the named connection used by default for commands in the current Graph                                                                       |
-| Select-GraphProfileSettings          | Enables the behaviors mandated by the setting values of the specified profile. Profiles are defined by the user's [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md). |
+| Select-GraphProfile                  | Enables the behaviors mandated by the setting values of the specified profile. Profiles are defined by the user's [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md). |
 | Set-GraphApplicationCertificate      | Given the specified certificate or certificate path sets the application's certificates                                             |
 | SetGraphApplicationConsent           | Sets a consent grant for an Azure AD application                                                                                                        |
 | Set-GraphConnectionStatus            | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service                    |
