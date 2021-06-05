@@ -23,8 +23,9 @@ ScriptClass ApplicationObject {
     $AppId = $null
     $AppAPI = $null
     $isConfidential = $false
+    $Description = $null
 
-    function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isConfidential, $redirectUris) {
+    function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isConfidential, $redirectUris, [HashTable] $additionalProperties) {
         $this.AppAPI = $appAPI
 
         $appParameters = @{
@@ -38,6 +39,13 @@ ScriptClass ApplicationObject {
         }
 
         $newApp = __NewApp @appParameters
+
+        if ( $additionalProperties ) {
+            foreach ( $propertyName in $additionalProperties.Keys ) {
+                $newApp.Add($propertyName, $additionalProperties[$propertyName])
+            }
+        }
+
 
         if ( ! $isConfidential ) {
             __SetPublicApp $newApp $redirectUris

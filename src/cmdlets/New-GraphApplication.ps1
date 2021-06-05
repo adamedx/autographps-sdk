@@ -31,6 +31,8 @@ function New-GraphApplication {
 
         [string[]] $Tags,
 
+        $AdditionalProperties,
+
         [AppTenancy] $Tenancy = ([AppTenancy]::Auto),
 
         [String[]] $DelegatedUserPermissions,
@@ -87,8 +89,6 @@ function New-GraphApplication {
 
         [string] $UserIdToConsent,
 
-        [String] $Version = $null,
-
         [PSCustomObject] $Connection = $null
     )
     Enable-ScriptClassVerbosePreference
@@ -103,7 +103,7 @@ function New-GraphApplication {
         $::.LocalCertificate |=> ValidateCertificateCreationCapability
     }
 
-    $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+    $commandContext = new-so CommandContext $Connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
 
     $::.ScopeHelper |=> ValidatePermissions $ApplicationPermissions $true $SkipPermissionNameCheck.IsPresent $commandContext.connection
     $::.ScopeHelper |=> ValidatePermissions $DelegatedUserPermissions $false $SkipPermissionNameCheck.IsPresent $commandContext.connection
@@ -119,7 +119,15 @@ function New-GraphApplication {
 
     $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
 
-    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy ( ! $AllowMSAAccounts.IsPresent ) $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris
+    $propertyTable = if ( $AdditionalProperties ) {
+        if ( $AdditionalProperties -is [Hashtable] ) {
+            $AdditionalProperties
+        } elseif ( $AdditonalProperties -is [string] ) {
+            $AdditionalProperties | ConvertFrom-JSON
+        }
+    }
+
+    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy ( ! $AllowMSAAccounts.IsPresent ) $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris $propertyTable
 
     $newApp = $newAppRegistration |=> CreateNewApp
 

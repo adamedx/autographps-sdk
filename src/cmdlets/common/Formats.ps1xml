@@ -553,13 +553,6 @@ limitations under the License.
                 <PropertyName>verifiedPublisher</PropertyName>
               </ListItem>
               <ListItem>
-                <PropertyName>disabledByMicrosoftStatus</PropertyName>
-              </ListItem>
-              <ListItem>
-                <Label>Description</Label>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Notes, 'Emphasis2', $null, $null, $null)</ScriptBlock>
-              </ListItem>
-              <ListItem>
                 <PropertyName>info</PropertyName>
               </ListItem>
               <ListItem>

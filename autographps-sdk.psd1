@@ -262,6 +262,7 @@ None.
 
 * New `Set-GraphApplicationCertificate` command that supports specifying an existing public key certificate in the file system (both .cer and .pfx formats) or those from the Windows certificate store.
 * New `Select-GraphConnection` command to switch between connections without connecting to them
+* New `AdditionalProperties` parameter for `New-GraphApplication` to set values for arbitrary properties of the application
 
 ### Fixed defects
 
