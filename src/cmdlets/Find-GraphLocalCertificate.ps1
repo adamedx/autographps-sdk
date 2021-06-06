@@ -27,7 +27,7 @@ function Find-GraphLocalCertificate {
         [parameter(parametersetname='byobjectid', mandatory=$true)]
         [Guid] $ObjectId,
 
-        $CertStoreLocation = 'cert:/currentuser/my'
+        $CertStoreLocation = 'Cert:/currentuser/my'
     )
 
     begin {}

@@ -20,10 +20,12 @@ function Set-GraphApplicationCertificate {
     [cmdletbinding(supportsshouldprocess=$true, confirmimpact='high', positionalbinding=$false)]
     param(
         [parameter(position=0, parametersetname='appid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='appidthumb', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='appidcert', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Guid] $AppId,
 
         [parameter(parametersetname='objectid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='objectthumb', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='objectidcert', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='appid', valuefrompipelinebypropertyname=$true)]
         [parameter(parametersetname='appidcert', valuefrompipelinebypropertyname=$true)]
@@ -37,6 +39,14 @@ function Set-GraphApplicationCertificate {
         [parameter(position=2)]
         [ValidateSet('Add', 'Replace')]
         $EditMode = 'Add',
+
+        [parameter(parametersetname='appidthumb', mandatory=$true)]
+        [parameter(parametersetname='objectidthumb', mandatory=$true)]
+        [string[]] $Thumbprint,
+
+        [parameter(parametersetname='appidthumb')]
+        [parameter(parametersetname='objectidthumb')]
+        [string] $CertStoreLocation = 'Cert:/currentuser/my',
 
         [parameter(parametersetname='appidcert', mandatory=$true)]
         [parameter(parametersetname='objectidcert', mandatory=$true)]
@@ -73,6 +83,12 @@ function Set-GraphApplicationCertificate {
 
         $targetCertificates = if ( $Certificate ) {
             $Certificate
+        } elseif ( $Thumbprint ) {
+            $storePaths = foreach ( $thumbprintItem in $Thumbprint ) {
+                join-path -Path $CertStoreLocation -ChildPath $thumbprintItem
+            }
+
+            $storePaths | get-item
         } else {
             $certCredentialCount = ( $CertCredential | Measure-Object ).Count
             $certCount = ( $CertificatePath | Measure-Object ).Count

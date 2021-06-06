@@ -266,6 +266,7 @@ None.
 * New `Select-GraphConnection` command to switch between connections without connecting to them
 * New `AdditionalProperties` parameter for `New-GraphApplication` to set values for arbitrary properties of the application
 * New `CertificatePath` parameter for `New-GraphApplicationCertificate` and `New-GraphLocalCertificate`
+* New `Thumbprint` parameter for `Set-GraphApplicationCertificate`
 
 ### Fixed defects
 
