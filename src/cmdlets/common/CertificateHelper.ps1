@@ -38,7 +38,7 @@ ScriptClass CertificateHelper {
         $this.app = $null
     }
 
-    function NewCertificate([string] $certDirectory, $certStoreLocation, [PSCredential] $certCredential, [bool] $noCertCredential, [bool] $updateApplication) {
+    function NewCertificate([string] $certDirectory, $certStoreLocation, [PSCredential] $certCredential, [bool] $noCertCredential, [bool] $updateApplication, [string] $certificateFilePath) {
         $targetCertCredential = __GetCertCredentialForDirectory $certDirectory $certCredential $noCertCredential
 
         if ( $updateApplication ) {
@@ -51,8 +51,8 @@ ScriptClass CertificateHelper {
             __UpdateApplication $certificate
         }
 
-        $exportedCertLocation = if ( $certDirectory ) {
-            __ExportCertificate $certificate $targetCertCredential $certDirectory
+        $exportedCertLocation = if ( $certDirectory -or $certificateFilePath) {
+            __ExportCertificate $certificate $targetCertCredential $certDirectory $certificateFilePath
         }
 
         [PSCustomObject] @{
@@ -132,12 +132,12 @@ ScriptClass CertificateHelper {
         Set-GraphApplicationCertificate -AppId $this.appId -ObjectId $this.objectId -Certificate $certificate.X509Certificate
     }
 
-    function __ExportCertificate($certificate, [PSCredential] $exportedCertCredential, [string] $certOutputDirectory) {
+    function __ExportCertificate($certificate, [PSCredential] $exportedCertCredential, [string] $certOutputDirectory, [string] $certificateFilePath ) {
         $certpassword = if ( $exportedCertCredential ) {
             $exportedCertCredential.Password
         }
 
-        $certificate |=> Export $CertOutputDirectory $certPassword
+        $certificate |=> Export $certOutputDirectory $certificateFilePath $certPassword
     }
 
     static {
@@ -147,29 +147,21 @@ ScriptClass CertificateHelper {
             __RegisterDisplayType
         }
 
-
-        function CertificateInfoToDisplayableObject($friendlyName, $subject, $graphKeyId, $appId, $appObjectId, $notBefore, $notAfter, $thumbprint, $certificatePath) {
-            $::.Secret |=> ToDisplayableSecretInfo Certificate $friendlyName $subject $graphKeyId $appId $appObjectId $notBefore $notAfter $thumbprint $certificatePath $CERTIFICATE_DISPLAY_TYPE
+        function CertificateInfoToDisplayableObject($friendlyName, $subject, $graphKeyId, $appId, $appObjectId, $notBefore, $notAfter, $thumbprint, $certificatePath, $exportedCertificatePath) {
+            $::.Secret |=> ToDisplayableSecretInfo Certificate $friendlyName $subject $graphKeyId $appId $appObjectId $notBefore $notAfter $thumbprint $certificatePath $CERTIFICATE_DISPLAY_TYPE $exportedCertificatePath
         }
 
-        function CertificateToDisplayableObject($x509Certificate, $appId, $appObjectId, $certificateFilePath, $keyId) {
+        function CertificateToDisplayableObject($x509Certificate, $appId, $appObjectId, $certStorePath, $keyId, $certificateFilePath) {
             $notAfter = [DateTimeOffset]::new($x509Certificate.notAfter)
             $notBefore = [DateTimeOffset]::new($x509Certificate.notBefore)
 
-            $targetPath = if ( $certificateFilePath ) {
-                $certificateFilePath
+            $targetPath = if ( $certStorePath ) {
+                __NormalizeCertStorePath $certStorePath
             } else {
-                $certStorePath = $x509Certificate.PSPath -split '::'
-                $components = $certStorePath -split '::'
-                $componentCount = ( $components | measure-object ).count
-                if ( $componentCount -gt 1) {
-                    join-path 'cert:' ( $components[1..($componentCount - 1)] -join ( [System.IO.Path]::DirectorySeparatorChar ) )
-                } else {
-                    $certStorePath
-                }
+                $certificateFilePath
             }
 
-            CertificateInfoToDisplayableObject $x509Certificate.FriendlyName $x509Certificate.Subject $null $appId $appObjectId $notBefore $notAfter $x509Certificate.Thumbprint $targetPath
+            CertificateInfoToDisplayableObject $x509Certificate.FriendlyName $x509Certificate.Subject $null $appId $appObjectId $notBefore $notAfter $x509Certificate.Thumbprint $targetPath $certificateFilePath
         }
 
         function GetConnectionCertCredential($connection, [PSCredential] $certCredential, [boolean] $promptForCertCredentialIfNeeded, [boolean] $noCertCredential) {
@@ -201,6 +193,16 @@ ScriptClass CertificateHelper {
             )
 
             $::.DisplayTypeFormatter |=> RegisterDisplayType $CERTIFICATE_DISPLAY_TYPE $typeProperties $true
+        }
+
+        function __NormalizeCertStorePath([string] $certStorePath) {
+            $driveAndPath = $certStorePath -split '::'
+
+            if ( $driveAndPath.length -eq 2 ) {
+                join-path -Path 'Cert:' -ChildPath $driveAndPath[1]
+            } else {
+                $certStorePath
+            }
         }
     }
 }

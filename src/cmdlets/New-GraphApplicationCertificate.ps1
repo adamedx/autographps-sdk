@@ -20,8 +20,10 @@ function New-GraphApplicationCertificate {
     param(
         [parameter(position=0, parametersetname='app', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='appexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='appexportpath', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='appid', mandatory=$true)]
         [parameter(position=0, parametersetname='appidexport', mandatory=$true)]
+        [parameter(position=0, parametersetname='appidexportpath', mandatory=$true)]
         [Guid] $AppId,
 
         [parameter(position=1)]
@@ -33,8 +35,10 @@ function New-GraphApplicationCertificate {
         # not certificate objects -- those do not have an objectid property, so we make the objectid mandatory
         [parameter(parametersetname='app', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='appexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='appexportpath', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='objectid', mandatory=$true)]
         [parameter(parametersetname='objectidexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='objectidexportpath', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [Alias('Id')]
         [Guid] $ObjectId,
 
@@ -45,14 +49,23 @@ function New-GraphApplicationCertificate {
         [parameter(parametersetname='objectidexport', mandatory=$true)]
         [string] $CertOutputDirectory,
 
-        [parameter(parametersetname='appexport')]
-        [parameter(parametersetname='appidexport')]
-        [parameter(parametersetname='objectidexport')]
-        [PSCredential] $CertCredential,
+
+        [parameter(parametersetname='appexportpath', mandatory=$true)]
+        [parameter(parametersetname='appidexportpath', mandatory=$true)]
+        [parameter(parametersetname='objectidexportpath', mandatory=$true)]
+        [string] $CertificateFilePath,
 
         [parameter(parametersetname='appexport')]
         [parameter(parametersetname='appidexport')]
         [parameter(parametersetname='objectidexport')]
+        [parameter(parametersetname='appexportpath')]
+        [parameter(parametersetname='appidexportpath')]
+        [parameter(parametersetname='objectidexportpath')]
+        [PSCredential] $CertCredential,
+
+        [parameter(parametersetname='appexportpath')]
+        [parameter(parametersetname='appidexportpath')]
+        [parameter(parametersetname='objectidexportpath')]
         [switch] $NoCertCredential,
 
         [switch] $AsX509Certificate,
@@ -65,11 +78,11 @@ function New-GraphApplicationCertificate {
 
     $certHelper = new-so CertificateHelper $AppId $ObjectId $null $CertValidityTimespan $CertValidityStart
 
-    $certificateResult = $certHelper |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $true
+    $certificateResult = $certHelper |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $true $CertificateFilePath
     $X509Certificate = $certificateResult.Certificate.X509Certificate
 
     if ( ! $AsX509Certificate.IsPresent ) {
-        $::.CertificateHelper |=> CertificateToDisplayableObject $X509Certificate $certHelper.appId $certHelper.objectId $certificateResult.ExportedLocation
+        $::.CertificateHelper |=> CertificateToDisplayableObject $X509Certificate $certHelper.appId $certHelper.objectId $X509Certificate.PSPath $null $certificateResult.ExportedLocation
     } else {
         $X509Certificate
     }

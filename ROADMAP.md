@@ -3,7 +3,6 @@
 ## To-do items -- prioritized
 
 * Add thumbprint option to Set-GraphApplicationCertificate
-* Add CertificatePath option to New-GraphLocalCertificate and New-GraphApplicationCertificate
 * Make app operations default to objectid for efficiency
 * Add formatting for get-graphapplicationserviceprincipal
 * Fix get-graphmethod -uri to not need graphname
@@ -431,6 +430,7 @@
 * Change get-graphconnectioninfo to get-graphcurrentconnection
 * Add additionalproperties parameter to New-GraphApplication
 * Rename *-grapphprofilesettings to *-graphprofile
+* Add CertificatePath option to New-GraphLocalCertificate and New-GraphApplicationCertificate
 
 ### Postponed
 

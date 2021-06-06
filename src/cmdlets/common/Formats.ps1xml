@@ -764,6 +764,12 @@ limitations under the License.
               </ListItem>
               <ListItem>
                 <ItemSelectionCondition>
+                  <ScriptBlock>$_.ExportedCertificatePath -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>ExportedCertificatePath</PropertyName>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
                   <ScriptBlock>$_.KeyId -ne $null</ScriptBlock>
                 </ItemSelectionCondition>
                 <PropertyName>KeyId</PropertyName>

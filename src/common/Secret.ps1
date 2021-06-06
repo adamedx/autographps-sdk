@@ -111,7 +111,7 @@ ScriptClass Secret {
     }
 
     static {
-        function ToDisplayableSecretInfo($secretType, $displayName, $subject, $graphKeyId, $appId, $appObjectId, $notBefore, $notAfter, $customKeyId, $localPath, $typeName) {
+        function ToDisplayableSecretInfo($secretType, $displayName, $subject, $graphKeyId, $appId, $appObjectId, $notBefore, $notAfter, $customKeyId, $localPath, $typeName, $exportedCertificatePath) {
 
             $certificatePath = if ( $secretType -eq 'Certificate' ) {
                 $localPath
@@ -130,6 +130,7 @@ ScriptClass Secret {
                 NotAfter = $notAfter
                 NotBefore = $notBefore
                 CertificatePath = $certificatePath
+                ExportedCertificatePath = $exportedCertificatePath
                 AppObjectId = $appObjectId
             }
 

@@ -20,11 +20,13 @@ function New-GraphLocalCertificate {
     param(
         [parameter(parametersetname='pipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='pipelineexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='pipelineexportpath', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(position=0, parametersetname='appid', mandatory=$true)]
         [Guid] $AppId,
 
         [parameter(parametersetname='pipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='pipelineexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='pipelineexportpath', valuefrompipelinebypropertyname=$true, mandatory=$true)]
         [parameter(parametersetname='objectid', mandatory=$true)]
         [Alias('Id')]
         [Guid] $ObjectId,
@@ -44,27 +46,40 @@ function New-GraphLocalCertificate {
         [parameter(parametersetname='objectidexport', mandatory=$true)]
         [string] $CertOutputDirectory,
 
+        [parameter(parametersetname='pipelineexportpath', mandatory=$true)]
+        [parameter(parametersetname='appidexportpath', mandatory=$true)]
+        [parameter(parametersetname='objectidexportpath', mandatory=$true)]
+        [string] $CertificateFilePath,
+
         [parameter(parametersetname='pipelineexport')]
         [parameter(parametersetname='appidexport')]
         [parameter(parametersetname='objectidexport')]
+        [parameter(parametersetname='pipelineexportpath')]
+        [parameter(parametersetname='appidexportpath')]
+        [parameter(parametersetname='objectidexportpath')]
         [PSCredential] $CertCredential,
 
         [parameter(parametersetname='pipelineexport')]
         [parameter(parametersetname='appidexport')]
         [parameter(parametersetname='objectidexport')]
+        [parameter(parametersetname='pipelineexportpath')]
+        [parameter(parametersetname='appidexportpath')]
+        [parameter(parametersetname='objectidexportpath')]
         [switch] $NoCertCredential,
 
         [switch] $AsX509Certificate
     )
     Enable-ScriptClassVerbosePreference
 
+    $::.LocalCertificate |=> ValidateCertificateCreationCapability
+
     $certHelper = new-so CertificateHelper $AppId $ObjectId $ApplicationName $CertValidityTimespan $CertValidityStart
 
-    $certificateResult = $certHelper |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $false
+    $certificateResult = $certHelper |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $false $CertificateFilePath
     $X509Certificate = $certificateResult.Certificate.X509Certificate
 
     if ( ! $AsX509Certificate.IsPresent ) {
-        $::.CertificateHelper |=> CertificateToDisplayableObject $X509Certificate $certHelper.appId $certHelper.objectId $certificateResult.ExportedLocation
+        $::.CertificateHelper |=> CertificateToDisplayableObject $X509Certificate $certHelper.appId $certHelper.objectId $X509Certificate.PSPath $null $certificateResult.ExportedLocation
     } else {
         $X509Certificate
     }

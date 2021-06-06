@@ -140,8 +140,12 @@ ScriptClass GraphApplicationCertificate {
         $::.LocalCertificate |=> GetEncodedCertificateThumbprint $this.X509Certificate
     }
 
-    function Export($outputDirectory, [SecureString] $certPassword) {
-        $destination = join-path $outputDirectory "GraphApp-$($this.appid).pfx"
+    function Export($outputDirectory, [string] $certificateFilePath, [SecureString] $certPassword) {
+        $destination = if ( ! $certificateFilePath ) {
+            join-path $outputDirectory "GraphApp-$($this.appid).pfx"
+        } else {
+            $certificateFilePath
+        }
 
         if ( test-path $destination ) {
             throw [ArgumentException]::new("An exported certificate for appid '$($this.appid)' already exists at the specified Directory location '$outputDirectory'")
