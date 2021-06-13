@@ -39,6 +39,8 @@ function New-GraphLocalCertificate {
 
         [DateTime] $CertValidityStart,
 
+        [int] $CertKeyLength = 4096,
+
         $CertStoreLocation = 'cert:/currentuser/my',
 
         [parameter(parametersetname='pipelineexport', mandatory=$true)]
@@ -73,7 +75,7 @@ function New-GraphLocalCertificate {
 
     $::.LocalCertificate |=> ValidateCertificateCreationCapability
 
-    $certHelper = new-so CertificateHelper $AppId $ObjectId $ApplicationName $CertValidityTimespan $CertValidityStart
+    $certHelper = new-so CertificateHelper $AppId $ObjectId $ApplicationName $CertValidityTimespan $CertValidityStart $null $CertKeyLength
 
     $certificateResult = $certHelper |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $false $CertificateFilePath
     $X509Certificate = $certificateResult.Certificate.X509Certificate

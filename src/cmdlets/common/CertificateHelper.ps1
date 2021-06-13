@@ -26,19 +26,21 @@ ScriptClass CertificateHelper {
     $applicationName = $null
     $certValidityTimespan = $null
     $certValidityStart = $null
+    $keyLength = $null
     $connection = $null
     $app = $null
 
-    function __initialize($appId, $objectId, [string] $applicationName, $certValidityTimespan, $certValidityStart, $connection) {
+    function __initialize($appId, $objectId, [string] $applicationName, $certValidityTimespan, $certValidityStart, $connection, $keyLength) {
         $this.appId = $appid
         $this.applicationName = $applicationName
         $this.certValidityTimespan = $certValidityTimespan
         $this.certValidityStart = $certValidityStart
+        $this.keyLength = $keyLength
         $this.connection = $connection
         $this.app = $null
     }
 
-    function NewCertificate([string] $certDirectory, $certStoreLocation, [PSCredential] $certCredential, [bool] $noCertCredential, [bool] $updateApplication, [string] $certificateFilePath) {
+    function NewCertificate([string] $certDirectory, $certStoreLocation, [PSCredential] $certCredential, [bool] $noCertCredential, [bool] $updateApplication, [string] $certificateFilePath, [int] $keyLength) {
         $targetCertCredential = __GetCertCredentialForDirectory $certDirectory $certCredential $noCertCredential
 
         if ( $updateApplication ) {
@@ -77,7 +79,7 @@ ScriptClass CertificateHelper {
     }
 
     function __NewLocalCertificate($certStorelocation) {
-        $certificate = new-so GraphApplicationCertificate $this.appId $null $this.applicationName $this.certValidityTimeSpan $this.certValidityStart $certStoreLocation
+        $certificate = new-so GraphApplicationCertificate $this.appId $null $this.applicationName $this.certValidityTimeSpan $this.certValidityStart $certStoreLocation $null $this.keyLength
 
         $certificate |=> Create
 

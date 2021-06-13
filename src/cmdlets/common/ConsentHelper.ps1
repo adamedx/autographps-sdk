@@ -22,25 +22,27 @@ ScriptClass ConsentHelper {
             $this.formatter = new-so DisplayTypeFormatter GraphConsentDisplayType 'PermissionType', 'StartTime', 'GrantedTo', 'Permission'
         }
 
-        function ToDisplayableObject($object) {
+        function ToDisplayableObject($object, $targetAppId, $targetServicePrincipalId) {
             $consentEntries = @()
             $isOAuth2PermissionGrant = !(!($object | gm -erroraction ignore clientid))
 
             if ( $isOAuth2PermissionGrant ) {
                 $startTime = if ( $object | gm startTime -erroraction ignore ) { $object.startTime }
                 $expiryTime = if ( $object | gm expiryTime -erroraction ignore ) { $object.expiryTime }
-                $startTimeOffset = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $startTime $true
-                $expiryTimeOffset = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $expiryTime $true
+                $startTimeOffset = if ( $startTime ) { $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $startTime $true }
+                $expiryTimeOffset = if ( $expiryTime ) { $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $expiryTime $true }
                 $grantedTo = if ( $object.consentType -eq 'AllPrincipals' ) { 'AllUsers' } else { $object.PrincipalId }
                 $scopes = $object.scope -split ' '
 
                 foreach ( $scope in $scopes ) {
                     if ( $scope ) {
                         $consentEntries += @{
+                            AppId = $targetAppId
                             PermissionType = 'Delegated'
-                            StartTime = $startTimeOffset
                             Permission = $scope
                             GrantedTo = $grantedTo
+                            ServicePrincipalId = $targetServicePrincipalId
+                            StartTime = $startTimeOffset
                             GraphResource = $object
                         }
                     }
@@ -62,10 +64,12 @@ ScriptClass ConsentHelper {
                 }
 
                 $consentEntries += @{
+                    AppId = $targetAppId
                     PermissionType = 'Application'
-                    StartTime = $creationTimeOffset
                     Permission = $permissionDisplayName
                     GrantedTo = $object.PrincipalId
+                    ServicePrincipalId = $targetServicePrincipalId
+                    StartTime = $creationTimeOffset
                     GraphResource = $object
                 }
             }

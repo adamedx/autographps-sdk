@@ -72,6 +72,10 @@ function New-GraphApplication {
 
         [parameter(parametersetname='confidentialappnewcert')]
         [parameter(parametersetname='confidentialappnewcertexport')]
+        [int] $CertKeyLength = 4096,
+
+        [parameter(parametersetname='confidentialappnewcert')]
+        [parameter(parametersetname='confidentialappnewcertexport')]
         [TimeSpan] $CertValidityTimeSpan,
 
         [parameter(parametersetname='confidentialappnewcert')]
@@ -138,7 +142,13 @@ function New-GraphApplication {
                 ObjectId = $newApp.Id
             }
 
-            'CertCredential', 'CertValidityTimeSpan', 'CertValidityStart', 'CertStoreLocation', 'CertOutputDirectory', 'NoCertCredential' | foreach {
+            'CertCredential',
+            'CertValidityTimeSpan',
+            'CertValidityStart',
+            'CertStoreLocation',
+            'CertOutputDirectory',
+            'CertKeyLength',
+            'NoCertCredential'| foreach {
                 $parameterValue = $PSBoundParameters[$_]
                 if ( $parameterValue -ne $null ) {
                     $newCertificateParameters.Add($_, $parameterValue)

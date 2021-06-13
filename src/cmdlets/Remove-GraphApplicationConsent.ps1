@@ -26,7 +26,7 @@ function Remove-GraphApplicationConsent {
         [Guid[]] $AppId,
 
         [parameter(parametersetname='consentgrant', valuefrompipeline=$true, mandatory=$true)]
-        $ConsentGrant,
+        [PSTypeName('GraphConsentDisplayType')] $ConsentGrant,
 
         [parameter(parametersetname='application', mandatory=$true)]
         [string[]] $ApplicationPermissions,

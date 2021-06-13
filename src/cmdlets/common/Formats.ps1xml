@@ -291,7 +291,7 @@ limitations under the License.
                 <ScriptBlock>$_.identity.app.appid</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.GraphFormatter.ConnectionName($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.identity.TenantDisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
@@ -319,7 +319,7 @@ limitations under the License.
               </ListItem>
               <ListItem>
                 <Label>Name</Label>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.GraphFormatter.ConnectionName($_)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <Label>Status</Label>
@@ -331,11 +331,17 @@ limitations under the License.
               </ListItem>
               <ListItem>
                 <Label>OrganizationId</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.identity.GetTenantId()</ScriptBlock>
+                </ItemSelectionCondition>
                 <ScriptBlock>$_.identity.GetTenantId()</ScriptBlock>
               </ListItem>
               <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.Connected -and $_.identity.app.authType -eq 'Delegated'</ScriptBlock>
+                </ItemSelectionCondition>
                 <Label>User</Label>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.User,'Emphasis2', $null, $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.GraphFormatter.ConnectionUser($_)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <Label>AppID</Label>
@@ -360,6 +366,12 @@ limitations under the License.
               <ListItem>
                 <Label>ConsistencyLevel</Label>
                 <ScriptBlock>if ( $_.consistencyLevel ) { $_.consistencyLevel } else { 'Auto' }</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>! ! $_.UserAgent</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>UserAgent</PropertyName>
               </ListItem>
             </ListItems>
           </ListEntry>
@@ -663,9 +675,6 @@ limitations under the License.
       </ListControl>
     </View>
 
-
-    
-
     <View>
       <Name>GraphCertificate</Name>
       <ViewSelectedBy>
@@ -787,9 +796,98 @@ limitations under the License.
       </ListControl>
     </View>
 
+    <View>
+      <Name>GraphConsent</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphConsentDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>AppId</PropertyName>
+      </GroupBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>PermissionType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>ServicePrincipalId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Permission</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>GrantedTo</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.GraphFormatter.PermissionType($_.PermissionType)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ServicePrincipalId</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Permission, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>GrantedTo</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
 
 
     
+
+    <View>
+      <Name>GraphConsentDetail</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphConsentDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>PermissionType</PropertyName>
+      </GroupBy>
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>AppId</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>PermissionType</Label>
+                <ScriptBlock>$::.GraphFormatter.PermissionType($_.PermissionType)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ServicePrincipalId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.StartTime -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>StartTime</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Permission</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Permission, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>GrantedTo</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+
     
   </ViewDefinitions>
 

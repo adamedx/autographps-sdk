@@ -40,9 +40,16 @@ function Get-GraphConnection {
             $currentConnection
         }
     } else {
-        $::.GraphConnection |=> GetNamedConnection $ConnectionName $true
+        $connections = $::.GraphConnection |=> GetNamedConnection $ConnectionName $true
 
-        if ( ! $ConnectionName ) {
+        foreach ( $connection in $connections ) {
+            if ( $currentConnection -and $connection.id -eq $currentConnection.id ) {
+                $currentConnection = $null
+            }
+            $connection
+        }
+
+        if ( ! $ConnectionName -and $currentConnection ) {
             $currentConnection
         }
     }

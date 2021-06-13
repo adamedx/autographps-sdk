@@ -144,6 +144,9 @@ This parameter specifies that instead of accessing Microsoft Graph, the command 
 .PARAMETER PageSizePreference
 This parameter directs the command to issue requests that instruct the Graph API to return a specific maximum number of items in each page of results. This parameter will only take effect if Graph honors it for the particular request.
 
+.PARAMETER NoPaging
+The NoPaging pararameter that the command must make only one request to the Graph API -- it should not make additional requests to "page" through the results even if additional results are indicated by the response.
+
 .PARAMETER NoClientRequestId
 This parameter suppresses the automatic generation and submission of the 'client-request-id' header in the request used for troubleshooting with service-side request logs. This parameter is included only to enable complete control over the protocol as there would be very few use cases for not sending the request id.
 
@@ -752,5 +755,4 @@ function Invoke-GraphApiRequest {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Invoke-GraphApiRequest Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
-
 

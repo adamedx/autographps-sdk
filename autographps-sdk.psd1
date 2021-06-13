@@ -267,12 +267,15 @@ None.
 * New `AdditionalProperties` parameter for `New-GraphApplication` to set values for arbitrary properties of the application
 * New `CertificatePath` parameter for `New-GraphApplicationCertificate` and `New-GraphLocalCertificate`
 * New `Thumbprint` parameter for `Set-GraphApplicationCertificate`
+* New `CertKeyLength` for commands that create certificates to allow the size of the key to be customized
+* Commands that create certificates now default to 4096 for the key length
 
 ### Fixed defects
 
 * Correctly parse @odata.context URIs like https://graph.microsoft.com/v1.0/$metadata#users(userid)/contacts/$entity such that the URI is correclty identified to refer to a member of a collection
 * `Remove-GraphApplicationConsent` failed when input was not taken from the pipeline
 * `New-GraphApplication`, `Set-GraphapplicationConsent` other commands failed when the connection (typically from profile settings) had the non-default value of `Eventual` set for `ConsistencyLevel`. This caused requests that expected read-after-write to reflect the write operation to fail sometimes. This was fixed by ensuring that regardless of the setting used for queries constructed by the user via commands like `Invoke-GraphRequest` and `Get-GraphRequest`, the consistency level of `Session` is always used.
+* `Get-GraphMethod` and `Get-GraphMember` required the `GraphName` parameter to be specified whenever the `Uri` parameter was specified -- this has been fixed.
 
 '@
 

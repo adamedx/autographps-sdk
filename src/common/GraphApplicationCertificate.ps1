@@ -23,10 +23,12 @@ ScriptClass GraphApplicationCertificate {
     $X509Certificate = $null
     $NotBefore = $null
     $validityTimeSpan = $null
+    $keyLength = $null
     $certificateFilePath = $null
 
     static {
         const __AppCertificateSubjectParent 'CN=AutoGraphPS, CN=MicrosoftGraph'
+        const DEFAULT_KEY_LENGTH 4096
 
         function FindAppCertificate(
             $AppId,
@@ -87,7 +89,7 @@ ScriptClass GraphApplicationCertificate {
         }
     }
 
-    function __initialize($appId, $objectId, $displayName, $validityTimeSpan, $notBefore, $certStoreLocation = 'cert:/currentuser/my', $certificateFilePath) {
+    function __initialize($appId, $objectId, $displayName, $validityTimeSpan, $notBefore, $certStoreLocation = 'cert:/currentuser/my', $certificateFilePath, $keyLength) {
         $this.ObjectId = $objectId
         $this.AppId = $appId
         $this.CertLocation = $certStoreLocation
@@ -95,6 +97,7 @@ ScriptClass GraphApplicationCertificate {
         $this.NotBefore = $NotBefore
         $this.validityTimeSpan = $validityTimeSpan
         $this.certificateFilePath = $certificateFilePath
+        $this.keyLength = $keyLength
     }
 
     function Create {
@@ -127,9 +130,15 @@ ScriptClass GraphApplicationCertificate {
 
         $notAfter = $notBefore + $validityTimeSpan
 
+        $keyLength = if ( $this.keyLength ) {
+            $this.keyLength
+        } else {
+            $this.scriptclass.DEFAULT_KEY_LENGTH
+        }
+
         write-verbose "Creating certificate with subject '$subject'"
 
-        $this.X509Certificate = New-SelfSignedCertificate -Subject $subject -friendlyname $description -provider 'Microsoft Enhanced RSA and AES Cryptographic Provider' -CertStoreLocation $certStoreDestination -NotBefore $notBefore -NotAfter $notAfter
+        $this.X509Certificate = New-SelfSignedCertificate -Subject $subject -friendlyname $description -provider 'Microsoft Enhanced RSA and AES Cryptographic Provider' -CertStoreLocation $certStoreDestination -NotBefore $notBefore -NotAfter $notAfter -KeyLength $keyLength
     }
 
     function GetEncodedPublicCertificateData {
@@ -144,6 +153,11 @@ ScriptClass GraphApplicationCertificate {
         $destination = if ( ! $certificateFilePath ) {
             join-path $outputDirectory "GraphApp-$($this.appid).pfx"
         } else {
+            $parent = split-path -parent $certificateFilePath
+
+            if ( ! ( test-path $parent ) ) {
+                throw "The directory that contains the specified path '$certificateFilePath' does not exist"
+            }
             $certificateFilePath
         }
 

@@ -31,6 +31,8 @@ function New-GraphApplicationCertificate {
 
         [DateTime] $CertValidityStart,
 
+        [int] $CertKeyLength = 4096,
+
         # Note that since this creates a new certificate, we want to ensure that only app objects are piped in,
         # not certificate objects -- those do not have an objectid property, so we make the objectid mandatory
         [parameter(parametersetname='app', valuefrompipelinebypropertyname=$true, mandatory=$true)]
@@ -76,7 +78,7 @@ function New-GraphApplicationCertificate {
 
     $::.LocalCertificate |=> ValidateCertificateCreationCapability
 
-    $certHelper = new-so CertificateHelper $AppId $ObjectId $null $CertValidityTimespan $CertValidityStart
+    $certHelper = new-so CertificateHelper $AppId $ObjectId $null $CertValidityTimespan $CertValidityStart $null $CertKeyLength
 
     $certificateResult = $certHelper |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $true $CertificateFilePath
     $X509Certificate = $certificateResult.Certificate.X509Certificate

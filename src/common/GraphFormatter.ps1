@@ -127,6 +127,36 @@ ScriptClass GraphFormatter {
             }
             $::.ColorString.ToStandardColorString($resourceTime.ToString(), 'Scheme', $colorName, $null, $null)
         }
+
+        function PermissionType($permissionType) {
+            $coloring = if ( $permissionType -eq 'Delegated' ) {
+                'Emphasis2'
+            } else {
+                'Emphasis1'
+            }
+
+            $::.ColorString.ToStandardColorString($permissionType, $coloring, $null, $null, $null)
+        }
+
+        function ConnectionName($connection) {
+            $colors = $::.ColorString.GetStandardColors('Emphasis1')
+            $currentConnection = $::.GraphContext.GetCurrentConnection()
+
+            if ( $currentConnection -and $connection.id -eq $currentConnection.id ) {
+                $colors[1] = $colors[0]
+                $colors[0] = 0
+            }
+
+            $::.ColorString.ToColorString($connection.Name, $colors[0], $colors[1])
+        }
+
+        function ConnectionUser($connection) {
+            $userInfo = $connection.identity.GetUserInformation()
+
+            if ( $userInfo ) {
+                $::.ColorString.ToStandardColorString($userInfo.UserId, 'Emphasis2', $null, $null, $null)
+            }
+        }
     }
 }
 
