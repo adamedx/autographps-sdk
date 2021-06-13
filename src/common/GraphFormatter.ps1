@@ -147,7 +147,13 @@ ScriptClass GraphFormatter {
                 $colors[0] = 0
             }
 
-            $::.ColorString.ToColorString($connection.Name, $colors[0], $colors[1])
+            $output = if ( $connection.Name ) {
+                $connection.Name
+            } else {
+                '(Unnamed)'
+            }
+
+            $::.ColorString.ToColorString($output, $colors[0], $colors[1])
         }
 
         function ConnectionUser($connection) {

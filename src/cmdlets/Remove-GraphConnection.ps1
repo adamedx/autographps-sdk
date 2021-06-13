@@ -14,6 +14,32 @@
 
 . (import-script Get-GraphConnection)
 
+<#
+.SYNOPSIS
+Removes a named connection from the list of named connections that can be supplied to commands such as Connect-GraphApi or Select-GraphConnection.
+
+.DESCRIPTION
+Commands such as `New-GraphConnection` may be used to create connections with an optionally associated friendly name. Such named connections may also be defined through profile settings. This convenience makes it easier to maintain multiple credentials for different use cases including management of different organizations, management of production vs. developmnt or preproduction resources, or the use of credentials with varying levels of access such as read-only vs. read-write access.
+
+The Remove-GraphConnection command removes the specified named connection from the list of connections. Once the Remove-GraphConnection is successfully executed, the connection specified to it may not longer be referenced by name to commands like Connect-GraphApi or Select-GraphConnection.
+
+.PARAMETER ConnectionName
+The name of the connection to remove from the named connections list.
+
+.OUTPUTS
+None.
+
+.EXAMPLE
+Remove-GraphConnection TempElevatedAccessConnection
+
+.LINK
+Connect-GraphApi
+New-GraphConnection
+Get-GraphConnection
+Get-GraphCurrentConnection
+Select-GraphConnection
+Get-GraphProfile
+#>
 function Remove-GraphConnection {
     [cmdletbinding(positionalbinding=$false)]
     param(

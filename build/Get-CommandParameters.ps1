@@ -18,13 +18,18 @@ param(
     [string] $commandName
 )
 begin {
+    $targetModuleName = (join-path $psscriptroot .. | gi).name
+    $module = Get-Module $targetModuleName -listavailable
+
+    if ( ! $module ) {
+        throw "This command must be executed from a PowerShell session that has successfully imported the module '$targetModuleName'"
+    }
 }
 
 process {
     Set-StrictMode -Version 2
 
     $commandList = if ( ! $commandName ) {
-        $module = Get-Module (join-path $psscriptroot .. | gi).name -listavailable
         $module.exportedfunctions.keys
     } else {
         @($commandName)
