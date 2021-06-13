@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,12 +41,12 @@ Describe "Poshgraph application" {
                 'Get-GraphApplicationConsent',
                 'Get-GraphApplicationServicePrincipal',
                 'Get-GraphConnection',
-                'Get-GraphConnectionInfo',
+                'Get-GraphCurrentConnection',
                 'Get-GraphError',
                 'Get-GraphResource',
                 'Get-GraphLog',
                 'Get-GraphLogOption',
-                'Get-GraphProfileSettings',
+                'Get-GraphProfile',
                 'Get-GraphToken',
                 'Invoke-GraphApiRequest',
                 'New-GraphApplication',
@@ -59,7 +59,9 @@ Describe "Poshgraph application" {
                 'Remove-GraphApplicationConsent',
                 'Remove-GraphConnection',
                 'Remove-GraphResource',
-                'Select-GraphProfileSettings',
+                'Select-GraphConnection',
+                'Select-GraphProfile',
+                'Set-GraphApplicationCertificate',
                 'Set-GraphApplicationConsent',
                 'Set-GraphConnectionStatus',
                 'Set-GraphLogOption',
@@ -82,7 +84,7 @@ Describe "Poshgraph application" {
         }
 
         It "should export the exact same set of aliases as are in the set of expected aliases" {
-            $expectedAliases = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl')
+            $expectedAliases = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'gcur', 'Get-GraphContent', 'ggl', 'scon')
 
             $manifest.AliasesToExport.count | Should BeExactly $expectedAliases.length
 

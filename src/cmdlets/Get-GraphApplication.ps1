@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
 
 function Get-GraphApplication {
     [cmdletbinding(defaultparametersetname='appid', supportspaging=$true, positionalbinding=$false)]
+    [OutputType('AutoGraph.Application')]
     param (
-        [parameter(parametersetname='appid', position=0)]
+        [parameter(position=0, parametersetname='appid', valuefrompipelinebypropertyname=$true)]
+        [parameter(position=0, parametersetname='objectid', valuefrompipelinebypropertyname=$true)]
         $AppId,
 
-        [parameter(parametersetname='objectid', mandatory=$true)]
+        [parameter(parametersetname='objectid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('Id')]
         $ObjectId,
 
         [parameter(parametersetname='odatafilter', mandatory=$true)]
@@ -31,32 +34,37 @@ function Get-GraphApplication {
 
         [switch] $RawContent,
 
-        [String] $Version = $null,
-
+        [parameter(parametersetname='All')]
         [switch] $All,
 
-        [parameter(parametersetname='ExistingConnectionODataFilter')]
-        [parameter(parametersetname='ExistingConnectionObjectId')]
-        [parameter(parametersetname='ExistingConnectionName')]
         [PSCustomObject] $Connection = $null
     )
-    Enable-ScriptClassVerbosePreference
 
-    $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $Filter $Name $RawContent $Version $null $null $connection $null $null $pscmdlet.pagingparameters.First $pscmdlet.pagingparameters.Skip $All.IsPresent
+    begin {
+        Enable-ScriptClassVerbosePreference
 
-    $displayableResult = if ( $result ) {
-        if ( $RawContent.IsPresent ) {
-            $result
-        } elseif ( $result | gm id ) {
-            $result | sort-object displayname | foreach {
-                $::.ApplicationHelper |=> ToDisplayableObject $_
+        $commandContext = new-so CommandContext $connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+    }
+
+    process {
+        $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $Filter $Name $RawContent $null $null $null $commandContext.connection $null $null $pscmdlet.pagingparameters.First $pscmdlet.pagingparameters.Skip $All.IsPresent
+
+        $displayableResult = if ( $result ) {
+            if ( $RawContent.IsPresent ) {
+                $result
+            } elseif ( $result | gm id ) {
+                $result | sort-object displayname | foreach {
+                    $::.ApplicationHelper |=> ToDisplayableObject $_
+                }
             }
+        }
+
+        if ( ! $displayableResult -and ( $AppId -and $ObjectId ) ) {
+            throw "The specified application could not be found."
         }
     }
 
-    if ( ! $displayableResult -and ( $AppId -and $ObjectId) ) {
-        throw "The specified application could not be found."
+    end {
+        $displayableResult
     }
-
-    $displayableResult
 }

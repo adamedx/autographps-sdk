@@ -19,9 +19,10 @@
 
 function Get-GraphApplicationConsent {
     [cmdletbinding(positionalbinding=$false, supportspaging=$true, defaultparametersetname='TenantOrSpecificPrincipal')]
+    [OutputType('GraphConsentDisplayType')]
     param(
         [parameter(position=0, valuefrompipelinebypropertyname = $true, mandatory=$true)]
-        [Guid[]] $AppId,
+        [Guid] $AppId,
 
         [parameter(parametersetname='entiretenant', mandatory=$true)]
         [parameter(parametersetname='TenantOrSpecificPrinicpal')]
@@ -100,14 +101,14 @@ function Get-GraphApplicationConsent {
             }
 
             $response = if ( $includeDelegated ) {
-                Invoke-GraphApiRequest /oauth2PermissionGrants -method GET -Filter $filter -version $::.ApplicationAPI.DefaultApplicationApiVersion @rawContentArgument @allArgument @pagingParameters
+                Invoke-GraphApiRequest /oauth2PermissionGrants -method GET -Filter $filter -version $::.ApplicationAPI.DefaultApplicationApiVersion @rawContentArgument @allArgument @pagingParameters -ConsistencyLevel Session
             }
 
             if ( $response ) {
                 if ( ! $RawContent.IsPresent ) {
                     if ( $response | gm id -erroraction ignore ) {
                         $response | foreach {
-                            $::.ConsentHelper |=> ToDisplayableObject $_
+                            $::.ConsentHelper |=> ToDisplayableObject $_ $AppId $appSPId
                         }
                     }
                 } else {
@@ -116,14 +117,14 @@ function Get-GraphApplicationConsent {
             }
 
             $roleResponse = if ( $includeAppOnly ) {
-                Invoke-GraphApiRequest /servicePrincipals/$appSPId/appRoleAssignedTo -method GET -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument @AllArgument @pagingParameters
+                Invoke-GraphApiRequest /servicePrincipals/$appSPId/appRoleAssignments -method GET -version $::.ApplicationAPI.DefaultApplicationApiVersion @RawContentArgument @AllArgument @pagingParameters -ConsistencyLevel Session
             }
 
             if ( $roleResponse ) {
                 if ( ! $RawContent.IsPresent ) {
                     if ( $roleResponse | gm id -erroraction ignore ) {
                         $roleResponse | foreach {
-                            $::.ConsentHelper |=> ToDisplayableObject $_
+                            $::.ConsentHelper |=> ToDisplayableObject $_ $AppId $appSPId
                         }
                     }
                 } else {

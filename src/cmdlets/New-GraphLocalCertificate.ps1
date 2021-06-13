@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,24 +16,73 @@
 
 function New-GraphLocalCertificate {
     [cmdletbinding(positionalbinding=$false)]
+    [OutputType('AutoGraph.Certificate')]
     param(
-        [parameter(position=0, mandatory=$true)]
+        [parameter(parametersetname='pipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='pipelineexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='pipelineexportpath', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(position=0, parametersetname='appid', mandatory=$true)]
         [Guid] $AppId,
 
-        [parameter(position=1, mandatory=$true)]
-        [string] $ApplicationName,
+        [parameter(parametersetname='pipeline', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='pipelineexport', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='pipelineexportpath', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='objectid', mandatory=$true)]
+        [Alias('Id')]
+        [Guid] $ObjectId,
 
-        [parameter(position=2)]
+        [parameter(position=1)]
+        [Alias('Name')]
+        [string] $ApplicationName = 'AutoGraphPS Application',
+
         [TimeSpan] $CertValidityTimeSpan,
 
         [DateTime] $CertValidityStart,
 
-        $CertStoreLocation = 'cert:/currentuser/my'
+        [int] $CertKeyLength = 4096,
+
+        $CertStoreLocation = 'cert:/currentuser/my',
+
+        [parameter(parametersetname='pipelineexport', mandatory=$true)]
+        [parameter(parametersetname='appidexport', mandatory=$true)]
+        [parameter(parametersetname='objectidexport', mandatory=$true)]
+        [string] $CertOutputDirectory,
+
+        [parameter(parametersetname='pipelineexportpath', mandatory=$true)]
+        [parameter(parametersetname='appidexportpath', mandatory=$true)]
+        [parameter(parametersetname='objectidexportpath', mandatory=$true)]
+        [string] $CertificateFilePath,
+
+        [parameter(parametersetname='pipelineexport')]
+        [parameter(parametersetname='appidexport')]
+        [parameter(parametersetname='objectidexport')]
+        [parameter(parametersetname='pipelineexportpath')]
+        [parameter(parametersetname='appidexportpath')]
+        [parameter(parametersetname='objectidexportpath')]
+        [PSCredential] $CertCredential,
+
+        [parameter(parametersetname='pipelineexport')]
+        [parameter(parametersetname='appidexport')]
+        [parameter(parametersetname='objectidexport')]
+        [parameter(parametersetname='pipelineexportpath')]
+        [parameter(parametersetname='appidexportpath')]
+        [parameter(parametersetname='objectidexportpath')]
+        [switch] $NoCertCredential,
+
+        [switch] $AsX509Certificate
     )
     Enable-ScriptClassVerbosePreference
 
-    $certificate = new-so GraphApplicationCertificate $AppId $null $ApplicationName $CertValidityTimeSpan $CertValidityStart $CertStoreLocation
+    $::.LocalCertificate |=> ValidateCertificateCreationCapability
 
-    $certificate |=> Create
-    $certificate.X509Certificate
+    $certHelper = new-so CertificateHelper $AppId $ObjectId $ApplicationName $CertValidityTimespan $CertValidityStart $null $CertKeyLength
+
+    $certificateResult = $certHelper |=> NewCertificate $CertOutputDirectory $CertStoreLocation $CertCredential $NoCertCredential.IsPresent $false $CertificateFilePath
+    $X509Certificate = $certificateResult.Certificate.X509Certificate
+
+    if ( ! $AsX509Certificate.IsPresent ) {
+        $::.CertificateHelper |=> CertificateToDisplayableObject $X509Certificate $certHelper.appId $certHelper.objectId $X509Certificate.PSPath $null $certificateResult.ExportedLocation
+    } else {
+        $X509Certificate
+    }
 }

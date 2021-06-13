@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 
 function New-GraphApplication {
     [cmdletbinding(defaultparametersetname='publicapp', positionalbinding=$false)]
+    [OutputType('AutoGraph.Application')]
     param(
         [parameter(position=0, mandatory=$true)]
         [string] $Name,
@@ -30,6 +31,8 @@ function New-GraphApplication {
 
         [string[]] $Tags,
 
+        $AdditionalProperties,
+
         [AppTenancy] $Tenancy = ([AppTenancy]::Auto),
 
         [String[]] $DelegatedUserPermissions,
@@ -37,7 +40,7 @@ function New-GraphApplication {
         [String[]] $ApplicationPermissions,
 
         [parameter(parametersetname='confidentialapp', mandatory=$true)]
-        [parameter(parametersetname='confidentialappexistingcertpath', mandatory=$true)]
+        [parameter(parametersetname='confidentialappnewcert', mandatory=$true)]
         [parameter(parametersetname='confidentialappnewcertexport', mandatory=$true)]
         [parameter(parametersetname='confidentialappexistingcert', mandatory=$true)]
         [switch] $Confidential,
@@ -45,8 +48,12 @@ function New-GraphApplication {
         [parameter(parametersetname='publicapp')]
         [switch] $AllowMSAAccounts,
 
+        [parameter(parametersetname='confidentialappnewcert', mandatory=$true)]
+        [parameter(parametersetname='confidentialappnewcertexport', mandatory=$true)]
+        [switch] $NewCredential,
+
         [parameter(parametersetname='confidentialapp')]
-        [switch] $NoCredential,
+        [switch] $SuppressCredentialWarning,
 
         [switch] $ConsentForAllUsers,
 
@@ -56,15 +63,16 @@ function New-GraphApplication {
 
         [switch] $SkipPermissionNameCheck,
 
-        [parameter(parametersetname='confidentialappexistingcertpath', mandatory=$true)]
-        $ExistingCertStorePath,
-
         [parameter(parametersetname='confidentialappnewcert')]
         [parameter(parametersetname='confidentialappnewcertexport')]
         $CertStoreLocation = 'cert:/currentuser/my',
 
         [parameter(parametersetname='confidentialappexistingcert', mandatory=$true)]
         $Certificate,
+
+        [parameter(parametersetname='confidentialappnewcert')]
+        [parameter(parametersetname='confidentialappnewcertexport')]
+        [int] $CertKeyLength = 4096,
 
         [parameter(parametersetname='confidentialappnewcert')]
         [parameter(parametersetname='confidentialappnewcertexport')]
@@ -85,31 +93,21 @@ function New-GraphApplication {
 
         [string] $UserIdToConsent,
 
-        [String] $Version = $null,
-
         [PSCustomObject] $Connection = $null
     )
     Enable-ScriptClassVerbosePreference
-
-    $exportedCertCredential = if ( $CertOutputDirectory ) {
-        if (! (test-path -pathtype container $CertOutputDirectory) ) {
-            throw [ArgumentException]::new("The CertOutputDirectory parameter value '$CertOutputDirectory' is not a valid directory")
-        }
-
-        if ( $CertCredential ) {
-            $CertCredential
-        } elseif ( ! $NoCertCredential.IsPresent ) {
-            $userName = if ( $env:user ) { $env:user } else { $env:username }
-            Get-Credential -username $userName
-        }
-    }
 
     if ( $SkipTenantRegistration.IsPresent ) {
         if ( $UserIdToConsent -or $ConsentForAllUsers.IsPresent ) {
             throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'UserIdToConsent' or 'ConsentForAllUsers' is specified")
         }
     }
-    $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+
+    if ( $NewCredential.IsPresent ) {
+        $::.LocalCertificate |=> ValidateCertificateCreationCapability
+    }
+
+    $commandContext = new-so CommandContext $Connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
 
     $::.ScopeHelper |=> ValidatePermissions $ApplicationPermissions $true $SkipPermissionNameCheck.IsPresent $commandContext.connection
     $::.ScopeHelper |=> ValidatePermissions $DelegatedUserPermissions $false $SkipPermissionNameCheck.IsPresent $commandContext.connection
@@ -125,28 +123,47 @@ function New-GraphApplication {
 
     $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
 
-    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy ( ! $AllowMSAAccounts.IsPresent ) $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris
+    $propertyTable = if ( $AdditionalProperties ) {
+        if ( $AdditionalProperties -is [Hashtable] ) {
+            $AdditionalProperties
+        } elseif ( $AdditonalProperties -is [string] ) {
+            $AdditionalProperties | ConvertFrom-JSON
+        }
+    }
+
+    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy ( ! $AllowMSAAccounts.IsPresent ) $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris $propertyTable
 
     $newApp = $newAppRegistration |=> CreateNewApp
 
-    if ( $Confidential.IsPresent -and ! $NoCredential.IsPresent ) {
-        $certificate = $null
-        try {
-            $certificate = new-so GraphApplicationCertificate $newApp.appId $newApp.Id $Name $CertValidityTimeSpan $CertValidityStart $certStoreLocation
-            $certificate |=> Create
-            $appAPI |=> AddKeyCredentials $newApp $certificate | out-null
-        } catch {
-            $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | remove-item -erroraction ignore
-            $appAPI |=> RemoveApplicationByObjectId $newApp.Id ignore
-            throw
-        }
-
-        if ( $CertOutputDirectory ) {
-            $certpassword = if ( $exportedCertCredential ) {
-                $exportedCertCredential.Password
+    if ( $Confidential.IsPresent ) {
+        if ( $NewCredential.IsPresent ) {
+            $newCertificateParameters = @{
+                AppId = $newApp.appId
+                ObjectId = $newApp.Id
             }
 
-            $certificate |=> Export $CertOutputDirectory $certPassword
+            'CertCredential',
+            'CertValidityTimeSpan',
+            'CertValidityStart',
+            'CertStoreLocation',
+            'CertOutputDirectory',
+            'CertKeyLength',
+            'NoCertCredential'| foreach {
+                $parameterValue = $PSBoundParameters[$_]
+                if ( $parameterValue -ne $null ) {
+                    $newCertificateParameters.Add($_, $parameterValue)
+                }
+            }
+
+            $certificate = try {
+                New-GraphApplicationCertificate @newCertificateParameters
+            } catch {
+                $::.GraphApplicationCertificate |=> FindAppCertificate $newApp.appId | remove-item -erroraction ignore
+                $appAPI |=> RemoveApplicationByObjectId $newApp.Id ignore
+                throw
+            }
+        } elseif ( ! $SuppressCredentialWarning.IsPresent ) {
+            write-warning "The 'NewCredential' parameter was not specified to the New-GraphApplication command, so this Confidential application cannot sign in until you use issue a subsequent command such as New-GraphApplicationCertificate, Set-GraphApplicationCertificate, or some other method of configuring this application's sign in credential. You can use the 'SuppressCredentialWarning' parameter of New-GraphApplication to silence this warning message."
         }
     }
 
@@ -154,7 +171,7 @@ function New-GraphApplication {
         $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $UserIdToConsent $ConsentForAllUsers.IsPresent $DelegatedUserPermissions $ApplicationPermissions | out-null
     }
 
-    $newApp
+    $::.ApplicationHelper |=> ToDisplayableObject $newApp
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter New-GraphApplication DelegatedUserPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))

@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.26.1'
+ModuleVersion = '0.27.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -80,12 +80,12 @@ FunctionsToExport = @(
     'Get-GraphApplicationConsent'
     'Get-GraphApplicationServicePrincipal'
     'Get-GraphConnection'
-    'Get-GraphConnectionInfo'
+    'Get-GraphCurrentConnection'
     'Get-GraphError'
     'Get-GraphResource'
     'Get-GraphLog'
     'Get-GraphLogOption'
-    'Get-GraphProfileSettings'
+    'Get-GraphProfile'
     'Get-GraphToken'
     'Invoke-GraphApiRequest'
     'New-GraphApplication'
@@ -98,7 +98,9 @@ FunctionsToExport = @(
     'Remove-GraphApplicationConsent'
     'Remove-GraphConnection'
     'Remove-GraphResource'
-    'Select-GraphProfileSettings'
+    'Select-GraphConnection'
+    'Select-GraphProfile'
+    'Set-GraphApplicationCertificate'
     'Set-GraphApplicationConsent'
     'Set-GraphConnectionStatus'
     'Set-GraphLogOption'
@@ -117,7 +119,7 @@ CmdletsToExport = @()
 )
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl')
+    AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'gcur', 'Get-GraphContent', 'ggl', 'scon')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -158,12 +160,12 @@ AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphCont
         '.\src\cmdlets\Get-GraphApplicationConsent.ps1'
         '.\src\cmdlets\Get-GraphApplicationServicePrincipal.ps1'
         '.\src\cmdlets\Get-GraphConnection.ps1'
-        '.\src\cmdlets\Get-GraphConnectionInfo.ps1'
+        '.\src\cmdlets\Get-GraphCurrentConnection.ps1'
         '.\src\cmdlets\Get-GraphError.ps1'
         '.\src\cmdlets\Get-GraphResource.ps1'
         '.\src\cmdlets\Get-GraphLog.ps1'
         '.\src\cmdlets\Get-GraphLogOption.ps1'
-        '.\src\cmdlets\Get-GraphProfileSettings.ps1'
+        '.\src\cmdlets\Get-GraphProfile.ps1'
         '.\src\cmdlets\Get-GraphToken.ps1'
         '.\src\cmdlets\Invoke-GraphApiRequest.ps1'
         '.\src\cmdlets\New-GraphApplication.ps1'
@@ -176,12 +178,15 @@ AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphCont
         '.\src\cmdlets\Remove-GraphApplicationConsent.ps1'
         '.\src\cmdlets\Remove-GraphConnection.ps1'
         '.\src\cmdlets\Remove-GraphResource.ps1'
-        '.\src\cmdlets\Select-GraphProfileSettings.ps1'
+        '.\src\cmdlets\Select-GraphConnection.ps1'
+        '.\src\cmdlets\Select-GraphProfile.ps1'
+        '.\src\cmdlets\Set-GraphApplicationCertificate.ps1'
         '.\src\cmdlets\Set-GraphApplicationConsent.ps1'
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1'
         '.\src\cmdlets\Set-GraphLogOption.ps1'
         '.\src\cmdlets\Test-Graph.ps1'
         '.\src\cmdlets\Unregister-GraphApplication.ps1'
+        '.\src\cmdlets\common\CertificateHelper.ps1'
         '.\src\cmdlets\common\ApplicationHelper.ps1'
         '.\src\cmdlets\common\CommandContext.ps1'
         '.\src\cmdlets\common\ConsentHelper.ps1'
@@ -193,6 +198,7 @@ AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphCont
         '.\src\cmdlets\common\ParameterCompleter.ps1'
         '.\src\cmdlets\common\PermissionParameterCompleter.ps1'
         '.\src\cmdlets\common\QueryHelper.ps1'
+        '.\src\common\LocalCertificate.ps1'
         '.\src\common\ColorString.ps1'
         '.\src\common\ColorScheme.ps1'
         '.\src\common\DefaultScopeData.ps1'
@@ -208,7 +214,6 @@ AliasesToExport = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphCont
         '.\src\graphservice\ApplicationAPI.ps1'
         '.\src\graphservice\ApplicationObject.ps1'
         '.\src\graphservice\GraphEndpoint.ps1'
-        '.\src\REST\GraphErrorRecorder.ps1'
         '.\src\REST\GraphRequest.ps1'
         '.\src\REST\GraphResponse.ps1'
         '.\src\REST\HttpUtilities.ps1'
@@ -241,13 +246,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.26.0 Release Notes
+## AutoGraphPS-SDK 0.27.0 Release Notes
 
-This release adds numerous usability improvements including certificate authentication improvements, profile-based configuration, and color output along with several breaking changes.
-
-### 0.26.1 update
-
-* Fix broken format ps1xml error that only surfaces at module update time
+This release adds fixes for defects identified in 0.26.1 as well as new features related to application certificate management
 
 ### New dependencies
 
@@ -255,48 +256,40 @@ None.
 
 ### Breaking changes
 
-* The `Connect-GraphApi` positional parameter 0 is now the new `Name` parameter, not `Permissions`. To specify permissions, this must now requires explicit specification of the `Permissions` parameter.
-* The `Invoke-GraphRequest` and `Get-GraphRequest` commands were usually paging through all results by default rather than returning some default minimum -- this has been fixed
-* Some fields of `Get-GraphLog` such as `HasRequestBody` have been removed
-* The output of `Get-GraphApplicationConsent` now returns `Delegated` instead of `DelegatedUser` for the `PermissionType` field
-* The `AADAccountsOnly` parameter for `New-GraphApplication` has been renamed to `AllowMSAAccounts` and its semantics have been reversed to match the rename. So now by default, public client apps do not allow MSA accounts, where before they would (at least if the app was multi-tenant).
+* `Get-GraphConnectionInfo` has been renamed to `Get-GraphCurrentConnection`
+* `Get-GraphProfileSettings` renamed to `Get-GraphProfile`
+* `Select-GraphProfileSettings` renamed to `Select-GraphProfile`
+* `Get-GraphError` parameters have changed or been removed
+* Certificate generation is no longer automatic for `New-GraphApplication` -- the `NewCredential` parameter must be specified
 
 ### New features
 
-* Configuration: the module now supports "Profile settings". It reads the file `~/.autographps/settings.json` on module load if it exists and sets behaviors including the initial connection according to the settings expressed in the configuration file
-* The following commands related to the proflie settings feature have been added:
-  * `Get-GraphProfileSettings`
-  * `Select-GraphProfileSettings`
-  * `Get-GraphConnection`: enumerates 'named' connections created by `New-GraphConnection` or profile settings
-  * `Remove-GraphConnection`: remove named connections
-* `New-GraphConnection` supports a new `Name` parameter to assign an optional name the connection. Such connections may be enumerated by the `Get-GraphConnection` command
-* `Connect-GraphApi` accepts the `Name` parameter to allow connecting using settings from a named connection
-* `Connect-GraphApi` now supports the `NoProfile` parameter to ignore any default connections specified in the profile
-* `New-GraphApplication` now supports specifying a password for certificates that are created in the file system
-* `Connect-GraphApi` supports file-system based certificates! This is required for non-Windows operating systems like Linux or MacOS that do not support the `cert:` drive
-  * The existing `CertificatePath` parameter now supports file system paths in addition to Windows certificate store paths. A path to a .pfx file may be specified on any operating system
-  * The `CertCredential` parameter allows specification of the certificate password -- it is mandatory when specifying a file-system based certificate using the `CertificatePath` parameter
-  * The `NoCertCredential` parameter allows the password to be skipped when the `CertificatePath` parameter is specified -- this is useful when the file-system based certificate has no password.
-* Support for eventual consistency, which allows for a range of rich, complex queries in exchange for those queries missing results from more recent updates to the Graph:
-  * `Connect-GraphApi` and `New-GraphConnection` expose a new `ConsistencyLevel` parameter that allows specification of consistency levels including `Eventual`
-  * The `Get-GraphResource` and `Invoke-GraphApi` also expose the `ConsistencyLevel` parameter to override the setting in the connection
-  * The `ConsistencyLevel` option is also configurable via the new profile settings feature as part of the connection settings
-* `Get-GraphLog` output is now supported by views that can be used with `Format-Table` and `Format-List`:
-  * `Format-Table`: `GraphStatus`, `GraphDebug`, `GraphTiming`, `GraphAuthentication`
-  * `Format-List`" `GraphDetails`
-* `Get-GraphLog` output now supports COLOR! This is supported in the default view of the output as well as the other views added by `Format-Table` and `Format-List`
-* Request and response size are now part of `Get-GraphLog` output -- this is true for the default `Basic` log level
-* The `Get-GraphApplicationConsent` supports the `PermissionType` parameter to optionally limit the consents to just `Delegated` or just `AppOnly` consent rather than both.
-* The `Invoke-GraphRequest` and `Get-GraphResource` commands now support the `All` parameter to return all results. Without this parameter, `Invoke-GraphRequest` only returns either 100 results or the number of results contained in one REST response for the particular request URI, whichever is larger.
-* The `Invoke-GraphRequest` and `Get-GraphResource` commands now support the `Count` parameter to return just the count of results that would be returned and note the results themselves. This is only supported if the request URI is backed by an API that supports this capability.
-* Introduced the aliases `gcon` for `Get-GraphConnectionInfo` and `conga` for `Connect-GraphApi`
+* New `Set-GraphApplicationCertificate` command that supports specifying an existing public key certificate in the file system (both .cer and .pfx formats) or those from the Windows certificate store.
+* New `Select-GraphConnection` command to switch between connections without connecting to them
+* New `AdditionalProperties` parameter for `New-GraphApplication` to set values for arbitrary properties of the application
+* New `CertificatePath` parameter for `New-GraphApplicationCertificate` and `New-GraphLocalCertificate`
+* New `Thumbprint` parameter for `Set-GraphApplicationCertificate`
+* New `CertKeyLength` for commands that create certificates to allow the size of the key to be customized
+* New `NewCredential` parameter for `New-GraphApplication` to explicitly create a new certificate credential
+* Output types for `Get-GraphApplication` and `Get-GraphApplicationConsent` commands for improved usability when piping output to commands including `Select-Object`
+* Commands that create certificates now default to 4096 for the key length
+* Formatting for commands that output certificate information
+* Improved, simpler formatting for connections, including highlighting current connection
+* `Get-GraphError` is now a view on top of the log for errors and is easier to read
+* New build scripts to help with documentation
+  * `./build/Get-CommandParameters`
+  * `./build/Get-DocumentStationStatus`
+  * `./build/Get-MissingDocCommandsByFewestParameters`
 
 ### Fixed defects
 
-* The `CertificatePath` parameter of `New-GraphConnection` and `Connect-GraphApi` was broken -- specifying it caused an error. This has been fixed and the path to a certificate in the certificate store may now be specified.
-* The `Get-GraphApplicationConsent` and other commands related to consent could fail when encountering permission id's for which no known permission name mapping could be located, possibly due to using the default snapshot of mappings rather than the most recent mappings found by reading the MS Graph service principal which requires additional access.
-* The `Get-GraphApplicationConsent` and `Get-GraphApplication` commands would attempt to retrieve all consents for the given application in a tenant, but this could require a very large number of requests in a tenant with large numbers of users (e.g. 10^6) for instance. They now support the `All` parameter to retrieve all consents, but by default only returns 100-200. They also support paging with `First` and `Skip` parameters
-* The `OutputFilePrefix` parameter of `Invoke-GraphApiRequest` and `Get-GraphRequest` was ignored resulting in file output with only a file extension -- this was fixed to actually use the base name.
+* Correctly parse @odata.context URIs like https://graph.microsoft.com/v1.0/$metadata#users(userid)/contacts/$entity such that the URI is correclty identified to refer to a member of a collection
+* `Remove-GraphApplicationConsent` failed when input was not taken from the pipeline
+* `New-GraphApplication`, `Set-GraphapplicationConsent` other commands failed when the connection (typically from profile settings) had the non-default value of `Eventual` set for `ConsistencyLevel`. This caused requests that expected read-after-write to reflect the write operation to fail sometimes. This was fixed by ensuring that regardless of the setting used for queries constructed by the user via commands like `Invoke-GraphRequest` and `Get-GraphRequest`, the consistency level of `Session` is always used.
+* `Get-GraphMethod` and `Get-GraphMember` required the `GraphName` parameter to be specified whenever the `Uri` parameter was specified -- this has been fixed.
+* Standardized pipelining between certificate and app commands, e.g. output of app commands can be used as input to certificate commands
+* Set-GraphApplicationConsent would not set specified delegated permissions if you were signed in with app only and you didn't explicitly specify the consent target -- that is by design, but it should have failed. Instead, it silently skipped the consent with no indication to the user. This has been fixed to fail with an error that instructions on how to remediate.
+
 '@
 
     } # End of PSData hashtable

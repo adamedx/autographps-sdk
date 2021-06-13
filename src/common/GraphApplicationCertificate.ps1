@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script LocalCertificate)
+
 ScriptClass GraphApplicationCertificate {
 
     $AppId = $null
@@ -21,9 +23,12 @@ ScriptClass GraphApplicationCertificate {
     $X509Certificate = $null
     $NotBefore = $null
     $validityTimeSpan = $null
+    $keyLength = $null
+    $certificateFilePath = $null
 
     static {
         const __AppCertificateSubjectParent 'CN=AutoGraphPS, CN=MicrosoftGraph'
+        const DEFAULT_KEY_LENGTH 4096
 
         function FindAppCertificate(
             $AppId,
@@ -59,6 +64,12 @@ ScriptClass GraphApplicationCertificate {
             }
         }
 
+        function LoadFrom($appId, $objectId, [string] $certificatePath, [string] $certStoreLocation, [PSCredential] $certCredential) {
+            $certificate = new-so GraphApplicationCertificate $appId $objectId $null $null $null $certStoreLocation $certificatePath
+            $certificate |=> __Load $certCredential
+            $certificate
+        }
+
         function __GetAppCertificateSubject($appId) {
             "CN={0}, $($this.__AppCertificateSubjectParent)" -f $appId
         }
@@ -78,16 +89,24 @@ ScriptClass GraphApplicationCertificate {
         }
     }
 
-    function __initialize($appId, $objectId, $displayName, $validityTimeSpan, $notBefore, $certStoreLocation = 'cert:/currentuser/my') {
+    function __initialize($appId, $objectId, $displayName, $validityTimeSpan, $notBefore, $certStoreLocation = 'cert:/currentuser/my', $certificateFilePath, $keyLength) {
         $this.ObjectId = $objectId
         $this.AppId = $appId
         $this.CertLocation = $certStoreLocation
         $this.DisplayName = $displayName
         $this.NotBefore = $NotBefore
         $this.validityTimeSpan = $validityTimeSpan
+        $this.certificateFilePath = $certificateFilePath
+        $this.keyLength = $keyLength
     }
 
     function Create {
+        $::.LocalCertificate |=> ValidateCertificateCreationCapability
+
+        if ( $this.certificateFilePath ) {
+            throw "The certificate cannot be created because it was already loaded from the file '$($this.certificateFilePath)'"
+        }
+
         if ( $this.X509Certificate ) {
             throw 'Certificate already created'
         }
@@ -111,24 +130,39 @@ ScriptClass GraphApplicationCertificate {
 
         $notAfter = $notBefore + $validityTimeSpan
 
+        $keyLength = if ( $this.keyLength ) {
+            $this.keyLength
+        } else {
+            $this.scriptclass.DEFAULT_KEY_LENGTH
+        }
+
         write-verbose "Creating certificate with subject '$subject'"
-        $this.X509Certificate = New-SelfSignedCertificate -Subject $subject -friendlyname $description -provider 'Microsoft Enhanced RSA and AES Cryptographic Provider' -CertStoreLocation $certStoreDestination -NotBefore $notBefore -NotAfter $notAfter
+
+        $this.X509Certificate = New-SelfSignedCertificate -Subject $subject -friendlyname $description -provider 'Microsoft Enhanced RSA and AES Cryptographic Provider' -CertStoreLocation $certStoreDestination -NotBefore $notBefore -NotAfter $notAfter -KeyLength $keyLength
     }
 
-    function GetEncodedPublicCertificate {
-        $certBytes = $this.X509Certificate.GetRawCertData()
-        [Convert]::ToBase64String($certBytes)
+    function GetEncodedPublicCertificateData {
+        $::.LocalCertificate |=> GetEncodedPublicCertificateData $this.X509Certificate
     }
 
     function GetEncodedCertificateThumbprint {
-        [Convert]::ToBase64String($this.X509Certificate.thumbprint)
+        $::.LocalCertificate |=> GetEncodedCertificateThumbprint $this.X509Certificate
     }
 
-    function Export($outputDirectory, [SecureString] $certPassword) {
-        $destination = join-path $outputDirectory "GraphApp-$($this.appid).pfx"
+    function Export($outputDirectory, [string] $certificateFilePath, [SecureString] $certPassword) {
+        $destination = if ( ! $certificateFilePath ) {
+            join-path $outputDirectory "GraphApp-$($this.appid).pfx"
+        } else {
+            $parent = split-path -parent $certificateFilePath
+
+            if ( ! ( test-path $parent ) ) {
+                throw "The directory that contains the specified path '$certificateFilePath' does not exist"
+            }
+            $certificateFilePath
+        }
 
         if ( test-path $destination ) {
-            throw [ArgumentError]::new("An exported certificate for appid '$($this.appid)' already exists at the specified directory location '$outputDirectory'")
+            throw [ArgumentException]::new("An exported certificate for appid '$($this.appid)' already exists at the specified Directory location '$outputDirectory'")
         }
 
         $content = if ( $certPassword ) {
@@ -138,5 +172,29 @@ ScriptClass GraphApplicationCertificate {
         }
 
         $content | Set-Content -Encoding byte $destination
+
+        $destination
+    }
+
+    function __Load([PSCredential] $certCredential) {
+        if ( $this.X509Certificate ) {
+            throw "The certificate has already been loaded from path '$($this.certificateFilePath)'"
+        }
+
+        $certPassword = if ( $certCredential ) {
+            $certCredential.Password
+        }
+
+        $certificateObject = $::.LocalCertificate |=> GetCertificateFromPath $this.certificateFilePath $null $false $certPassword
+        $displayName = $certificateObject.FriendlyName
+
+        $validityTimeSpan = $certificateObject.NotAfter - $certificateObject.NotBefore
+
+        $this.X509Certificate = $certificateObject
+        $this.ObjectID = $objectId
+        $this.DisplayName = $displayName
+        $this.validityTimeSpan = $validityTimeSpan
+        $this.NotBefore = $certificateObject.NotBefore
+        $this.CertLocation = $null
     }
 }

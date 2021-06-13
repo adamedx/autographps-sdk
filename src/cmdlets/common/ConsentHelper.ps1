@@ -16,31 +16,35 @@
 
 ScriptClass ConsentHelper {
     static {
+        const CONSENT_DISPLAY_TYPE GraphConsentDisplayType
         $formatter = $null
 
         function __initialize {
-            $this.formatter = new-so DisplayTypeFormatter GraphConsentDisplayType 'PermissionType', 'StartTime', 'GrantedTo', 'Permission'
+            $this.formatter = new-so DisplayTypeFormatter $CONSENT_DISPLAY_TYPE 'PermissionType', 'StartTime', 'GrantedTo', 'Permission'
+            __RegisterDisplayType
         }
 
-        function ToDisplayableObject($object) {
+        function ToDisplayableObject($object, $targetAppId, $targetServicePrincipalId) {
             $consentEntries = @()
             $isOAuth2PermissionGrant = !(!($object | gm -erroraction ignore clientid))
 
             if ( $isOAuth2PermissionGrant ) {
                 $startTime = if ( $object | gm startTime -erroraction ignore ) { $object.startTime }
                 $expiryTime = if ( $object | gm expiryTime -erroraction ignore ) { $object.expiryTime }
-                $startTimeOffset = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $startTime $true
-                $expiryTimeOffset = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $expiryTime $true
+                $startTimeOffset = if ( $startTime ) { $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $startTime $true }
+                $expiryTimeOffset = if ( $expiryTime ) { $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $expiryTime $true }
                 $grantedTo = if ( $object.consentType -eq 'AllPrincipals' ) { 'AllUsers' } else { $object.PrincipalId }
                 $scopes = $object.scope -split ' '
 
                 foreach ( $scope in $scopes ) {
                     if ( $scope ) {
-                        $consentEntries += @{
+                        $consentEntries += [PSCustomObject] @{
+                            AppId = $targetAppId
                             PermissionType = 'Delegated'
-                            StartTime = $startTimeOffset
                             Permission = $scope
                             GrantedTo = $grantedTo
+                            ServicePrincipalId = $targetServicePrincipalId
+                            StartTime = $startTimeOffset
                             GraphResource = $object
                         }
                     }
@@ -61,18 +65,34 @@ ScriptClass ConsentHelper {
                     $object.PrincipalId
                 }
 
-                $consentEntries += @{
+                $consentEntries += [PSCustomObject] @{
+                    AppId = $targetAppId
                     PermissionType = 'Application'
-                    StartTime = $creationTimeOffset
                     Permission = $permissionDisplayName
                     GrantedTo = $object.PrincipalId
+                    ServicePrincipalId = $targetServicePrincipalId
+                    StartTime = $creationTimeOffset
                     GraphResource = $object
                 }
             }
 
             foreach ( $consentEntry in $consentEntries ) {
-                $this.formatter |=> DeserializedGraphObjectToDisplayableObject ([PSCustomObject] $consentEntry)
+                $consentEntry.pstypenames.insert(0, $CONSENT_DISPLAY_TYPE)
+                $consentEntry
             }
+        }
+
+        function __RegisterDisplayType {
+            $typeProperties = @(
+                'AppId'
+                'PermissionType'
+                'Permission'
+                'GrantedTo'
+                'ServicePrincipalId'
+                'StartTime'
+            )
+
+            $::.DisplayTypeFormatter |=> RegisterDisplayType $CONSENT_DISPLAY_TYPE $typeProperties $true
         }
     }
 }

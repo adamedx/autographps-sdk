@@ -180,6 +180,8 @@ ScriptClass ResponseContext {
             $segment = $fragmentSegments[$fragmentSegmentIndex]
             $isTypeCastSegment = $false
 
+            $isLastSegment = $fragmentSegmentIndex -eq ( $fragmentSegments.length - 1 )
+
             if ( $segment -eq '$ref' ) {
                 # Note that references are considered "unstable" -- we don't have type information
                 # about the object being referenced, so callers should not interpret this as an object
@@ -193,7 +195,7 @@ ScriptClass ResponseContext {
                 break
             } elseif ($segment -eq '$entity' ) {
                 $context['IsEntity'] = $true
-                if ( $previousSegmentIsRoot ) {
+                if ( $previousSegmentIsRoot -or $isLastSegment ) {
                     $context['IsCollectionMember'] = $true
                 }
                 # anything after this is a property path
@@ -209,7 +211,6 @@ ScriptClass ResponseContext {
             } elseif ( $segment -eq '$deletedLink' ) {
                 $context['IsDeletedLink'] = $true
             } else {
-                $isLastSegment = $fragmentSegmentIndex -eq ( $fragmentSegments.length - 1 )
                 $isLastSegmentOfAnyKind = $isLastSegment
 
                 if ( ! $isLastSegment ) {

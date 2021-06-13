@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -108,6 +108,12 @@ ScriptClass GraphConnection {
         $this.Status
     }
 
+    function GetCertificatePath {
+        if ( $this.identity -and $this.identity.app ) {
+            $this.identity.app.secret |=> GetCertificatePath
+        }
+    }
+
     function Disconnect {
         write-verbose ( 'Request to disconnect connection id {0}' -f $this.id )
         if ( $this.connected ) {
@@ -150,6 +156,12 @@ ScriptClass GraphConnection {
             new-so GraphConnection $endpoint $identity $ScopeNames $false $userAgent $name $consistencyLevel
         }
 
+        # TODO: This is not currently used, was originally a way to wrap the connection object into something user-friendly.
+        # Reality is that PowerShell type formatting in ps1xml can make GraphConnection user-consumable AND satisfy the
+        # need to allow GraphConnection to be used as an output and input to commands without the overhead of a 'wrapper.'
+        # There are still some benefits to the wrapper, namely the desired properties can be easily selected with auto-complete
+        # and accessed without dereferencing properties of undocumented objects referenced at the root of GraphConnection, so
+        # there may be value in restoring this approach in the future.
         function ToConnectionInfo([PSCustomObject] $connection) {
             $consistencyLevel = if ( $connection.consistencyLevel ) { $connection.consistencyLevel } else { 'Auto' }
 

@@ -31,7 +31,10 @@ ScriptClass GraphFormatter {
                     'REST-Method-PATCH'
                     'Time-Elapsed-Normal'
                     'Time-Elapsed-Slow'
-                    'Time-Elapsed-ExtraSlow'
+                    'Time-Elapsed-ExtraSlow',
+                    'Resource-TimeWindow-Expired',
+                    'Resource-TimeWindow-NotYetActive',
+                    'Resource-TimeWindow-Valid'
                 ),
                 'autographps-sdk'
             )
@@ -47,10 +50,13 @@ ScriptClass GraphFormatter {
                     'REST-Method-PUT' = 5
                     'REST-Method-GET' = 12
                     'REST-Method-DELETE' = 11
-                    'REST-Method-PATCH' = 3
+                    'REST-Method-PATCH' = 14
                     'Time-Elapsed-Normal' = 10
                     'Time-Elapsed-Slow' = 11
                     'Time-Elapsed-ExtraSlow' = 9
+                    'Resource-TimeWindow-Expired' = 9
+                    'Resource-TimeWindow-NotYetActive' = 1
+                    'Resource-TimeWindow-Valid' = 10
                 }
             }
 
@@ -109,6 +115,53 @@ ScriptClass GraphFormatter {
                 'Time-Elapsed-ExtraSlow'
             }
             $::.ColorString.ToStandardColorString($elapsed.ToString(), 'Scheme', $colorName, $null, $null)
+        }
+
+        function ResourceInTimeWindow($resourceTime, $windowStart, $windowEnd) {
+            $colorName = if ( $windowStart -and $resourceTime -lt $windowStart ) {
+                'Resource-TimeWindow-NotYetActive'
+            } elseif ( $windowEnd -and $resourceTime -gt $windowEnd ) {
+                'Resource-TimeWindow-Expired'
+            } else {
+                'Resource-TimeWindow-Valid'
+            }
+            $::.ColorString.ToStandardColorString($resourceTime.ToString(), 'Scheme', $colorName, $null, $null)
+        }
+
+        function PermissionType($permissionType) {
+            $coloring = if ( $permissionType -eq 'Delegated' ) {
+                'Emphasis2'
+            } else {
+                'Emphasis1'
+            }
+
+            $::.ColorString.ToStandardColorString($permissionType, $coloring, $null, $null, $null)
+        }
+
+        function ConnectionName($connection) {
+            $colors = $::.ColorString.GetStandardColors('Emphasis1')
+            $currentConnection = $::.GraphContext.GetCurrentConnection()
+
+            if ( $currentConnection -and $connection.id -eq $currentConnection.id ) {
+                $colors[1] = $colors[0]
+                $colors[0] = 0
+            }
+
+            $output = if ( $connection.Name ) {
+                $connection.Name
+            } else {
+                '(Unnamed)'
+            }
+
+            $::.ColorString.ToColorString($output, $colors[0], $colors[1])
+        }
+
+        function ConnectionUser($connection) {
+            $userInfo = $connection.identity.GetUserInformation()
+
+            if ( $userInfo ) {
+                $::.ColorString.ToStandardColorString($userInfo.UserId, 'Emphasis2', $null, $null, $null)
+            }
         }
     }
 }

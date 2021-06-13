@@ -25,12 +25,12 @@ $cmdlets = @(
     'Get-GraphApplicationConsent'
     'Get-GraphApplicationServicePrincipal'
     'Get-GraphConnection'
-    'Get-GraphConnectionInfo'
+    'Get-GraphCurrentConnection'
     'Get-GraphError'
     'Get-GraphResource'
     'Get-GraphLog'
     'Get-GraphLogOption'
-    'Get-GraphProfileSettings'
+    'Get-GraphProfile'
     'Get-GraphSchema'
     'Get-GraphToken'
     'Get-GraphVersion'
@@ -45,7 +45,9 @@ $cmdlets = @(
     'Remove-GraphApplicationConsent'
     'Remove-GraphConnection'
     'Remove-GraphResource'
-    'Select-GraphProfileSettings'
+    'Select-GraphConnection'
+    'Select-GraphProfile'
+    'Set-GraphApplicationCertificate'
     'Set-GraphApplicationConsent'
     'Set-GraphConnectionStatus'
     'Set-GraphLogOption'
@@ -53,7 +55,7 @@ $cmdlets = @(
     'Unregister-GraphApplication'
 )
 
-$aliases = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'Get-GraphContent', 'ggl')
+$aliases = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'gcur', 'Get-GraphContent', 'ggl', 'scon')
 
 $variables = @('AutoGraphColorModePreference', 'GraphVerboseOutputPreference', 'LastGraphItems')
 

@@ -56,7 +56,7 @@ limitations under the License.
                 <ScriptBlock>$::.GraphFormatter.StatusCode($_.Status)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>ResponseContentSize</PropertyName>
+                <PropertyName>ResponseRawContentSize</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>$::.GraphFormatter.RestMethod($_.Method)</ScriptBlock>
@@ -267,7 +267,7 @@ limitations under the License.
     <View>
       <Name>GraphConnectionOverview</Name>
       <ViewSelectedBy>
-        <TypeName>GraphConnectionInfo</TypeName>
+        <TypeName>GraphConnection</TypeName>
       </ViewSelectedBy>
       <TableControl>
         <TableHeaders>
@@ -288,16 +288,16 @@ limitations under the License.
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <PropertyName>AppId</PropertyName>
+                <ScriptBlock>$_.identity.app.appid</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.GraphFormatter.ConnectionName($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Tenant, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.identity.TenantDisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>AuthType</PropertyName>
+                <ScriptBlock>$_.identity.app.AuthType</ScriptBlock>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -308,7 +308,7 @@ limitations under the License.
     <View>
       <Name>GraphConnectionInfo</Name>
       <ViewSelectedBy>
-        <TypeName>GraphConnectionInfo</TypeName>
+        <TypeName>GraphConnection</TypeName>
       </ViewSelectedBy>
       <ListControl>
         <ListEntries>
@@ -319,11 +319,11 @@ limitations under the License.
               </ListItem>
               <ListItem>
                 <Label>Name</Label>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.GraphFormatter.ConnectionName($_)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <Label>Status</Label>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Status, 'EnabledState', $null, 'Online', 'Offline')</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.getstatus(), 'EnabledState', $null, 'Online', 'Offline')</ScriptBlock>
               </ListItem>
               <ListItem>
                 <Label>Connected</Label>
@@ -331,23 +331,47 @@ limitations under the License.
               </ListItem>
               <ListItem>
                 <Label>OrganizationId</Label>
-                <PropertyName>Tenant</PropertyName>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.identity.GetTenantId()</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$_.identity.GetTenantId()</ScriptBlock>
               </ListItem>
               <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.Connected -and $_.identity.app.authType -eq 'Delegated'</ScriptBlock>
+                </ItemSelectionCondition>
                 <Label>User</Label>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.User,'Emphasis2', $null, $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.GraphFormatter.ConnectionUser($_)</ScriptBlock>
               </ListItem>
               <ListItem>
-                <PropertyName>AppId</PropertyName>
+                <Label>AppID</Label>
+                <ScriptBlock>$_.identity.app.appid</ScriptBlock>
               </ListItem>
               <ListItem>
-                <PropertyName>AuthType</PropertyName>
+                <Label>AuthType</Label>
+                <ScriptBlock>$_.identity.app.authtype</ScriptBlock>
               </ListItem>
               <ListItem>
-                <PropertyName>Endpoint</PropertyName>
+                <Label>AuthProtocol</Label>
+                <ScriptBlock>$_.graphendpoint.AuthProtocol</ScriptBlock>
               </ListItem>
               <ListItem>
-                <PropertyName>ConsistencyLevel</PropertyName>
+                <Label>Endpoint</Label>
+                <ScriptBlock>$_.graphendpoint.graph</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>AuthEndpoint</Label>
+                <ScriptBlock>$_.graphendpoint.Authentication</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>ConsistencyLevel</Label>
+                <ScriptBlock>if ( $_.consistencyLevel ) { $_.consistencyLevel } else { 'Auto' }</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>! ! $_.UserAgent</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>UserAgent</PropertyName>
               </ListItem>
             </ListItems>
           </ListEntry>
@@ -359,6 +383,7 @@ limitations under the License.
       <Name>GraphLogDetail</Name>
       <ViewSelectedBy>
         <TypeName>GraphLogEntryDisplayType</TypeName>
+        <TypeName>GraphErrorDetail</TypeName>
       </ViewSelectedBy>
 
       <ListControl>
@@ -454,6 +479,416 @@ limitations under the License.
       </ListControl>
     </View>
 
+    <View>
+      <Name>GraphProfile</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphProfileSettings</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <Label>ProfileName</Label>
+        <ScriptBlock>$::.ColorString.ToStandardColorString($_.ProfileName, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+      </GroupBy>
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+
+              <ListItem>
+                <Label>Connection</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Connection, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>IsDefault</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.IsDefault, 'EnabledState', $null, $true, $false)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AutoConnect</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>NoBrowserSigninUI</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>InitialApiVersion</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LogLevel</PropertyName>
+              </ListItem>
+
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphApplication</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Application</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>AppId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DisplayName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>CreatedDateTime</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Id</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>PublisherDomain</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>createdDateTime</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Id</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>PublisherDomain</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+
+    <View>
+      <Name>GraphApplicationDetail</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Application</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>AppId</PropertyName>
+        <Label>Application (client) ID</Label>
+      </GroupBy>
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>AppId</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>DisplayName</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>createdDateTime</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Id</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>signinAudience</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>PublisherDomain</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>verifiedPublisher</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>info</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>parentalControlSettings</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>tags</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>notes</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>applicationTemplateId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>groupMembershipClaims</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>appRoles</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>optionalClaims</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>identifierUris</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>isDeviceOnlyAuthSupported</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>isFallbackPublicClient</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>tokenEncryptionKeyId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>defaultRedirectUri</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>addIns</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>requiredResourceAccess</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>api</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>web</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>spa</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>publicClient</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>keyCredentials</PropertyName>
+              </ListItem>
+
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphCertificate</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Certificate</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <Label>Application (client) ID</Label>
+        <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+      </GroupBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Thumbprint</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>NotAfter</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>KeyId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Subject</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Thumbprint, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.GraphFormatter.ResourceInTimeWindow($_.NotAfter, [DateTimeOffset]::UtcNow, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>KeyId</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Subject</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+
+    <View>
+      <Name>GraphCertificateDetails</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.Certificate</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <Label>Application (client) ID</Label>
+        <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+      </GroupBy>
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>Thumbprint</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Thumbprint, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AppId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Subject</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.Subject -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Subject, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>FriendlyName</Label>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.FriendlyName -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.FriendlyName, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>NotBefore</Label>
+                <ScriptBlock>$::.GraphFormatter.ResourceInTimeWindow($_.NotBefore, $null, [DateTimeOffset]::UtcNow)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>NotAfter</Label>
+                <ScriptBlock>$::.GraphFormatter.ResourceInTimeWindow($_.NotAfter, [DateTimeOffset]::UtcNow, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.CertificatePath -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <Label>CertificatePath</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.CertificatePath, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.ExportedCertificatePath -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>ExportedCertificatePath</PropertyName>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.KeyId -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>KeyId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.AppObjectId -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>AppObjectId</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
+      <Name>GraphConsent</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphConsentDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>AppId</PropertyName>
+      </GroupBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>PermissionType</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>ServicePrincipalId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Permission</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>GrantedTo</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.GraphFormatter.PermissionType($_.PermissionType)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ServicePrincipalId</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Permission, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>GrantedTo</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+
+    
+
+    <View>
+      <Name>GraphConsentDetail</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphConsentDisplayType</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>PermissionType</PropertyName>
+      </GroupBy>
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>AppId</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>PermissionType</Label>
+                <ScriptBlock>$::.GraphFormatter.PermissionType($_.PermissionType)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ServicePrincipalId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <ItemSelectionCondition>
+                  <ScriptBlock>$_.StartTime -ne $null</ScriptBlock>
+                </ItemSelectionCondition>
+                <PropertyName>StartTime</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>Permission</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.Permission, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>GrantedTo</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+
+    
   </ViewDefinitions>
 
 </Configuration>

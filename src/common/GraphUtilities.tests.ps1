@@ -295,7 +295,7 @@ Describe 'GraphUtilities methods' {
             $requestUri = 'https://graph.microsoft.com/v1.0/users/userid/drive/root'
             $contextUri = "https://graph.microsoft.com/v1.0/`$metadata#users('userid')/drive/root/`$entity"
 
-            $item = (NewTestItemWithContext $requestUri $contextUri userid)
+            $item = (NewTestItemWithContext $requestUri $contextUri rootid)
             $itemWithContext = $item.__ItemContext()
 
             $itemWithContext.GraphUri | Should Be "/users/userid/drive/root"
@@ -305,14 +305,14 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $true
 
-            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $true | Should Be "/users/userid/drive/root"
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $true | Should Be "/users/userid/drive/root/rootid"
         }
 
         It 'Should handle entities resulting from a navigation property that are not members of a collection rooted at a singleton' {
             $requestUri = 'https://graph.microsoft.com/v1.0/me/drive/root'
             $contextUri = "https://graph.microsoft.com/v1.0/`$metadata#users('userid')/drive/root/`$entity"
 
-            $item = (NewTestItemWithContext $requestUri $contextUri userid)
+            $item = (NewTestItemWithContext $requestUri $contextUri rootid)
             $itemWithContext = $item.__ItemContext()
 
             $itemWithContext.GraphUri | Should Be "/users/userid/drive/root"
@@ -322,7 +322,7 @@ Describe 'GraphUtilities methods' {
             $itemWithContext.TypeCast | Should Be $null
             $itemWithContext.IsEntity | Should Be $true
 
-            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $false | Should Be "/users/userid/drive/root"
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $false | Should Be "/users/userid/drive/root/rootid"
         }
     }
 }

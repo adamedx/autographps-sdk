@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,60 +16,65 @@
 
 Function Get-GraphApplicationCertificate {
     [cmdletbinding(defaultparametersetname='appid', positionalbinding=$false)]
+    [OutputType('AutoGraph.Certificate')]
     param (
         [parameter(parametersetname='appid', position=0, mandatory=$true)]
-        [parameter(parametersetname='ExistingConnectionAppId', mandatory=$true)]
+        [parameter(parametersetname='objectid', position=0, valuefrompipelinebypropertyname=$true)]
+        [parameter(parametersetname='appidkeyId', position=0, mandatory=$true)]
+        [parameter(parametersetname='objectidkeyId', position=0, valuefrompipelinebypropertyname=$true)]
         $AppId,
 
+        [parameter(parametersetname='appid', valuefrompipelinebypropertyname=$true)]
+        [parameter(parametersetname='objectid', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='appidkeyId', valuefrompipelinebypropertyname=$true)]
+        [parameter(parametersetname='objectidkeyId', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Alias('Id')]
+        $AppObjectId,
+
+        [parameter(parametersetname='appidkeyId', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [parameter(parametersetname='objectidkeyId', valuefrompipelinebypropertyname=$true, mandatory=$true)]
+        [Guid] $KeyId,
+
+        [string] $Thumbprint = $null,
+
         [parameter(parametersetname='name', mandatory=$true)]
-        [parameter(parametersetname='ExistingConnectionName', mandatory=$true)]
         $Name,
 
-        [switch] $RawContent,
-
-        [String] $Version = $null,
-
-        [parameter(parametersetname='ExistingConnection', mandatory=$true)]
-        [parameter(parametersetname='ExistingConnectionAppId', mandatory=$true)]
-        [parameter(parametersetname='ExistingConnectionName', mandatory=$true)]
-        [parameter(parametersetname='ExistingConnectionFromApp', mandatory=$true)]
-        [PSCustomObject] $Connection = $null,
-
-        [parameter(parametersetname='FromApp', valuefrompipeline=$true, mandatory=$true)]
-        [parameter(parametersetname='ExistingConnectionFromApp', valuefrompipeline=$true, mandatory=$true)]
-        [object[]] $Application
+        [PSCustomObject] $Connection = $null
     )
 
-    begin {}
+    begin {
+        $commandContext = new-so CommandContext $connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+    }
 
     process {
         Enable-ScriptClassVerbosePreference
 
-        $targetAppId = if ( $Application ) {
-            $appIdProperty = if ( $Application | gm appid -erroraction silentlycontinue ) {
-                $Application.AppId
-            }
-
-            if ( ! $appIdProperty ) {
-                throw [ArgumentException]::new("Specified pipeline object is not a valid application object")
-            }
-
-            $appIdProperty
-        } else {
-            $AppId
+        $targetAppId = $AppId
+        $targetObjectId = if ( $AppObjectId ) {
+            $targetAppId = $null
+            $AppObjectId
         }
 
-        $app = $::.ApplicationHelper |=> QueryApplications $targetAppId $null $null $null $RawContent $version $null $null $connection keyCredentials
-
-        if ( $app -and ( $app | select -expandproperty KeyCredentials -erroraction ignore ) ) {
-            if ( ! $RawContent.IsPresent ) {
-                $app | select -expandproperty keycredentials | foreach {
-                    $::.ApplicationHelper |=> KeyCredentialToDisplayableObject $_ $targetAppId
-                } | sort-object NotAfter
-            } else {
-                $keyCredentials
-            }
+        if ( ! $targetAppID -and ! $targetObjectId ) {
+            throw "Unexpected argument -- an app id or object id must be specified"
         }
+
+        $app = $::.ApplicationHelper |=> QueryApplications $targetAppId $targetObjectId $null $null $null $null $null $null $commandContext.connection id, appId, keyCredentials
+
+        $keyCredentials = if ( $app ) {
+            $targetAppId = $app.appId
+            $targetObjectId = $app.id
+            $app | select -expandproperty KeyCredentials -erroraction ignore
+        }
+
+        $keyCredentials | where type -eq 'AsymmetricX509Cert' | foreach {
+            if ( ! $KeyId -or $_.keyId -eq $KeyId ) {
+                if ( ! $Thumbprint -or $_.customKeyIdentifier -eq $Thumbprint ) {
+                    $::.ApplicationHelper |=> KeyCredentialToDisplayableObject $_ $targetAppId $targetObjectId
+                }
+            }
+        } | sort-object NotAfter
     }
 
     end {}

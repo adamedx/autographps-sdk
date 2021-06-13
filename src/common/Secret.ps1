@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script LocalCertificate)
+
 enum SecretType {
     Certificate
     Password
@@ -20,7 +22,7 @@ enum SecretType {
 ScriptClass Secret {
     $data = $null
     $type = $null
-    $certificatePath = $null
+    $certificateFilePath = $null
 
     function __initialize($secret) {
 
@@ -36,24 +38,19 @@ ScriptClass Secret {
             $certificate = if ( $secret -is [System.Security.Cryptography.X509Certificates.X509Certificate2] ) {
                 $secret
             } elseif ( $secret -is [string] ) {
-                $certPath = if ( split-path -isabsolute $secret ) {
-                    if ( ! ( test-path $secret ) ) {
-                        throw [ArgumentException]::new("The specified path '$secret' is not a valid file system path or cert store path")
-                    }
-                    if ( (split-path -qualifier $secret ) -eq 'cert:' ) {
-                        $secret
-                    } else {
-                        $this.certificatePath = $secret
-                    }
-                } else {
-                    join-path 'cert:\currentuser\my' $secret
-                }
+                $certItem = $::.LocalCertificate |=> GetCertificateItemFromPath $secret 'Cert:\CurrentUser\my'
 
-                if ( $certPath ) {
-                    get-item $certPath
+                if ( $certItem -is [System.Security.Cryptography.X509Certificates.X509Certificate2] ) {
+                    $certItem
+                } elseif ( $certItem -is [System.IO.FileInfo] ) {
+                    # Don't return anything, but save the path for later so that it can be
+                    # accessed when it's used, which may be never -- this matters because
+                    # for a file system cert, we will likely need to prompt a user for a password,
+                    # and that should only be done at the point it is used.
+                    $this.certificateFilePath = $certItem.FullName
                 }
             } else {
-                throw [ArgumentException]::new("Secret was of invalid type '{0}', it must be a [SecureString], [X509Certificate2], or [String] path to a certificate in the PowerShell certificate drive or path to a .pfx file in a file system drive" -f $secret.gettype())
+                throw [ArgumentException]::new("Secret was of invalid type '{0}', it must be a [SecureString], [X509Certificate2], or [String] path to a certificate in the PowerShell certificate drive or path to a certificate file with a private key in a file system drive" -f $secret.gettype())
             }
 
             if ( $certificate ) {
@@ -64,15 +61,15 @@ ScriptClass Secret {
         }
     }
 
+    function GetCertificatePath {
+        $this.certificateFilePath
+    }
+
     function GetSecretData([securestring] $secretPassword) {
         switch ( $this.type ) {
             ([SecretType]::Certificate) {
-                if ( ! $this.data -and $this.certificatePath ) {
-                    $this.data = if ( $secretPassword ) {
-                        [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($this.certificatePath, $secretPassword)
-                    } else {
-                        [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($this.certificatePath)
-                    }
+                if ( ! $this.data -and $this.certificateFilePath ) {
+                    $this.data = $::.LocalCertificate |=> GetCertificateFromPath $this.certificateFilePath $null $true $secretPassword
                 }
 
                 $this.data
@@ -110,6 +107,38 @@ ScriptClass Secret {
 
         if ( $certificate.NotBefore.CompareTo($currentTime) -gt 0 ) {
             write-warning ("Certificate '$certDescription': Current time is {0}, specified certificate is not valid before {1}" -f $currentTime, $certificate.NotBefore)
+        }
+    }
+
+    static {
+        function ToDisplayableSecretInfo($secretType, $displayName, $subject, $graphKeyId, $appId, $appObjectId, $notBefore, $notAfter, $customKeyId, $localPath, $typeName, $exportedCertificatePath) {
+
+            $certificatePath = if ( $secretType -eq 'Certificate' ) {
+                $localPath
+                if ( $localPath ) {
+                }
+            }
+
+            # TODO: Make this generic, right now it assumes
+            # this is a certificate
+            $remappedObject = [PSCustomObject] @{
+                Thumbprint = $customKeyId
+                AppId = $appId
+                KeyId = $graphKeyId
+                FriendlyName = $displayName
+                Subject = $subject
+                NotAfter = $notAfter
+                NotBefore = $notBefore
+                CertificatePath = $certificatePath
+                ExportedCertificatePath = $exportedCertificatePath
+                AppObjectId = $appObjectId
+            }
+
+            if ( $typeName ) {
+                $remappedObject.pstypenames.insert(0, $typeName)
+            }
+
+            $remappedObject
         }
     }
 }

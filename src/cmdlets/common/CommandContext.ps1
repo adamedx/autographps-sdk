@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ ScriptClass CommandContext {
         $RESTMethod,
         $Body,
         $Query,
-        $OdataFilter,
+        $Filter,
         $Search,
         $Select,
         $Expand,
@@ -62,7 +62,7 @@ ScriptClass CommandContext {
 
         __NormalizeParameters $requestParameters
 
-        Invoke-GraphApiRequest @requestParameters -version $this.version -connection $this.connection
+        Invoke-GraphApiRequest @requestParameters -version $this.version -connection $this.connection -ConsistencyLevel Session
     }
 
     function __NormalizeParameters([HashTable] $parameterTable) {

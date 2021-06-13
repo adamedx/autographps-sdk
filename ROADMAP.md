@@ -2,11 +2,9 @@
 
 ## To-do items -- prioritized
 
-* Change get-graphconnectioninfo to get-graphcurrentconnection and wrap get-graphconnection
+* Make app operations default to objectid for efficiency
+* Add formatting for get-graphapplicationserviceprincipal
 * Adaptive progress meter?
-* View for graph application
-* Should add Add-GraphApplicationCertificate
-* Should add Remove-GraphApplicationCertificate
 * Should implement certificate update using addkey / removekey: https://docs.microsoft.com/en-us/graph/api/application-addkey?view=graph-rest-1.0&tabs=http
 * Remove use of New-GraphConnection from within static methods and replace with internal version that is still mockable.
 * Make set-graphapplicationconsent idempotent (read grants / roles first, only add those that don't exist)
@@ -15,7 +13,6 @@
 * Add output types to as many commands as possible
 * Add batching support
 * Add more command help
-* Add view to get-grapherror
 * Refactor auth providers
 * Enable module re-import
 * Add throttling
@@ -23,12 +20,8 @@
 * Add equivalent of -Token option to new-graphconnection and connect-graph -- this sets token from external source
 * Make verbose output more readable
 * Document strange splatting behavior with noteproperty
-* New-GraphApplicationCertificate with -noupload option
-* Set-GraphApplicationCertificate to set to an existing certificate
 * Add output types
-
 * Create interface for certificate store, make it not implemented outside of Windows
-
 * Output data based on content-type
 * Add request linked data to obtain odata references such as file download uri's
 * Allow for requests to be dumped into a directory
@@ -47,7 +40,6 @@
 * Add retry to service principal creation
 * Fix ScriptClass issue where interpolation of a string using $this for a static member may not work during argument completion
 * Add ScriptProperty computed fields to displayformatter?
-* Add return types to cmdlets
 * Change autographps to use dynamic scope implementation
 * Rename DisplayFormatter to OutputFormatter
 * Change relativeuri parameter to 'uri' to match invoke-webrequest and invoke-restmethod
@@ -357,6 +349,8 @@
 * Fix psm1
 * Fix copyrights
 * Update README
+* Remove Get-GraphSchema
+* Remove Get-GraphVersion
 * Fix bug in scopehelper where we return all scopes when asked only for delegated
 * Get module to install and function on Linux
 * Fix output for remote ps sessions in device code login
@@ -381,6 +375,9 @@
 * Add delta
 * Parse odata context
 * Use a new appid hosted in a normal aad tenant rather than a consumer-initiated tenant
+* Add useragent to connection commands
+* Add Get-GraphProfileSettings, Select-GraphProfileSettings
+* Add Get-GraphConnection, Remove-GraphConnection
 * Add Get-GraphProfileSettings, Select-GraphProfile
 * Add Get-GraphConnection, Select-GraphConnection
 * Allow named connections
@@ -397,18 +394,12 @@
 * Enable color schemes
 * Swap method and size fields in get-graphlog default view?
 * Add alias for get-graphconnectioninfo
-
-### Postponed
-
-* transform schema, version objects to hashtables
-* Delay schema parsing at startup -- this didn't seem to improve startup perf, and the sleep we inserted took effect after the module was available for user input, which itself had a 10s + delay. Optimizing that delay would seem to be in order before putting in a delay to processing.
-* Make content column actually add the columns
-* Add -filter to get-graphitem
-* Add -filter to get-graphschema
-* Add hint of additional records
-* Add continue feature?
-* Test Release
-* Remove enums
+* Add Set-GraphApplicationCertificate
+* Should add Set-GraphApplicationCertificate (was Add-GraphApplicationCertificate)
+* Add file output to new-graphlocalcertificate
+* Should add Remove-GraphApplicationCertificate
+* Disable auto-cert generation for apps, make it opt-in everywhere (not just Linux) and add warnings
+* Change size in Get-GraphLog to ResponseRawContentSize field
 * Remove Get-GraphSchema
 * Remove Get-GraphVersion
 * Add useragent to connection commands
@@ -416,6 +407,39 @@
 * Add Get-GraphConnection, Remove-GraphConnection
 * Allow named connections
 * Fix New-GraphApplicationCertificate to correctly handle file system-based certificates
+* Formatting for application
+* Add Remove-GraphApplicationCertificate
+* Fix $app | get-graphapplicationcertificate | remove-graphapplicationcertificate
+* Fix Get-GraphError to just use the log
+* Add formatting to Get-GraphApplicationCertificate
+* Formatting for get-graphapplicationcertificate
+* Outputtype for application certificate commands
+* outputtype for application commands
+* Make GraphConnectionStatus commands not return connection info :(
+* Add Select-GraphConnection
+* Change get-graphconnectioninfo to get-graphcurrentconnection
+* Add additionalproperties parameter to New-GraphApplication
+* Rename *-grapphprofilesettings to *-graphprofile
+* Add CertificatePath option to New-GraphLocalCertificate and New-GraphApplicationCertificate
+* Add thumbprint option to Set-GraphApplicationCertificate
+* Add view to get-grapherror
+* Set-GraphApplicationCertificate to set to an existing certificate
+* Add named graph connections
+* Add connection enumeration
+* Add return types to cmdlets
+* View for graph application
+* Increase default cert key size
+
+### Postponed
+
+* transform schema, version objects to hashtables
+* Delay schema parsing at startup -- this didn't seem to improve startup perf, and the sleep we inserted took effect after the module was available for user input, which itself had a 10s + delay. Optimizing that delay would seem to be in order before putting in a delay to processing.
+* Make content column actually add the columns
+* Add hint of additional records
+* Add continue feature?
+* Test Release
+* Remove enums
+
 
 ### Abandoned
 
@@ -431,6 +455,8 @@
 * Use argumentcompleter advanced parameter rather than registerparametercompleter
 * Emit header object in get-graphchilditem ? -- handled with ps format xml
 * Add $ref? Is this New-GraphItemReference, or New-GraphItem with a reference option? -- handled with other commands in another module
+* Add -filter to get-graphschema
+* New-GraphApplicationCertificate with -noupload option
 
 #### Stdposh improvements
 

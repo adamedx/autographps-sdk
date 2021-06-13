@@ -16,7 +16,7 @@ ScriptClass DisplayTypeFormatter {
     $displayTypeName = $null
 
     static {
-        function RegisterDisplayType($displayTypeName, $displayProperties) {
+        function RegisterDisplayType($displayTypeName, $displayProperties, [boolean] $registerAsMembers) {
             remove-typedata -typename $displayTypeName -erroraction ignore
 
             $DisplayTypeArguments = @{
@@ -25,6 +25,19 @@ ScriptClass DisplayTypeFormatter {
             }
 
             Update-TypeData -force @DisplayTypeArguments
+
+            if ( $registerAsMembers ) {
+                $displayProperties | foreach {
+                    $memberArgs = @{
+                        TypeName = $displayTypeName
+                        MemberType = 'NoteProperty'
+                        MemberName = $_
+                        Value = $null
+                    }
+
+                    Update-typedata @memberArgs -force
+                }
+            }
         }
 
         function UtcTimeStringToDateTimeOffset($utcTimeString, $fallback = $false) {

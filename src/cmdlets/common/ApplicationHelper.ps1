@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,39 +12,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. (import-script ../../common/Secret)
 . (import-script DisplayTypeFormatter)
 . (import-script ../Invoke-GraphApiRequest)
 
 ScriptClass ApplicationHelper {
     static {
+        const APPLICATION_DISPLAY_TYPE AutoGraph.Application
+
         $appFormatter = $null
-        $keyFormatter = $null
 
         function __initialize {
             $this.appFormatter = new-so DisplayTypeFormatter GraphApplicationDisplayType 'AppId', 'DisplayName', 'CreatedDateTime', 'Id'
-            $this.keyFormatter = new-so DisplayTypeFormatter GraphAppCertDisplayType 'Thumbprint', 'NotAfter', 'KeyId', 'AppId'
+            __RegisterDisplayType
         }
 
         function ToDisplayableObject($object) {
+            # Yes, this is changing an existing property and overwriting it with a new version of itself!
+            # Terrible in some ways, but this makes up for the fact that the deserializer is unsophisticated --
+            # it doesn't know the API schema so strings that represent time for instance simply remain strings
+            # rather then being converted to the type described in the schema. This is a bespoke approach to
+            # compensating for this in a specific case where we use knowledge of the schema to perform an explicit
+            # conversion.
             $object.createdDateTime = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.createdDateTime $true
-            $this.appFormatter |=> DeserializedGraphObjectToDisplayableObject $object
+
+            $result = $this.appFormatter |=> DeserializedGraphObjectToDisplayableObject $object
+            $result.pstypenames.insert(0, $APPLICATION_DISPLAY_TYPE)
+            $result
         }
 
-        function KeyCredentialToDisplayableObject($object, $appId) {
-            $notAfter = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.endDateTime $true
-            $notBefore = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.startDateTime $true
+        function KeyCredentialToDisplayableObject($object, $appId, $appObjectId) {
+            if ( $object.Type -eq 'AsymmetricX509Cert' ) {
+                $notAfter = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.endDateTime $true
+                $notBefore = $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $object.startDateTime $true
 
-            $remappedObject = [PSCustomObject] @{
-                AppId = $appId
-                KeyId = $object.KeyId
-                Thumbprint = $object.customKeyIdentifier
-                NotAfter = $notAfter
-                NotBefore = $notBefore
-                FriendlyName = $object.displayName
-                Content = [PSCustomObject] $object
+                $::.CertificateHelper |=> CertificateInfoToDisplayableObject $object.displayName $object.displayName $object.KeyId $appId $appObjectId $notBefore $notAfter $object.customKeyIdentifier $null
+            } else {
+                $::.Secret |=> ToDisplayableSecretInfo Password $$object.displayName $null $object.keyId $appId $appObjectId $null $null $object.customKeyIdentifier $null
             }
-
-            $this.keyFormatter |=> DeserializedGraphObjectToDisplayableObject $remappedObject
         }
 
         function QueryApplications($appId, $objectId, $odataFilter, $name, [object] $rawContent, $version, $permissions, $cloud, $connection, $select, $queryMethod, $first, $skip, [bool] $all) {
@@ -54,7 +59,7 @@ ScriptClass ApplicationHelper {
                 $::.ApplicationAPI.DefaultApplicationApiVersion
             }
 
-            $uri = '/Applications'
+            $uri = '/applications'
 
             $filter = if ( $ODataFilter ) {
                 $ODataFilter
@@ -72,11 +77,10 @@ ScriptClass ApplicationHelper {
                 '*'
             }
 
-            $requestArguments = @{
-                RawContent = $rawContent
-                Filter = $filter
-                Permissions = $permissions
-                Select = $targetSelect
+            $requestArguments = @{}
+
+            'RawContent', 'Filter', 'Permissions', 'Select' | where { (get-variable $_ -value ) -ne $null } | foreach {
+                $requestArguments.Add($_, (get-variable $_ -value))
             }
 
             if ( $connection ) {
@@ -98,10 +102,47 @@ ScriptClass ApplicationHelper {
             }
 
             write-verbose "Querying for applications at version $apiVersion' with uri '$uri, filter '$filter', select '$select'"
-            Invoke-GraphApiRequest -Method $method -Uri $uri @requestArguments -All:$all -version $apiVersion
+            Invoke-GraphApiRequest -Method $method -Uri $uri @requestArguments -All:$all -version $apiVersion -ConsistencyLevel Session
+        }
+
+        function __RegisterDisplayType {
+            $typeProperties = @(
+                'addIns'
+                'api'
+                'appId'
+                'applicationTemplateId'
+                'appRoles'
+                'createdDateTime'
+                'defaultRedirectUri'
+                'deletedDateTime'
+                'description'
+                'disabledByMicrosoftStatus'
+                'displayName'
+                'groupMembershipClaims'
+                'id'
+                'identifierUris'
+                'info'
+                'isDeviceOnlyAuthSupported'
+                'isFallbackPublicClient'
+                'keyCredentials'
+                'notes'
+                'optionalClaims'
+                'parentalControlSettings'
+                'passwordCredentials'
+                'publicClient'
+                'publisherDomain'
+                'requiredResourceAccess'
+                'signInAudience'
+                'spa'
+                'tags'
+                'tokenEncryptionKeyId'
+                'verifiedPublisher'
+                'web'
+            )
+
+            $::.DisplayTypeFormatter |=> RegisterDisplayType $APPLICATION_DISPLAY_TYPE $typeProperties $true
         }
     }
 }
 
 $::.ApplicationHelper |=> __initialize
-

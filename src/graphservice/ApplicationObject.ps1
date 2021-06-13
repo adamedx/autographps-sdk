@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ ScriptClass ApplicationObject {
     $AppId = $null
     $AppAPI = $null
     $isConfidential = $false
+    $Description = $null
 
-    function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isConfidential, $redirectUris) {
+    function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isConfidential, $redirectUris, [HashTable] $additionalProperties) {
         $this.AppAPI = $appAPI
 
         $appParameters = @{
@@ -38,6 +39,13 @@ ScriptClass ApplicationObject {
         }
 
         $newApp = __NewApp @appParameters
+
+        if ( $additionalProperties ) {
+            foreach ( $propertyName in $additionalProperties.Keys ) {
+                $newApp.Add($propertyName, $additionalProperties[$propertyName])
+            }
+        }
+
 
         if ( ! $isConfidential ) {
             __SetPublicApp $newApp $redirectUris
@@ -66,7 +74,7 @@ ScriptClass ApplicationObject {
         $appSP = $this.AppAPI |=> RegisterApplication $this.AppId
 
         if ( $ConsentRequired ) {
-            $this.AppAPI |=> SetConsent $appSP.appId $scopes $roles (! $skipRequiredResourcePermissions) $userIdToConsent $consentAllUsers $appSP
+            $this.AppAPI |=> SetConsent $appSP.appId $scopes $roles (! $skipRequiredResourcePermissions) $userIdToConsent $consentAllUsers $appSP.Id
         }
 
         $appSP
