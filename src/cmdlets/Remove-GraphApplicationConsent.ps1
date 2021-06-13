@@ -23,7 +23,7 @@ function Remove-GraphApplicationConsent {
         [parameter(position=0, parametersetname='delegated', mandatory=$true)]
         [parameter(position=0, parametersetname='delegatedallusers', mandatory=$true)]
         [parameter(position=0, parametersetname='allpermissions', mandatory=$true)]
-        [Guid[]] $AppId,
+        [Guid] $AppId,
 
         [parameter(parametersetname='consentgrant', valuefrompipeline=$true, mandatory=$true)]
         [PSTypeName('GraphConsentDisplayType')] $ConsentGrant,

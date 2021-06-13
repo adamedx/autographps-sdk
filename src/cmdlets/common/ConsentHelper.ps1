@@ -16,10 +16,12 @@
 
 ScriptClass ConsentHelper {
     static {
+        const CONSENT_DISPLAY_TYPE GraphConsentDisplayType
         $formatter = $null
 
         function __initialize {
-            $this.formatter = new-so DisplayTypeFormatter GraphConsentDisplayType 'PermissionType', 'StartTime', 'GrantedTo', 'Permission'
+            $this.formatter = new-so DisplayTypeFormatter $CONSENT_DISPLAY_TYPE 'PermissionType', 'StartTime', 'GrantedTo', 'Permission'
+            __RegisterDisplayType
         }
 
         function ToDisplayableObject($object, $targetAppId, $targetServicePrincipalId) {
@@ -36,7 +38,7 @@ ScriptClass ConsentHelper {
 
                 foreach ( $scope in $scopes ) {
                     if ( $scope ) {
-                        $consentEntries += @{
+                        $consentEntries += [PSCustomObject] @{
                             AppId = $targetAppId
                             PermissionType = 'Delegated'
                             Permission = $scope
@@ -63,7 +65,7 @@ ScriptClass ConsentHelper {
                     $object.PrincipalId
                 }
 
-                $consentEntries += @{
+                $consentEntries += [PSCustomObject] @{
                     AppId = $targetAppId
                     PermissionType = 'Application'
                     Permission = $permissionDisplayName
@@ -75,8 +77,22 @@ ScriptClass ConsentHelper {
             }
 
             foreach ( $consentEntry in $consentEntries ) {
-                $this.formatter |=> DeserializedGraphObjectToDisplayableObject ([PSCustomObject] $consentEntry)
+                $consentEntry.pstypenames.insert(0, $CONSENT_DISPLAY_TYPE)
+                $consentEntry
             }
+        }
+
+        function __RegisterDisplayType {
+            $typeProperties = @(
+                'AppId'
+                'PermissionType'
+                'Permission'
+                'GrantedTo'
+                'ServicePrincipalId'
+                'StartTime'
+            )
+
+            $::.DisplayTypeFormatter |=> RegisterDisplayType $CONSENT_DISPLAY_TYPE $typeProperties $true
         }
     }
 }

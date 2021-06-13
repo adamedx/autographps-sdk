@@ -259,6 +259,8 @@ None.
 * `Get-GraphConnectionInfo` has been renamed to `Get-GraphCurrentConnection`
 * `Get-GraphProfileSettings` renamed to `Get-GraphProfile`
 * `Select-GraphProfileSettings` renamed to `Select-GraphProfile`
+* `Get-GraphError` parameters have changed or been removed
+* Certificate generation is no longer automatic for `New-GraphApplication` -- the `NewCredential` parameter must be specified
 
 ### New features
 
@@ -268,7 +270,16 @@ None.
 * New `CertificatePath` parameter for `New-GraphApplicationCertificate` and `New-GraphLocalCertificate`
 * New `Thumbprint` parameter for `Set-GraphApplicationCertificate`
 * New `CertKeyLength` for commands that create certificates to allow the size of the key to be customized
+* New `NewCredential` parameter for `New-GraphApplication` to explicitly create a new certificate credential
+* Output types for `Get-GraphApplication` and `Get-GraphApplicationConsent` commands for improved usability when piping output to commands including `Select-Object`
 * Commands that create certificates now default to 4096 for the key length
+* Formatting for commands that output certificate information
+* Improved, simpler formatting for connections, including highlighting current connection
+* `Get-GraphError` is now a view on top of the log for errors and is easier to read
+* New build scripts to help with documentation
+  * `./build/Get-CommandParameters`
+  * `./build/Get-DocumentStationStatus`
+  * `./build/Get-MissingDocCommandsByFewestParameters`
 
 ### Fixed defects
 
@@ -276,6 +287,8 @@ None.
 * `Remove-GraphApplicationConsent` failed when input was not taken from the pipeline
 * `New-GraphApplication`, `Set-GraphapplicationConsent` other commands failed when the connection (typically from profile settings) had the non-default value of `Eventual` set for `ConsistencyLevel`. This caused requests that expected read-after-write to reflect the write operation to fail sometimes. This was fixed by ensuring that regardless of the setting used for queries constructed by the user via commands like `Invoke-GraphRequest` and `Get-GraphRequest`, the consistency level of `Session` is always used.
 * `Get-GraphMethod` and `Get-GraphMember` required the `GraphName` parameter to be specified whenever the `Uri` parameter was specified -- this has been fixed.
+* Standardized pipelining between certificate and app commands, e.g. output of app commands can be used as input to certificate commands
+* Set-GraphApplicationConsent would not set specified delegated permissions if you were signed in with app only and you didn't explicitly specify the consent target -- that is by design, but it should have failed. Instead, it silently skipped the consent with no indication to the user. This has been fixed to fail with an error that instructions on how to remediate.
 
 '@
 

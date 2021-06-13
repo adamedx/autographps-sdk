@@ -22,7 +22,7 @@ function Get-GraphApplicationConsent {
     [OutputType('GraphConsentDisplayType')]
     param(
         [parameter(position=0, valuefrompipelinebypropertyname = $true, mandatory=$true)]
-        [Guid[]] $AppId,
+        [Guid] $AppId,
 
         [parameter(parametersetname='entiretenant', mandatory=$true)]
         [parameter(parametersetname='TenantOrSpecificPrinicpal')]
