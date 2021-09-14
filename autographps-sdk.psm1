@@ -55,6 +55,11 @@ $cmdlets = @(
     'Unregister-GraphApplication'
 )
 
+# Apparently classes are exported by declaring them directly in the psm1
+# according to documentation (about_Classes). Alternative is to use
+# Add-Type which just lets us supply arbitrary C# code to define the type...
+class GraphResponseObject {}
+
 $aliases = @('conga', 'fgl', 'gge', 'ggr', 'gcat', 'gcon', 'gcur', 'Get-GraphContent', 'ggl', 'scon')
 
 $variables = @('AutoGraphColorModePreference', 'GraphVerboseOutputPreference', 'LastGraphItems')

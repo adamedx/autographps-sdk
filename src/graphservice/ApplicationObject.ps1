@@ -25,6 +25,10 @@ ScriptClass ApplicationObject {
     $isConfidential = $false
     $Description = $null
 
+    static {
+        const CommonNativeClientRedirectUri 'https://login.microsoftonline.com/common/oauth2/nativeclient'
+    }
+
     function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isConfidential, $redirectUris, [HashTable] $additionalProperties) {
         $this.AppAPI = $appAPI
 
@@ -85,7 +89,7 @@ ScriptClass ApplicationObject {
         $publicClientRedirectUris = if ( $redirectUris -ne $null ) {
             $redirectUris
         } else {
-            , @($::.Application.DefaultRedirectUri)
+            $this.scriptclass.CommonNativeClientRedirectUri, $::.Application.DefaultRedirectUri
         }
 
         $publicClient = [PSCustomObject] @{

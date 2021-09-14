@@ -2,8 +2,13 @@
 
 ## To-do items -- prioritized
 
+* Don't request user.read by default, use '.default'
+* Add Test-GraphSettings
+* Add photo upload scenario?
+* fix debug view of format-graphlog to end without ansi escape chars
+* Re-implement test-graph
+* Add auto-generated types to objects emitted by Graph via context and use them for formatting (application, group, and user)
 * Make app operations default to objectid for efficiency
-* Add formatting for get-graphapplicationserviceprincipal
 * Adaptive progress meter?
 * Should implement certificate update using addkey / removekey: https://docs.microsoft.com/en-us/graph/api/application-addkey?view=graph-rest-1.0&tabs=http
 * Remove use of New-GraphConnection from within static methods and replace with internal version that is still mockable.
@@ -429,6 +434,8 @@
 * Add return types to cmdlets
 * View for graph application
 * Increase default cert key size
+* Add formatting for get-graphapplicationserviceprincipal
+* Use browser for powershell core auth by default except on Linux
 
 ### Postponed
 

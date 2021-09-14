@@ -163,6 +163,16 @@ ScriptClass GraphFormatter {
                 $::.ColorString.ToStandardColorString($userInfo.UserId, 'Emphasis2', $null, $null, $null)
             }
         }
+
+        function ToStandardTimeString($timeString) {
+            $parsedTime = [DateTimeOffset]::new(0, [TimeSpan]::new(0))
+
+            if ( [DateTimeOffset]::tryparse($timeString, [ref] $parsedTime) ) {
+                $parsedTime.ToString('G')
+            } else {
+                $timeString
+            }
+        }
     }
 }
 

@@ -536,6 +536,7 @@ limitations under the License.
             <Label>DisplayName</Label>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Alignment>Right</Alignment>
             <Label>CreatedDateTime</Label>
           </TableColumnHeader>
           <TableColumnHeader>
@@ -555,7 +556,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>createdDateTime</PropertyName>
+                <ScriptBlock>$_.createdDateTime.ToString('G')</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Id</PropertyName>
@@ -593,7 +594,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
-                <PropertyName>createdDateTime</PropertyName>
+                <ScriptBlock>$_.createdDateTime.ToString('G')</ScriptBlock>
               </ListItem>
               <ListItem>
                 <PropertyName>Id</PropertyName>
@@ -675,6 +676,165 @@ limitations under the License.
       </ListControl>
     </View>
 
+
+    <View>
+      <Name>GraphServicePrincipal</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.ServicePrincipal</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>AppId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DisplayName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>CreatedDateTime</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Id</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>PublisherDomain</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.GraphFormatter.ToStandardTimeString($_.createdDateTime)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Id</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>PublisherDomain</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+
+    <View>
+      <Name>GraphServicePrincipalDetail</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.ServicePrincipal</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>AppId</PropertyName>
+        <Label>Application (client) ID</Label>
+      </GroupBy>
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>AppId</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>DisplayName</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <ScriptBlock>$::.GraphFormatter.ToStandardTimeString($_.createdDateTime)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Id</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>signinAudience</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>PublisherDomain</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>verifiedPublisher</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>info</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>parentalControlSettings</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>tags</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>notes</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>applicationTemplateId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>groupMembershipClaims</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>appRoles</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>optionalClaims</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>identifierUris</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>isDeviceOnlyAuthSupported</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>isFallbackPublicClient</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>tokenEncryptionKeyId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>defaultRedirectUri</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>addIns</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>requiredResourceAccess</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>api</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>web</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>spa</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>publicClient</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>keyCredentials</PropertyName>
+              </ListItem>
+
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+
+
+
+
+    
     <View>
       <Name>GraphCertificate</Name>
       <ViewSelectedBy>

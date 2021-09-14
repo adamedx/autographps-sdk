@@ -131,9 +131,7 @@ ScriptClass V2AuthProvider {
             $defaultScopeList = $this |=> __GetDefaultScopeList $authContext @()
             $authContext.protocolContext.AcquireTokenForClient([System.Collections.Generic.List[string]] $defaultScopeList).ExecuteAsync()
         } else {
-            $cachedAccount = $authContext.protocolContext.GetAccountsAsync().Result | select -first 1
-
-            $scopes = if ( $token ) {
+              $scopes = if ( $token ) {
                 $token.scopes
             } else {
                 @('.default')
@@ -305,8 +303,18 @@ ScriptClass V2AuthProvider {
 
         function InitializeProvider {
             if ( ! $this.__AuthLibraryLoaded ) {
+
+                # This works around the fact that Import-Assembly does not currently look
+                # for netcoreapp2.1 libraries by default -- fortunately we can override this
+                # to get the desired version
+                $targetframeworkParameter = if ( $PSEdition -ne 'Desktop' ) {
+                    @{TargetFrameworkMoniker = 'netcoreapp2.1'}
+                } else {
+                    @{}
+                }
+
                 $libPath = join-path $this.scriptRoot ../../lib
-                Import-Assembly Microsoft.Identity.Client -AssemblyRoot $libPath | out-null
+                Import-Assembly Microsoft.Identity.Client -AssemblyRoot $libPath @targetFrameworkParameter | out-null
                 $this.__AuthLibraryLoaded = $true
             }
         }
