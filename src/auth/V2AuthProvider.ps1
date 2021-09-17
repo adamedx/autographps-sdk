@@ -103,7 +103,10 @@ ScriptClass V2AuthProvider {
 
     function AcquireFirstUserTokenConfidential($authContext, $scopes) {
         write-verbose 'V2 auth provider acquiring user token via confidential client'
-        $scopeList = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri
+
+        $normalizedScopes = __NormalizeScopes $scopes
+
+        $scopeList = $::.ScopeHelper |=> QualifyScopes $normalizedScopes $authContext.GraphEndpointUri
 
         # Confidential user flow uses an authcode flow with a confidential rather than public client.
         # First, get the auth code for the user -- MSAL does not support this, but it does return the URI
@@ -134,7 +137,7 @@ ScriptClass V2AuthProvider {
               $scopes = if ( $token ) {
                 $token.scopes
             } else {
-                @('.default')
+                @($::.ScopeHelper.DefaultScope)
             }
             $requestedScopesFromToken = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri |
               where { $_ -notin @('openid', 'profile', 'offline_access') }
@@ -145,7 +148,7 @@ ScriptClass V2AuthProvider {
                 $authContext.protocolContext.AcquireTokenSilent([System.Collections.Generic.List[string]] $requestedScopesFromToken, $cachedAccount).ExecuteAsync()
             } catch [Microsoft.Identity.Client.MsalUiRequiredException] {
                 write-verbose 'Acquire silent failed, retrying interactive'
-                $this |=> __AcquireTokenInteractive $authContext @('.default')
+                $this |=> __AcquireTokenInteractive $authContext @($::.ScopeHelper.DefaultScope)
             }
         }
     }
@@ -166,11 +169,10 @@ ScriptClass V2AuthProvider {
 
     function __AcquireTokenInteractive($authContext, $scopes) {
         write-verbose 'V2 auth provider acquiring interactive user token'
-        if ( $scopes -eq $null -or $scopes.length -eq 0 ) {
-            throw [ArgumentException]::new('No scopes specified for v2 auth protocol, at least one scope is required')
-        }
 
-        $scopeList = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri
+        $normalizedScopes = __NormalizeScopes $scopes
+
+        $scopeList = $::.ScopeHelper |=> QualifyScopes $normalizedScopes $authContext.GraphEndpointUri
         $authContext.protocolContext.AcquireTokenInteractive([System.Collections.Generic.List[string]] $scopeList).ExecuteAsync()
     }
 
@@ -180,6 +182,16 @@ ScriptClass V2AuthProvider {
             $key += ':' + $groupId.tostring()
         }
         $key
+    }
+
+    function __NormalizeScopes($scopes) {
+        $normalizedScopes = @($::.ScopeHelper.DefaultScope)
+
+        if ( $scopes ) {
+            $normalizedScopes = $scopes
+        }
+
+        $normalizedScopes
     }
 
     function __AddAppContext([bool] $isConfidential, [Guid] $appId, [Uri] $authUri, $appContext, $groupId) {
@@ -238,7 +250,7 @@ ScriptClass V2AuthProvider {
     }
 
     function __GetDefaultScopeList($authContext) {
-        $::.ScopeHelper |=> QualifyScopes @('.default') $authContext.GraphEndpointUri
+        $::.ScopeHelper |=> QualifyScopes @($::.ScopeHelper.DefaultScope) $authContext.GraphEndpointUri
     }
 
     function GetAuthCodeFromURIUserInteraction($authUxUri) {

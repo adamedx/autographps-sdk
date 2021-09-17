@@ -56,9 +56,6 @@ ScriptClass GraphConnection {
         $this.NoBrowserUI = ! $::.Application.SupportsBrowserSignin -or $noBrowserUI -or $isRemotePSSession
 
         if ( $this.GraphEndpoint.Type -eq 'MSGraph') {
-            if ( $Identity -and ! $scopes ) {
-                throw "No scopes were specified, at least one scope must be specified"
-            }
             $this.Scopes = $Scopes
         }
 

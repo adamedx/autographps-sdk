@@ -183,9 +183,24 @@ function Connect-GraphApi {
             ([GraphCloud]::Public)
         }
 
-        $computedScopes = if ( $Permissions -ne $null ) {
+        # PS language note: comparison against null only works
+        # in the general case if the variable is right hand side of
+        # the comparison operator. Specifically the expression
+        # @() -ne $null actually evaluates to @(), i.e. an empty array,
+        # rather than the expected value of $true, stating that an
+        # empty array of type [object[]] is not equal to $null which
+        # has no type. Placing the $null on the LHS and variable on RHS
+        # restores the expected behavior.
+        $normalizedPermissions = if ( $null -ne $Permissions ) {
+            # If they explicitly specify @() for $Permissions, we want to honor
+            # this by not requesting any permissions at all
             $Permissions
         } else {
+            # They did not specify permissions at all, whether empty or non-empty,
+            # so as a user experience enhancement, we'll ask for 'User.Read' anyway,
+            # which ensures that the basic scenario of 'me' requests are functional
+            # and avoids user confusion when newly created apps seem to "fail" for what
+            # many users would view as the "Hello World" scenario for a graph request.
             @('User.Read')
         }
 
@@ -228,7 +243,7 @@ function Connect-GraphApi {
                 if ( $Permissions -and $context.connection -and $context.connection.identity ) {
                     write-verbose 'Creating connection from existing connection but with new permissions'
                     $identity = new-so GraphIdentity $context.connection.identity.app $context.connection.graphEndpoint $context.connection.identity.tenantname
-                    new-so GraphConnection $context.connection.graphEndpoint $identity $computedScopes $NoBrowserSigninUI.IsPresent
+                    new-so GraphConnection $context.connection.graphEndpoint $identity $::.ScopeHelper.DefaultScope $NoBrowserSigninUI.IsPresent
                 } else {
                     write-verbose 'Just reconnecting the existing connection'
                     $context.connection
@@ -250,6 +265,7 @@ function Connect-GraphApi {
 
                 $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction', 'ConnectionName', 'CertCredential', 'NoProfile', 'NoCertCredential', 'PromptForCertCredential' ) } | foreach {
                     $conditionalArguments[$_] = $PSBoundParameters[$_]
+                    $conditionalArguments['Permissions'] = $normalizedPermissions
                 }
 
                 try {

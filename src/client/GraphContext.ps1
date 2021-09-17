@@ -99,18 +99,18 @@ ScriptClass GraphContext {
 
         function __initialize {
             $::.LogicalGraphManager |=> __initialize
-            $defaultPermissions = @('User.Read')
+
             $defaultProfile = $::.LocalProfile |=> GetDefaultProfile
             $defaultApiVersion = GetDefaultVersion
             $defaultConnection = if ( $defaultProfile ) {
-                $defaultProfile |=> GetConnection $defaultPermissions
+                $defaultProfile |=> GetConnection
                 if ( $defaultProfile.InitialApiVersion ) {
                     $defaultApiVersion = $defaultProfile.InitialApiVersion
                 }
             }
 
             if ( ! $defaultConnection ) {
-                $defaultConnection = $::.GraphConnection |=> NewSimpleConnection MSGraph Public $defaultPermissions
+                $defaultConnection = $::.GraphConnection |=> NewSimpleConnection MSGraph Public
             }
 
             $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null $defaultConnection $defaultApiVersion $defaultApiVersion
@@ -191,10 +191,7 @@ ScriptClass GraphContext {
             } elseif ( $currentContext ) {
                 write-verbose ("Found existing connection $($currentContext.connection.id) from current context '$($currentcontext.name)'. Requested cloud: '{0}'" -f $cloud)
                 $isSameEndpoint = ! $cloud -or ( ( $cloud -ne 'Custom' ) -and $cloud -eq $currentContext.connection.GraphEndpoint.cloud )
-                if ( $isSameEndpoint -and
-                     (!$scopenames -or ($scopenames -is [String] -and $scopenames -eq 'User.Read') -or ($scopenames -is [String[]] -and $scopenames.length -eq 1 -and $scopenames[0] -eq 'User.Read' )) -and
-                     ! $anonymous
-                ) {
+                if ( $isSameEndpoint -and ! $scopenames -and ! $anonymous ) {
                     write-verbose "Current context is compatible with supplied arguments, will use it"
                     $chosenContext = $currentContext
                     $currentContext.connection
@@ -205,9 +202,6 @@ ScriptClass GraphContext {
 
             $connectionScopes = if ( $scopeNames ) {
                 $scopeNames
-            } else {
-                write-verbose "Scopes were not specified, adding default User.Read scope"
-                @('User.Read')
             }
 
             if ( $existingConnection ) {

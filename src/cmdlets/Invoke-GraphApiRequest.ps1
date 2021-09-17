@@ -404,8 +404,6 @@ function Invoke-GraphApiRequest {
                 throw "Permissions may not be specified via -Permissions if an existing connection is supplied with -Connection"
             }
             $Permissions
-        } else {
-            @('User.Read')
         }
 
         $requestQuery = if ( $Query ) {

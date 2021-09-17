@@ -150,11 +150,9 @@ function New-GraphConnection {
 
         $specifiedScopes = if ( $Permissions ) {
             if ( $Secret.IsPresent -or $Certificate -or $CertificatePath ) {
-                throw 'Permissions may not be specified for app authentication'
+                throw 'Permissions may not be specified at runtime for app-only authentication since they originate from the static application configuration'
             }
             $Permissions
-        } else {
-            @('User.Read')
         }
 
         $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $AuthProtocol $validatedCloud $GraphType
