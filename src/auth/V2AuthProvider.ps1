@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -104,9 +104,7 @@ ScriptClass V2AuthProvider {
     function AcquireFirstUserTokenConfidential($authContext, $scopes) {
         write-verbose 'V2 auth provider acquiring user token via confidential client'
 
-        $normalizedScopes = __NormalizeScopes $scopes
-
-        $scopeList = $::.ScopeHelper |=> QualifyScopes $normalizedScopes $authContext.GraphEndpointUri
+        $scopeList = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri
 
         # Confidential user flow uses an authcode flow with a confidential rather than public client.
         # First, get the auth code for the user -- MSAL does not support this, but it does return the URI
@@ -134,18 +132,10 @@ ScriptClass V2AuthProvider {
             $defaultScopeList = $this |=> __GetDefaultScopeList $authContext @()
             $authContext.protocolContext.AcquireTokenForClient([System.Collections.Generic.List[string]] $defaultScopeList).ExecuteAsync()
         } else {
-              $scopes = if ( $token ) {
-                $token.scopes
-            } else {
-                @($::.ScopeHelper.DefaultScope)
-            }
-            $requestedScopesFromToken = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri |
-              where { $_ -notin @('openid', 'profile', 'offline_access') }
-
             $cachedAccount = $authContext.protocolContext.GetAccountsAsync().Result | select -first 1
 
             try {
-                $authContext.protocolContext.AcquireTokenSilent([System.Collections.Generic.List[string]] $requestedScopesFromToken, $cachedAccount).ExecuteAsync()
+                $authContext.protocolContext.AcquireTokenSilent([System.Collections.Generic.List[string]] @(), $cachedAccount).ExecuteAsync()
             } catch [Microsoft.Identity.Client.MsalUiRequiredException] {
                 write-verbose 'Acquire silent failed, retrying interactive'
                 $this |=> __AcquireTokenInteractive $authContext @($::.ScopeHelper.DefaultScope)
@@ -170,9 +160,7 @@ ScriptClass V2AuthProvider {
     function __AcquireTokenInteractive($authContext, $scopes) {
         write-verbose 'V2 auth provider acquiring interactive user token'
 
-        $normalizedScopes = __NormalizeScopes $scopes
-
-        $scopeList = $::.ScopeHelper |=> QualifyScopes $normalizedScopes $authContext.GraphEndpointUri
+        $scopeList = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri
         $authContext.protocolContext.AcquireTokenInteractive([System.Collections.Generic.List[string]] $scopeList).ExecuteAsync()
     }
 
@@ -182,16 +170,6 @@ ScriptClass V2AuthProvider {
             $key += ':' + $groupId.tostring()
         }
         $key
-    }
-
-    function __NormalizeScopes($scopes) {
-        $normalizedScopes = @($::.ScopeHelper.DefaultScope)
-
-        if ( $scopes ) {
-            $normalizedScopes = $scopes
-        }
-
-        $normalizedScopes
     }
 
     function __AddAppContext([bool] $isConfidential, [Guid] $appId, [Uri] $authUri, $appContext, $groupId) {

@@ -2,7 +2,7 @@
 
 ## To-do items -- prioritized
 
-* Don't request user.read by default, use '.default'
+* Validate user confidential flow in profile
 * Add Test-GraphSettings
 * Add photo upload scenario?
 * fix debug view of format-graphlog to end without ansi escape chars
@@ -436,6 +436,7 @@
 * Increase default cert key size
 * Add formatting for get-graphapplicationserviceprincipal
 * Use browser for powershell core auth by default except on Linux
+* Don't request user.read by default, use nothing # looks like you don't need to explicitly request '.default' with MSAL
 
 ### Postponed
 
