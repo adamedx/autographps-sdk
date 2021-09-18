@@ -184,6 +184,30 @@ Describe 'GraphUtilities methods' {
             $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $true myoverrideid | Should Be '/users/myoverrideid'
         }
 
+        It 'Should return a URI similar to the request URI with an additional id segment when the request URI specified an entity set and assumeEntity is true and whether a default id is specified or not and assumeNotCollectionMember is true and the response object has an id' {
+            $requestUri = 'https://graph.microsoft.com/v1.0/me/photo'
+            $contextUri = "https://graph.microsoft.com/v1.0/`$metadata#users('userid')/photo/`$entity"
+
+            $item = (NewTestItemWithContext $requestUri $contextUri photoid)
+            $itemWithContext = $item.__ItemContext()
+
+            $itemWithContext.GraphUri | Should Be '/users/userid/photo'
+            $itemWithContext.TypelessGraphUri | Should Be '/users/userid/photo'
+            $itemWithContext.ContextUri | Should Be $contextUri
+            $itemWithContext.RequestUri | Should Be ( $requestUri -split '\?' )[0]
+            $itemWithContext.TypeCast | Should Be $null
+            $itemWithContext.IsEntity | Should Be $true
+
+            # In this scenario, we deal with the fact that me/photo returns the same context uri as me/contacts,
+            # even though the former is a navigation to a single entity, and the latter is a navigation to a
+            # collection. Because of this, we're not sure if the path to the response object should include
+            # an id (the latter case) or not (the former). If the caller can identify this case using some
+            # additional context, they can specify assumeNotCollectionMember to force us to treat this situation
+            # as the former case ('me/photo').
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $true myoverrideid $true | Should Be '/users/userid/photo'
+            $::.GraphUtilities |=> GetAbstractUriFromResponseObject $item $true $null $true | Should Be '/users/userid/photo'
+        }
+
         It 'Should return null when the request URI specified an entity set and assumeEntity is false but a default id is specified because the response object does not have an id' {
             $requestUri = 'https://graph.microsoft.com/v1.0/users?$select=displayName'
             $contextUri = 'https://graph.microsoft.com/v1.0/$metadata#users(displayName)'
