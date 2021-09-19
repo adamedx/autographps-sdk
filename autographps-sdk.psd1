@@ -256,12 +256,14 @@ This release improves adds support for graph object output customization.
 
 ### Breaking changes
 
-None.
+* The structure of the output of `Test-Graph` has changed -- the properties were always dynamic potentially subject to change since they were based on HTTP protocol returned by Graph without a contract for its structure. However, `Test-Graph` now obtains data from a different part of the protocol that deviates from the earlier source, and this causes the breaking changes to properties of `Test-Graph` output. The new source is a more reliable one, so additional changes are unlikely in the future.
 
 ### New features
 
 * Formatting for `Get-GraphApplicaitonServicePrincipal`
 * Format improvements in time fields for `Get-GraphApplication`
+* `New-GraphConnection` no longer assumes you're requesting `User.Read`, enabling legacy apps that don't support incremental consent
+* `Connect-GraphApi` requests `User.Read` by default, but this can be suppresed, enabling legacy apps that don't support incremental consent
 
 ### Fixed defects
 

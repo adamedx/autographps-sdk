@@ -96,16 +96,27 @@ ScriptClass RESTRequest {
                 if ( $logEntry ) { $logEntry |=> LogRequestStart }
                 Invoke-WebRequest -Uri $this.uri -headers $this.headers -method $this.method -useragent $this.userAgent -usebasicparsing @optionalArguments
             } catch {
-                # There are a variety of exceptions that can be encountered depending on the underlying .NET http client implementation
+                # Here we handle http errors returned by the endpoint differently than other errors (say failure to reach the endpoint),
+                # so we try to identify http protocol errors via the exception type. Also, there are a variety of exceptions that can be
+                # encountered depending on the underlying .NET http client implementation, and again we rely on the exception type
+                # to make the correct interpretation.
                 # TODO: Abstract this to a class that has knowledge of the specifics of the http clients
                 $exceptionType = $_.exception.gettype()
-                if ( $exceptionType -ne [System.Net.WebException] -and $exceptionType.fullName -ne 'Microsoft.PowerShell.Commands.HttpResponseException' -and ! $exceptionType.fullname.startswith('System.Net.Http') ) {
+                if ( $exceptionType -ne [System.Net.WebException] -and $exceptionType.fullName -ne 'Microsoft.PowerShell.Commands.HttpResponseException' -and ! $exceptionType.fullname.startswith('System.Net.Http') -and ( $exceptionType.fullname -notlike 'AutoGraph*HttpResponseException') ) {
                     write-verbose "Encountered unexpected exception of type '$($exceptionType.FullName)'"
                     throw
                 }
 
                 $response = $_.exception.response
-                $responseStreamOutput = ($::.RestResponse |=> GetErrorResponseDetails $response)
+
+                # TODO: Understand why the line below breaks in unit tests only when
+                # $::.RESTResponse |=> is used instead of 'RESTResponse' |::>. In that situation
+                # the '$::' variable was null! This would then result in an exception when
+                # attempting to access the 'RESTResponse' property. Most likely the behavior is
+                # an artifact of ScriptClass or a side-effect of loading and unloading modules,
+                # during testing, or perhaps some other module-scoping issue.
+                $responseStreamOutput = ( 'RESTResponse' |::> GetErrorResponseDetails $response)
+
                 $responseOutput = if ( $responseStreamOutput -ne $null -and $responseStreamOutput.length -gt 0 ) {
                     $responseStreamOutput
                 } else {

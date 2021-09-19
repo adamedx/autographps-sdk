@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,39 +48,39 @@ If the command is not successful, an HTTP status code will be surfaced in an exc
 .EXAMPLE
 Test-Graph
 
-ADSiteName : wus
-Build      : 1.0.9954.5
-DataCenter : west us
-Host       : agsfe_in_38
-PingUri    : https://graph.microsoft.com/ping
-Ring       : 5
-ScaleUnit  : 002
-Slice      : slicec
-TimeLocal  : 1/24/2019 6:54:13 AM
-TimeUtc    : 1/24/2019 6:54:13 AM
+TestUri                : https://graph.microsoft.com/test
+ServerTimestamp        : 09/20/2021 10:21:07 +00:00
+ClientElapsedTime (ms) : 12.0889
+RequestId              : fa0113c3-c0ab-4f47-8571-d3bc6b891686
+DataCenter             : West US 2
+Ring                   : 1
+RoleInstance           : MW2PEPF000031CC
+ScaleUnit              : 001
+Slice                  : E
+NonfatalStatus         : 405
 
 When no parameters are specified, the command targets the Graph endpoint of the current connection, in this case https://graph.microsoft.com, and outputs diagnostic information.
 
 .EXAMPLE
-Test-Graph -Cloud GermanyCloud
+Test-Graph -Cloud ChinaCloud
 
-ADSiteName : dne
-Build      : 1.0.9954.4
-DataCenter : germany northeast
-Host       : agsfe_in_3
-PingUri    : https://graph.microsoft.de/ping
-Ring       : 4
-ScaleUnit  : 000
-Slice      : slicec
-TimeLocal  : 1/24/2019 7:04:06 AM
-TimeUtc    : 1/24/2019 7:04:06 AM
+TestUri                : https://microsoftgraph.chinacloudapi.cn/test
+ServerTimestamp        : 9/19/2021 2:21:03 AM +00:00
+ClientElapsedTime (ms) : 19.0889
+RequestId              : 6150c057-020f-4f5d-b2c3-cc208570ae6b
+DataCenter             : China East
+Ring                   : 6
+RoleInstance           : SH1NEPF00000388
+ScaleUnit              : 001
+Slice                  : E
+NonfatalStatus         : 405
 
 This command targets the Graph endpoint for the Germany cloud, https://graph.microsoft.de, ando outputs its diagnostic information.
 
 .EXAMPLE
 Test-Graph -RawContent
 
-{"Time-Local":"1/24/2019 7:06:20 AM","Time-UTC":"1/24/2019 7:06:20 AM","Build":"1.0.9954.5","DataCenter":"west us","Slice":"slicec","Ring":"5","ScaleUnit":"001","Host":"agsfe_in_0","ADSiteName":"wus"}
+{"ServerInfo":{"DataCenter":"West US 2","Slice":"E","Ring":"1","ScaleUnit":"001","RoleInstance":"MW2PEPF000031CC"}}
 
 This command returns the same information as in the first example, but by specifying the RawContent parameter the command is directed not to output the response as deserialized structured objects, but in the exact format in which it was returned by Graph, in this case JSON.
 
@@ -93,7 +93,7 @@ function Test-Graph {
     [cmdletbinding(defaultparametersetname='currentconnection')]
     param(
         [parameter(parametersetname='KnownClouds')]
-        [validateset("Public", "ChinaCloud", "GermanyCloud", "USGovernmentCloud")]
+        [validateset("Public", "ChinaCloud", "USGovernmentCloud")]
         [string] $Cloud,
 
         [parameter(parametersetname='Connection', mandatory=$true)]
@@ -118,25 +118,65 @@ function Test-Graph {
         ($::.GraphContext |=> GetConnection).GraphEndpoint.Graph
     }
 
-    $pingUri = [Uri]::new($graphEndpointUri, 'ping')
-    $request = new-so RESTRequest $pingUri
+    $pingUri = [Uri]::new($graphEndpointUri, 'test')
+    $request = new-so RESTRequest $pingUri HEAD
     $logEntry = if ( $logger ) { $logger |=> NewLogEntry $null $request }
+    $responseException = $null
+    $responseStatus = 0
 
     $response = try {
-        $request |=> Invoke -logEntry $logEntry
+        $successfulResponse = $request |=> Invoke -logEntry $logEntry
+        $successfulResponse
     } catch {
-        throw
+        $responseException = $_.Exception.InnerException.InnerException
+        $responseException.Response
     } finally {
         if ( $logEntry ) { $logger |=> CommitLogEntry $logEntry }
     }
 
-    if ( ! $RawContent.ispresent ) {
+    $dateHeader = $null
+    $requestId = $null
+
+    $diagnosticInfo = if ( $response | get-member Headers -erroraction ignore ) {
+        $dateHeader = $response.Headers['Date']
+        $requestId = $response.Headers['request-id']
+        $response.Headers['x-ms-ags-diagnostic']
+    }
+
+    $serverTime = if ( $dateHeader ) {
+        $dateTime = [DateTimeOffset]::Now
+        if ( [DateTimeOffset]::TryParse($dateHeader, [ref] $dateTime) ) {
+            $dateTime
+        } else {
+            $dateHeader
+        }
+    }
+
+    $logData = $logEntry.ToDisplayableObject()
+    $responseStatus = $logData.Status
+    $clientRequestTime = $logData.RequestTimestamp
+    $clientResponseTime = $logData.ResponseTimestamp
+    $clientElapsedTime = $clientResponseTime - $clientRequestTime
+
+    if ( ! $diagnosticInfo ) {
+        if ( $responseException ) {
+            throw $responseException
+        } else {
+            throw "Graph URI '$graphEndpointUri' was unreachable or returned an unexpected response"
+        }
+    } elseif ( ! $RawContent.ispresent ) {
         # The [ordered] type adapter will ensure that enumeration of items in a hashtable
         # is sorted by insertion order
-        $result = [ordered] @{}
+        $result = [ordered] @{
+            TestUri = ($pingUri.ToString())
+            ServerTimestamp = $serverTime
+            ClientRequestTimestamp = $clientRequestTime
+            ClientResponseTimestamp = $clientResponseTime
+            ClientElapsedTime = $clientElapsedTime
+            RequestId = $requestId
+        }
 
-        $content = $response.content | convertfrom-json
-        $content | add-member -notepropertyname PingUri -notepropertyvalue $pinguri
+        $content = $diagnosticInfo | convertfrom-json | select-object -ExpandProperty ServerInfo
 
         # Sort by name to get consistent sort formatting
         $content | gm -membertype noteproperty | sort-object name | foreach {
@@ -153,9 +193,13 @@ function Test-Graph {
             $result[$destination] = $value
         }
 
-        [PSCustomObject] $result
+        $result['NonfatalStatus'] = $responseStatus
+
+        $asObject = [PSCustomObject] $result
+        $asObject.pstypenames.insert(0, 'GraphEndpointTest')
+        $asObject
     } else {
-        $response.content
+        $diagnosticInfo
     }
 }
 

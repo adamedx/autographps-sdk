@@ -830,11 +830,6 @@ limitations under the License.
       </ListControl>
     </View>
 
-
-
-
-
-    
     <View>
       <Name>GraphCertificate</Name>
       <ViewSelectedBy>
@@ -1000,9 +995,6 @@ limitations under the License.
       </TableControl>
     </View>
 
-
-    
-
     <View>
       <Name>GraphConsentDetail</Name>
       <ViewSelectedBy>
@@ -1047,8 +1039,59 @@ limitations under the License.
       </ListControl>
     </View>
 
+    <View>
+      <Name>GraphEndpointTest</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphEndpointTest</TypeName>
+      </ViewSelectedBy>
+      <ListControl>
 
-    
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+
+              <ListItem>
+                <Label>TestUri</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.TestUri, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>ServerTimestamp</Label>
+                <ScriptBlock>$::.GraphFormatter.ServerTimestamp($_.ClientRequestTimestamp, $_.ServerTimestamp)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>ClientElapsedTime (ms)</Label>
+                <ScriptBlock>$::.GraphFormatter.ResponseElapsedTime($_.ClientElapsedTime, 'TotalMilliseconds', $true)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>RequestId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>DataCenter</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DataCenter, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Ring</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>RoleInstance</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ScaleUnit</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Slice</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>NonfatalStatus</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.NonfatalStatus, 'EnabledState', $null, $null, $_.NonfatalStatus)</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
   </ViewDefinitions>
 
 </Configuration>
