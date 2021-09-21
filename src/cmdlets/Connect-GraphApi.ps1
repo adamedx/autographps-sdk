@@ -63,6 +63,8 @@ function Connect-GraphApi {
         [parameter(parametersetname='autocert')]
         [Switch] $NoninteractiveAppOnlyAuth,
 
+        [Switch] $ExistingPermissionsOnly,
+
         [string] $TenantId,
 
         [parameter(parametersetname='certpath', mandatory=$true)]
@@ -163,6 +165,10 @@ function Connect-GraphApi {
     process {
         Enable-ScriptClassVerbosePreference
 
+        if ( $Permissions -and $ExistingPermissionsOnly.IsPresent ) {
+            throw [ArgumentException]::new("The 'ExistingPermissionsOnly' and 'Permissions' parameters may not both be specified ")
+        }
+
         if ( $CertificatePath ) {
             $existingCert = get-item $certificatePath -erroraction ignore
 
@@ -195,12 +201,14 @@ function Connect-GraphApi {
             # If they explicitly specify @() for $Permissions, we want to honor
             # this by not requesting any permissions at all
             $Permissions
-        } else {
+        } elseif ( ! $ExistingPermissionsOnly.IsPresent ) {
             # They did not specify permissions at all, whether empty or non-empty,
-            # so as a user experience enhancement, we'll ask for 'User.Read' anyway,
-            # which ensures that the basic scenario of 'me' requests are functional
-            # and avoids user confusion when newly created apps seem to "fail" for what
-            # many users would view as the "Hello World" scenario for a graph request.
+            # and they did not specify the 'ExistingPermissionsOnly' parameter,
+            # so as a user experience enhancement, we'll ask for 'User.Read' in case
+            # they don't already have it, which ensures that the basic scenario of
+            # '/me' requests are functional and avoids user confusion when newly
+            # created apps seem to "fail" for what many users would view as the
+            # "Hello World" scenario for a graph request.
             @('User.Read')
         }
 
@@ -263,7 +271,18 @@ function Connect-GraphApi {
                     @{}
                 }
 
-                $PSBoundParameters.keys | where { $_ -notin @('Connect', 'Reconnect', 'ErrorAction', 'ConnectionName', 'CertCredential', 'NoProfile', 'NoCertCredential', 'PromptForCertCredential' ) } | foreach {
+                # Configure parameters compatible with forwarding to the underlying command
+                $PSBoundParameters.keys | where { $_ -notin @(
+                                                      'CertCredential'
+                                                      'Connect'
+                                                      'ConnectionName'
+                                                      'ErrorAction'
+                                                      'ExistingPermissionsOnly'
+                                                      'NoCertCredential'
+                                                      'NoProfile'
+                                                      'PromptForCertCredential'
+                                                      'Reconnect'
+                                                  ) } | foreach {
                     $conditionalArguments[$_] = $PSBoundParameters[$_]
                     $conditionalArguments['Permissions'] = $normalizedPermissions
                 }

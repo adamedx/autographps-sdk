@@ -2,11 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Validate user confidential flow in profile
 * Add Test-GraphSettings
 * Add photo upload scenario?
-* fix debug view of format-graphlog to end without ansi escape chars
-* Re-implement test-graph
 * Add auto-generated types to objects emitted by Graph via context and use them for formatting (application, group, and user)
 * Make app operations default to objectid for efficiency
 * Adaptive progress meter?
@@ -437,6 +434,9 @@
 * Add formatting for get-graphapplicationserviceprincipal
 * Use browser for powershell core auth by default except on Linux
 * Don't request user.read by default, use nothing # looks like you don't need to explicitly request '.default' with MSAL
+* Re-implement test-graph
+* Validate user confidential flow in profile
+* Add `-DefaultPermissions` to `Connect-GraphApi`
 
 ### Postponed
 
