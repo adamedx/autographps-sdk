@@ -1,0 +1,74 @@
+{
+    "$schema": "https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/settings.schema.json",
+    "defaultProfile":  "WilyCORP",
+
+    "profiles":  {
+        "defaults":  {
+            "logLevel": "Full"
+        },
+
+        "list": [
+            {
+                "name": "WilyCORP",
+                "connection": "AutoWily",
+                "PromptColor": "Red"
+            },
+            {
+                "name": "Robot",
+                "connection": "Operator"
+            },
+            {
+                "name": "WilyDev",
+                "connection": "Developer"
+            }
+        ]
+    },
+
+    "connections": {
+        "defaults": {
+            "consistencyLevel": "Eventual"
+        },
+
+        "list": [
+            {
+                "name": "AutoWily",
+                "endpoint": "WilyProxy",
+                "appId": "d86ff35f-3c5d-4879-89b5-089b74908299",
+                "confidential":  true,
+                "authType":  "AppOnly",
+                "tenantId":  "c166bed2-181c-4696-9a42-1e8385f11f67"
+            },
+            {
+                "name": "Operator",
+                "endpoint": "WilyProxy",
+                "appId": "d8dcae77-ddc1-406e-9784-c73cbb305862",
+                "tenantId":  "c166bed2-181c-4696-9a42-1e8385f11f67"
+            },
+            {
+                "name": "Developer",
+                "endpoint": "WilyResearch",
+                "appId": "db744167-187c-4b96-b6aa-654b2352823a",
+                "confidential":  true,
+                "tenantId":  "4dd10348-2192-470e-80fe-c53b8eb8378e"
+            }
+        ]
+    },
+
+    "endpoints": {
+        "list": [
+            {
+                "name":  "WilyProxy",
+                "graphUri":  "https://graph.wilycorp.com",
+                "authUri":  "https://login.wilycorp.com"
+
+            },
+            {
+                "name":  "WilyResearch",
+                "graphUri":  "https://graph.dev.wilycorp.com",
+                "authUri":  "https://login.dev.wilycorp.com"
+            }
+        ]
+    }
+}
+
+

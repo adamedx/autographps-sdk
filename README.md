@@ -133,6 +133,7 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Set-GraphConnectionStatus            | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service                    |
 | Set-GraphLogOption                   | Sets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
 | Test-Graph                           | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint                                                                  |
+| Test-GraphSettings                   | Validates whether AutoGraph settings specified as a file, JSON content, or in deserialized form are valid                                               |
 | Unregister-GraphApplication          | Removes consent and service principal entries for the application from the tenant                                                                       |
 
 ### Limited support for Azure Active Directory (AAD) Graph

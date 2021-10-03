@@ -17,17 +17,12 @@
 . (import-script ../client/GraphConnection)
 . (import-script ../client/GraphContext)
 
-$AlternatePropertyMapping = @{
-    'Time-Local'=@('TimeLocal', {param($val) [DateTime] $val})
-    'Time-UTC'=@('TimeUtc', {param($val) [DateTime]::new(([DateTime] $val).ticks, [DateTimeKind]::Utc)})
-}
-
 <#
 .SYNOPSIS
 Determines without authentication whether a Graph endpoint is accessible over the network.
 
 .DESCRIPTION
-The Test-Graph cmdlet makes a simple GET request to a specified Graph endpoint's 'ping' URL. If a successful (HTTP status code 200) response is received, parameters of the response are returned by the cmdlet.
+The Test-Graph command makes a request to an arbitrary URL of a target Graph endpoint. If a response is received, HTTP headers containing diagnostic information typically returned by Graph is converted to a human-readable representation by the command.
 
 .PARAMETER Cloud
 Specifies that the target Graph endpoint to test is the Graph endpoint associated with cloud environment indicated by the parameter. By default, Test-Graph makes a request against the current connection, which itself defaults to https://graph.microsoft.com, so this parameter allows the default to be overridden.
@@ -39,11 +34,10 @@ Specifies a Connection object returned by the New-GraphConnection command whose 
 Specifies an arbitrary URI as the Graph endpoint -- the URI must be an absolute URI, e.g. https://graph.microsoft.com.
 
 .PARAMETER RawContent
-By default, the output of the cmdlet is deserialized PowerShell objects. If this switch is specified, the output is the response JSON formatted value returned by the Graph endpoint without deserialization.
+By default, the output of the cmdlet is deserialized PowerShell objects. If this switch is specified, the output is an object whose properties names correspond to specific HTTP header names returned by Graph. The values of the properties are then the values of the corresponding returned headers.
 
 .OUTPUTS
-If successful, this cmdlet returns deserialized PowerShell objects that provide diagnostic information about the Graph endpoint such as the name of the datacenter that served the request, the time of the request as seen by the system that served the response, and the host name of the system that served the response. The output may be piped to other commands including Select-Object to project specific fields or perform other additional processing.
-If the command is not successful, an HTTP status code will be surfaced in an exception. Failure indicates that the Graph endpoint may not be reachable from the system on which this cmdlet was executed, or that the Graph service is being disrupted.
+If successful, this cmdlet returns non-null, non-empty output. If it is not successful, an HTTP status code or other error will be surfaced as an exeption. Note that the exact structure of successful output is NOT a contract as it is based on undocumented aspects of the Graph protocol -- the output structure can change at any time (and has changed in the past). However, the output will usually be deserialized PowerShell objects that provide diagnostic information about the Graph endpoint such as the name of the datacenter that served the request, the time of the request as seen by the system that served the response, and the host name of the system that served the response. The output may be piped to other commands including Select-Object to project specific fields or perform other additional processing.
 
 .EXAMPLE
 Test-Graph
@@ -75,14 +69,16 @@ ScaleUnit              : 001
 Slice                  : E
 NonfatalStatus         : 405
 
-This command targets the Graph endpoint for the Germany cloud, https://graph.microsoft.de, ando outputs its diagnostic information.
+This command targets the Graph endpoint for the China cloud, https://microsoftgraph.chinacloudapi.cn, and outputs its diagnostic information.
 
 .EXAMPLE
 Test-Graph -RawContent
 
-{"ServerInfo":{"DataCenter":"West US 2","Slice":"E","Ring":"1","ScaleUnit":"001","RoleInstance":"MW2PEPF000031CC"}}
+Date                          request-id                           x-ms-ags-diagnostic
+----                          ----------                           -------------------
+Tue, 21 Sep 2021 13:27:44 GMT 66a3c612-6887-4533-bc25-c4e7a226b85e @{ServerInfo=}
 
-This command returns the same information as in the first example, but by specifying the RawContent parameter the command is directed not to output the response as deserialized structured objects, but in the exact format in which it was returned by Graph, in this case JSON.
+This command returns the same information as in the first example, but by specifying the RawContent parameter the command is directed not to output the response as deserialized structured objects, but as an object that contains the headers returned by Graph in response to the test request. Note that RawContent's output does not correspond exactly to the output returned when RawContent is not specified as the latter performs interpretation of the Graph response with context about local state such as the local system's time. In contrast, when RawContent is specified no interpretation is made of the results, they are simply returned as-is.
 
 .LINK
 Get-GraphCurrentConnection
@@ -137,10 +133,12 @@ function Test-Graph {
     $dateHeader = $null
     $requestId = $null
 
+    $diagnosticHeaderName = 'x-ms-ags-diagnostic'
+
     $diagnosticInfo = if ( $response | get-member Headers -erroraction ignore ) {
         $dateHeader = $response.Headers['Date']
         $requestId = $response.Headers['request-id']
-        $response.Headers['x-ms-ags-diagnostic']
+        $response.Headers[$diagnosticHeaderName]
     }
 
     $serverTime = if ( $dateHeader ) {
@@ -181,16 +179,7 @@ function Test-Graph {
         # Sort by name to get consistent sort formatting
         $content | gm -membertype noteproperty | sort-object name | foreach {
             $value = ($content | select -expandproperty $_.name)
-            $mapping = $alternatePropertyMapping[$_.name]
-
-            $destination = if ($mapping -eq $null) {
-                $_.name
-            } else {
-                $value = invoke-command -scriptblock $mapping[1] -argumentlist $value
-                $mapping[0]
-            }
-
-            $result[$destination] = $value
+            $result[$_.name] = $value
         }
 
         $result['NonfatalStatus'] = $responseStatus
@@ -199,7 +188,13 @@ function Test-Graph {
         $asObject.pstypenames.insert(0, 'GraphEndpointTest')
         $asObject
     } else {
-        $diagnosticInfo
+        [PSCustomObject] (
+            [ordered] @{
+                Date = $dateHeader
+                'request-id' = $requestId
+                $diagnosticHeaderName = $diagnosticInfo | ConvertFrom-Json
+            }
+        )
     }
 }
 

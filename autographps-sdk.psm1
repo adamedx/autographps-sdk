@@ -52,6 +52,7 @@ $cmdlets = @(
     'Set-GraphConnectionStatus'
     'Set-GraphLogOption'
     'Test-Graph'
+    'Test-GraphSettings'
     'Unregister-GraphApplication'
 )
 

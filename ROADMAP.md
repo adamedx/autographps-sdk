@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Add Test-GraphSettings
 * Add photo upload scenario?
 * Add auto-generated types to objects emitted by Graph via context and use them for formatting (application, group, and user)
 * Make app operations default to objectid for efficiency
@@ -437,6 +436,7 @@
 * Re-implement test-graph
 * Validate user confidential flow in profile
 * Add `-DefaultPermissions` to `Connect-GraphApi`
+* Add Test-GraphSettings
 
 ### Postponed
 

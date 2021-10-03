@@ -137,9 +137,6 @@ ScriptClass LocalConnectionProfile {
         $parameters
     }
 
-    function ToConnectionData {
-    }
-
     static {
 
         $endpointPropertyReaders = @{

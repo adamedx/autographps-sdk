@@ -105,6 +105,7 @@ FunctionsToExport = @(
     'Set-GraphConnectionStatus'
     'Set-GraphLogOption'
     'Test-Graph'
+    'Test-GraphSettings'
     'Unregister-GraphApplication'
 )
 
@@ -185,6 +186,7 @@ CmdletsToExport = @()
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1'
         '.\src\cmdlets\Set-GraphLogOption.ps1'
         '.\src\cmdlets\Test-Graph.ps1'
+        '.\src\cmdlets\Test-GraphSettings.ps1'
         '.\src\cmdlets\Unregister-GraphApplication.ps1'
         '.\src\cmdlets\common\CertificateHelper.ps1'
         '.\src\cmdlets\common\ApplicationHelper.ps1'

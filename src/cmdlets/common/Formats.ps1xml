@@ -1092,6 +1092,86 @@ limitations under the License.
       </ListControl>
     </View>
 
+    <View>
+
+      <Name>GraphSettingsInfo</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.SettingsInfo</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <Label>Path</Label>
+        <ScriptBlock>$::.ColorString.ToStandardColorString($_.Path, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+
+              <ListItem>
+                <Label>DefaultProfileName</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DefaultProfileName, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ProfileNames</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ConnectionNames</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>EndpointNames</PropertyName>
+              </ListItem>
+
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+
+    </View>
+
+    <View>
+
+      <Name>GraphSettings</Name>
+      <ViewSelectedBy>
+        <TypeName>LocalProfile</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <Label>Profile Name</Label>
+        <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+
+              <ListItem>
+                <PropertyName>InitialApiVersion</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LogLevel</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>EndpointData</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ConnectionData</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ProfileData</PropertyName>
+              </ListItem>
+
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+
+    </View>
+
   </ViewDefinitions>
 
 </Configuration>

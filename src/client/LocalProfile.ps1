@@ -18,13 +18,13 @@
 . (import-script ../cmdlets/New-GraphConnection)
 
 ScriptClass LocalProfile {
-    $name = $null
-    $connectionProfile = $null
-    $profileData = $null
-    $connectionData = $null
-    $endpointData = $null
+    $Name = $null
+    $ConnectionProfile = $null
+    $ProfileData = $null
+    $ConnectionData = $null
+    $EndpointData = $null
     $InitialApiVersion = $null
-    $logLevel = $null
+    $LogLevel = $null
 
     function __initialize([HashTable] $profileData, [HashTable] $connectionData, [HashTable] $endpointData) {
         $this.profileData = $profileData
@@ -90,9 +90,6 @@ ScriptClass LocalProfile {
         if ( $this.profileData ) {
             $this.profileData[$settingName]
         }
-    }
-
-    function ToJson {
     }
 
     static {
@@ -244,13 +241,76 @@ ScriptClass LocalProfile {
 
         function GetDefaultProfile {
             __LoadProfiles
-            if ( $this.profiles ) {
-                $this.profiles | where name -eq $this.defaultProfileName
-            }
+            GetDefaultProfileFromSettings $this.settings $this.profiles
         }
 
         function GetCurrentProfile {
             $this.currentProfile
+        }
+
+        function GetValidatedSerializableSettings($settings) {
+            # Settings have the following rules:
+            # * A setting is a collection of key-value pairs called properties
+            # * Keys are identified by a value of type string and the values may be of any type
+            # * Within a given setting, keys must be unique
+            # * Values may need to satisfy constraints to be considered valid
+            # * There are three types of settings: profiles, connections, and endpoints
+            # * Each of these kinds of settings requires a name property
+            # * The name property must have a unique value across settings of a given kind
+            # * In addition to the name property, each type of setting may have any number of additional properties
+            # * Profile settings may specify a connection property that refers to the name property of a connection setting
+            # * Connection settings my specify an endpoint property that refers to the name property of an endpoint setting
+            # * Endpoint settings have no property that refers to any setting of any type
+            # * There is an optional property with the name 'defaultProfile' associated with none of the setting types; its value is the value of one of the name properties of one of the profile settings.
+
+            # Retrieve all settings -- properties are excluded from settings if the properties
+            # are not valid (e.g. the values do not satisfy constraints). However, properties
+            # that reference other settings are *not* validated.
+            $settingData = __GetSettingDataFromSettings $settings
+
+            # Now construct the internal representation of the profile -- this has the side effect
+            # of evaluating cross-setting references and removes properties that make invalid references
+            $profiles = __GetProfilesFromSettingData $settingData.endpointData $settingData.connectionData $settingData.profileData
+
+            $validSettings = @{
+                defaultProfile = $null
+                profiles = @{
+                    list = @()
+                }
+                connections = @{
+                    list = @()
+                }
+                endpoints = @{
+                    list = @()
+                }
+            }
+
+            # Return the profiles that have been validated as part of cross-setting
+            # reference checks
+            $profiles | foreach {
+                $validSettings.profiles.list += $_.profileData
+            }
+
+            # Include all connections regardless if they are referenced by
+            # a profile since connections may still be used outside the context
+            # of a profile
+            $settingData.connectionData.values | foreach {
+                $validSettings.connections.list += $_
+            }
+
+            # Include any endpoints, even if they are not referenced by connection
+            # for completeness
+            $settingData.endpointData.values | foreach {
+                $validSettings.endpoints.list += $_
+            }
+
+            $defaultProfile = GetDefaultProfileFromSettings $settings $profiles
+
+            $validSettings.defaultProfile = if ( $defaultProfile ) {
+                $defaultProfile.name
+            }
+
+            $validSettings | ConvertTo-Json -depth 5 | ConvertFrom-Json
         }
 
         function SetCurrentProfile($profileName, $refreshSettings) {
@@ -267,9 +327,37 @@ ScriptClass LocalProfile {
             }
         }
 
+        function GetDefaultProfileFromSettings($settings, $profiles) {
+            $defaultProfileName = if ( $settings ) {
+                $settings |=> GetSettingValue defaultProfile
+            }
+
+            if ( $defaultProfileName ) {
+                $defaultProfile = if ( $profiles ) {
+                    $profiles | where name -eq $defaultProfileName
+                }
+
+                if ( ! $defaultProfile ) {
+                    $message = "The specified default profile name '$defaultProfileName' could not be found"
+
+                    if ( $settings.failOnErrors ) {
+                        throw $message
+                    } else {
+                        write-warning $message
+                    }
+                }
+
+                $defaultProfile
+            }
+        }
+
         function __GetProfileByName($profileName) {
-            if ( $this.profiles ) {
-                $this.profiles | where name -eq $profileName
+            __GetProfileByNameFromProfiles $this.profiles $profileName
+        }
+
+        function __GetProfileByNameFromProfiles($profiles, $profileName) {
+            if ( $profiles ) {
+                $profiles | where name -eq $profileName
             }
         }
 
@@ -282,13 +370,20 @@ ScriptClass LocalProfile {
                     $targetPath = if ( $settingsPath ) {
                         write-verbose "Settings load: Overriding default behaviors and environment variables with explicit path '$settingsPath'"
                         $settingsPath
-                    } elseif ( test-path env:AUTOGRAPH_SETTINGS_FILE ) {
-                        $env:AUTOGRAPH_SETTINGS_FILE
                     } else {
-                        $this.defaultSettingsPath
+                        GetSettingsFileLocation
                     }
+
                     $this.settings = new-so LocalSettings $targetPath
                 }
+            }
+        }
+
+        function GetSettingsFileLocation {
+            if ( test-path env:AUTOGRAPH_SETTINGS_FILE ) {
+                $env:AUTOGRAPH_SETTINGS_FILE
+            } else {
+                $this.defaultSettingsPath
             }
         }
 
@@ -300,14 +395,18 @@ ScriptClass LocalProfile {
         }
 
         function __GetSettingData {
+            __GetSettingDataFromSettings $this.settings
+        }
+
+        function __GetSettingDataFromSettings($settings) {
             $endpointData = @{}
             $connectionData = @{}
             $profileData = @{}
 
-            if ( $this.settings ) {
-                $endpointData = $this.settings |=> GetSettings $::.LocalProfileSpec.EndpointsCollection
-                $connectionData = $this.settings |=> GetSettings $::.LocalProfileSpec.ConnectionsCollection $endpointData
-                $profileData = $this.settings |=> GetSettings $::.LocalProfileSpec.ProfilesCollection $connectionData
+            if ( $settings ) {
+                $endpointData = $settings |=> GetSettings $::.LocalProfileSpec.EndpointsCollection
+                $connectionData = $settings |=> GetSettings $::.LocalProfileSpec.ConnectionsCollection $endpointData
+                $profileData = $settings |=> GetSettings $::.LocalProfileSpec.ProfilesCollection $connectionData
             }
 
             @{
@@ -318,7 +417,11 @@ ScriptClass LocalProfile {
         }
 
         function __UpdateProfileSettings($endpointData, $connectionData, $profileData) {
-            $this.profiles = if ( $profileData ) {
+            $this.profiles = __GetProfilesFromSettingData $endpointData $connectionData $profileData
+        }
+
+        function __GetProfilesFromSettingData($endpointData, $connectionData, $profileData) {
+            if ( $profileData ) {
                 foreach ( $profileDataItem in $profileData.values ) {
                     $normalizedData = __GetNormalizedProfileData $profileDataItem $connectionData $endpointData
                     new-so LocalProfile $normalizedData.ProfileData $normalizedData.ConnectionProfileData $normalizedData.EndpointData
