@@ -330,7 +330,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.Connected, 'EnabledState', $null, $true, $false)</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>OrganizationId</Label>
+                <Label>Organization</Label>
                 <ItemSelectionCondition>
                   <ScriptBlock>$_.identity.GetTenantId()</ScriptBlock>
                 </ItemSelectionCondition>
@@ -352,20 +352,24 @@ limitations under the License.
                 <ScriptBlock>$_.identity.app.authtype</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>AuthProtocol</Label>
-                <ScriptBlock>$_.graphendpoint.AuthProtocol</ScriptBlock>
+                <Label>AllowMSA</Label>
+                <ScriptBlock>$_.identity.AllowMSA</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>ConsistencyLevel</Label>
+                <ScriptBlock>if ( $_.consistencyLevel ) { $_.consistencyLevel } else { 'Auto' }</ScriptBlock>
               </ListItem>
               <ListItem>
                 <Label>Endpoint</Label>
                 <ScriptBlock>$_.graphendpoint.graph</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>AuthEndpoint</Label>
-                <ScriptBlock>$_.graphendpoint.Authentication</ScriptBlock>
+                <Label>Endpoint</Label>
+                <ScriptBlock>$_.graphendpoint.GraphResourceUri</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>ConsistencyLevel</Label>
-                <ScriptBlock>if ( $_.consistencyLevel ) { $_.consistencyLevel } else { 'Auto' }</ScriptBlock>
+                <Label>AuthEndpoint</Label>
+                <ScriptBlock>$_.graphendpoint.Authentication</ScriptBlock>
               </ListItem>
               <ListItem>
                 <ItemSelectionCondition>

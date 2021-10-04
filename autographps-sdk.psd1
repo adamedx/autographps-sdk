@@ -262,10 +262,11 @@ This release improves adds support for graph object output customization.
 
 ### New features
 
-* Formatting for `Get-GraphApplicaitonServicePrincipal`
+* Formatting for `Get-GraphApplicationServicePrincipal`
 * Format improvements in time fields for `Get-GraphApplication`
 * `New-GraphConnection` no longer assumes you're requesting `User.Read`, enabling legacy apps that don't support incremental consent
-* `Connect-GraphApi` requests `User.Read` by default, but this can be suppresed, enabling legacy apps that don't support incremental consent
+* `Connect-GraphApi` requests `User.Read` by default, but this can be suppressed by the ExistingPermissionsOnly parameter, enabling legacy apps that don't support incremental consent
+* `NoSetCurrentConnection` parameter added for `Connect-GraphApi`: this parameter allows you to sign in to an existing connection without setting it as the current connection.
 
 ### Fixed defects
 

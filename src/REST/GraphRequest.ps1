@@ -30,7 +30,7 @@ ScriptClass GraphRequest {
 
     function __initialize([PSCustomObject] $GraphConnection, [Uri] $uri, $verb = 'GET', $headers = $null, $query = $null, $clientRequestId, [bool] $noRequestId, [bool] $returnRequest, [bool] $deltaQuery, $deltaToken, $pageSizePreference, [string] $consistencyLevel = 'Auto') {
         $targetConsistencyLevel = if ( $consistencyLevel -and $consistencyLevel -ne 'Auto' ) {
-                $consistencyLevel
+            $consistencyLevel
         } else {
             $graphConnection.consistencyLevel
         }

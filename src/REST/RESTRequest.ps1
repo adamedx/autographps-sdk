@@ -100,7 +100,8 @@ ScriptClass RESTRequest {
                 # so we try to identify http protocol errors via the exception type. Also, there are a variety of exceptions that can be
                 # encountered depending on the underlying .NET http client implementation, and again we rely on the exception type
                 # to make the correct interpretation.
-                # TODO: Abstract this to a class that has knowledge of the specifics of the http clients
+                # TODO: Abstract this to a class that has knowledge of the specifics of the http clients. The existing HttpUtilities class
+                # is a candidate...
                 $exceptionType = $_.exception.gettype()
                 if ( $exceptionType -ne [System.Net.WebException] -and $exceptionType.fullName -ne 'Microsoft.PowerShell.Commands.HttpResponseException' -and ! $exceptionType.fullname.startswith('System.Net.Http') -and ( $exceptionType.fullname -notlike 'AutoGraph*HttpResponseException') ) {
                     write-verbose "Encountered unexpected exception of type '$($exceptionType.FullName)'"

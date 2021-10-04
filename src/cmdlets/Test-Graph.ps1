@@ -136,9 +136,10 @@ function Test-Graph {
     $diagnosticHeaderName = 'x-ms-ags-diagnostic'
 
     $diagnosticInfo = if ( $response | get-member Headers -erroraction ignore ) {
-        $dateHeader = $response.Headers['Date']
-        $requestId = $response.Headers['request-id']
-        $response.Headers[$diagnosticHeaderName]
+        $responseHeaders = $::.HttpUtilities |=> NormalizeHeaders $response.headers
+        $dateHeader = $responseHeaders['Date']
+        $requestId = $responseHeaders['request-id']
+        $responseHeaders[$diagnosticHeaderName]
     }
 
     $serverTime = if ( $dateHeader ) {

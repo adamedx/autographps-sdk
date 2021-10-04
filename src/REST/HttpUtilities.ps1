@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,9 @@ ScriptClass HttpUtilities {
                         if ( $headers -is [System.Net.WebHeaderCollection] ) {
                             $headerTable.Add($_, $headers[$_])
                         } else {
-                            $headerTable.Add($_.key, $_.value)
+                            # This seems to emit an array with a single element -- let's
+                            # try to flatten it.
+                            $headerTable.Add($_.key, ( $_.value | Select-Object -First 1 ))
                         }
                     }
                     $headerTable

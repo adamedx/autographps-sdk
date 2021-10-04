@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Add simple match for Get-GraphApplication
 * Add photo upload scenario?
 * Add auto-generated types to objects emitted by Graph via context and use them for formatting (application, group, and user)
 * Make app operations default to objectid for efficiency

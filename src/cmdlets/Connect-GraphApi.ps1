@@ -151,7 +151,11 @@ function Connect-GraphApi {
         [Switch] $Reconnect,
 
         [parameter(parametersetname='existingconnection',mandatory=$true)]
+        [parameter(parametersetname='noupdatecurrent',mandatory=$true)]
         [PSCustomObject] $Connection = $null,
+
+        [parameter(parametersetname='noupdatecurrent',mandatory=$true)]
+        [switch] $NoSetCurrentConnection,
 
         [Switch] $PromptForCertCredential,
 
@@ -190,7 +194,7 @@ function Connect-GraphApi {
         }
 
         # PS language note: comparison against null only works
-        # in the general case if the variable is right hand side of
+        # in the general case if the variable is on the right hand side of
         # the comparison operator. Specifically the expression
         # @() -ne $null actually evaluates to @(), i.e. an empty array,
         # rather than the expected value of $true, stating that an
@@ -214,7 +218,7 @@ function Connect-GraphApi {
 
         $context = $::.GraphContext |=> GetCurrent
 
-        if ( ! $context ) {
+        if ( ! $context -and ! $NoSetCurrentConnection.IsPresent ) {
             throw "No current session -- unable to connect it to Graph"
         }
 
@@ -229,9 +233,10 @@ function Connect-GraphApi {
         if ( $targetConnection ) {
             write-verbose "Explicit connection was specified"
 
-            $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $targetConnection
-
-            $::.GraphContext |=> SetCurrentByName $newContext.name
+            if ( ! $NoSetCurrentConnection.IsPresent ) {
+                $newContext = $::.LogicalGraphManager |=> Get |=> NewContext $context $targetConnection
+                $::.GraphContext |=> SetCurrentByName $newContext.name
+            }
 
             $certificatePassword = $::.CertificateHelper |=> GetConnectionCertCredential $targetConnection $CertCredential $PromptForCertCredential.IsPresent $NoCertCredential.IsPresent
 
