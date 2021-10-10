@@ -258,7 +258,8 @@ This release improves adds support for graph object output customization.
 
 ### Breaking changes
 
-* The structure of the output of `Test-Graph` has changed -- the properties were always dynamic potentially subject to change since they were based on HTTP protocol returned by Graph without a contract for its structure. However, `Test-Graph` now obtains data from a different part of the protocol that deviates from the earlier source, and this causes the breaking changes to properties of `Test-Graph` output. The new source is a more reliable one, so additional changes are unlikely in the future.
+* The structure of the output of `Test-Graph` has changed -- the properties were always dynamic potentially subject to change since they were based on HTTP protocol responses returned by Graph without a contract for the response structure. However, `Test-Graph` now obtains data from a different part of the protocol that deviates from the earlier source, and this causes the breaking changes to properties of `Test-Graph` output. The new source is a more reliable one, so additional changes are unlikely in the future.
+* `New-GraphConnection` now defaults the ConsistencyLevel pararameter to `Default` instead of `Auto`.
 
 ### New features
 

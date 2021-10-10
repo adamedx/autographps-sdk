@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Add preference variable for disabling settings
 * Add simple match for Get-GraphApplication
 * Add photo upload scenario?
 * Add auto-generated types to objects emitted by Graph via context and use them for formatting (application, group, and user)

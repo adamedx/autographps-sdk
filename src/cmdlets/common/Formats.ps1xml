@@ -294,7 +294,7 @@ limitations under the License.
                 <ScriptBlock>$::.GraphFormatter.ConnectionName($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.identity.TenantDisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.identity.GetTenantId(), 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>$_.identity.app.AuthType</ScriptBlock>
