@@ -42,7 +42,7 @@ If successful, this cmdlet returns non-null, non-empty output. If it is not succ
 .EXAMPLE
 Test-Graph
 
-TestUri                : https://graph.microsoft.com/test
+TestUri                : https://graph.microsoft.com/v1.0/$metadata
 ServerTimestamp        : 09/20/2021 10:21:07 +00:00
 ClientElapsedTime (ms) : 12.0889
 RequestId              : fa0113c3-c0ab-4f47-8571-d3bc6b891686
@@ -58,7 +58,7 @@ When no parameters are specified, the command targets the Graph endpoint of the 
 .EXAMPLE
 Test-Graph -Cloud ChinaCloud
 
-TestUri                : https://microsoftgraph.chinacloudapi.cn/test
+TestUri                : https://microsoftgraph.chinacloudapi.cn/v1.0/$metadata
 ServerTimestamp        : 9/19/2021 2:21:03 AM +00:00
 ClientElapsedTime (ms) : 19.0889
 RequestId              : 6150c057-020f-4f5d-b2c3-cc208570ae6b
@@ -114,7 +114,7 @@ function Test-Graph {
         ($::.GraphContext |=> GetConnection).GraphEndpoint.Graph
     }
 
-    $pingUri = [Uri]::new($graphEndpointUri, 'test')
+    $pingUri = [Uri]::new($graphEndpointUri, 'v1.0/$metadata')
     $request = new-so RESTRequest $pingUri HEAD
     $logEntry = if ( $logger ) { $logger |=> NewLogEntry $null $request }
     $responseException = $null

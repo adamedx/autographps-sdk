@@ -5,7 +5,6 @@
 * Add preference variable for disabling settings
 * Add simple match for Get-GraphApplication
 * Add photo upload scenario?
-* Add auto-generated types to objects emitted by Graph via context and use them for formatting (application, group, and user)
 * Make app operations default to objectid for efficiency
 * Adaptive progress meter?
 * Should implement certificate update using addkey / removekey: https://docs.microsoft.com/en-us/graph/api/application-addkey?view=graph-rest-1.0&tabs=http

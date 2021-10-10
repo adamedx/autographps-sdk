@@ -88,7 +88,7 @@ Describe "The Test-Graph command" {
             ($testResult.Slice).gettype() | Should BeExactly ([string])
             ($testResult.Ring).gettype() | Should BeExactly ([string])
             ($testResult.ScaleUnit).gettype() | Should BeExactly ([string])
-            $testResult.TestUri | Should Be 'https://graph.microsoft.com/test'
+            $testResult.TestUri | Should Be 'https://graph.microsoft.com/v1.0/$metadata'
             ($testResult.DataCenter).gettype() | Should BeExactly ([string])
         }
 
@@ -104,7 +104,7 @@ Describe "The Test-Graph command" {
             ($testResult.Slice).gettype() | Should BeExactly ([string])
             ($testResult.Ring).gettype() | Should BeExactly ([string])
             ($testResult.ScaleUnit).gettype() | Should BeExactly ([string])
-            $testResult.TestUri | Should Be 'https://graph.microsoft.com/test'
+            $testResult.TestUri | Should Be 'https://graph.microsoft.com/v1.0/$metadata'
             ($testResult.DataCenter).gettype() | Should BeExactly ([string])
         }
     }
