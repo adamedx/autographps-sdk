@@ -258,20 +258,26 @@ This release improves adds support for graph object output customization.
 
 ### Breaking changes
 
-* The structure of the output of `Test-Graph` has changed -- the properties were always dynamic potentially subject to change since they were based on HTTP protocol responses returned by Graph without a contract for the response structure. However, `Test-Graph` now obtains data from a different part of the protocol that deviates from the earlier source, and this causes the breaking changes to properties of `Test-Graph` output. The new source is a more reliable one, so additional changes are unlikely in the future.
+* AAD sign-ins now use the http://localhost reply URL / redirect URI instead of https://login.microsoftonline.com/common/oauth2/nativeclient because the latter does not support web browser sign-ins on PS Core.
+* Public client applications created by `New-GraphApplication` now configure the application with http://localhost as a redirect URI instead of https://login.microsoftonline.com/common/oauth2/nativeclient due to the above change
+* The structure of the output of `Test-Graph` has changed -- the properties were always dynamic and potentially subject to change since they were based on HTTP protocol responses returned by Graph without a contract for the response structure. However, `Test-Graph` now obtains data from a different part of the protocol that deviates from the earlier source, and this causes the breaking changes to properties of `Test-Graph` output. The new source is a more reliable one, so additional changes are unlikely in the future.
 * `New-GraphConnection` now defaults the ConsistencyLevel pararameter to `Default` instead of `Auto`.
 
 ### New features
 
+* Sign-in UX for PowerShell core on Windows now uses a web browser rather than device code auth (possible due to MSAL 4.35.0 dependency update).
 * Formatting for `Get-GraphApplicationServicePrincipal`
 * Format improvements in time fields for `Get-GraphApplication`
+* Formatting / color for `Test-Graph`
 * `New-GraphConnection` no longer assumes you're requesting `User.Read`, enabling legacy apps that don't support incremental consent
 * `Connect-GraphApi` requests `User.Read` by default, but this can be suppressed by the ExistingPermissionsOnly parameter, enabling legacy apps that don't support incremental consent
 * `NoSetCurrentConnection` parameter added for `Connect-GraphApi`: this parameter allows you to sign in to an existing connection without setting it as the current connection.
+* `Test-GraphSettings` command to validate Graph profile settings and also return information about the settings.
+* Improved command help for several commands
 
 ### Fixed defects
 
-None.
+* Context URI parsing was broken for Invoke-GraphRequest and Get-GraphResource and any command that relief on it. Cases such as me/photo would incorrectly interpret `me` as an entity set and `photo` as an element of that set, instead of treating `me` as an entity and `photo` as a navigation property
 
 '@
 
