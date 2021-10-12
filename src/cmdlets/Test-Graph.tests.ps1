@@ -80,7 +80,7 @@ Describe "The Test-Graph command" {
         It "should return a result with expected members" {
             $testResult = Test-Graph
             $testResult.NonfatalStatus | Should Be $endpointBehavior.ExpectedStatus
-            $testResult.ServerTimestamp.ToString() | Should Be '9/19/2021 5:53:33 AM +00:00'
+            $testResult.ServerTimestamp | Should Be ([DateTimeOffset]::Parse('9/19/2021 5:53:33 AM +00:00'))
             ($testResult.ClientRequestTimestamp.GetType()) | Should BeExactly ([DateTimeOffset])
             ($testResult.ClientResponseTimestamp.GetType()) | Should BeExactly ([DateTimeOffset])
             $testResult.RequestId | Should Be 'b2c212c9-bf31-49cb-af50-5cd93948c85f'
@@ -96,7 +96,7 @@ Describe "The Test-Graph command" {
             $endpointBehavior.ExpectedStatus = 200
             $testResult = Test-Graph
             $testResult.NonfatalStatus | Should Be $endpointBehavior.ExpectedStatus
-            $testResult.ServerTimestamp.ToString() | Should Be '9/19/2021 5:53:33 AM +00:00'
+            $testResult.ServerTimestamp.ToString() | Should Be ([DateTimeOffset]::Parse('9/19/2021 5:53:33 AM +00:00'))
             ($testResult.ClientRequestTimestamp.GetType()) | Should BeExactly ([DateTimeOffset])
             ($testResult.ClientResponseTimestamp.GetType()) | Should BeExactly ([DateTimeOffset])
             $testResult.RequestId | Should Be 'b2c212c9-bf31-49cb-af50-5cd93948c85f'
