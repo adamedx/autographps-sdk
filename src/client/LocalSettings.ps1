@@ -16,43 +16,69 @@ ScriptClass LocalSettings {
     $settingsPath = $null
     $settingsData = $null
     $lastLoadError = $null
+    $failOnErrors = $false
+    $failOnWarnings = $false
 
-    function __initialize($settingsPath) {
+    function __initialize($settingsPath, [boolean] $failOnErrors, [boolean] $failOnWarnings) {
+        $this.failOnErrors = $failOnErrors
+        $this.failOnWarnings = $failOnWarnings
         $this.settingsPath = $settingsPath
     }
 
-    function Load([boolean] $skipIfHasData) {
+    function Load([boolean] $skipIfHasData, $settingsContent ) {
         write-verbose "Attempting to load settings from path '$this.settingsPath' with skipIfHasData = '$skipIfHasData'"
-
         if ( $this.settingsData -and $skipIfHasData ) {
             return
         }
 
-        $this.settingsData = if ( $this.settingsPath -and ( test-path $this.settingsPath ) ) {
-            $settingsContent = try {
+        $serializedContent = if ( $settingsContent -and $settingsContent -is [String] ) {
+            write-verbose 'Serialized content was directly specified -- it will be interperted as JSON'
+            $settingsContent
+        } elseif ( $this.settingsPath -and ( test-path $this.settingsPath ) ) {
+            try {
                 get-content $this.settingsPath | out-string
             } catch {
                 $this.lastLoadError = $_.exception
                 write-verbose "Failed to read settings file at '$($this.settingsPath)'"
                 write-verbose $_.exception
+
+                if ( $this.failOnErrors ) {
+                    throw
+                }
             }
 
-            if ( $settingsContent ) {
-                try {
-                    $settingsContent | convertfrom-json
-                } catch {
-                    $this.lastLoadError = $_.exception
-                    write-warning "Unable to load settings from file '$($this.settingsPath)' because it could not be parsed as valid JSON content"
-                    write-warning $_.exception
+            write-verbose "Successfully read AutoGraph settings file at '$($this.settingsPath)'"
+        }
 
+        $this.settingsData = if ( $serializedContent ) {
+            try {
+                $serializedContent | convertfrom-json
+            } catch {
+                $this.lastLoadError = $_.exception
+                write-warning "Unable to load settings because the specified content could not be parsed as valid JSON"
+                write-warning $_.exception
+
+                if ( $this.failOnErrors ) {
+                    throw
                 }
             }
 
             $this.lastLoadError = $null
 
-            write-verbose "Successfully read AutoGraph settings file at '$($this.settingsPath)'"
+            write-verbose 'Successfully loaded non-empty settings.'
+        } elseif ( $settingsContent ) {
+            if ( ( $settingsContent -is [HashTable] ) -or ( $settingsContent -is [PSCustomObject] ) ) {
+                # We use the ConvertFrom-Json command to deserialize across settings implementation,
+                # and it results in PSCustomObjects. To ensure consistency since the implementation
+                # likely assumes there are only PSCustomObjects and no hash tables or other types,
+                # and also to handle any nested structures that could theoretically be either hash
+                # tables or objects, we repeat deserialization. So while inefficient, serializing
+                # and then deserializing using the same serializer used for all settings processing
+                # will ensure consistent behavior across loading, validation, and any other scenarios.
+                $settingsContent | ConvertTo-Json -depth 5 | ConvertFrom-Json
+            }
         } else {
-            write-verbose "No settings were loaded because the specified path '$($this.settingsPath)' was not a valid path or no file could be accessed there."
+            write-verbose "No settings were loaded because the specified path '$($this.settingsPath)' was not a valid path or no file could be accessed there and no deserialized content was specified."
         }
     }
 
@@ -67,6 +93,10 @@ ScriptClass LocalSettings {
     }
 
     function GetSettings([string] $settingsType, $context) {
+        if ( $this.failOnWarnings ) {
+            $WarningPreference = 'stop'
+        }
+
         if ( $this.settingsData ) {
             $settingsData = __ReadGroupData $settingsType
             __GetSettingsFromGroupData $settingsType $settingsData $context
@@ -93,6 +123,8 @@ ScriptClass LocalSettings {
                         } else {
                             write-warning "Duplicate setting '$($listItem.name)' found in settings file '$($this.settingsPath)', the duplicate will be ignored; the issue can be fixed by updating the settings file."
                         }
+                    } else {
+                        write-warning "A setting was specified without a name property -- it will be ignored."
                     }
                 }
             }
@@ -139,6 +171,19 @@ ScriptClass LocalSettings {
         }
     }
 
+    function __SettingContainsProperties($setting) {
+        $propertyCount = if ( $setting -is [HashTable] ) {
+            $setting.Count
+        } elseif ( $setting -is [PSCustomObject] ) {
+            $propertyCount = $setting |
+              get-member -membertype noteproperty |
+              measure-object |
+              select-object -expandproperty count
+        }
+
+        $setting -and $propertyCount
+    }
+
     function __GetValidSetting($settingType, $setting, $context, $isDefault) {
         $validSetting = @{}
         $settingName = if ( ! $isDefault ) { $setting.name } else { @{} }
@@ -170,7 +215,7 @@ ScriptClass LocalSettings {
 
             if ( $result ) {
                 if ( $result.ContainsKey('Error') ) {
-                    write-warning "Property '$propertyName' of setting '$settingName of type '$settingType' is invalid: $($result.error)"
+                    write-warning "Property '$propertyName' of setting '$settingName' of type '$settingType' is invalid: $($result.error)"
                     if ( $settingInfo.FailOnInvalidProperty -or ( $validation.Required -and ! $isDefault ) ) {
                         write-warning "Setting '$settingName' of type '$settingType' will be ignored due to an invalid value for required property '$propertyName'"
                         $validSetting = $null
@@ -180,7 +225,7 @@ ScriptClass LocalSettings {
                     }
                 }
 
-                if ( ( $result.value -eq $null ) -and $validation.Required ) {
+                if ( ( $result.value -eq $null ) -and ( $validation.Required -and ! $isDefault ) ) {
                     write-warning "Property '$propertyName' of setting '$settingName' of type '$settingType' is a required property but was not set -- the setting will be ignored"
                     $validSetting = $null
                     break

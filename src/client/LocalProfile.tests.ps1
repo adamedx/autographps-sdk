@@ -22,7 +22,7 @@ $testSettings = get-content $testSettingsFilePath | out-string | convertfrom-jso
 # probably be generalized to make the tests more readable.
 set-strictmode -version 2
 
-function EnableSettings($settingsPath)  {
+function EnableSettings($settingsPath, $connectionCreator)  {
     $settingsPath = if ( $settingsPath ) {
         $settingsPath
     } else {
@@ -35,11 +35,17 @@ function EnableSettings($settingsPath)  {
 
     set-item env:AUTOGRAPH_SETTINGS_FILE $settingsPath
 
+    $connectionScriptBlock = if ( $connectionCreator ) {
+        $connectionCreator
+    } else {
+        (get-command New-GraphConnection).ScriptBlock
+    }
+
     $warningpreference = 'silentlycontinue'
     $::.LocalSettings |=> __initialize
     $::.LocalConnectionProfile |=> __initialize
     $::.GraphConnection |=> __initialize
-    $::.LocalProfile |=> __initialize (get-command New-GraphConnection).ScriptBlock
+    $::.LocalProfile |=> __initialize $connectionScriptBlock
     $::.LogicalGraphManager.sessionManager = $null
     $::.GraphContext |=> __initialize
 }
@@ -155,9 +161,11 @@ $NewGraphConnectionMockScript = {
 }
 
 
-# This is a workaround for the MockContext parmaeter of
+# This was a workaround for the MockContext parmaeter of
 # Add-MockInScriptClassScope apparently not working despite
-# passing tests in its own module :(
+# passing tests in its own module :(. Now that Add-MockInScriptClassScope
+# is not being used, it's still used to pass state to the mock
+# $NewGraphConnectionMockScript.
 ScriptClass MockContext {
     static {
         $Connections = @{}
@@ -239,13 +247,22 @@ Describe 'LocalProfile class' {
     Context 'When profile settings have been loaded' {
         BeforeAll {
             set-strictmode -version 2
-            # The -MockContext parameter of Add-MockInScriptClassScope does not seem to work -- we'll instead
-            # use a custom class, $::.MockContext, to pass information to the Mock function
-            # Also note that Add-MockInScriptClassScope is destructive -- it seems that once the context
-            # block is executed, certain state becomes corrupted and various ScriptClass methods no
-            # longer function -- so the tests can only be run once.
-            Add-MockInScriptClassScope LocalProfile New-GraphConnection $NewGraphConnectionMockScript
-            EnableSettings
+            # Note: We originally used Add-MockInScriptClassScope to inject an override for New-GraphConnection.
+            # This actually caused subsequent tests in this area to fail, which wasn't a problem until
+            # some additional tests were added outside of this file. At the point we switched to an alternate
+            # mechanism. More details on the original problems and workarounds:
+            #
+            #     The -MockContext parameter of Add-MockInScriptClassScope does not seem to work -- we'll instead
+            #     use a custom class, $::.MockContext, to pass information to the Mock function
+            #     Also note that Add-MockInScriptClassScope is destructive -- it seems that once the context
+            #     block is executed, certain state becomes corrupted and various ScriptClass methods no
+            #     longer function -- so the tests can only be run once.
+            #
+            # This has now been changed to directly access a member on the LocalProfile class through EnableSettings --
+            # below we pass in the override scriptblock to replace New-GraphConnection. This more direct injection
+            # is inelegant but avoids the state corruption issues of Add-MockInScriptClassScope.
+            # REMOVED: Add-MockInScriptClassScope LocalProfile New-GraphConnection $NewGraphConnectionMockScript
+            EnableSettings $null $NewGraphConnectionMockScript
         }
 
         AfterAll {
@@ -384,18 +401,9 @@ Describe 'LocalProfile class' {
                 'MalformedAppId'
                 'BadConsistencyLevel'
             )
-<#
-            foreach ( $actualProfile in $profiles ) {
-                $endpointData = $actualProfile.endpointData
-
-                if ( $endpointData ) {
-                    $actualEndpoints[$endpointData.name] = $endpointData
-                }
-            }
 
             # This assumes that this particular test file has a reference to every
             # valid endpoint listed in the file
-#>
             $referencedEndpoints = @{}
 
             foreach ( $graphConnection in $actualConnections ) {

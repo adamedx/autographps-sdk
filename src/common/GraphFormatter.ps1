@@ -106,15 +106,47 @@ ScriptClass GraphFormatter {
             $::.ColorString.ToStandardColorString($method, 'Scheme', $colorName, $null, $null)
         }
 
-        function ResponseElapsedTime([TimeSpan] $elapsed) {
-            $colorName = if ( $elapsed.TotalSeconds -lt 1 ) {
+        function ResponseElapsedTime([TimeSpan] $elapsed, $timeField, $noApi) {
+            # Add additional time for the comparison if this is a non-API request
+            # as there should be very little overhead
+            $interval = if ( ! $noApi ) {
+                $elapsed.TotalSeconds
+            } else {
+                $elapsed.TotalSeconds + 0.95 # 50ms
+            }
+
+            # Comparison is as if this were an API request
+            $colorName = if ( $interval -lt 1.0 ) {
                 'Time-Elapsed-Normal'
-            } elseif ( $elapsed.TotalSeconds -lt 2 ) {
+            } elseif ( $interval -lt 2.0 ) {
                 'Time-Elapsed-Slow'
             } else {
                 'Time-Elapsed-ExtraSlow'
             }
-            $::.ColorString.ToStandardColorString($elapsed.ToString(), 'Scheme', $colorName, $null, $null)
+
+            $timeOutput = if ( $timeField ) {
+                $elapsed.$timeField
+            } else {
+                $elapsed
+            }
+
+            $::.ColorString.ToStandardColorString($timeOutput.ToString(), 'Scheme', $colorName, $null, $null)
+        }
+
+        function ServerTimestamp( $clientRequestTimeStamp, $serverTimeStamp ) {
+            $secondsDelta = [Math]::Abs( ( $serverTimeStamp - $clientRequestTimeStamp ).TotalSeconds )
+
+            # This value is from a single response, so we can only make gross characterizations
+            # such as a very large difference (minutes) betweeh clocks on the client and server
+            $colorName = if ( $secondsDelta -lt 150 ) {
+                'Time-Elapsed-Normal'
+            } elseif ( $skewMsSize -lt 300 ) {
+                'Time-Elapsed-Slow'
+            } else {
+                'Time-Elapsed-ExtraSlow'
+            }
+
+            $::.ColorString.ToStandardColorString($serverTimestamp, 'Scheme', $colorName, $null, $null)
         }
 
         function ResourceInTimeWindow($resourceTime, $windowStart, $windowEnd) {
@@ -161,6 +193,16 @@ ScriptClass GraphFormatter {
 
             if ( $userInfo ) {
                 $::.ColorString.ToStandardColorString($userInfo.UserId, 'Emphasis2', $null, $null, $null)
+            }
+        }
+
+        function ToStandardTimeString($timeString) {
+            $parsedTime = [DateTimeOffset]::new(0, [TimeSpan]::new(0))
+
+            if ( [DateTimeOffset]::tryparse($timeString, [ref] $parsedTime) ) {
+                $parsedTime.ToString('G')
+            } else {
+                $timeString
             }
         }
     }

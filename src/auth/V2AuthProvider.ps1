@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -103,6 +103,7 @@ ScriptClass V2AuthProvider {
 
     function AcquireFirstUserTokenConfidential($authContext, $scopes) {
         write-verbose 'V2 auth provider acquiring user token via confidential client'
+
         $scopeList = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri
 
         # Confidential user flow uses an authcode flow with a confidential rather than public client.
@@ -133,21 +134,11 @@ ScriptClass V2AuthProvider {
         } else {
             $cachedAccount = $authContext.protocolContext.GetAccountsAsync().Result | select -first 1
 
-            $scopes = if ( $token ) {
-                $token.scopes
-            } else {
-                @('.default')
-            }
-            $requestedScopesFromToken = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri |
-              where { $_ -notin @('openid', 'profile', 'offline_access') }
-
-            $cachedAccount = $authContext.protocolContext.GetAccountsAsync().Result | select -first 1
-
             try {
-                $authContext.protocolContext.AcquireTokenSilent([System.Collections.Generic.List[string]] $requestedScopesFromToken, $cachedAccount).ExecuteAsync()
+                $authContext.protocolContext.AcquireTokenSilent([System.Collections.Generic.List[string]] @(), $cachedAccount).ExecuteAsync()
             } catch [Microsoft.Identity.Client.MsalUiRequiredException] {
                 write-verbose 'Acquire silent failed, retrying interactive'
-                $this |=> __AcquireTokenInteractive $authContext @('.default')
+                $this |=> __AcquireTokenInteractive $authContext @($::.ScopeHelper.DefaultScope)
             }
         }
     }
@@ -168,9 +159,6 @@ ScriptClass V2AuthProvider {
 
     function __AcquireTokenInteractive($authContext, $scopes) {
         write-verbose 'V2 auth provider acquiring interactive user token'
-        if ( $scopes -eq $null -or $scopes.length -eq 0 ) {
-            throw [ArgumentException]::new('No scopes specified for v2 auth protocol, at least one scope is required')
-        }
 
         $scopeList = $::.ScopeHelper |=> QualifyScopes $scopes $authContext.GraphEndpointUri
         $authContext.protocolContext.AcquireTokenInteractive([System.Collections.Generic.List[string]] $scopeList).ExecuteAsync()
@@ -240,7 +228,7 @@ ScriptClass V2AuthProvider {
     }
 
     function __GetDefaultScopeList($authContext) {
-        $::.ScopeHelper |=> QualifyScopes @('.default') $authContext.GraphEndpointUri
+        $::.ScopeHelper |=> QualifyScopes @($::.ScopeHelper.DefaultScope) $authContext.GraphEndpointUri
     }
 
     function GetAuthCodeFromURIUserInteraction($authUxUri) {
@@ -305,8 +293,18 @@ ScriptClass V2AuthProvider {
 
         function InitializeProvider {
             if ( ! $this.__AuthLibraryLoaded ) {
+
+                # This works around the fact that Import-Assembly does not currently look
+                # for netcoreapp2.1 libraries by default -- fortunately we can override this
+                # to get the desired version
+                $targetframeworkParameter = if ( $PSEdition -ne 'Desktop' ) {
+                    @{TargetFrameworkMoniker = 'netcoreapp2.1'}
+                } else {
+                    @{}
+                }
+
                 $libPath = join-path $this.scriptRoot ../../lib
-                Import-Assembly Microsoft.Identity.Client -AssemblyRoot $libPath | out-null
+                Import-Assembly Microsoft.Identity.Client -AssemblyRoot $libPath @targetFrameworkParameter | out-null
                 $this.__AuthLibraryLoaded = $true
             }
         }

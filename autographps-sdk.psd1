@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.27.0'
+ModuleVersion = '0.28.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -105,6 +105,7 @@ FunctionsToExport = @(
     'Set-GraphConnectionStatus'
     'Set-GraphLogOption'
     'Test-Graph'
+    'Test-GraphSettings'
     'Unregister-GraphApplication'
 )
 
@@ -185,6 +186,7 @@ CmdletsToExport = @()
         '.\src\cmdlets\Set-GraphConnectionStatus.ps1'
         '.\src\cmdlets\Set-GraphLogOption.ps1'
         '.\src\cmdlets\Test-Graph.ps1'
+        '.\src\cmdlets\Test-GraphSettings.ps1'
         '.\src\cmdlets\Unregister-GraphApplication.ps1'
         '.\src\cmdlets\common\CertificateHelper.ps1'
         '.\src\cmdlets\common\ApplicationHelper.ps1'
@@ -246,49 +248,36 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.27.0 Release Notes
+## AutoGraphPS-SDK 0.28.0 Release Notes
 
-This release adds fixes for defects identified in 0.26.1 as well as new features related to application certificate management
+This release improves adds support for graph object output customization.
 
 ### New dependencies
 
-None.
+* Microsoft.Identity.Client (MSAL) 4.35.0
 
 ### Breaking changes
 
-* `Get-GraphConnectionInfo` has been renamed to `Get-GraphCurrentConnection`
-* `Get-GraphProfileSettings` renamed to `Get-GraphProfile`
-* `Select-GraphProfileSettings` renamed to `Select-GraphProfile`
-* `Get-GraphError` parameters have changed or been removed
-* Certificate generation is no longer automatic for `New-GraphApplication` -- the `NewCredential` parameter must be specified
+* AAD sign-ins now use the http://localhost reply URL / redirect URI instead of https://login.microsoftonline.com/common/oauth2/nativeclient because the latter does not support web browser sign-ins on PS Core.
+* Public client applications created by `New-GraphApplication` now configure the application with http://localhost as a redirect URI instead of https://login.microsoftonline.com/common/oauth2/nativeclient due to the above change
+* The structure of the output of `Test-Graph` has changed -- the properties were always dynamic and potentially subject to change since they were based on HTTP protocol responses returned by Graph without a contract for the response structure. However, `Test-Graph` now obtains data from a different part of the protocol that deviates from the earlier source, and this causes the breaking changes to properties of `Test-Graph` output. The new source is a more reliable one, so additional changes are unlikely in the future.
+* `New-GraphConnection` now defaults the ConsistencyLevel pararameter to `Default` instead of `Auto`.
 
 ### New features
 
-* New `Set-GraphApplicationCertificate` command that supports specifying an existing public key certificate in the file system (both .cer and .pfx formats) or those from the Windows certificate store.
-* New `Select-GraphConnection` command to switch between connections without connecting to them
-* New `AdditionalProperties` parameter for `New-GraphApplication` to set values for arbitrary properties of the application
-* New `CertificatePath` parameter for `New-GraphApplicationCertificate` and `New-GraphLocalCertificate`
-* New `Thumbprint` parameter for `Set-GraphApplicationCertificate`
-* New `CertKeyLength` for commands that create certificates to allow the size of the key to be customized
-* New `NewCredential` parameter for `New-GraphApplication` to explicitly create a new certificate credential
-* Output types for `Get-GraphApplication` and `Get-GraphApplicationConsent` commands for improved usability when piping output to commands including `Select-Object`
-* Commands that create certificates now default to 4096 for the key length
-* Formatting for commands that output certificate information
-* Improved, simpler formatting for connections, including highlighting current connection
-* `Get-GraphError` is now a view on top of the log for errors and is easier to read
-* New build scripts to help with documentation
-  * `./build/Get-CommandParameters`
-  * `./build/Get-DocumentStationStatus`
-  * `./build/Get-MissingDocCommandsByFewestParameters`
+* Sign-in UX for PowerShell core on Windows now uses a web browser rather than device code auth (possible due to MSAL 4.35.0 dependency update).
+* Formatting for `Get-GraphApplicationServicePrincipal`
+* Format improvements in time fields for `Get-GraphApplication`
+* Formatting / color for `Test-Graph`
+* `New-GraphConnection` no longer assumes you're requesting `User.Read`, enabling legacy apps that don't support incremental consent
+* `Connect-GraphApi` requests `User.Read` by default, but this can be suppressed by the ExistingPermissionsOnly parameter, enabling legacy apps that don't support incremental consent
+* `NoSetCurrentConnection` parameter added for `Connect-GraphApi`: this parameter allows you to sign in to an existing connection without setting it as the current connection.
+* `Test-GraphSettings` command to validate Graph profile settings and also return information about the settings.
+* Improved command help for several commands
 
 ### Fixed defects
 
-* Correctly parse @odata.context URIs like https://graph.microsoft.com/v1.0/$metadata#users(userid)/contacts/$entity such that the URI is correclty identified to refer to a member of a collection
-* `Remove-GraphApplicationConsent` failed when input was not taken from the pipeline
-* `New-GraphApplication`, `Set-GraphapplicationConsent` other commands failed when the connection (typically from profile settings) had the non-default value of `Eventual` set for `ConsistencyLevel`. This caused requests that expected read-after-write to reflect the write operation to fail sometimes. This was fixed by ensuring that regardless of the setting used for queries constructed by the user via commands like `Invoke-GraphRequest` and `Get-GraphRequest`, the consistency level of `Session` is always used.
-* `Get-GraphMethod` and `Get-GraphMember` required the `GraphName` parameter to be specified whenever the `Uri` parameter was specified -- this has been fixed.
-* Standardized pipelining between certificate and app commands, e.g. output of app commands can be used as input to certificate commands
-* Set-GraphApplicationConsent would not set specified delegated permissions if you were signed in with app only and you didn't explicitly specify the consent target -- that is by design, but it should have failed. Instead, it silently skipped the consent with no indication to the user. This has been fixed to fail with an error that instructions on how to remediate.
+* Context URI parsing was broken for Invoke-GraphRequest and Get-GraphResource and any command that relief on it. Cases such as me/photo would incorrectly interpret `me` as an entity set and `photo` as an element of that set, instead of treating `me` as an entity and `photo` as a navigation property
 
 '@
 

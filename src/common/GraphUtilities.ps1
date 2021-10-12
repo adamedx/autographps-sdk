@@ -305,7 +305,7 @@ ScriptClass GraphUtilities {
             [PSCustomObject]@{TypeName=$scalarQualifiedTypeName;IsCollection=$isCollection}
         }
 
-        function GetAbstractUriFromResponseObject($object, $assumeEntity, $explicitId) {
+        function GetAbstractUriFromResponseObject($object, $assumeEntity, $explicitId, $assumeNotCollectionMember) {
             $objectContext = GetResponseObjectContext $object
 
             if ( $objectContext ) {
@@ -315,8 +315,9 @@ ScriptClass GraphUtilities {
 
                 $isEntity = $objectContext.IsEntity -or $objectContext.IsDelta
                 $idNotNeededOrInItem = $assumeEntity -or ! $isEntity
+                $isCollectionMember = $objectContext.IsCollectionMember -and ! $assumeNotCollectionMember
 
-                $targetId = if ( $objectContext.IsCollectionMember ) {
+                $targetId = if ( $isCollectionMember ) {
                     if ( $id ) {
                         $id
                     } else {
@@ -330,7 +331,7 @@ ScriptClass GraphUtilities {
                 # if we were told to assume that its an entity
                 if ( $targetId ) {
                     $result = $typelessUri
-                    if ( $result  ) {
+                    if ( $result ) {
                         $normalizedUri = $result.trimend('/')
                         if ( $normalizedUri.tolower().endswith($targetId.tolower()) ) {
                             $result
@@ -339,7 +340,10 @@ ScriptClass GraphUtilities {
                         }
                     }
                     # If there is no typeless URI, we will return nothing
-                } elseif ( ! $idNotNeededOrInItem -or ! $objectContext.IsCollectionMember ) {
+                } elseif ( ! $idNotNeededOrInItem -or ! $isCollectionMember ) {
+                    # Caller has specified its ok if we don't know if there is an id, or
+                    # it's not a member of a collection which means we can assume it's an entity
+                    # already and thus does not need an id
                     $typelessUri
                 }
 

@@ -66,6 +66,7 @@ Describe "Poshgraph application" {
                 'Set-GraphConnectionStatus',
                 'Set-GraphLogOption',
                 'Test-Graph',
+                'Test-GraphSettings',
                 'Unregister-GraphApplication')
 
             $verifiedExportsCount = 0

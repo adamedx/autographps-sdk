@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-[cmdletbinding()]
+[cmdletbinding(supportsshouldprocess=$true, confirmimpact='High')]
 param($targetRepository = 'psgallery', $repositoryKeyFile = $null, [switch] $noclean, [switch] $force)
 
 . "$psscriptroot/common-build-functions.ps1"
@@ -34,7 +34,9 @@ $repositoryKey = if ( $repositoryKeyFile -ne $null ) {
 
 $forceArgument = @{force=$force}
 
-publish-modulebuild $moduleOutputPath $targetRepository $repositoryKey @forceArgument | out-null
+if ( ! $repositoryKey -or $pscmdlet.shouldprocess($moduleOutputPath, "Publish to public repository '$targetRepository'") ) {
+    publish-modulebuild $moduleOutputPath $targetRepository $repositoryKey @forceArgument | out-null
 
-write-host "Module '$($module.name)' successfully published to repository $targetRepository."
-write-host -foregroundcolor green "Publish module succeeded."
+    write-host "Module '$($module.name)' successfully published to repository $targetRepository."
+    write-host -foregroundcolor green "Publish module succeeded."
+}

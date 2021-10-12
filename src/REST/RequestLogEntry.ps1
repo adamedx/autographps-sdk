@@ -178,7 +178,7 @@ ScriptClass RequestLogEntry {
         }
 
         $statusCode = if ( $response | gm statuscode -erroraction ignore ){
-            $response.statusCode.value__
+            [int] $response.statusCode
         }
 
         try {

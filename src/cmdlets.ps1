@@ -47,5 +47,6 @@
 . (import-script cmdlets\Set-GraphConnectionStatus)
 . (import-script cmdlets\Set-GraphLogOption)
 . (import-script cmdlets\Test-Graph)
+. (import-script cmdlets\Test-GraphSettings)
 . (import-script cmdlets\Unregister-GraphApplication)
 

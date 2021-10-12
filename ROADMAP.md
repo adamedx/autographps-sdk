@@ -2,8 +2,10 @@
 
 ## To-do items -- prioritized
 
+* Add preference variable for disabling settings
+* Add simple match for Get-GraphApplication
+* Add photo upload scenario?
 * Make app operations default to objectid for efficiency
-* Add formatting for get-graphapplicationserviceprincipal
 * Adaptive progress meter?
 * Should implement certificate update using addkey / removekey: https://docs.microsoft.com/en-us/graph/api/application-addkey?view=graph-rest-1.0&tabs=http
 * Remove use of New-GraphConnection from within static methods and replace with internal version that is still mockable.
@@ -429,6 +431,13 @@
 * Add return types to cmdlets
 * View for graph application
 * Increase default cert key size
+* Add formatting for get-graphapplicationserviceprincipal
+* Use browser for powershell core auth by default except on Linux
+* Don't request user.read by default, use nothing # looks like you don't need to explicitly request '.default' with MSAL
+* Re-implement test-graph
+* Validate user confidential flow in profile
+* Add `-DefaultPermissions` to `Connect-GraphApi`
+* Add Test-GraphSettings
 
 ### Postponed
 

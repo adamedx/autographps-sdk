@@ -294,7 +294,7 @@ limitations under the License.
                 <ScriptBlock>$::.GraphFormatter.ConnectionName($_)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <ScriptBlock>$::.ColorString.ToStandardColorString($_.identity.TenantDisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.identity.GetTenantId(), 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>$_.identity.app.AuthType</ScriptBlock>
@@ -330,7 +330,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.Connected, 'EnabledState', $null, $true, $false)</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>OrganizationId</Label>
+                <Label>Organization</Label>
                 <ItemSelectionCondition>
                   <ScriptBlock>$_.identity.GetTenantId()</ScriptBlock>
                 </ItemSelectionCondition>
@@ -352,20 +352,24 @@ limitations under the License.
                 <ScriptBlock>$_.identity.app.authtype</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>AuthProtocol</Label>
-                <ScriptBlock>$_.graphendpoint.AuthProtocol</ScriptBlock>
+                <Label>AllowMSA</Label>
+                <ScriptBlock>$_.identity.AllowMSA</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>ConsistencyLevel</Label>
+                <ScriptBlock>if ( $_.consistencyLevel ) { $_.consistencyLevel } else { 'Auto' }</ScriptBlock>
               </ListItem>
               <ListItem>
                 <Label>Endpoint</Label>
                 <ScriptBlock>$_.graphendpoint.graph</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>AuthEndpoint</Label>
-                <ScriptBlock>$_.graphendpoint.Authentication</ScriptBlock>
+                <Label>Endpoint</Label>
+                <ScriptBlock>$_.graphendpoint.GraphResourceUri</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>ConsistencyLevel</Label>
-                <ScriptBlock>if ( $_.consistencyLevel ) { $_.consistencyLevel } else { 'Auto' }</ScriptBlock>
+                <Label>AuthEndpoint</Label>
+                <ScriptBlock>$_.graphendpoint.Authentication</ScriptBlock>
               </ListItem>
               <ListItem>
                 <ItemSelectionCondition>
@@ -536,6 +540,7 @@ limitations under the License.
             <Label>DisplayName</Label>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Alignment>Right</Alignment>
             <Label>CreatedDateTime</Label>
           </TableColumnHeader>
           <TableColumnHeader>
@@ -555,7 +560,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>createdDateTime</PropertyName>
+                <ScriptBlock>$_.createdDateTime.ToString('G')</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Id</PropertyName>
@@ -593,7 +598,161 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
-                <PropertyName>createdDateTime</PropertyName>
+                <ScriptBlock>$_.createdDateTime.ToString('G')</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Id</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>signinAudience</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>PublisherDomain</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>verifiedPublisher</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>info</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>parentalControlSettings</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>tags</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>notes</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>applicationTemplateId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>groupMembershipClaims</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>appRoles</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>optionalClaims</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>identifierUris</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>isDeviceOnlyAuthSupported</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>isFallbackPublicClient</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>tokenEncryptionKeyId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>defaultRedirectUri</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>addIns</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>requiredResourceAccess</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>api</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>web</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>spa</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>publicClient</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>keyCredentials</PropertyName>
+              </ListItem>
+
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+
+    <View>
+      <Name>GraphServicePrincipal</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.ServicePrincipal</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>AppId</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>DisplayName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>CreatedDateTime</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Id</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>PublisherDomain</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$::.GraphFormatter.ToStandardTimeString($_.createdDateTime)</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Id</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>PublisherDomain</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+
+    <View>
+      <Name>GraphServicePrincipalDetail</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.ServicePrincipal</TypeName>
+      </ViewSelectedBy>
+      <GroupBy>
+        <PropertyName>AppId</PropertyName>
+        <Label>Application (client) ID</Label>
+      </GroupBy>
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <Label>AppId</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.AppId, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>DisplayName</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <ScriptBlock>$::.GraphFormatter.ToStandardTimeString($_.createdDateTime)</ScriptBlock>
               </ListItem>
               <ListItem>
                 <PropertyName>Id</PropertyName>
@@ -840,9 +999,6 @@ limitations under the License.
       </TableControl>
     </View>
 
-
-    
-
     <View>
       <Name>GraphConsentDetail</Name>
       <ViewSelectedBy>
@@ -887,8 +1043,139 @@ limitations under the License.
       </ListControl>
     </View>
 
+    <View>
+      <Name>GraphEndpointTest</Name>
+      <ViewSelectedBy>
+        <TypeName>GraphEndpointTest</TypeName>
+      </ViewSelectedBy>
+      <ListControl>
 
-    
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+
+              <ListItem>
+                <Label>TestUri</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.TestUri, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>ServerTimestamp</Label>
+                <ScriptBlock>$::.GraphFormatter.ServerTimestamp($_.ClientRequestTimestamp, $_.ServerTimestamp)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <Label>ClientElapsedTime (ms)</Label>
+                <ScriptBlock>$::.GraphFormatter.ResponseElapsedTime($_.ClientElapsedTime, 'TotalMilliseconds', $true)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>RequestId</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>DataCenter</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DataCenter, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Ring</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>RoleInstance</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ScaleUnit</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Slice</PropertyName>
+              </ListItem>
+              <ListItem>
+                <Label>NonfatalStatus</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.NonfatalStatus, 'EnabledState', $null, $null, $_.NonfatalStatus)</ScriptBlock>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+
+      </ListControl>
+    </View>
+
+    <View>
+
+      <Name>GraphSettingsInfo</Name>
+      <ViewSelectedBy>
+        <TypeName>AutoGraph.SettingsInfo</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <Label>Path</Label>
+        <ScriptBlock>$::.ColorString.ToStandardColorString($_.Path, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+
+              <ListItem>
+                <Label>DefaultProfileName</Label>
+                <ScriptBlock>$::.ColorString.ToStandardColorString($_.DefaultProfileName, 'Emphasis1', $null, $null, $null)</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ProfileNames</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ConnectionNames</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>EndpointNames</PropertyName>
+              </ListItem>
+
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+
+    </View>
+
+    <View>
+
+      <Name>GraphSettings</Name>
+      <ViewSelectedBy>
+        <TypeName>LocalProfile</TypeName>
+      </ViewSelectedBy>
+
+      <GroupBy>
+        <Label>Profile Name</Label>
+        <ScriptBlock>$::.ColorString.ToStandardColorString($_.Name, 'Emphasis2', $null, $null, $null)</ScriptBlock>
+      </GroupBy>
+
+      <ListControl>
+
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+
+              <ListItem>
+                <PropertyName>InitialApiVersion</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LogLevel</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>EndpointData</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ConnectionData</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ProfileData</PropertyName>
+              </ListItem>
+
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+
+    </View>
+
   </ViewDefinitions>
 
 </Configuration>

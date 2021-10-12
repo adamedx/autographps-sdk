@@ -22,6 +22,8 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
         const GraphApplicationId 00000003-0000-0000-c000-000000000000
         const DefaultScopeQualifier ([Uri] 'https://graph.microsoft.com')
         const OfflineAccessScopeId 7427e0e9-2fba-42fe-b0c0-848c9e6a8182
+        const DefaultScope '.default'
+
         $graphSP = $null
         $permissionsByIds = $null
         $appOnlyPermissionsByName = $null

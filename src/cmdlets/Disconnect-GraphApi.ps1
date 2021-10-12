@@ -37,7 +37,8 @@ This command disconnects the current Graph's connection. Any subsequent Graph ac
 .LINK
 Connect-GraphApi
 New-GraphConnection
-Get-GraphCurrentConnection
+Get-GraphConnection
+Select-GraphConnection
 #>
 function Disconnect-GraphApi {
     [cmdletbinding()]
