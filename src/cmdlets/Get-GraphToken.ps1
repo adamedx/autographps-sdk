@@ -93,13 +93,6 @@ function Get-GraphToken {
         [parameter(parametersetname='certpath')]
         [Uri] $GraphResourceUri = $null,
 
-        [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='secret')]
-        [parameter(parametersetname='cert')]
-        [parameter(parametersetname='certpath')]
-        [parameter(parametersetname='customendpoint')]
-        [GraphAuthProtocol] $AuthProtocol = [GraphAuthProtocol]::Default,
-
         [parameter(parametersetname='aadgraph', mandatory=$true)]
         [parameter(parametersetname='customendpoint')]
         [switch] $AADGraph,

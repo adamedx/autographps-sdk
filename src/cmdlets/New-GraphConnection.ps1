@@ -385,18 +385,12 @@ function New-GraphConnection {
             ([GraphType]::MSGraph)
         }
 
-        $specifiedAuthProtocol = if ( $AuthProtocol -ne ([GraphAuthProtocol]::Default) ) {
-            $AuthProtocol
-        }
-
         $specifiedScopes = if ( $Permissions ) {
             if ( $Secret.IsPresent -or $Certificate -or $CertificatePath ) {
                 throw 'Permissions may not be specified at runtime for app-only authentication since they originate from the static application configuration'
             }
             $Permissions
         }
-
-        $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $AuthProtocol $validatedCloud $GraphType
 
         $noAppSpecified = $false
 
@@ -414,17 +408,20 @@ function New-GraphConnection {
             $allowMSA = $noAppSpecified
         }
 
-        if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
-            write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'
-            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $computedAuthProtocol -useragent $UserAgent -allowMSA $allowMSA $ConsistencyLevel
+        if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $appId -eq $null ) {
+            write-verbose 'Simple connection specified with no custom uri or app id'
+            # TODO: Remove authprotocol parameter after tenantid:
+            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $null -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel
         } else {
             $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
                 write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
-                write-verbose ("Creating endpoint with cloud '{0}', auth protocol '{1}'" -f $validatedCloud, $computedAuthProtocol)
-                new-so GraphEndpoint $validatedCloud $graphType $null $null $computedAuthProtocol $GraphResourceUri
+                write-verbose ("Creating endpoint with cloud '{0}'" -f $validatedCloud)
+                # TODO: Remove authprotocol argument
+                new-so GraphEndpoint $validatedCloud $graphType $null $null $null $GraphResourceUri
             } else {
-                write-verbose ("Custom endpoint data required and graph endpoint URI was specified, using specified endpoint URI and auth protocol {0}'" -f $computedAuthProtocol)
-                new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol $GraphResourceUri
+                write-verbose "Custom endpoint data required and graph endpoint URI was specified, using specified endpoint URI'"
+                # TODO: REmove authprotocol argument
+                new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $null $GraphResourceUri
             }
 
             $adjustedTenantId = $TenantId

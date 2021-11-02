@@ -139,7 +139,6 @@ CmdletsToExport = @()
         '.\src\auth\AuthProvider.ps1'
         '.\src\auth\CompiledDeviceCodeAuthenticator.ps1'
         '.\src\auth\DeviceCodeAuthenticator.ps1'
-        '.\src\auth\V1AuthProvider.ps1'
         '.\src\auth\V2AuthProvider.ps1'
         '.\src\client\Application.ps1'
         '.\src\client\GraphApplication.ps1'

@@ -2,6 +2,10 @@
 
 ## To-do items -- prioritized
 
+* Possible need to add 'no additional permissions' setting to profiles and doc in schema
+* Fix ScopeHelper => GetPermissionsByName to allow failures to be ignored
+* Make ggl alias First for newest and Last for oldest
+* Remove resultvariable from ggr without impacting LASTGRAPHITEMS
 * Add preference variable for disabling settings
 * Add simple match for Get-GraphApplication
 * Add photo upload scenario?
@@ -438,6 +442,7 @@
 * Validate user confidential flow in profile
 * Add `-DefaultPermissions` to `Connect-GraphApi`
 * Add Test-GraphSettings
+* Prevent removal of a context if it is the current context
 
 ### Postponed
 

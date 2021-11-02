@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. (import-script AuthProvider)
 . (import-script DeviceCodeAuthenticator)
 
 ScriptClass V2AuthProvider {
-    $base = $null
-
     # TODO: Consider removing this store of app contexts, and making auth context
     # a part of the connection itself, since for v2 auth at least this is actually
     # what has been done through group id. At the very least we could move to
@@ -25,8 +22,7 @@ ScriptClass V2AuthProvider {
     $publicAppContexts = $null
     $confidentialAppContexts = $null
 
-    function __initialize( $base ) {
-        $this.base = $base
+    function __initialize {
         $this.publicAppContexts = @{}
         $this.confidentialAppContexts = @{}
     }
@@ -307,10 +303,6 @@ ScriptClass V2AuthProvider {
                 Import-Assembly Microsoft.Identity.Client -AssemblyRoot $libPath @targetFrameworkParameter | out-null
                 $this.__AuthLibraryLoaded = $true
             }
-        }
-
-        function RegisterProvider {
-            $::.AuthProvider |=> RegisterProvider ([GraphAuthProtocol]::v2) $this
         }
     }
 }

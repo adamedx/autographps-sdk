@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,23 +50,10 @@ Describe 'GraphContext class' {
             IsFaulted = $false
         }
 
-        $v2AuthProvider = ($::.AuthProvider |=> GetProviderInstance 'v2').derivedProvider
-
         $mockData = @{
             mockAuthResult = $mockAuthResult
             InitialConnectionId = $null
             InitialProtocolContext = $null
-        }
-
-        # We have to do some strange things to work around a bug in scriptclass
-        # where mockcontext is not passed on mocking an object rather than a
-        # class
-        Mock-ScriptClassMethod $v2AuthProvider __AcquireTokenInteractive {
-            param($authContext, $scopes)
-            $newToken = new-so MockToken
-            $mockAuthResult = $authContext._mockContext.mockAuthResult
-            $mockAuthResult.Result = $newToken
-            $mockAuthResult
         }
 
         # Need to handle this case for PowerShell Core -- here at least
@@ -82,13 +69,18 @@ Describe 'GraphContext class' {
         # Since the scriptclass mockcontext defect does not occur
         # when mocking via class as we are here (rather than object)
         # we can save the mockcontext in the authcontext so that it can
-        # be used later in a scenario where we've mocked
+        # be used later in a scenario where we've mocked. See further comments
+        # on the scriptclass defect.
+        # TODO: Another scriptclass defect: apparently, Mock-ScriptClassMethod
+        # for an instance method of a class resets the state of the classes static properties! So
+        # we must invoke Mock-ScriptClassMethod before doing anything the state is changed from
+        # the initial state, and we do that here. Not good.
         Mock-ScriptClassMethod AuthProvider GetAuthContext {
             param($app, $graphEndpointUri, $authUri, $groupId)
             $result = [PSCustomObject]@{
                 App = $app
                 GraphEndpointUri = $graphEndpointUri
-                ProtocolContext = $this.derivedProvider |=> GetAuthContext $app $authUri $groupId
+                ProtocolContext = $this.provider |=> GetAuthContext $app $authUri $groupId
                 GroupId = $groupId
                 _mockContext = $mockContext
             }
@@ -104,6 +96,21 @@ Describe 'GraphContext class' {
 
             $result
         } -mockcontext $mockData
+
+        # TODO: Remove this complexity as providers are no longer emulations
+        # of derived classes
+        $v2AuthProvider = ($::.AuthProvider |=> GetProviderInstance).provider
+
+        # We have to do some strange things to work around a bug in scriptclass
+        # where mockcontext is not passed on mocking an object rather than a
+        # class
+        Mock-ScriptClassMethod $v2AuthProvider __AcquireTokenInteractive {
+            param($authContext, $scopes)
+            $newToken = new-so MockToken
+            $mockAuthResult = $authContext._mockContext.mockAuthResult
+            $mockAuthResult.Result = $newToken
+            $mockAuthResult
+        }
 
         Mock-ScriptClassMethod $v2AuthProvider __RemoveCachedToken {}
 

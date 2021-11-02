@@ -79,7 +79,7 @@ Specifies the Graph API version that this command should target when making Grap
 Specifies the client request in the form of a GUID id that should be passed in the 'client-request-id' request header to the Graph API. This can be used to correlate verbose output regarding the request made by this command with request logs accessible to the operator of the Graph API service. Such correlation speeds up diagnosis of errors in service support scenarios. By default, this command automatically generates a request id and sends it in the header and also logs it in the command's verbose output, so this parameter does not need to be specified unless there is a particular reason to customize the id, such as using an id generated from another tool or API as a prerequisite for issuing this command that makes it easy to correlate the request from this command with that tool output for troubleshooting and log analysis. It is possible to prevent the generation of a client request id altogether by specifying the NoClientRequestId parameter.
 
 .PARAMETER Connection
-Specifies a Connection object returned by the New-GraphConnection command whose Graph endpoint will be accessed when making Graph requests with this command.
+Specifies a Connection object returned by commands such as New-GraphConnection and Connect-GraphApi whose Graph endpoint will be accessed when making Graph requests with this command.
 
 .PARAMETER Cloud
 Specifies that for this command invocation, an access token with delegated permissions for the specified cloud must be acquired and then used to make the call. This will result in a sign-in UX.
@@ -224,9 +224,7 @@ function Get-GraphResource {
 
         [switch] $NoSizeWarning,
 
-        [switch] $All,
-
-        [string] $ResultVariable = $null
+        [switch] $All
     )
 
     begin {
@@ -284,7 +282,7 @@ function Get-GraphResource {
     end {
         $localResult = $null
 
-        $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
+        $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable
 
         $uris | Invoke-GraphApiRequest @requestArguments | tee-object -variable localResult
 
@@ -293,5 +291,4 @@ function Get-GraphResource {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
-
 

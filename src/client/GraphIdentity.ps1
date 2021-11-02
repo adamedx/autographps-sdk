@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 . (import-script ../graphservice/GraphEndpoint)
 . (import-script GraphApplication)
 . (import-script ../auth/AuthProvider)
-. (import-script ../auth/V1AuthProvider)
 . (import-script ../auth/V2AuthProvider)
 
 ScriptClass GraphIdentity {
@@ -26,14 +25,6 @@ ScriptClass GraphIdentity {
     $TenantDisplayId = $null
     $TenantDisplayName = $null
     $AllowMSA = $false
-
-    static {
-        $AuthProvidersInitialized = $false
-        function __initialize {
-            $::.V1AuthProvider |=> RegisterProvider
-            $::.V2AuthProvider |=> RegisterProvider
-        }
-    }
 
     function __initialize([PSCustomObject] $app, [PSCustomObject] $graphEndpoint, [String] $tenantName, [boolean] $allowMSA) {
         $this.App = $app
@@ -55,7 +46,7 @@ ScriptClass GraphIdentity {
 
     function GetUserInformation {
         if ( $this.App.AuthType -eq 'Delegated' ) {
-                 $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
+                 $providerInstance = $::.AuthProvider |=> GetProviderInstance
                  $providerInstance |=> GetUserInformation $this.token
         } else {
             [PSCustomObject]@{
@@ -73,7 +64,7 @@ ScriptClass GraphIdentity {
             write-verbose ("Found existing token with {0} minutes left before expiration" -f $tokenTimeLeft.TotalMinutes)
         }
 
-        write-verbose ("Getting token for resource {0} from auth endpoint: {1} with protocol {2} for groupid '{3}'" -f $this.graphEndpoint.GraphResourceUri, $this.graphEndpoint.Authentication, $this.graphEndpoint.AuthProtocol, $groupId)
+        write-verbose ("Getting token for resource {0} from auth endpoint: {1} for groupid '{2}'" -f $this.graphEndpoint.GraphResourceUri, $this.graphEndpoint.Authentication, $groupId)
 
         $this.Token = getGraphToken $this.graphEndpoint $scopes $noBrowserUI $groupId $certificatePassword
 
@@ -88,7 +79,7 @@ ScriptClass GraphIdentity {
         if ( $this.token -and $this.app.AuthType -eq 'Delegated' ) {
             $authUri = $this.graphEndpoint |=> GetAuthUri $this.TenantName $this.AllowMSA
 
-            $providerInstance = $::.AuthProvider |=> GetProviderInstance $this.graphEndpoint.AuthProtocol
+            $providerInstance = $::.AuthProvider |=> GetProviderInstance
             $authContext = $providerInstance |=> GetAuthContext $this.app $this.graphEndpoint.GraphResourceUri $authUri $groupId
             $providerInstance |=> ClearToken $authContext $this.token
         }
@@ -108,12 +99,7 @@ ScriptClass GraphIdentity {
         write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
         write-verbose ("Using redirect uri (reply url) '{0}'" -f $this.App.RedirectUri)
 
-        if ( ! $this.scriptclass.AuthProvidersInitialized ) {
-            $::.AuthProvider |=> InitializeProviders
-            $this.scriptclass.AuthProvidersInitialized = $true
-        }
-
-        $providerInstance = $::.AuthProvider |=> GetProviderInstance $graphEndpoint.AuthProtocol
+        $providerInstance = $::.AuthProvider |=> GetProviderInstance
 
         $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.GraphResourceUri $authUri $groupId $certificatePassword
 
@@ -264,4 +250,3 @@ ScriptClass GraphIdentity {
     }
 }
 
-$::.GraphIdentity |=> __initialize
