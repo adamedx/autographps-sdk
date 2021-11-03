@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.28.0'
+ModuleVersion = '0.29.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -257,6 +257,7 @@ None.
 
 ### Breaking changes
 
+* The `AuthProtocol` parameter of `Connect-GraphApi` and `New-GraphConnection` has been removed
 * If you relied on the module loading ADAL in some circumstances, this no longer occurs as this release removes the ADAL code altogether.
 
 ### New features

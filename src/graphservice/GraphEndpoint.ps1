@@ -83,7 +83,6 @@ ScriptClass GraphEndpoint {
             [GraphType] $graphType = [GraphType]::MSGraph,
             [Uri] $GraphEndpoint,
             [Uri] $AuthenticationEndpoint,
-            $authProtocol = $null,
             [Uri] $graphResourceUri
         )
 

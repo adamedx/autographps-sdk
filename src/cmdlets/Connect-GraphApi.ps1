@@ -379,14 +379,6 @@ function Connect-GraphApi {
         [Uri] $GraphResourceUri = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='secret')]
-        [parameter(parametersetname='cert')]
-        [parameter(parametersetname='certpath')]
-        [parameter(parametersetname='customendpoint')]
-        [ValidateSet('v1', 'v2', 'Default')]
-        [String] $AuthProtocol = 'Default',
-
-        [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='customendpoint')]
         [ValidateSet('Auto', 'AzureADOnly', 'AzureADAndPersonalMicrosoftAccount')]
         [string] $AccountType = 'Auto',

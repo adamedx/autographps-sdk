@@ -121,8 +121,6 @@ $NewGraphConnectionMockScript = {
         [Uri] $GraphEndpointUri = $null,
         [Uri] $AuthenticationEndpointUri = $null,
         [Uri] $GraphResourceUri = $null,
-        [ValidateSet('Default', 'v1', 'v2')]
-        [string] $AuthProtocol = 'Default',
         [string] $AccountType = 'Auto',
         [string] $Name = $null,
         [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
@@ -141,7 +139,8 @@ $NewGraphConnectionMockScript = {
     }
 
     $app = new-so GraphApplication $appIdArg $AppRedirectUri $null $NoninteractiveAppOnlyAuth.IsPresent
-    $endpoint = new-so GraphEndpoint $Cloud MSGraph $GraphEndpointUri $AuthenticationEndpointUri $AuthProtocol $GraphResourceUri
+    $endpoint = new-so GraphEndpoint $Cloud MSGraph $GraphEndpointUri $AuthenticationEndpointUri $GraphResourceUri
+
     $identity = new-so GraphIdentity $app $endpoint $TenantId ($AccountType -eq 'AzureADAndPersonalMicrosoftAccount')
     $connection = New-ScriptObjectMock GraphConnection -PropertyValues @{
         Id = new-guid

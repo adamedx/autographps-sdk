@@ -343,14 +343,6 @@ function New-GraphConnection {
         [Uri] $GraphResourceUri = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='secret')]
-        [parameter(parametersetname='cert')]
-        [parameter(parametersetname='certpath')]
-        [parameter(parametersetname='customendpoint')]
-        [ValidateSet('Default', 'v1', 'v2')]
-        [string] $AuthProtocol = 'Default',
-
-        [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='customendpoint')]
         [ValidateSet('Auto', 'AzureADOnly', 'AzureADAndPersonalMicrosoftAccount')]
         [string] $AccountType = 'Auto',
@@ -410,18 +402,15 @@ function New-GraphConnection {
 
         if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $appId -eq $null ) {
             write-verbose 'Simple connection specified with no custom uri or app id'
-            # TODO: Remove authprotocol parameter after tenantid:
-            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $null -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel
+            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel
         } else {
             $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
                 write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
                 write-verbose ("Creating endpoint with cloud '{0}'" -f $validatedCloud)
-                # TODO: Remove authprotocol argument
-                new-so GraphEndpoint $validatedCloud $graphType $null $null $null $GraphResourceUri
+                new-so GraphEndpoint $validatedCloud $graphType $null $null $GraphResourceUri
             } else {
                 write-verbose "Custom endpoint data required and graph endpoint URI was specified, using specified endpoint URI'"
-                # TODO: REmove authprotocol argument
-                new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $null $GraphResourceUri
+                new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $GraphResourceUri
             }
 
             $adjustedTenantId = $TenantId

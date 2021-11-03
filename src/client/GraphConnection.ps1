@@ -143,8 +143,8 @@ ScriptClass GraphConnection {
             }
         }
 
-        function NewSimpleConnection([string] $graphType = 'MSGraph', [string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $authProtocol = $null, $userAgent = $null, $allowMSA = $true, $name, [string] $consistencyLevel ) {
-            $endpoint = new-so GraphEndpoint $cloud $graphType $null $null $authProtocol
+        function NewSimpleConnection([string] $graphType = 'MSGraph', [string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $userAgent = $null, $allowMSA = $true, $name, [string] $consistencyLevel ) {
+            $endpoint = new-so GraphEndpoint $cloud $graphType $null $null $null
             $app = new-so GraphApplication $::.Application.DefaultAppId
             $identity = if ( ! $anonymous ) {
                 new-so GraphIdentity $app $endpoint $tenantName $allowMSA
