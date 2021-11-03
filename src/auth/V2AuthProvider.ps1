@@ -25,6 +25,7 @@ ScriptClass V2AuthProvider {
     function __initialize {
         $this.publicAppContexts = @{}
         $this.confidentialAppContexts = @{}
+        $this.scriptclass |=> InitializeProvider
     }
 
     # The group id concept is really about associating auth context with a connnection so
