@@ -364,7 +364,7 @@ limitations under the License.
                 <ScriptBlock>$_.graphendpoint.graph</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>Endpoint</Label>
+                <Label>GraphResourceUri</Label>
                 <ScriptBlock>$_.graphendpoint.GraphResourceUri</ScriptBlock>
               </ListItem>
               <ListItem>
