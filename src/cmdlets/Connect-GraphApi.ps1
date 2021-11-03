@@ -115,9 +115,6 @@ You may also specify 'Default', which means that API requests do not specify con
 
 For more information about the advanced queries capable using the Eventual consistency level, see the Graph API advanced query documentation: https://docs.microsoft.com/en-us/graph/aad-advanced-queries. For more information on the tradeoffs for the Eventual consistency level, see the command documentation for the Invoke-GraphApi command in this module.
 
-.PARAMETER AADGraph
-Deprecated.
-
 .PARAMETER UserAgent
 Specifies the HTTP 'User-Agent' request header value to use for every request to the Graph API. By default, the module uses its own specific user agent string for this header on every request. To override that default value, specify a new value using the UserAgent parameter.
 
@@ -385,10 +382,6 @@ function Connect-GraphApi {
 
         [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
         [string] $ConsistencyLevel = 'Auto',
-
-        [parameter(parametersetname='aadgraph', mandatory=$true)]
-        [parameter(parametersetname='customendpoint')]
-        [switch] $AADGraph,
 
         [string] $UserAgent = $null,
 

@@ -138,9 +138,6 @@ This parameter specifies that the command should return results exactly in the f
 .PARAMETER ConsistencyLevel
 This parameter specifies that Graph should process the request using a specific consistency level of 'Auto', 'Default', 'Session' or 'Eventual'. Requests processed with 'Session" consistency, originally the only supported consistency level for Graph API requests, these requests will make a best effort to ensure that the response reflects any changes made by previous Graph API requests made by the current caller. This allows applications to perform Graph API change operations such as creating a new resource such as a user or group followed by a request to retrieve information about that group or other information (e.g. the count of all users or groups) that would be influenced by the success of the earlier change. All operations are therefore consistent within the boundary of the "session." The disadvantage of session semantics is that the cost of supporting advanced queries such as counts or searches is very costly for the Graph API services that process the request, and so many advanced queries are not supported with session semantics. For this reason, a subset of services including those providing Azure Active Directory objects like user and group subsequently added the eventual consistency level. With eventual semantics, the API services that support this consistency level may temporarily violate session consistency with the benefit that advanced queries too costly to process with session semantics are now available. The results of those queries may not be fully up to date with the latest changes, but after some (typically short, a few minutes or less than an hour) time period a given set of changes will be reflected in the results for the same query repeated at a later time. The results of the API are not immediately consistent with changes in the session, but will be "eventually." For a given use case, a particular consistency level that prioritizes short-term accuracy higher or lower than complex query capability may be more appropriate; this parameter allows the caller of this command to make that choice. Specifying 'Default' for this parameter means the consistency level is determined by the API itself and API documentation should be consulted to determine if the API even supports a particular consistency level and therefore whether it is necessary to use this parameter. Note that if this parameter has the default value of 'Auto', the behavior is determined by the configuration of the Graph connection used for this request.
 
-.PARAMETER AADGraph
-This parameter specifies that instead of accessing Microsoft Graph, the command should make requests against Azure Active Directory Graph (AAD Graph). Note that most functionality of this command and other commands in the module is not compatible with AAD Graph; this parameter may be deprecated in the future.
-
 .PARAMETER PageSizePreference
 This parameter directs the command to issue requests that instruct the Graph API to return a specific maximum number of items in each page of results. This parameter will only take effect if Graph honors it for the particular request.
 
@@ -326,9 +323,6 @@ function Invoke-GraphApiRequest {
         [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
         [string] $ConsistencyLevel = 'Auto',
 
-        [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
-        [switch] $AADGraph,
-
         [int32] $PageSizePreference,
 
         [switch] $NoPaging,
@@ -391,13 +385,6 @@ function Invoke-GraphApiRequest {
         }
 
         $defaultVersion = $null
-        $graphType = if ($Connection -ne $null ) {
-            $Connection.GraphEndpoint.Type
-        } elseif ( $AADGraph.ispresent ) {
-            ([GraphType]::AADGraph)
-        } else {
-            ([GraphType]::MSGraph)
-        }
 
         $MSGraphScopes = if ( $Permissions -ne $null ) {
             if ( $Connection -ne $null ) {
@@ -441,24 +428,12 @@ function Invoke-GraphApiRequest {
             $requestQuery += '$count'
         }
 
-        # Cast it in case this is a deserialized object --
-        # workaround for a defect in ScriptClass
-        switch ([GraphType] $graphType) {
-            ([GraphType]::AADGraph) { $defaultVersion = '1.6' }
-            ([GraphType]::MSGraph) { $defaultVersion = 'GraphContext' |::> GetDefaultVersion }
-            default {
-                throw "Unexpected identity type '$graphType'"
-            }
-        }
+        $defaultVersion = 'GraphContext' |::> GetDefaultVersion
 
         $currentContext = $null
 
         $graphConnection = if ( $Connection -eq $null ) {
-            if ( $graphType -eq ([GraphType]::AADGraph) ) {
-                $::.GraphConnection |=> NewSimpleConnection ([GraphType]::AADGraph) $cloud $MSGraphScopes
-            } else {
-                'GraphContext' |::> GetConnection $null $null $cloud $Permissions
-            }
+            'GraphContext' |::> GetConnection $null $null $cloud $Permissions
         } else {
             $Connection
         }
@@ -503,8 +478,7 @@ function Invoke-GraphApiRequest {
                 throw "The version '$($info.Graphversion)' and connection endpoint '$($specificcontext.Connection.GraphEndpoint.Graph)' is not compatible with the uri '$Uri'"
             }
             $info
-        } elseif ( $graphType -ne ([GraphType]::AADGraph) ) {
-
+        } else {
             if ( ($::.GraphContext |=> GetCurrent).location ) {
                 $info = $::.GraphUtilities |=> ParseGraphRelativeLocation $Uri
                 @{
@@ -535,12 +509,7 @@ function Invoke-GraphApiRequest {
             }
         }
 
-        $tenantQualifiedVersionSegment = if ( $graphType -eq ([GraphType]::AADGraph) ) {
-            $graphConnection |=> Connect
-            $graphConnection.Identity.Token.TenantId
-        } else {
-            $apiVersion
-        }
+        $tenantQualifiedVersionSegment = $apiVersion
 
         $inputUriRelative = if ( ! $uriInfo ) {
             $Uri
@@ -583,10 +552,6 @@ function Invoke-GraphApiRequest {
         )
 
         while ( $graphRelativeUri -ne $null -and ($graphRelativeUri.tostring().length -gt 0) -and ($maxResultCount -eq $null -or $results.length -lt $maxResultCount) ) {
-            if ( $graphType -eq ([GraphType]::AADGraph) ) {
-                $graphRelativeUri = $graphRelativeUri, "api-version=$apiVersion" -join '?'
-            }
-
             $graphResponse = if ( $graphConnection.status -ne ([GraphConnectionStatus]::Offline) ) {
                 $currentPageQuery = if ( $pageCount -eq 0 ) {
                     $requestQuery

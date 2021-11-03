@@ -112,9 +112,6 @@ Specify 'Auto' to mean that consistency semantics are taken from the current Gra
 
 For more information about the advanced queries capable using the Eventual consistency level, see the Graph API advanced query documentation: https://docs.microsoft.com/en-us/graph/aad-advanced-queries. For more information on the tradeoffs for the Eventual consistency level, see the command documentation for the Invoke-GraphApi command in this module.
 
-.PARAMETER AADGraph
-Deprecated.
-
 .PARAMETER UserAgent
 Specifies the HTTP 'User-Agent' request header value to use for every request to the Graph API. By default, the module uses its own specific user agent string for this header on every request. To override that default value, specify a new value using the UserAgent parameter.
 
@@ -352,10 +349,6 @@ function New-GraphConnection {
         [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
         [string] $ConsistencyLevel = 'Default',
 
-        [parameter(parametersetname='aadgraph', mandatory=$true)]
-        [parameter(parametersetname='customendpoint')]
-        [switch] $AADGraph,
-
         [String] $UserAgent = $null
     )
 
@@ -369,12 +362,6 @@ function New-GraphConnection {
             [GraphCloud] $Cloud
         } else {
             ([GraphCloud]::Public)
-        }
-
-        $graphType = if ( $AADGraph.ispresent ) {
-            ([GraphType]::AADGraph)
-        } else {
-            ([GraphType]::MSGraph)
         }
 
         $specifiedScopes = if ( $Permissions ) {
@@ -402,15 +389,15 @@ function New-GraphConnection {
 
         if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $appId -eq $null ) {
             write-verbose 'Simple connection specified with no custom uri or app id'
-            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel
+            $::.GraphConnection |=> NewSimpleConnection $validatedCloud $specifiedScopes $false $TenantId -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel
         } else {
             $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
                 write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
                 write-verbose ("Creating endpoint with cloud '{0}'" -f $validatedCloud)
-                new-so GraphEndpoint $validatedCloud $graphType $null $null $GraphResourceUri
+                new-so GraphEndpoint $validatedCloud $null $null $GraphResourceUri
             } else {
                 write-verbose "Custom endpoint data required and graph endpoint URI was specified, using specified endpoint URI'"
-                new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $GraphResourceUri
+                new-so GraphEndpoint ([GraphCloud]::Custom) $GraphEndpointUri $AuthenticationEndpointUri $GraphResourceUri
             }
 
             $adjustedTenantId = $TenantId

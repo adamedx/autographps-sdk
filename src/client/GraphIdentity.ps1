@@ -34,7 +34,7 @@ ScriptClass GraphIdentity {
 
         $defaultAppId = $::.Application.DefaultAppId.tostring()
 
-        $chinaEndpointUri = ( $::.GraphEndpoint |=> GetCloudEndpoint ChinaCloud MSGraph ).Graph.tostring().trimend('/')
+        $chinaEndpointUri = ( $::.GraphEndpoint |=> GetCloudEndpoint ChinaCloud ).Graph.tostring().trimend('/')
 
         if ( ( $graphEndpoint.Graph.tostring().trimend('/') -eq $chinaEndpointUri ) -and
              ( $app.AppId.tostring() -eq $defaultAppId ) ) {

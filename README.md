@@ -136,16 +136,6 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Test-GraphSettings                   | Validates whether AutoGraph settings specified as a file, JSON content, or in deserialized form are valid                                               |
 | Unregister-GraphApplication          | Removes consent and service principal entries for the application from the tenant                                                                       |
 
-### Limited support for Azure Active Directory (AAD) Graph
-
-Some AutoGraphPS-SDK cmdlets also work with [Azure Active Directory Graph](https://msdn.microsoft.com/Library/Azure/Ad/Graph/howto/azure-ad-graph-api-operations-overview), simply by specifying the `-aadgraph` switch as in the following:
-
-```powershell
-Get-GraphResource me -aadgraph
-```
-
-Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of AutoGraphPS-SDK.
-
 ### More about how it works
 
 If you'd like a behind the scenes look at the implementation of AutoGraphPS-SDK, take a look at the following article:

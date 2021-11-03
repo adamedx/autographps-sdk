@@ -93,10 +93,6 @@ function Get-GraphToken {
         [parameter(parametersetname='certpath')]
         [Uri] $GraphResourceUri = $null,
 
-        [parameter(parametersetname='aadgraph', mandatory=$true)]
-        [parameter(parametersetname='customendpoint')]
-        [switch] $AADGraph,
-
         [parameter(parametersetname='current')]
         [Switch] $Current,
 

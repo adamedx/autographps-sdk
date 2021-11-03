@@ -249,7 +249,7 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS-SDK 0.29.0 Release Notes
 
-This release removes the ADAL library dependency.
+This release removes the ADAL library dependency and removes support for the AAD Graph service endpoint.
 
 ### New dependencies
 
@@ -257,6 +257,7 @@ None.
 
 ### Breaking changes
 
+* Support for the AAD Graph service endpoint (https://graph.windows.net) has been removed; the `AADGraph` parameter has been removed from all commands that supported it such as `Connect-GraphApi`, `Get-GraphResource`, and `Invoke-GraphApiRequest`. The module now only supports endpoints that support the Graph API protocol implemented by https://graph.microsoft.com and documented at https://docs.microsoft.com/en-us/graph.
 * The `AuthProtocol` parameter of `Connect-GraphApi` and `New-GraphConnection` has been removed
 * If you relied on the module loading ADAL in some circumstances, this no longer occurs as this release removes the ADAL code altogether.
 

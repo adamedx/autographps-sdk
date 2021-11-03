@@ -443,6 +443,8 @@
 * Add `-DefaultPermissions` to `Connect-GraphApi`
 * Add Test-GraphSettings
 * Prevent removal of a context if it is the current context
+* Remove AADGraph support
+* Remove ADAL
 
 ### Postponed
 

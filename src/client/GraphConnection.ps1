@@ -55,9 +55,7 @@ ScriptClass GraphConnection {
 
         $this.NoBrowserUI = ! $::.Application.SupportsBrowserSignin -or $noBrowserUI -or $isRemotePSSession
 
-        if ( $this.GraphEndpoint.Type -eq 'MSGraph') {
-            $this.Scopes = $Scopes
-        }
+        $this.Scopes = $Scopes
 
         if ( $name ) {
             $this.scriptclass |=> AddNamedConnection $name $this
@@ -85,13 +83,10 @@ ScriptClass GraphConnection {
                 write-warning $errorOutput
                 write-error $errorOutput -erroraction stop
             }
-            if ( $this.GraphEndpoint.Type -eq 'MSGraph' ) {
-                # Trust the library's token cache to get a new token if necessary
-                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id $certificatePassword
-                $this.connected = $true
-            } else {
-                Connect
-            }
+
+            # Trust the library's token cache to get a new token if necessary
+            $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id $certificatePassword
+            $this.connected = $true
         }
 
         $this.Identity.Token
@@ -143,8 +138,8 @@ ScriptClass GraphConnection {
             }
         }
 
-        function NewSimpleConnection([string] $graphType = 'MSGraph', [string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $userAgent = $null, $allowMSA = $true, $name, [string] $consistencyLevel ) {
-            $endpoint = new-so GraphEndpoint $cloud $graphType $null $null $null
+        function NewSimpleConnection([string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $userAgent = $null, $allowMSA = $true, $name, [string] $consistencyLevel ) {
+            $endpoint = new-so GraphEndpoint $cloud $null $null $null
             $app = new-so GraphApplication $::.Application.DefaultAppId
             $identity = if ( ! $anonymous ) {
                 new-so GraphIdentity $app $endpoint $tenantName $allowMSA

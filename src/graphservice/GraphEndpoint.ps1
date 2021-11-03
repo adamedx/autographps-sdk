@@ -20,11 +20,6 @@ enum GraphCloud {
     Custom
 }
 
-enum GraphType {
-    MSGraph
-    AADGraph
-}
-
 ScriptClass GraphEndpoint {
     static {
         const DefaultGraphAPIVersion 'v1.0'
@@ -55,14 +50,10 @@ ScriptClass GraphEndpoint {
             }
         }
 
-        function GetCloudEndpoint([GraphCloud] $cloud, [GraphType] $graphType) {
+        function GetCloudEndpoint([GraphCloud] $cloud) {
             # We *MUST* clone these -- otherwise callers have a reference to the
             # shared instance in the static class, and they can overwrite it!
-            if ($graphType -eq [GraphType]::MSGraph) {
-                $this.MSGraphCloudEndpoints[$cloud].Clone()
-            } else {
-                $this.AADGraphCloudEndpoints.Clone()
-            }
+            $this.MSGraphCloudEndpoints[$cloud].Clone()
         }
 
         function IsWellKnownCloud([string] $cloud) {
@@ -72,7 +63,6 @@ ScriptClass GraphEndpoint {
 
     $Authentication = $null
     $Graph = $null
-    $Type = ([GraphType]::MSGraph)
     $Cloud = ([GraphCloud]::Custom)
     $GraphResourceUri = $null
 
@@ -80,16 +70,14 @@ ScriptClass GraphEndpoint {
         [cmdletbinding()]
         param (
             [GraphCloud] $cloud,
-            [GraphType] $graphType = [GraphType]::MSGraph,
             [Uri] $GraphEndpoint,
             [Uri] $AuthenticationEndpoint,
             [Uri] $graphResourceUri
         )
 
-        $this.Type = $GraphType
         $this.Cloud = $cloud
         $endpointData = if ($GraphEndpoint -eq $null) {
-            $cloudEndpoint = $this.scriptclass |=> GetCloudEndpoint $cloud $graphType
+            $cloudEndpoint = $this.scriptclass |=> GetCloudEndpoint $cloud
             $cloudEndpoint
         } else {
             @{

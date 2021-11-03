@@ -110,7 +110,7 @@ ScriptClass GraphContext {
             }
 
             if ( ! $defaultConnection ) {
-                $defaultConnection = $::.GraphConnection |=> NewSimpleConnection MSGraph Public
+                $defaultConnection = $::.GraphConnection |=> NewSimpleConnection Public
             }
 
             $currentContext = $::.LogicalGraphManager |=> Get |=> NewContext $null $defaultConnection $defaultApiVersion $defaultApiVersion
@@ -215,7 +215,7 @@ ScriptClass GraphContext {
                 $namedArguments['ScopeNames'] = $connectionScopes
 
                 write-verbose "Custom arguments or no current context -- getting a new connection"
-                $newConnection = $::.GraphConnection |=> NewSimpleConnection MSGraph @namedArguments
+                $newConnection = $::.GraphConnection |=> NewSimpleConnection @namedArguments
                 write-verbose "Created new connection $($newConnection.Id)"
                 if ( $chosenContext ) {
                     write-verbose ("Adding new connection to context '{0}'" -f $chosenContext.name)

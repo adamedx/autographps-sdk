@@ -125,7 +125,6 @@ $NewGraphConnectionMockScript = {
         [string] $Name = $null,
         [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
         [string] $ConsistencyLevel = 'Auto',
-        [switch] $AADGraph,
         [String] $UserAgent = $null
     )
     # This mock is running within a different module script block than the rest of the test code,
@@ -139,7 +138,7 @@ $NewGraphConnectionMockScript = {
     }
 
     $app = new-so GraphApplication $appIdArg $AppRedirectUri $null $NoninteractiveAppOnlyAuth.IsPresent
-    $endpoint = new-so GraphEndpoint $Cloud MSGraph $GraphEndpointUri $AuthenticationEndpointUri $GraphResourceUri
+    $endpoint = new-so GraphEndpoint $Cloud $GraphEndpointUri $AuthenticationEndpointUri $GraphResourceUri
 
     $identity = new-so GraphIdentity $app $endpoint $TenantId ($AccountType -eq 'AzureADAndPersonalMicrosoftAccount')
     $connection = New-ScriptObjectMock GraphConnection -PropertyValues @{
