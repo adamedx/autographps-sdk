@@ -263,11 +263,13 @@ None.
 
 ### New features
 
-None.
+* `Index` parameter added to `Get-GraphLog` to get the log entry at a specific index
+* `Get-GraphLog` now supports the parameter aliases `First` for `Newest` and `Last` for `Oldest`.
 
 ### Fixed defects
 
 * Fixed `./build/import-devmodule.ps1` command so that if it launches a shell it does not load the PowerShell profile by default to ensure that components like posh-git, oh-my-posh, or anything else loaded in the profile does not interfere with unit tests. Added `PSProfile` option to the command to allow the profile to be loaded.
+* `Skip` parameter of `Get-GraphLog` had no effect, this has been fixed
 
 None.
 

@@ -85,11 +85,12 @@ ScriptClass RequestLog {
         $startIndex = 0;
         $endIndex = 0;
 
+        # Using the parens around __Get* matters -- seems like might think we are passing parameters!
         $increment = if ( $startFromOldest ) {
-            $startIndex = __GetOldestLogIndex
+            $startIndex = ( __GetOldestLogIndex ) + $start
             1
         } else {
-            $startIndex = __GetLatestLogIndex
+            $startIndex = ( __GetLatestLogIndex ) - $start
             -1
         }
 
@@ -105,6 +106,13 @@ ScriptClass RequestLog {
 
         while ( $entryCount -lt $targetCount -and $entryCount -lt $this.entries.count ) {
             $currentEntry = $this.entries[$current]
+
+            # We've indexed outside the table, so we must have run out of entries
+            # in either direction
+            if ( ! $currentEntry ) {
+                break
+            }
+
             $emitEntry = $errorFilter -eq $null -or (
                 ( $errorFilter -and $currentEntry.isError ) -or (
                     ! $errorFilter -and ! $currentEntry.isError )

@@ -40,6 +40,9 @@ This parameter is similar to Newest, except that the oldest set of entries of th
 .PARAMETER Skip
 This specifies the number of entries to skip.
 
+.PARAMETER Index
+The 0-based index of the entry to retrieve depending. If Newest is specified, this is the 0-based offset from the newest entry. Otherwise if Oldest is specified, it is the offset from the Oldest entry.
+
 .PARAMETER StatusFilter
 Filters the kinds of requests emitted by their status:
   * None (default): there is no filter; requests of any status are emitted
@@ -122,14 +125,19 @@ function Get-GraphLog {
     [OutputType('GraphLogEntryDisplayType')]
     param(
         [parameter(position=0, parametersetname='newest')]
+        [Alias('First')]
         $Newest = 20,
 
         [parameter(parametersetname='oldest', mandatory=$true)]
+        [Alias('Last')]
         $Oldest,
 
         [parameter(parametersetname='oldest')]
         [parameter(parametersetname='newest')]
         $Skip = 0,
+
+        [parameter(parametersetname='index')]
+        $Index,
 
         [ValidateSet('None', 'Error', 'Success')]
         [string] $StatusFilter = 'None',
@@ -138,15 +146,19 @@ function Get-GraphLog {
         [switch] $All
     )
     $fromOldest = $Oldest -ne $null
+    $skipCount = $Skip
 
-    $count = if ( $fromOldest ) {
+    $count = if ( $Index -ne $null ) {
+        $skipCount = $Index
+        1
+    } elseif ( $fromOldest ) {
         [int] $Oldest
     } else {
         $Newest
     }
 
     $filterFlag = if ( $StatusFilter -ne 'None' ) { $StatusFilter -eq 'Error' }
-    $results = ($::.RequestLog |=> GetDefault) |=> GetLogEntries $Skip $count $fromOldest $All.IsPresent $filterFlag
+    $results = ($::.RequestLog |=> GetDefault) |=> GetLogEntries $skipCount $count $fromOldest $All.IsPresent $filterFlag
 
     # Results are sorted in reverse chronological order if enumerating from newest, but the reverse
     # is true for sorting from oldest. To ensure that for oldest the newest retrieved record is first,
