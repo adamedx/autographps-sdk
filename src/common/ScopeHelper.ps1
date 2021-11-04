@@ -107,7 +107,9 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
                 [parameter(mandatory=$true)]
                 $permissionType,
 
-                $connection
+                $connection,
+
+                $ignoreNotFound = $false
             )
 
             # Case matters for the permission type when passed to the protocol, so
@@ -119,28 +121,31 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
             }
 
             $scopeNames | foreach {
-                $permissionId = GraphPermissionNameToId $_ $permissionType $connection
-                $permissionData = $this.permissionsByIds[$permissionId]
+                $permissionId = GraphPermissionNameToId $_ $permissionType $connection $false $ignoreNotFound
 
-                $description = if ( $permissionData | gm adminConsentDescription -erroraction ignore ) {
-                    $permissionData.adminConsentDescription
-                } elseif ( $permissionData | gm description -erroraction ignore ) {
-                    $permissionData.description
-                }
+                if ( $permissionId ) {
+                    $permissionData = $this.permissionsByIds[$permissionId]
 
-                $consentType = 'Admin'
-                if ( $permissionType -eq 'Scope' ) {
-                    if ( $permissionData | gm type -erroraction ignore ) {
-                        $consentType = $permissionData.type
+                    $description = if ( $permissionData | gm adminConsentDescription -erroraction ignore ) {
+                        $permissionData.adminConsentDescription
+                    } elseif ( $permissionData | gm description -erroraction ignore ) {
+                        $permissionData.description
                     }
-                }
 
-                @{
-                    id = $permissionId
-                    type = $permissionType
-                    description = $description
-                    consentType = $consentType
-                    name = $_
+                    $consentType = 'Admin'
+                    if ( $permissionType -eq 'Scope' ) {
+                        if ( $permissionData | gm type -erroraction ignore ) {
+                            $consentType = $permissionData.type
+                        }
+                    }
+
+                    @{
+                        id = $permissionId
+                        type = $permissionType
+                        description = $description
+                        consentType = $consentType
+                        name = $_
+                    }
                 }
             }
         }
@@ -157,7 +162,7 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
             $this.graphSP.Id
         }
 
-        function GraphPermissionNameToId($name, [ValidateSet('Scope', 'Role')] $type, $connection, $allowPermissionIdGuid = $false) {
+        function GraphPermissionNameToId($name, [ValidateSet('Scope', 'Role')] $type, $connection, $allowPermissionIdGuid = $false, $ignoreNotFound = $false) {
             __InitializeGraphScopes $connection
 
             $authDescription = $null
@@ -176,16 +181,20 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
             $permissionOfOtherType = $otherCollection[$name]
 
             if ( ! $permission ) {
-                if ( $permissionOfOtherType ) {
-                    throw "Specified permission '$name' was not of specified type '$type' required for requested '$authDescription' authentication"
+                if ( ! $ignoreNotFound ) {
+                    if ( $permissionOfOtherType ) {
+                        throw "Specified permission '$name' was not of specified type '$type' required for requested '$authDescription' authentication"
+                    }
                 }
-                if ( ! $allowPermissionIdGuid ) {
+
+                if ( $allowPermissionIdGuid ) {
+                    $permission = try {
+                        ([Guid] $Name)
+                    } catch {
+                        throw "Specified permission '$name' could not be mapped to a permission Id or interpreted as a permission Id Guid"
+                    }
+                } elseif ( ! $ignoreNotFound ) {
                     throw "Specified permission '$name' could not be mapped to a permission Id"
-                }
-                $permission = try {
-                    ([Guid] $Name)
-                } catch {
-                    throw "Specified permission '$name' could not be mapped to a permission Id or interpreted as a permission Id Guid"
                 }
             }
 

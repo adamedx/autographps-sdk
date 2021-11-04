@@ -3,9 +3,7 @@
 ## To-do items -- prioritized
 
 * Possible need to add 'no additional permissions' setting to profiles and doc in schema
-* Fix ScopeHelper => GetPermissionsByName to allow failures to be ignored
-* Make ggl alias First for newest and Last for oldest
-* Remove resultvariable from ggr without impacting LASTGRAPHITEMS
+* Remove resultvariable from ggr without impacting LASTGRAPHITEMS; actually looks like not an issue
 * Add preference variable for disabling settings
 * Add simple match for Get-GraphApplication
 * Add photo upload scenario?
@@ -445,6 +443,8 @@
 * Prevent removal of a context if it is the current context
 * Remove AADGraph support
 * Remove ADAL
+* Added Index parameter to Get-GraphLog
+* Make ggl alias First for newest and Last for oldest
 
 ### Postponed
 
@@ -473,6 +473,7 @@
 * Add $ref? Is this New-GraphItemReference, or New-GraphItem with a reference option? -- handled with other commands in another module
 * Add -filter to get-graphschema
 * New-GraphApplicationCertificate with -noupload option
+* Fix ScopeHelper => GetPermissionsByName to allow failures to be ignored
 
 #### Stdposh improvements
 
