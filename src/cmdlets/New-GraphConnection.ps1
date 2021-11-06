@@ -256,7 +256,7 @@ Disconnect-GraphApi
 Get-GraphConnection
 Remove-GraphConnection
 Select-GraphConnection
-Get-GraphToken
+Get-GraphAccessToken
 #>
 function New-GraphConnection {
     [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='msgraph')]

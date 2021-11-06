@@ -114,7 +114,7 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphA
 | Get-GraphLog (ggl)                   | Gets the local log of all requests to Graph made by this module                                                                                         |
 | Get-GraphLogOption                   | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
 | Get-GraphProfile                     | Gets the list of profiles defined in the [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md) -- these profiles may be enabled by the `Select-GraphProfileSettings` command. |
-| Get-GraphToken                       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) |
+| Get-GraphAccessToken                       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) |
 | Invoke-GraphApiRequest               | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                                                                      |
 | New-GraphApplication                 | Creates an Azure AD application configured to authenticate to Microsoft Graph                                                                           |
 | New-GraphApplicationCertificate      | Creates a new certificate in the local certificate store and configures its public key on an application                                                |

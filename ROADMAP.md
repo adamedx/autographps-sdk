@@ -445,6 +445,7 @@
 * Remove ADAL
 * Added Index parameter to Get-GraphLog
 * Make ggl alias First for newest and Last for oldest
+* Rename Get-GraphToken to Get-GraphAccessToken
 
 ### Postponed
 

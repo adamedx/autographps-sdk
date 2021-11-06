@@ -20,11 +20,11 @@
 Gets an access token from the authentication / authorization service endpoint that may be used to access the Graph API.
 
 .DESCRIPTION
-Get-GraphToken performs an application sign-in to obtain an access token for the Microsoft Graph API. The token may be used in the authorization header to make a request to the Graph API.
+Get-GraphAccessToken performs an application sign-in to obtain an access token for the Microsoft Graph API. The token may be used in the authorization header to make a request to the Graph API.
 
-The Get-GraphToken command is useful when there is a need to utilize Graph API tools other than the commands in this module. For example, if you use a REST debugging tool with the Graph API you'll need an access token in order to make requests using that debugger. Use Get-GraphToken to obtain the access token for use with these and other tools.
+The Get-GraphAccessToken command is useful when there is a need to utilize Graph API tools other than the commands in this module. For example, if you use a REST debugging tool with the Graph API you'll need an access token in order to make requests using that debugger. Use Get-GraphAccessToken to obtain the access token for use with these and other tools.
 
-The command is very much similar to the Connect-GraphApi command in that they share mostly the same parameters and they both result in a sign-in. The difference is that Get-GraphToken intentionally exposes the access token, while Connect-GraphApi abstracts it in the connection object and manages its lifetime.
+The command is very much similar to the Connect-GraphApi command in that they share mostly the same parameters and they both result in a sign-in. The difference is that Get-GraphAccessToken intentionally exposes the access token, while Connect-GraphApi abstracts it in the connection object and manages its lifetime.
 
 .PARAMETER Permissions
 Specifies that the access token returned by the command requires certain delegated permissions. By default when this parameter is not specified, the granted token will have whatever permissions were previously requested.
@@ -36,12 +36,12 @@ The AAD application identifier to be associated with the granted access token. I
 The organization (tenant) identifier of the organization for which access must be granted. The identifier can be specified using either the tenant's domain name (e.g. funkadelic.org) or it's unique identifier guid. This parameter is only required for application-only sign-in, but may be optionally specified for delegated sign-in to ensure that when using a multi-tenant application limit sign-in to the specified tenant. Otherwise, the tenant for sign-in will be determined as part of the user's interaction with the token endpoint.
 
 .PARAMETER NoninteractiveAppOnlyAuth
-By default, access tokens returned by Get-GraphToken require sign in using an interactive, delegated flow that requires the credentials of a user and therefore also requires user interaction. Specify NoninteractiveAppOnlyAuth to override this behavior and sign-in without user credentials, just application credentials. Such credentials can be specified in the form of certificates or symmetric keys using other parameters of this command. Because such a sign-in does not involve user credentials, no user interaction is required and this sign-in is most useful for unattended execution such as scheduled or triggered automation / batch jobs.
+By default, access tokens returned by Get-GraphAccessToken require sign in using an interactive, delegated flow that requires the credentials of a user and therefore also requires user interaction. Specify NoninteractiveAppOnlyAuth to override this behavior and sign-in without user credentials, just application credentials. Such credentials can be specified in the form of certificates or symmetric keys using other parameters of this command. Because such a sign-in does not involve user credentials, no user interaction is required and this sign-in is most useful for unattended execution such as scheduled or triggered automation / batch jobs.
 
-If no parameters are used to specify the application credentials, then on Windows, if no secret is specified, Get-GraphToken will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if the command cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
+If no parameters are used to specify the application credentials, then on Windows, if no secret is specified, Get-GraphAccessToken will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if the command cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
 
 .PARAMETER ExistingPermissionsOnly
-By default, Get-GraphToken always requests the permission User.Read at sign-in because it provides a minimal but useful amount of access to Graph API resources that help users maintain awareness of what identity they used for signing in. However the permission is not strictly necessary so to avoid the need to consent to that permission, and in particular to ensure that legacy AAD applications that support only static request and fail any sign-ins where additional permissions are requested, specify this parameter.
+By default, Get-GraphAccessToken always requests the permission User.Read at sign-in because it provides a minimal but useful amount of access to Graph API resources that help users maintain awareness of what identity they used for signing in. However the permission is not strictly necessary so to avoid the need to consent to that permission, and in particular to ensure that legacy AAD applications that support only static request and fail any sign-ins where additional permissions are requested, specify this parameter.
 
 .PARAMETER CertificatePath
 Specifies the path in the file system or in the PowerShell cert: drive provider of a certificate with a private key to authenticate the application to the Graph API. This parameter is only valid if the Confidential parameter is specified.
@@ -101,7 +101,7 @@ Specify this parameter to sign in to the current connection instead of creating 
 If the AsObject parameter is not specified, the command returns an access token as a string data type. This string value may be set as the Authorization header value for a request to the Graph API. If AsObject is specified, a token object is returned instead. The type of this object depends on the underlying authentication library used by the module. Currently the library is Microsoft Authentication Library (https://github.com/AzureAD/microsoft-authentication-library-for-dotnet) and the type it returns is Microsoft.Identity.Client.Authenticationresult. More details on that type can be found here: https://docs.microsoft.com/en-us/dotnet/api/microsoft.identity.client.authenticationresult?view=azure-dotnet.
 
 .EXAMPLE
-$accessToken = Get-GraphToken -Permissions Organization.Read
+$accessToken = Get-GraphAccessToken -Permissions Organization.Read
 
 Invoke-WebRequest -UseBasicParsing https://graph.microsoft.com/v1.0/organization -Headers @{
     Authorization=$accesToken;'Content-Type'='application/json' } |
@@ -112,36 +112,36 @@ id                                   displayName  createdDateTime
 --                                   -----------  ---------------
 7632788a-8d81-46ef-85b4-1a9f7ab373fb Cabbage Corp 2012-08-08T00:23:26Z
 
-This example uses Get-GraphToken to obtain an access token with the Organization.Read permission and stores the result in a variable. Then the variable is used to specify the access token as the Authorization header value for an HTTP request to the Graph API issued by the Invoke-WebRequest command. The JSON output of the resulting response from the Graph API is deserialized and specific fields are projected as output.
+This example uses Get-GraphAccessToken to obtain an access token with the Organization.Read permission and stores the result in a variable. Then the variable is used to specify the access token as the Authorization header value for an HTTP request to the Graph API issued by the Invoke-WebRequest command. The JSON output of the resulting response from the Graph API is deserialized and specific fields are projected as output.
 
 .EXAMPLE
-$accessToken = Get-GraphToken -AppId 35b1a30e-b109-4f45-b1e9-4442da9579b5
+$accessToken = Get-GraphAccessToken -AppId 35b1a30e-b109-4f45-b1e9-4442da9579b5
 
 In this example an access token is obtained for a specific application id
 
 .EXAMPLE
-$currentAccessToken = Get-GraphToken -Current
+$currentAccessToken = Get-GraphAccessToken -Current
 
-Here Get-GraphToken is used to obtain the access token of the current connection. If the current connection has already signed in, then this command is non-interactive; the current token is refreshed if it is near expiration but does not require a sign-in. This is useful when integrating commands from this module with another application as a way of ensuring the module and that application share the same authentication context.
+Here Get-GraphAccessToken is used to obtain the access token of the current connection. If the current connection has already signed in, then this command is non-interactive; the current token is refreshed if it is near expiration but does not require a sign-in. This is useful when integrating commands from this module with another application as a way of ensuring the module and that application share the same authentication context.
 
 .EXAMPLE
 $connection = Connect-GraphApi
 
 while ( $true ) {
-    $refreshedToken = Get-GraphToken -RefreshFromConnection $connection
+    $refreshedToken = Get-GraphAccessToken -RefreshFromConnection $connection
     Invoke-WebRequest -UseBasicParsing 'https://graph.microsoft.com/v1.0/users/$count' -Headers @{
         Authorization=$token;'Content-Type'='application/json';'ConsistencyLevel'='Eventual'} |
         Select-Object -ExpandProperty Content
     Start-Sleep -Seconds 3600
 }
 
-This example executes an infinitely repeating loop to get the count of users in the organization using Invoke-WebRequest instead of using more convenient commands from this module. At the beginning of the loop, Get-GraphToken is used to obtain a token which it refreshes if needed. If the access token were obtained outside the loop, the invocation of Invoke-WebRequest would eventually fail once the token expired. Invoke-WebRequest is used here only to demonstrate that any tool that makes requests to the Graph API and accepts a token as an input value for the request can be utilized in this way.
+This example executes an infinitely repeating loop to get the count of users in the organization using Invoke-WebRequest instead of using more convenient commands from this module. At the beginning of the loop, Get-GraphAccessToken is used to obtain a token which it refreshes if needed. If the access token were obtained outside the loop, the invocation of Invoke-WebRequest would eventually fail once the token expired. Invoke-WebRequest is used here only to demonstrate that any tool that makes requests to the Graph API and accepts a token as an input value for the request can be utilized in this way.
 
 .LINK
 Connect-GraphApi
 New-GraphConnection
 #>
-function Get-GraphToken {
+function Get-GraphAccessToken {
     [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='msgraph')]
     param(
         [parameter(parametersetname='msgraph', position=0)]
@@ -265,5 +265,5 @@ function Get-GraphToken {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphToken Permissions (new-so PermissionParameterCompleter DelegatedPermission)
+$::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphAccessToken Permissions (new-so PermissionParameterCompleter DelegatedPermission)
 
