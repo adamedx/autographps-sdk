@@ -23,7 +23,7 @@ Gets Azure Active Directory (AAD) application resources from the Graph API.
 An Azure Active Directory (AAD) application object is required for software to be able to request an access token to access resources protected by AAD. The Get-GraphApplication returns all such AAD applications in the organizaiton accessible to the command's identity based on input specified to the command.
 
 .PARAMETER AppId
-Specify the AppId parameter to return the application in the organizaiton with the specified application identifier.
+Specify the AppId parameter to return the application in the organization with the specified application identifier.
 
 .PARAMETER ObjectId
 Specify the ObjectId parameter to return the application in the organizaiton with the specified directory object identifier.

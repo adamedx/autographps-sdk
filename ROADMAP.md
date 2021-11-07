@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Change consent commands to use native graph objects instead of custom objects and normalize via type augmentation and formatting.
 * Possible need to add 'no additional permissions' setting to profiles and doc in schema
 * Remove resultvariable from ggr without impacting LASTGRAPHITEMS; actually looks like not an issue
 * Add preference variable for disabling settings
