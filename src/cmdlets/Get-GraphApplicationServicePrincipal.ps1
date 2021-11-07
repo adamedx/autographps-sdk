@@ -50,7 +50,7 @@ function Get-GraphApplicationServicePrincipal {
         $commandContext = new-so CommandContext $Connection v1.0 $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.Connection v1.0
 
-        $results = $null
+        $results = @()
     }
 
     process {
@@ -58,12 +58,11 @@ function Get-GraphApplicationServicePrincipal {
             $appSP = $appAPI |=> GetAppServicePrincipal $AppId
 
             if ( ! $appSP ) {
-                throw "Unable to find service principal application registration object for app id '$AppId'"
+                write-error "Unable to find service principal application registration object for app id '$AppId'"
             }
 
-            $results = $appSP
+            $results += $appSP
         } else {
-
             # Note that sorting is not supported as the API does not currently support
             # sorting even with eventual consistency :(
 

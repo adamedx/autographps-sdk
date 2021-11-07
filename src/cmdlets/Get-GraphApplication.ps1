@@ -117,7 +117,7 @@ function Get-GraphApplication {
         }
 
         if ( ! $displayableResult -and ( $AppId -and $ObjectId ) ) {
-            throw "The specified application could not be found."
+            write-error "The specified application with application identifier '$AppId' and object identifier '$ObjectId' could not be found."
         }
     }
 

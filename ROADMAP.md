@@ -2,6 +2,21 @@
 
 ## To-do items -- prioritized
 
+* Add tags to get-graphapplication
+* Add startswith search to get-graphapplication
+* Make permissions ids work with the consent and application commands
+* Make service principal id column title serviceprincipal
+* Use serviceprincipal id's when possible for Set-GraphApplicationConsent and Remove-GraphApplicationConsent
+* Support service principal as the consent object for Set-GraphApplicationConsent and Remove-GraphApplicationConsent
+* Set-GraphApplicationConsent should support partial updates for delegated by using end block to write
+* Don't throw exceptions in pipeline for consent / service prinicipal / app commands?
+* Add upn support to Set-GraphApplicationConsent?
+* Make self-consent explicit in Set-GraphApplicationConsent
+* Improve output of get-graphapplicationconsent
+* Allow remove and set consent commands to operate on native objects
+* Improve formatting of consent output
+* Add search for permissions to get-graphapplicationconsent
+* Normalize command parameters for consent across all commands
 * Change consent commands to use native graph objects instead of custom objects and normalize via type augmentation and formatting.
 * Possible need to add 'no additional permissions' setting to profiles and doc in schema
 * Remove resultvariable from ggr without impacting LASTGRAPHITEMS; actually looks like not an issue
