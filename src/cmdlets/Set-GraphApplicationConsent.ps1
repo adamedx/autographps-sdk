@@ -22,7 +22,7 @@
 Consents delegated or app-only permissions to an Azure Active Directory (AAD) application.
 
 .DESCRIPTION
-In order for an an Azure Active Directory (AAD) application identity to access resources from Microsoft Graph, permissions must be granted to the application. The grant of permissions is referred to as consent. The Set-GraphApplicationConsent command grants consent to an application for app-only or delegated permissions:
+In order for an Azure Active Directory (AAD) application identity to access resources from Microsoft Graph, permissions must be granted to the application. The grant of permissions is referred to as consent. The Set-GraphApplicationConsent command grants consent to an application for app-only or delegated permissions:
 
     * Application permissions may be consented directly to the application in the form of app-role assignments.
     * Delegated permissions may be consented to specific principals or to all principals in the organization

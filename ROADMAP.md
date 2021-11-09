@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Make Register-GraphApplication use the formatting for service principal
 * Add tags to get-graphapplication
 * Add startswith search to get-graphapplication
 * Make permissions ids work with the consent and application commands
