@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Make Register-GraphApplication use the formatting for service principal
 * Add tags to get-graphapplication
 * Add startswith search to get-graphapplication
 * Make permissions ids work with the consent and application commands
@@ -463,6 +462,7 @@
 * Added Index parameter to Get-GraphLog
 * Make ggl alias First for newest and Last for oldest
 * Rename Get-GraphToken to Get-GraphAccessToken
+* Make Register-GraphApplication use the formatting for service principal
 
 ### Postponed
 

@@ -118,25 +118,37 @@ function Register-GraphApplication {
 
         [PSCustomObject] $Connection = $null
     )
-    Enable-ScriptClassVerbosePreference
 
-    $commandContext = new-so CommandContext $Connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+    begin {
+        Enable-ScriptClassVerbosePreference
 
-    if ( $ApplicationPermissions ) {
-        $::.ScopeHelper |=> ValidatePermissions $ApplicationPermissions $true $SkipPermissionNameCheck.IsPresent $commandContext.connection
+        $commandContext = new-so CommandContext $Connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+
+        if ( $ApplicationPermissions ) {
+            $::.ScopeHelper |=> ValidatePermissions $ApplicationPermissions $true $SkipPermissionNameCheck.IsPresent $commandContext.connection
+        }
+
+        if ( $DelegatedUserPermissions ) {
+            $::.ScopeHelper |=> ValidatePermissions $DelegatedUserPermissions $false $SkipPermissionNameCheck.IsPresent $commandContext.connection
+        }
+
+        $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
     }
 
-    if ( $DelegatedUserPermissions ) {
-        $::.ScopeHelper |=> ValidatePermissions $DelegatedUserPermissions $false $SkipPermissionNameCheck.IsPresent $commandContext.connection
+    process {
+
+        $newAppSP = $appAPI |=> RegisterApplication $AppId $ImportFromOtherTenant.IsPresent
+
+        if ( $newAppSP ) {
+            $appAPI |=> SetConsent $appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $ConsentedPrincipalId $ConsentForAllPrincipals.IsPresent $newAppSP.Id
+
+            $newAppSP.pstypenames.insert(0, 'AutoGraph.ServicePrincipal')
+            $newAppSP
+        }
     }
 
-    $appAPI = new-so ApplicationAPI $commandContext.Connection $commandContext.Version
-
-    $newAppSP = $appAPI |=> RegisterApplication $AppId $ImportFromOtherTenant.IsPresent
-
-    $appAPI |=> SetConsent $appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $ConsentedPrincipalId $ConsentForAllPrincipals.IsPresent $newAppSP.Id
-
-    $newAppSP
+    end {
+    }
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Register-GraphApplication DelegatedUserPermissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
