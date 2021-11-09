@@ -32,14 +32,14 @@ Get-GraphApplicationConsent is useful for administrators to see what permissions
 .PARAMETER AppId
 Specify the AppId parameter to return consent objects for permissions granted in the organization to the application with the specified application identifier.
 
-.PARAMETER Tenant
-Specifies that the command should return only consent grants that specify that the consented permissions should be granted to all principals in the entire organization and not just specific users or principals.
+.PARAMETER ConsentForAllPrincipals
+Specifies that for delegated permissions the command should return only consent grants that specify that the consented delegated permissions should be granted to all principals in the entire organization and not just specific users or principals. This parameter does not affect which application-only permissions are emitted by the command.
 
 .PARAMETER RawContent
 Specify the RawContent parameter to emit the consent objects as JSON rather than objects.
 
-.PARAMETER Principal
-Use the Principal parameter to return only the consent objects that specify that the permission should be granted to that permission. The parameter must be the AAD object identifier of a user, group, application, service principal, or any principal for which permissions may be granted. Note that if
+.PARAMETER ConsentedPrincipalId
+Use the ConsentedPrincipalId parameter to return only the consent objects that specify that the permission should be granted to that permission. The parameter must be the AAD object identifier of a user, group, application, service principal, or any principal for which permissions may be granted. Note that if
 
 .PARAMETER PermissionType
 Specifies which consent objects must be returned by the command based on the kind of consented permission. By default the value is 'Any', which returns consent grants for any type of permission. Specify 'Delegated' to return consent objects only for consent to delegated permissions, and 'AppOnly' to return only consent to application permissions.
@@ -114,11 +114,11 @@ function Get-GraphApplicationConsent {
         [parameter(position=0, valuefrompipelinebypropertyname = $true, mandatory=$true)]
         [Guid] $AppId,
 
-        [switch] $Tenant,
+        [switch] $ConsentForAllPrincipals,
 
         [switch] $RawContent,
 
-        $Principal,
+        $ConsentedPrincipalId,
 
         [validateset('Any', 'AppOnly', 'Delegated')]
         [string] $PermissionType = 'Any',
@@ -153,10 +153,10 @@ function Get-GraphApplicationConsent {
             $appFilter = "clientId eq '$appSPId'"
             $filterClauses = @($appFilter)
 
-            $grantFilter = if ( $Tenant.IsPresent ) {
+            $grantFilter = if ( $ConsentForAllPrincipals.IsPresent ) {
                 "consentType eq 'AllPrincipals'"
-            } elseif ( $Principal ) {
-                "consentType eq 'Principal' and principalId eq '$Principal'"
+            } elseif ( $ConsentedPrincipalId ) {
+                "consentType eq 'Principal' and principalId eq '$ConsentedPrincipalId'"
             }
 
             if ( $grantFilter ) {

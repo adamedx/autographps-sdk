@@ -55,7 +55,7 @@ function New-GraphApplication {
         [parameter(parametersetname='confidentialapp')]
         [switch] $SuppressCredentialWarning,
 
-        [switch] $ConsentForAllUsers,
+        [switch] $ConsentForAllPrincipals,
 
         [switch] $NoConsent,
 
@@ -91,15 +91,15 @@ function New-GraphApplication {
         [parameter(parametersetname='confidentialappnewcertexport')]
         [switch] $NoCertCredential,
 
-        [string] $UserIdToConsent,
+        [string] $PrincipalIdToConsent,
 
         [PSCustomObject] $Connection = $null
     )
     Enable-ScriptClassVerbosePreference
 
     if ( $SkipTenantRegistration.IsPresent ) {
-        if ( $UserIdToConsent -or $ConsentForAllUsers.IsPresent ) {
-            throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'UserIdToConsent' or 'ConsentForAllUsers' is specified")
+        if ( $PrincipalIdToConsent -or $ConsentForAllPrincipals.IsPresent ) {
+            throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'PrincipalIdToConsent' or 'ConsentForAllPrincipals' is specified")
         }
     }
 
@@ -168,7 +168,7 @@ function New-GraphApplication {
     }
 
     if ( ! $SkipTenantRegistration.IsPresent ) {
-        $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $UserIdToConsent $ConsentForAllUsers.IsPresent $DelegatedUserPermissions $ApplicationPermissions | out-null
+        $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $PrincipalIdToConsent $ConsentForAllPrincipals.IsPresent $DelegatedUserPermissions $ApplicationPermissions | out-null
     }
 
     $::.ApplicationHelper |=> ToDisplayableObject $newApp

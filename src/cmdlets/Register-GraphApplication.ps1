@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,11 +40,11 @@ function Register-GraphApplication {
 
         [parameter(parametersetname='explicitscopes')]
         [parameter(parametersetname='consentall')]
-        [switch] $ConsentAllUsers,
+        [switch] $ConsentForAllPrincipals,
 
         [parameter(parametersetname='explicitscopes')]
         [parameter(parametersetname='consentall')]
-        [string] $UserIdToConsent,
+        [string] $ConsentedPrincipalId,
 
         [String] $Version = $null,
 
@@ -66,7 +66,7 @@ function Register-GraphApplication {
 
     $newAppSP = $appAPI |=> RegisterApplication $AppId $ImportFromOtherTenant.IsPresent
 
-    $appAPI |=> SetConsent $appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentAllUsers.IsPresent $newAppSP.Id
+    $appAPI |=> SetConsent $appid $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $ConsentedPrincipalId $ConsentForAllPrincipals.IsPresent $newAppSP.Id
 
     $newAppSP
 }

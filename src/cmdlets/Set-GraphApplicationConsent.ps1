@@ -38,14 +38,14 @@ The delegated permissions to be consented to the application. The consent is con
 .PARAMETER ApplicationPermissions
 The application permissions to be consented to the application. The consent is actually configured as app role assignments described by the appRoleAssignment resource documented as part of the Graph API.
 
-.PARAMETER UserIdToConsent
-Use the UserIdToCponsent parameter to specify a user to which the specified delegated permissions should be granted when signed in to the application. If neither this parameter nor the AllPermissions parameter is specified, then if the command is executing using a delegated identity, that identity is granted consent for delegated permissions. If that case is modified so that the command is executing using an application-only identity, then the command will fail if neither AllPermisions or UserIdToConsent is specified. When specifying this parameter, it must be the AAD object identifier guid of the user to which to grant consent.
+.PARAMETER ConsentedPrincipalId
+Use the ConsentedPrincipalId parameter to specify a principal such as a user to which the specified delegated permissions should be granted when signed in to the application. If neither this parameter nor the AllPermissions parameter is specified, then if the command is executing using a delegated identity, that identity is granted consent for delegated permissions. If that case is modified so that the command is executing using an application-only identity, then the command will fail if neither AllPermisions or ConsentedPrincipalId is specified. When specifying this parameter, it must be the AAD object identifier guid of the user to which to grant consent.
 
 .PARAMETER AllPermissions
 Specify AllPermissions to grant consent to all permissions configured on the application as required permissions.
 
-.PARAMETER ConsentForAllUsers
-Specify ConsentForAllUsers to grant consent for the specified delegated permissions to all users in the organization.
+.PARAMETER ConsentForAllPrincpals
+Specify ConsentForAllPrincipals to grant consent for the specified delegated permissions to all principals (including users) in the organization.
 
 .PARAMETER Connection
 Specify the Connection parameter to use an alternative connection to the current connection.
@@ -54,7 +54,7 @@ Specify the Connection parameter to use an alternative connection to the current
 The command returns no output.
 
 .EXAMPLE
-Set-GraphApplicationConsent -AppId a5ebc719-fee5-4eb8-963c-4f1cf24ae813 -DelegatedPermissions Files.Read -UserIdToConsent 770883fe-8c35-4d44-9047-e54c2667214b
+Set-GraphApplicationConsent -AppId a5ebc719-fee5-4eb8-963c-4f1cf24ae813 -DelegatedPermissions Files.Read -ConsentedPrincipalId 770883fe-8c35-4d44-9047-e54c2667214b
 
 In this example, the delegated permission Files.Read is consented to user 770883fe-8c35-4d44-9047-e54c2667214b when signed in to application a5ebc719-fee5-4eb8-963c-4f1cf24ae813
 
@@ -98,9 +98,9 @@ function Set-GraphApplicationConsent {
         [parameter(parametersetname='allconfiguredpermissions', mandatory=$true)]
         [switch] $AllPermissions,
 
-        [switch] $ConsentForAllUsers,
+        [switch] $ConsentForAllPrincipals,
 
-        $UserIdToConsent,
+        $ConsentedPrincipalId,
 
         $Connection
     )
@@ -113,7 +113,7 @@ function Set-GraphApplicationConsent {
         $commandContext = new-so CommandContext $Connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
-        $appAPI |=> SetConsent $appId $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $UserIdToConsent $ConsentForAllUsers.IsPresent $null $null $true
+        $appAPI |=> SetConsent $appId $DelegatedUserPermissions $ApplicationPermissions $AllPermissions.IsPresent $ConsentedPrincipalId $ConsentForAllPrincipals.IsPresent $null $null $true
     }
 
     end {}
