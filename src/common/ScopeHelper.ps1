@@ -241,7 +241,7 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
             $collection = if ( $type -eq 'role' ) {
                 $this.graphSP.appRoles
             } else {
-                $this.graphSP.publishedPermissionScopes
+                $this.graphSP.oauth2PermissionScopes
             }
 
             ($collection | where id -eq $permissionId) -ne $null
@@ -266,7 +266,7 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
                     # via dynamic parameters, so get $this.GraphApplicationId into a local
                     # variable as a workaround.
                     $graphAppId = $this.GraphApplicationId
-                    $graphSPRequest = new-so GraphRequest $graphConnection "/beta/servicePrincipals" GET $null "`$filter=appId eq '$graphAppId'"
+                    $graphSPRequest = new-so GraphRequest $graphConnection "/v1.0/servicePrincipals" GET $null "`$filter=appId eq '$graphAppId'"
                     $graphSPRequest |=> Invoke
                 } catch {
                 }
@@ -291,7 +291,7 @@ ScriptClass ScopeHelper -ArgumentList $__DefaultScopeData {
                 $sortedRoleList = [System.Collections.Generic.SortedList[string, string]]::new(
                     [System.StringComparer]::CurrentCultureIgnoreCase)
 
-                $graphSP.publishedPermissionScopes | foreach {
+                $graphSP.oauth2PermissionScopes | foreach {
                     $sortedPermissionsList.Add($_.value, $_.id)
                     $permissionsByIds[$_.id] = $_
                     $sortedScopeList.Add($_.value, $_.id)

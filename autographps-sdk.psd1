@@ -272,8 +272,10 @@ None.
 ### Fixed defects
 
 * Fixed `./build/import-devmodule.ps1` command so that if it launches a shell it does not load the PowerShell profile by default to ensure that components like posh-git, oh-my-posh, or anything else loaded in the profile does not interfere with unit tests. Added `PSProfile` option to the command to allow the profile to be loaded.
-* `Skip` parameter of `Get-GraphLog` had no effect, this has been fixed
+* `Skip` parameter of `Get-GraphLog` had no effect, this has been fixed.
 * `Set-GraphApplicationConsent` now handles errors correctly when processing objects in the pipeline.
+* The static permissions data has been updated to reflect the newest Graph API permissions in commands like Connect-GraphApi.
+* Parameter completion for permissions now tries to use the default connection if it is already connected -- previously it would always use static data rather than treating it as the fallback.
 
 '@
 
