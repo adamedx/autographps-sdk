@@ -15,10 +15,10 @@
 . (import-script ../graphservice/GraphEndpoint)
 
 ScriptClass AuthProvider {
-    $derivedProvider = $null
+    $provider = $null
 
-    function __initialize($derivedProviderClass) {
-        $this.derivedProvider = new-so $derivedProviderClass.ClassName $this
+    function __initialize {
+        $this.provider = new-so V2AuthProvider
     }
 
     function GetAuthContext($app, $graphEndpointUri, $authUri, $groupId, $certificatePassword) {
@@ -26,7 +26,7 @@ ScriptClass AuthProvider {
         $result = [PSCustomObject]@{
             App = $app
             GraphEndpointUri = $graphEndpointUri
-            ProtocolContext = $this.derivedProvider |=> GetAuthContext $app $authUri $groupId $certificatePassword
+            ProtocolContext = $this.provider |=> GetAuthContext $app $authUri $groupId $certificatePassword
             GroupId = $groupId
         }
 
@@ -35,14 +35,14 @@ ScriptClass AuthProvider {
     }
 
     function GetUserInformation($token) {
-        $this.derivedProvider |=> GetUserInformation $token
+        $this.provider |=> GetUserInformation $token
     }
 
     function AcquireFirstUserToken($authContext, $scopes, $useDeviceCodeUI) {
         if ( $useDeviceCodeUI ) {
-            $this.derivedProvider |=> AcquireFirstUserTokenFromDeviceCode $authContext $scopes
+            $this.provider |=> AcquireFirstUserTokenFromDeviceCode $authContext $scopes
         } else {
-            $this.derivedProvider |=> AcquireFirstUserToken $authContext $scopes
+            $this.provider |=> AcquireFirstUserToken $authContext $scopes
         }
     }
 
@@ -50,48 +50,30 @@ ScriptClass AuthProvider {
         if ( ! ($authContext.app |=> IsConfidential) ) {
             throw [ArgumentException]::new("Cannot obtain confidential token using an application that does not support confidential client")
         }
-        $this.derivedProvider |=> AcquireFirstUserTokenConfidential $authContext $scopes
+        $this.provider |=> AcquireFirstUserTokenConfidential $authContext $scopes
     }
 
     function AcquireFirstAppToken($authContext, [securestring] $certificatePassowrd) {
-        $this.derivedProvider |=> AcquireFirstAppToken $authContext
+        $this.provider |=> AcquireFirstAppToken $authContext
     }
 
     function AcquireRefreshedToken($authContext, $token) {
-        $this.derivedProvider |=> AcquireRefreshedToken $authContext $token
+        $this.provider |=> AcquireRefreshedToken $authContext $token
     }
 
     function ClearToken($authContext, $token) {
-        $this.derivedProvider |=> ClearToken $authContext $token
+        $this.provider |=> ClearToken $authContext $token
     }
 
     static {
-        $providers = @{}
-        $instances = @{}
+        $instance = $null
 
-        function InitializeProviders {
-            $this.providers.values | foreach {
-                $_ |=> InitializeProvider
-            }
-        }
-
-        function RegisterProvider([GraphAuthProtocol] $authProtocol, $provider) {
-            $this.providers.Add($authProtocol, $provider)
-        }
-
-        function GetProviderInstance([GraphAuthProtocol] $authProtocol) {
-            $protocol = if ( $authProtocol -ne ([GraphAuthProtocol]::Default) ) {
-                $authProtocol
-            } else {
-                [GraphAuthProtocol]::V2
+        function GetProviderInstance {
+            if ( ! $this.instance ) {
+                $this.instance = new-so AuthProvider
             }
 
-            if ( ! $this.instances[$protocol] ) {
-                $providerClass = $this.providers[$protocol]
-                $this.instances[$protocol] = new-so $this.ClassName $providerClass
-            }
-
-            $this.instances[$protocol]
+            $this.instance
         }
     }
 }

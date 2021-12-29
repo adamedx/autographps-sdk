@@ -47,7 +47,7 @@ Describe "Poshgraph application" {
                 'Get-GraphLog',
                 'Get-GraphLogOption',
                 'Get-GraphProfile',
-                'Get-GraphToken',
+                'Get-GraphAccessToken',
                 'Invoke-GraphApiRequest',
                 'New-GraphApplication',
                 'New-GraphApplicationCertificate',
@@ -109,6 +109,12 @@ Describe "Poshgraph application" {
             )
 
             Compare-Object ($manifest.VariablesToExport | sort) ($expectedVariables | sort) | Should Be $null
+        }
+
+        It "Should have documentation for all commands" {
+            $missingCommands = & $psscriptroot/build/Get-DocumentationStatus.ps1 | Select-object -expandproperty CommandsMissingDocs
+
+            $missingCommands | Should BeNullOrEmpty
         }
     }
 

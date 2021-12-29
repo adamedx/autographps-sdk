@@ -20,17 +20,6 @@ enum GraphCloud {
     Custom
 }
 
-enum GraphType {
-    MSGraph
-    AADGraph
-}
-
-enum GraphAuthProtocol {
-    Default
-    v1
-    v2
-}
-
 ScriptClass GraphEndpoint {
     static {
         const DefaultGraphAPIVersion 'v1.0'
@@ -46,58 +35,25 @@ ScriptClass GraphEndpoint {
             [GraphCloud]::Public = @{
                 Authentication='https://login.microsoftonline.com'
                 Graph='https://graph.microsoft.com'
-                AuthProtocol=[GraphAuthProtocol]::v2
             }
             [GraphCloud]::ChinaCloud = @{
                 Authentication='https://login.chinacloudapi.cn'
                 Graph='https://microsoftgraph.chinacloudapi.cn'
-                AuthProtocol=[GraphAuthProtocol]::v2
             }
             [GraphCloud]::GermanyCloud = @{
                 Authentication='https://login.microsoftonline.de'
                 Graph='https://graph.microsoft.de'
-                AuthProtocol=[GraphAuthProtocol]::v2
             }
             [GraphCloud]::USGovernmentCloud = @{
                 Authentication='https://login.microsoftonline.us'
                 Graph='https://graph.microsoft.us'
-                AuthProtocol=[GraphAuthProtocol]::v2
             }
         }
 
-        $AADGraphCloudEndpoints = @{
-            Authentication = 'https://login.microsoftonline.com'
-            Graph='https://graph.windows.net'
-            AuthProtocol=[GraphAuthProtocol]::v1
-        }
-
-        function GetCloudEndpoint([GraphCloud] $cloud, [GraphType] $graphType) {
+        function GetCloudEndpoint([GraphCloud] $cloud) {
             # We *MUST* clone these -- otherwise callers have a reference to the
             # shared instance in the static class, and they can overwrite it!
-            if ($graphType -eq [GraphType]::MSGraph) {
-                $this.MSGraphCloudEndpoints[$cloud].Clone()
-            } else {
-                $this.AADGraphCloudEndpoints.Clone()
-            }
-        }
-
-        function GetAuthProtocol($specifiedAuthProtocol, $cloud, $graphType) {
-            if ( $specifiedAuthProtocol -eq $null ) {
-                throw "Invalid auth protocol -- auth protocol must not be null"
-            }
-
-            $authProtocol = if ( $specifiedAuthProtocol -ne ([GraphAuthProtocol]::Default) ) {
-                $specifiedAuthProtocol
-            } else {
-                $cloudEndpoint = GetCloudEndpoint $cloud $graphType
-                if ( $cloudEndpoint ) {
-                    $cloudEndpoint.AuthProtocol
-                } else {
-                    [GraphAuthProtocol]::v2
-                }
-            }
-
-            $authProtocol
+            $this.MSGraphCloudEndpoints[$cloud].Clone()
         }
 
         function IsWellKnownCloud([string] $cloud) {
@@ -107,41 +63,31 @@ ScriptClass GraphEndpoint {
 
     $Authentication = $null
     $Graph = $null
-    $Type = ([GraphType]::MSGraph)
     $Cloud = ([GraphCloud]::Custom)
-    $AuthProtocol = $null
     $GraphResourceUri = $null
 
     function __initialize {
         [cmdletbinding()]
         param (
             [GraphCloud] $cloud,
-            [GraphType] $graphType = [GraphType]::MSGraph,
             [Uri] $GraphEndpoint,
             [Uri] $AuthenticationEndpoint,
-            $authProtocol = $null,
             [Uri] $graphResourceUri
         )
 
-        $this.Type = $GraphType
         $this.Cloud = $cloud
         $endpointData = if ($GraphEndpoint -eq $null) {
-            $cloudEndpoint = $this.scriptclass |=> GetCloudEndpoint $cloud $graphType
-            if ( $authProtocol ) {
-                $cloudEndpoint.AuthProtocol = $authProtocol
-            }
+            $cloudEndpoint = $this.scriptclass |=> GetCloudEndpoint $cloud
             $cloudEndpoint
         } else {
             @{
                 Graph=$GraphEndpoint
                 Authentication=$AuthenticationEndpoint
-                AuthProtocol=($this.scriptclass |=> GetAuthProtocol $authProtocol $cloud $graphType)
             }
         }
 
         $this.Authentication = new-object Uri $endpointData.Authentication
         $this.Graph = new-object Uri $endpointData.Graph
-        $this.AuthProtocol = $endpointData.AuthProtocol
         $this.GraphResourceUri = if ( $graphResourceUri ) { $graphResourceUri } else { $this.Graph }
     }
 

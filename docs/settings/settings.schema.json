@@ -96,14 +96,6 @@
                     "description": "Specifies the OAuth2 protocol redirect URI to use when signing in to the application. The application uses the correct default value of 'https://login.microsoftonline.com/common/oauth2/nativeclient' for this property when the default application is used, but if you specify an alternate application through the 'appId' property or using explicit parameters of connection-related commands, you may also need to specify the application-specific value for this property for sign-in to be successful.",
                     "type": "string"
                 },
-                "authProtocol": {
-                    "description": "Specifies the AAD authentication protocol to use during sign-in -- the default value is 'v2', the latest value. Specify 'v1' when using older applications configured prior to the release of the new protocols. Note that this property is likely to be removed in the future as the latest authentication libraries and protocols can now support even older applications.",
-                    "enum": [
-                        "v2",
-                        "v1"
-                    ],
-                    "type": "string"
-                },
                 "authType": {
                     "description": "When this property is set to 'Delegated', sign-in to the Graph API occurs interactively as a specific user the delegated authentication flow which allows the application delegated permissions to act as the user. When the value is set to 'AppOnly,', then a non-interactive sign-in occurs using some available credential such as a certificate and the application has only the permissions assigned specifically to that application and none assigned to any user.",
                     "enum": [
@@ -142,7 +134,7 @@
                     "type": "string"
                 },
                 "tenantId": {
-                    "description": "The tenant, expressed as the tenant's domain name or as the tenant ID guid, to which the application is signing in. This information is required as command input or in settings when signing in using app-only authentication or when the authProtocol is specified as 'v1'.",
+                    "description": "The tenant, expressed as the tenant's domain name or as the tenant ID guid, to which the application is signing in. This information is required as command input or in settings when signing in using app-only authentication.",
                     "type": "string"
                 },
                 "userAgent": {

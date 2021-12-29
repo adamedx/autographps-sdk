@@ -416,14 +416,6 @@ ScriptClass LocalSettings {
                     @{Value = [boolean] $value }
                 }
             }
-            AutoProtocolValidator = {
-                param($value, $context)
-                if ( $value -notin @('v1', 'v2') ) {
-                    @{ Error = "Expecting a value in (v1, v2)" }
-                } else {
-                    @{ Value = $value }
-                }
-            }
             AppCredentialValidator = {
                 param($value, $context)
                 $valueData = @{}

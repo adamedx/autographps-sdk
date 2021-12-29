@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Command line SDK for the Microsoft Graph API</description>
     <releaseNotes>Initial development</releaseNotes>
-    <copyright>Copyright 2019</copyright>
+    <copyright>Copyright 2021</copyright>
     <tags>MSGraph Graph Directory PSModule</tags>
     <dependencies>
       <dependency id="scriptclass" version="0.20.2" />
@@ -26,7 +26,5 @@
     <file src="build\**\*.ps1" target="build/" />
     <file src="lib\Microsoft.Identity.Client.4.35.0\lib\net45\*.dll" target="lib/Microsoft.Identity.Client.4.35.0\lib\net45" />
     <file src="lib\Microsoft.Identity.Client.4.35.0\lib\netcoreapp2.1\*.dll" target="lib/Microsoft.Identity.Client.4.35.0\lib\netcoreapp2.1" />
-    <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.7\lib\net45\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.7\lib\net45" />
-    <file src="lib\Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.7\lib\netstandard1.3\*.dll" target="lib/Microsoft.IdentityModel.Clients.ActiveDirectory.5.2.7\lib\netstandard1.3" />
   </files>
 </package>

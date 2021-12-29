@@ -32,7 +32,7 @@ $cmdlets = @(
     'Get-GraphLogOption'
     'Get-GraphProfile'
     'Get-GraphSchema'
-    'Get-GraphToken'
+    'Get-GraphAccessToken'
     'Get-GraphVersion'
     'Invoke-GraphApiRequest'
     'New-GraphApplication'

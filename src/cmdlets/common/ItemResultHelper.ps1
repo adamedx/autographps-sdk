@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2021, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,18 +24,8 @@ ScriptClass ItemResultHelper -ArgumentList $__DefaultResultVariable {
         $defaultResultVariable = $defaultResultVariableParameter
 
         function GetResultVariable( $customVariableName ) {
-            if ( ! $customVariableName ) {
-                $this.defaultResultVariable.value = $null
-                $this.defaultResultVariable
-            } else {
-                $existingVariable = get-variable -scope 2 $customVariableName -erroraction ignore
-
-                if ( $existingVariable ) {
-                    $existingVariable
-                } else {
-                    new-variable -scope 2 $customVariableName -passthru
-                }
-            }
+            $this.defaultResultVariable.value = $null
+            $this.defaultResultVariable
         }
 
         function  GetResponseDetail($content, $contextUri, $nextLink, $deltaLink, $protocolResponses) {

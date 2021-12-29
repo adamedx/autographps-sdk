@@ -141,7 +141,7 @@ Disconnect-GraphApi
 Get-GraphConnection
 Remove-GraphConnection
 Select-GraphConnection
-Get-GraphToken
+Get-GraphAccessToken
 #>
 function Find-GraphLocalCertificate {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='appid')]

@@ -33,7 +33,7 @@ ScriptClass ConsentHelper {
                 $expiryTime = if ( $object | gm expiryTime -erroraction ignore ) { $object.expiryTime }
                 $startTimeOffset = if ( $startTime ) { $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $startTime $true }
                 $expiryTimeOffset = if ( $expiryTime ) { $::.DisplayTypeFormatter |=> UtcTimeStringToDateTimeOffset $expiryTime $true }
-                $grantedTo = if ( $object.consentType -eq 'AllPrincipals' ) { 'AllUsers' } else { $object.PrincipalId }
+                $grantedTo = if ( $object.consentType -eq 'AllPrincipals' ) { 'AllPrincipals' } else { $object.PrincipalId }
                 $scopes = $object.scope -split ' '
 
                 foreach ( $scope in $scopes ) {

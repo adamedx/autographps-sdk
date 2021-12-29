@@ -59,7 +59,6 @@ OrganizationId   : 7e23c95a-76f2-434e-9433-c095493255e9
 User             : raheem@newjustice.org
 AppID            : ac70e3e2-a821-4d19-839c-b8af4515254b
 AuthType         : Delegated
-AuthProtocol     : v2
 Endpoint         : https://graph.microsoft.com/
 AuthEndpoint     : https://login.microsoftonline.com/
 ConsistencyLevel : Eventual

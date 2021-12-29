@@ -79,7 +79,7 @@ Specifies the Graph API version that this command should target when making Grap
 Specifies the client request in the form of a GUID id that should be passed in the 'client-request-id' request header to the Graph API. This can be used to correlate verbose output regarding the request made by this command with request logs accessible to the operator of the Graph API service. Such correlation speeds up diagnosis of errors in service support scenarios. By default, this command automatically generates a request id and sends it in the header and also logs it in the command's verbose output, so this parameter does not need to be specified unless there is a particular reason to customize the id, such as using an id generated from another tool or API as a prerequisite for issuing this command that makes it easy to correlate the request from this command with that tool output for troubleshooting and log analysis. It is possible to prevent the generation of a client request id altogether by specifying the NoClientRequestId parameter.
 
 .PARAMETER Connection
-Specifies a Connection object returned by the New-GraphConnection command whose Graph endpoint will be accessed when making Graph requests with this command.
+Specifies a Connection object returned by commands such as New-GraphConnection and Connect-GraphApi whose Graph endpoint will be accessed when making Graph requests with this command.
 
 .PARAMETER Cloud
 Specifies that for this command invocation, an access token with delegated permissions for the specified cloud must be acquired and then used to make the call. This will result in a sign-in UX.
@@ -95,9 +95,6 @@ This parameter specifies that the command should return results exactly in the f
 
 .PARAMETER ConsistencyLevel
 This parameter specifies that Graph should process the request using a specific consistency level of 'Auto', 'Default', 'Session' or 'Eventual'. Requests processed with 'Session" consistency, originally the only supported consistency level for Graph API requests, these requests will make a best effort to ensure that the response reflects any changes made by previous Graph API requests made by the current caller. This allows applications to perform Graph API change operations such as creating a new resource such as a user or group followed by a request to retrieve information about that group or other information (e.g. the count of all users or groups) that would be influenced by the success of the earlier change. All operations are therefore consistent within the boundary of the "session." The disadvantage of session semantics is that the cost of supporting advanced queries such as counts or searches is very costly for the Graph API services that process the request, and so many advanced queries are not supported with session semantics. For this reason, a subset of services including those providing Azure Active Directory objects like user and group subsequently added the eventual consistency level. With eventual semantics, the API services that support this consistency level may temporarily violate session consistency with the benefit that advanced queries too costly to process with session semantics are now available. The results of those queries may not be fully up to date with the latest changes, but after some (typically short, a few minutes or less than an hour) time period a given set of changes will be reflected in the results for the same query repeated at a later time. The results of the API are not immediately consistent with changes in the session, but will be "eventually." For a given use case, a particular consistency level that prioritizes short-term accuracy higher or lower than complex query capability may be more appropriate; this parameter allows the caller of this command to make that choice. Specifying 'Default' for this parameter means the consistency level is determined by the API itself and API documentation should be consulted to determine if the API even supports a particular consistency level and therefore whether it is necessary to use this parameter. Note that if this parameter has the default value of 'Auto', the behavior is determined by the configuration of the Graph connection used for this request.
-
-.PARAMETER AADGraph
-This parameter specifies that instead of accessing Microsoft Graph, the command should make requests against Azure Active Directory Graph (AAD Graph). Note that most functionality of this command and other commands in the module is not compatible with AAD Graph; this parameter may be deprecated in the future.
 
 .PARAMETER NoClientRequestId
 This parameter suppresses the automatic generation and submission of the 'client-request-id' header in the request used for troubleshooting with service-side request logs. This parameter is included only to enable complete control over the protocol as there would be very few use cases for not sending the request id.
@@ -215,18 +212,13 @@ function Get-GraphResource {
         [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
         [string] $ConsistencyLevel = 'Auto',
 
-        [parameter(parametersetname='AADGraphNewConnection', mandatory=$true)]
-        [switch] $AADGraph,
-
         [switch] $NoClientRequestId,
 
         [switch] $NoRequest,
 
         [switch] $NoSizeWarning,
 
-        [switch] $All,
-
-        [string] $ResultVariable = $null
+        [switch] $All
     )
 
     begin {
@@ -266,9 +258,7 @@ function Get-GraphResource {
             $requestArguments['ClientRequestId'] = $ClientRequestId
         }
 
-        if ( $AADGraph.ispresent ) {
-            $requestArguments['AADGraph'] = $AADGraph
-        } elseif ($Permissions -ne $null) {
+        if ($Permissions -ne $null) {
             $requestArguments['Permissions'] = $Permissions
         }
 
@@ -284,7 +274,7 @@ function Get-GraphResource {
     end {
         $localResult = $null
 
-        $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable $ResultVariable
+        $targetResultVariable = $::.ItemResultHelper |=> GetResultVariable
 
         $uris | Invoke-GraphApiRequest @requestArguments | tee-object -variable localResult
 
@@ -293,5 +283,4 @@ function Get-GraphResource {
 }
 
 $::.ParameterCompleter |=> RegisterParameterCompleter Get-GraphResource Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::AnyPermission))
-
 

@@ -72,11 +72,11 @@ As with any PowerShell cmdlet, you can use AutoGraphPS-SDK cmdlets interactively
 
 For more detailed information on how to use AutoGraphPS-SDK cmdlets, see the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/main/docs/WALKTHROUGH.md) for the separate AutoGraphPS module, which documents a superset of cmdlets contained in this SDK in additions to those found in that module.
 
-### How do I use it in my PowerShell application?
+### How do AutoGraphPS-SDK use it in my PowerShell application?
 
 If your application is packaged as a PowerShell module, simply include it in the `NestedModules` section of your module's [PowerShell module manifest](https://technet.microsoft.com/en-us/library/dd878337%28v=VS.85%29.aspx). This will allow you to publish your module to a repository like PSGallery and ensure that users who install your module from the gallery also get the installation of AutoGraphPS-SDK needed for your module to function. You should add the line `import-module autographps-sdk` to the beginning of the script you use to initialize your module.
 
-If you're using a script module (`.psm1` file) or simply a plain PowerShell `ps1` script, you should ensure the module has been already been installed on the system using `Install-Module` or a similar deployment mechanism, then add a line `import-module autographps-sdk` to the beginning of your script or script module.
+If you're using a script module (`.psm1` file) or simply a plain PowerShell `ps1` script, you should ensure AutoGraphPS-SDK has been already been installed on the system using `Install-Module` or a similar deployment mechanism, then add a line `import-module autographps-sdk` to the beginning of your script or script module.
 
 ### Configuration and preferences
 
@@ -94,7 +94,7 @@ AutoGraphPS-SDK supports the use of a local settings configuration file at the l
 
 ## Reference
 
-The full list of cmdlets in this module is given below; note that `Invoke-GraphRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-GraphApi` to request additional permissions as described in the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference).
+The full list of cmdlets in this module is given below; note that `Invoke-GraphApiRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-GraphApi` to request additional permissions as described in the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference).
 
 | Cmdlet (alias)                       | Description                                                                                                                                             |
 |--------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -114,8 +114,8 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Get-GraphLog (ggl)                   | Gets the local log of all requests to Graph made by this module                                                                                         |
 | Get-GraphLogOption                   | Gets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
 | Get-GraphProfile                     | Gets the list of profiles defined in the [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md) -- these profiles may be enabled by the `Select-GraphProfileSettings` command. |
-| Get-GraphToken                       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) |
-| Invoke-GraphRequest                  | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                                                                      |
+| Get-GraphAccessToken                       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) |
+| Invoke-GraphApiRequest               | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                                                                      |
 | New-GraphApplication                 | Creates an Azure AD application configured to authenticate to Microsoft Graph                                                                           |
 | New-GraphApplicationCertificate      | Creates a new certificate in the local certificate store and configures its public key on an application                                                |
 | New-GraphConnection                  | Creates an authenticated connection using advanced identity customizations for accessing a Graph                                                        |
@@ -130,21 +130,11 @@ The full list of cmdlets in this module is given below; note that `Invoke-GraphR
 | Select-GraphProfile                  | Enables the behaviors mandated by the setting values of the specified profile. Profiles are defined by the user's [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md). |
 | Set-GraphApplicationCertificate      | Given the specified certificate or certificate path sets the application's certificates                                             |
 | SetGraphApplicationConsent           | Sets a consent grant for an Azure AD application                                                                                                        |
-| Set-GraphConnectionStatus            | Configures `Offline` mode for use with local commands like `GetGraphUri` or re-enables `Online` mode for accessing the Graph service                    |
+| Set-GraphConnectionStatus            | Configures `Offline` mode for use with local-only commands or re-enables `Online`               mode for accessing the Graph service                    |
 | Set-GraphLogOption                   | Sets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
 | Test-Graph                           | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint                                                                  |
 | Test-GraphSettings                   | Validates whether AutoGraph settings specified as a file, JSON content, or in deserialized form are valid                                               |
 | Unregister-GraphApplication          | Removes consent and service principal entries for the application from the tenant                                                                       |
-
-### Limited support for Azure Active Directory (AAD) Graph
-
-Some AutoGraphPS-SDK cmdlets also work with [Azure Active Directory Graph](https://msdn.microsoft.com/Library/Azure/Ad/Graph/howto/azure-ad-graph-api-operations-overview), simply by specifying the `-aadgraph` switch as in the following:
-
-```powershell
-Get-GraphResource me -aadgraph
-```
-
-Most functionality of AAD Graph is currently available in MS Graph itself, and in the future all of it will be accessible from MS Graph. In the most common cases where a capability is accessible via either graph, use MS Graph to ensure long-term support for your scripts and code and your ability to use the full feature set of AutoGraphPS-SDK.
 
 ### More about how it works
 

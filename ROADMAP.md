@@ -2,6 +2,32 @@
 
 ## To-do items -- prioritized
 
+* Rename some consent parameters in New-GraphApplication for consistency with other commands.
+* Make Set-GraphApplicationCertificate make only one request when multiple certificate paths are specified by the pipeline.
+* Make exportedcertficatepath member of new-graph*certificate use a fully qualified path
+* Add countvariable?
+* Add service principal support to *-graphapplicationcertificate commands, not just application
+* Look at using serilog for logging
+* Add API version to itemcontext?
+* Add more properties to serviceprincipal output, application
+* Add tags to get-graphapplication
+* Add startswith search to get-graphapplication
+* Make permissions ids work with the consent and application commands
+* Make service principal id column title serviceprincipal
+* Use serviceprincipal id's when possible for Set-GraphApplicationConsent and Remove-GraphApplicationConsent
+* Support service principal as the consent object for Set-GraphApplicationConsent and Remove-GraphApplicationConsent
+* Set-GraphApplicationConsent should support partial updates for delegated by using end block to write
+* Don't throw exceptions in pipeline for consent / service prinicipal / app commands?
+* Add upn support to Set-GraphApplicationConsent?
+* Make self-consent explicit in Set-GraphApplicationConsent
+* Improve output of get-graphapplicationconsent
+* Allow remove and set consent commands to operate on native objects
+* Improve formatting of consent output
+* Add search for permissions to get-graphapplicationconsent
+* Normalize command parameters for consent across all commands
+* Change consent commands to use native graph objects instead of custom objects and normalize via type augmentation and formatting.
+* Possible need to add 'no additional permissions' setting to profiles and doc in schema
+* Remove resultvariable from ggr without impacting LASTGRAPHITEMS; actually looks like not an issue
 * Add preference variable for disabling settings
 * Add simple match for Get-GraphApplication
 * Add photo upload scenario?
@@ -438,6 +464,14 @@
 * Validate user confidential flow in profile
 * Add `-DefaultPermissions` to `Connect-GraphApi`
 * Add Test-GraphSettings
+* Prevent removal of a context if it is the current context
+* Remove AADGraph support
+* Remove ADAL
+* Added Index parameter to Get-GraphLog
+* Make ggl alias First for newest and Last for oldest
+* Rename Get-GraphToken to Get-GraphAccessToken
+* Make Register-GraphApplication use the formatting for service principal
+* Remove publisherdomain from serviceprincipal output as the property does not exist
 
 ### Postponed
 
@@ -466,6 +500,7 @@
 * Add $ref? Is this New-GraphItemReference, or New-GraphItem with a reference option? -- handled with other commands in another module
 * Add -filter to get-graphschema
 * New-GraphApplicationCertificate with -noupload option
+* Fix ScopeHelper => GetPermissionsByName to allow failures to be ignored
 
 #### Stdposh improvements
 

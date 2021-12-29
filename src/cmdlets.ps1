@@ -28,7 +28,7 @@
 . (import-script cmdlets\Get-GraphLog)
 . (import-script cmdlets\Get-GraphLogOption)
 . (import-script cmdlets\Get-GraphProfile)
-. (import-script cmdlets\Get-GraphToken)
+. (import-script cmdlets\Get-GraphAccessToken)
 . (import-script cmdlets\Invoke-GraphApiRequest)
 . (import-script cmdlets\New-GraphApplication)
 . (import-script cmdlets\New-GraphApplicationCertificate)

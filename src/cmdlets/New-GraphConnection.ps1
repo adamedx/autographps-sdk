@@ -57,7 +57,7 @@ Specifies that the connection created by New-GraphConnection requires certain de
 The AAD application identifier to be used by the connection. If the AppId parameter is not specified, the default identifier for the "AutoGraphPS" application will be used that supports only delegated authentication.
 
 .PARAMETER TenantId
-The organization (tenant) identifier of the organization to be accessed by the connection. The identifier can be specified using either the tenant's domain name (e.g. funkadelic.org) or it's unique identifier guid. This parameter is only required when the for application-only sign-in, but may be optionally specified for delegated sign-in to ensure that when using a multi-tenant application limit sign-in to the specified tenant. Otherwise, the tenant for sign-in will be determined as part of the user's interaction with the token endpoint.
+The organization (tenant) identifier of the organization to be accessed by the connection. The identifier can be specified using either the tenant's domain name (e.g. funkadelic.org) or it's unique identifier guid. This parameter is only required for application-only sign-in, but may be optionally specified for delegated sign-in to ensure that when using a multi-tenant application limit sign-in to the specified tenant. Otherwise, the tenant for sign-in will be determined as part of the user's interaction with the token endpoint.
 
 .PARAMETER NoninteractiveAppOnlyAuth
 By default, connections created by New-GraphConnnection will sign in using an interactive, delegated flow that requires the credentials of a user and therefore also requires user interaction. Specify NoninteractiveAppOnlyAuth to override this behavior and sign-in without user credentials, just application credentials. Such credentials can be specified in the form of certificates or symmetric keys using other parameters of this command. Because such a sign-in does not involve user credentials, no user interaction is required and this sign-in is most useful for unattended execution such as scheduled or triggered automation / batch jobs.
@@ -111,9 +111,6 @@ The default value for the ConsistencyLevel parameter is 'Default', which means t
 Specify 'Auto' to mean that consistency semantics are taken from the current Graph settings profile if the ConsistencyLevel property is specified there.
 
 For more information about the advanced queries capable using the Eventual consistency level, see the Graph API advanced query documentation: https://docs.microsoft.com/en-us/graph/aad-advanced-queries. For more information on the tradeoffs for the Eventual consistency level, see the command documentation for the Invoke-GraphApi command in this module.
-
-.PARAMETER AADGraph
-Deprecated.
 
 .PARAMETER UserAgent
 Specifies the HTTP 'User-Agent' request header value to use for every request to the Graph API. By default, the module uses its own specific user agent string for this header on every request. To override that default value, specify a new value using the UserAgent parameter.
@@ -198,7 +195,7 @@ In this example a new application is created with New-GraphApplication with perm
 .EXAMPLE
 $certFileName=OrgMonClientCertFile
 
-# Use openssl to create a cert -- this works Linux and Windows and any other platforms supported by the openssl tools
+# Use openssl to create a cert -- this works for Linux and Windows and any other platforms supported by the openssl tools
 openssl req -newkey rsa:4096 -x509 -days 365 -keyout ~/protectedcerts/$($certFileName)-pri.key -out ~/protectedcerts/$($certFileName)-pub.crt -subj '/CN=OrgMon/CN=Internal/CN=BubbleStar'
 openssl pkcs12 -export -inkey ~/protectedcerts/$($certFilename)-pri.key -in ~/protectedcerts/$($certFilename)-pub.crt -out ~/protectedcerts/$($certFilename).pfx
 
@@ -259,7 +256,7 @@ Disconnect-GraphApi
 Get-GraphConnection
 Remove-GraphConnection
 Select-GraphConnection
-Get-GraphToken
+Get-GraphAccessToken
 #>
 function New-GraphConnection {
     [cmdletbinding(positionalbinding=$false, DefaultParameterSetName='msgraph')]
@@ -343,14 +340,6 @@ function New-GraphConnection {
         [Uri] $GraphResourceUri = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='secret')]
-        [parameter(parametersetname='cert')]
-        [parameter(parametersetname='certpath')]
-        [parameter(parametersetname='customendpoint')]
-        [ValidateSet('Default', 'v1', 'v2')]
-        [string] $AuthProtocol = 'Default',
-
-        [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='customendpoint')]
         [ValidateSet('Auto', 'AzureADOnly', 'AzureADAndPersonalMicrosoftAccount')]
         [string] $AccountType = 'Auto',
@@ -359,10 +348,6 @@ function New-GraphConnection {
 
         [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
         [string] $ConsistencyLevel = 'Default',
-
-        [parameter(parametersetname='aadgraph', mandatory=$true)]
-        [parameter(parametersetname='customendpoint')]
-        [switch] $AADGraph,
 
         [String] $UserAgent = $null
     )
@@ -379,24 +364,12 @@ function New-GraphConnection {
             ([GraphCloud]::Public)
         }
 
-        $graphType = if ( $AADGraph.ispresent ) {
-            ([GraphType]::AADGraph)
-        } else {
-            ([GraphType]::MSGraph)
-        }
-
-        $specifiedAuthProtocol = if ( $AuthProtocol -ne ([GraphAuthProtocol]::Default) ) {
-            $AuthProtocol
-        }
-
         $specifiedScopes = if ( $Permissions ) {
             if ( $Secret.IsPresent -or $Certificate -or $CertificatePath ) {
                 throw 'Permissions may not be specified at runtime for app-only authentication since they originate from the static application configuration'
             }
             $Permissions
         }
-
-        $computedAuthProtocol = $::.GraphEndpoint |=> GetAuthProtocol $AuthProtocol $validatedCloud $GraphType
 
         $noAppSpecified = $false
 
@@ -414,17 +387,17 @@ function New-GraphConnection {
             $allowMSA = $noAppSpecified
         }
 
-        if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $specifiedAuthProtocol -and $appId -eq $null ) {
-            write-verbose 'Simple connection specified with no custom uri, auth protocol, or app id'
-            $::.GraphConnection |=> NewSimpleConnection $graphType $validatedCloud $specifiedScopes $false $TenantId $computedAuthProtocol -useragent $UserAgent -allowMSA $allowMSA $ConsistencyLevel
+        if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $appId -eq $null ) {
+            write-verbose 'Simple connection specified with no custom uri or app id'
+            $::.GraphConnection |=> NewSimpleConnection $validatedCloud $specifiedScopes $false $TenantId -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel
         } else {
             $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
                 write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
-                write-verbose ("Creating endpoint with cloud '{0}', auth protocol '{1}'" -f $validatedCloud, $computedAuthProtocol)
-                new-so GraphEndpoint $validatedCloud $graphType $null $null $computedAuthProtocol $GraphResourceUri
+                write-verbose ("Creating endpoint with cloud '{0}'" -f $validatedCloud)
+                new-so GraphEndpoint $validatedCloud $null $null $GraphResourceUri
             } else {
-                write-verbose ("Custom endpoint data required and graph endpoint URI was specified, using specified endpoint URI and auth protocol {0}'" -f $computedAuthProtocol)
-                new-so GraphEndpoint ([GraphCloud]::Custom) ([GraphType]::MSGraph) $GraphEndpointUri $AuthenticationEndpointUri $computedAuthProtocol $GraphResourceUri
+                write-verbose "Custom endpoint data required and graph endpoint URI was specified, using specified endpoint URI'"
+                new-so GraphEndpoint ([GraphCloud]::Custom) $GraphEndpointUri $AuthenticationEndpointUri $GraphResourceUri
             }
 
             $adjustedTenantId = $TenantId

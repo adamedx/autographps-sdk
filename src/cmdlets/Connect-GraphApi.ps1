@@ -60,12 +60,12 @@ Specifies that the connection created by Connect-GraphApi requires certain deleg
 The AAD application identifier to be used by the connection. If the AppId parameter is not specified, the application identifier specified in the connection settings of the current Graph profile is used. If no such profile configuration setting exists, the default identifier for the "AutoGraphPS" application will be used that supports only delegated authentication.
 
 .PARAMETER TenantId
-The organization (tenant) identifier of the organization to be accessed by the connection. The identifier can be specified using either the tenant's domain name (e.g. funkadelic.org) or it's unique identifier guid. This parameter is only required when the for application-only sign-in, but may be optionally specified for delegated sign-in to ensure that when using a multi-tenant application limit sign-in to the specified tenant. Otherwise, the tenant for sign-in will be determined as part of the user's interaction with the token endpoint.
+The organization (tenant) identifier of the organization to be accessed by the connection. The identifier can be specified using either the tenant's domain name (e.g. funkadelic.org) or it's unique identifier guid. This parameter is only required for application-only sign-in, but may be optionally specified for delegated sign-in to ensure that when using a multi-tenant application limit sign-in to the specified tenant. Otherwise, the tenant for sign-in will be determined as part of the user's interaction with the token endpoint.
 
 .PARAMETER NoninteractiveAppOnlyAuth
 By default, connections created by Connect-GraphApi will sign in using an interactive, delegated flow that requires the credentials of a user and therefore also requires user interaction. Specify NoninteractiveAppOnlyAuth to override this behavior and sign-in without user credentials, just application credentials. Such credentials can be specified in the form of certificates or symmetric keys using other parameters of this command. Because such a sign-in does not involve user credentials, no user interaction is required and this sign-in is most useful for unattended execution such as scheduled or triggered automation / batch jobs.
 
-If no parameters are used to specify the application credentials, then on Windows, if no secret is specified, Connect-GraphApi will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if New-GraphConnection cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
+If no parameters are used to specify the application credentials, then on Windows, if no secret is specified, Connect-GraphApi will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if the command cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
 
 .PARAMETER ExistingPermissionsOnly
 By default, Connect-GraphApi always requests the permission User.Read at sign-in because it provides a minimal but useful amount of access to Graph API resources that help users maintain awareness of what identity they used for signing in. However the permission is not strictly necessary so to avoid the need to consent to that permission, and in particular to ensure that legacy AAD applications that support only static request and fail any sign-ins where additional permissions are requested, specify this parameter.
@@ -77,7 +77,7 @@ Specifies the path in the file system or in the PowerShell cert: drive provider 
 Specifies a .NET X509Certificate2 certificate object that contains a private key to authenticate the application to the Graph API. Such an object may be obtained by using Get-Item on an item in the PowerShell cert: drive or from other software or commands that expose certificates using this structure. This parameter is only valid if the Confidential parameter is specified.
 
 .PARAMETER Confidential
-Specify this parameter if the connection's AAD application requires a client secret in order to successfully authenticate to the Graph API. When this parameter is specified, the actual client secret is specified using other parameters. If no parameters are used to specify the secret, then on Windows, if no secret is specified, Connect-GraphApi will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if New-GraphConnection cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
+Specify this parameter if the connection's AAD application requires a client secret in order to successfully authenticate to the Graph API. When this parameter is specified, the actual client secret is specified using other parameters. If no parameters are used to specify the secret, then on Windows, if no secret is specified, Connect-GraphApi will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if Connect-GraphApi cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
 
 .PARAMETER Secret
 Specify this when the Confidential parameter is specified and the secret to be used is a symmetric key rather than a certificate. Symmetric keys are more difficult to secure than certificates and should not be used in production environments.
@@ -114,9 +114,6 @@ The default value for the ConsistencyLevel parameter is 'Auto', which means that
 You may also specify 'Default', which means that API requests do not specify consistency semantics, in which case the consistency semantics are completely dependent upon the particular API's default behavior -- consult the documentation for that API for details.
 
 For more information about the advanced queries capable using the Eventual consistency level, see the Graph API advanced query documentation: https://docs.microsoft.com/en-us/graph/aad-advanced-queries. For more information on the tradeoffs for the Eventual consistency level, see the command documentation for the Invoke-GraphApi command in this module.
-
-.PARAMETER AADGraph
-Deprecated.
 
 .PARAMETER UserAgent
 Specifies the HTTP 'User-Agent' request header value to use for every request to the Graph API. By default, the module uses its own specific user agent string for this header on every request. To override that default value, specify a new value using the UserAgent parameter.
@@ -274,7 +271,7 @@ Get-GraphConnection
 Select-GraphProfile
 Remove-GraphConnection
 Select-GraphConnection
-Get-GraphToken
+Get-GraphAccessToken
 #>
 function Connect-GraphApi {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='msgraph')]
@@ -379,24 +376,12 @@ function Connect-GraphApi {
         [Uri] $GraphResourceUri = $null,
 
         [parameter(parametersetname='msgraph')]
-        [parameter(parametersetname='secret')]
-        [parameter(parametersetname='cert')]
-        [parameter(parametersetname='certpath')]
-        [parameter(parametersetname='customendpoint')]
-        [ValidateSet('v1', 'v2', 'Default')]
-        [String] $AuthProtocol = 'Default',
-
-        [parameter(parametersetname='msgraph')]
         [parameter(parametersetname='customendpoint')]
         [ValidateSet('Auto', 'AzureADOnly', 'AzureADAndPersonalMicrosoftAccount')]
         [string] $AccountType = 'Auto',
 
         [ValidateSet('Auto', 'Default', 'Session', 'Eventual')]
         [string] $ConsistencyLevel = 'Auto',
-
-        [parameter(parametersetname='aadgraph', mandatory=$true)]
-        [parameter(parametersetname='customendpoint')]
-        [switch] $AADGraph,
 
         [string] $UserAgent = $null,
 
@@ -406,7 +391,7 @@ function Connect-GraphApi {
         [Switch] $Reconnect,
 
         [parameter(parametersetname='existingconnection',mandatory=$true)]
-        [parameter(parametersetname='noupdatecurrent',mandatory=$true)]
+        [parameter(parametersetname='noupdatecurrent', valuefrompipeline=$true)]
         [PSCustomObject] $Connection = $null,
 
         [parameter(parametersetname='noupdatecurrent',mandatory=$true)]
@@ -562,4 +547,4 @@ function Connect-GraphApi {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Connect-GraphApi Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Connect-GraphApi Permissions (new-so PermissionParameterCompleter DelegatedPermission)

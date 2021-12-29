@@ -36,7 +36,8 @@ ScriptClass PermissionParameterCompleter {
 
     function CompleteCommandParameter {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-        $allPossiblePermissions = $::.ScopeHelper |=> GetKnownPermissionsSorted $null $this.authType
+        $currentConnection = ($::.GraphContext |=> GetCurrent).Connection
+        $allPossiblePermissions = $::.ScopeHelper |=> GetKnownPermissionsSorted $currentConnection $this.authType
 
         if ( $allPossiblePermissions ) {
             $::.ParameterCompleter |=> FindMatchesStartingWith $wordToComplete $allPossiblePermissions

@@ -364,7 +364,7 @@ limitations under the License.
                 <ScriptBlock>$_.graphendpoint.graph</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>Endpoint</Label>
+                <Label>GraphResourceUri</Label>
                 <ScriptBlock>$_.graphendpoint.GraphResourceUri</ScriptBlock>
               </ListItem>
               <ListItem>
@@ -700,9 +700,6 @@ limitations under the License.
           <TableColumnHeader>
             <Label>Id</Label>
           </TableColumnHeader>
-          <TableColumnHeader>
-            <Label>PublisherDomain</Label>
-          </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
           <TableRowEntry>
@@ -718,9 +715,6 @@ limitations under the License.
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Id</PropertyName>
-              </TableColumnItem>
-              <TableColumnItem>
-                <PropertyName>PublisherDomain</PropertyName>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -761,16 +755,7 @@ limitations under the License.
                 <PropertyName>signinAudience</PropertyName>
               </ListItem>
               <ListItem>
-                <PropertyName>PublisherDomain</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>verifiedPublisher</PropertyName>
-              </ListItem>
-              <ListItem>
                 <PropertyName>info</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>parentalControlSettings</PropertyName>
               </ListItem>
               <ListItem>
                 <PropertyName>tags</PropertyName>
@@ -782,51 +767,17 @@ limitations under the License.
                 <PropertyName>applicationTemplateId</PropertyName>
               </ListItem>
               <ListItem>
-                <PropertyName>groupMembershipClaims</PropertyName>
-              </ListItem>
-              <ListItem>
                 <PropertyName>appRoles</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>optionalClaims</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>identifierUris</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>isDeviceOnlyAuthSupported</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>isFallbackPublicClient</PropertyName>
               </ListItem>
               <ListItem>
                 <PropertyName>tokenEncryptionKeyId</PropertyName>
               </ListItem>
               <ListItem>
-                <PropertyName>defaultRedirectUri</PropertyName>
-              </ListItem>
-              <ListItem>
                 <PropertyName>addIns</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>requiredResourceAccess</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>api</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>web</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>spa</PropertyName>
-              </ListItem>
-              <ListItem>
-                <PropertyName>publicClient</PropertyName>
               </ListItem>
               <ListItem>
                 <PropertyName>keyCredentials</PropertyName>
               </ListItem>
-
             </ListItems>
           </ListEntry>
         </ListEntries>

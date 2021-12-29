@@ -229,7 +229,7 @@ ScriptClass ApplicationAPI {
             } else {
                 write-verbose "Unable to determine current user and all users consent not specified, so no consent for the user will be attempted; the current user is likely an app-only identity"
                 if ( $delegatedPermissions -and $errorIfNoDelegatedUserTarget ) {
-                    throw 'Delegated permissions were specified for consent, but no target user was specified and the target user could not be inferred from the signed in account. Explicitly specify a user consent target or sign in with a delegated user identity.'
+                    throw 'Delegated permissions were specified for consent, but no target user was specified and the target user could not be inferred from the signed in account. Explicitly specify that all principals should get consent, provide a particular user consent target, or sign in with a delegated user identity.'
                 }
             }
             $userObjectId

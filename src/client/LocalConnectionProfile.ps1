@@ -109,12 +109,6 @@ ScriptClass LocalConnectionProfile {
                 }
             }
 
-            if ( $this.connectionData['authProtocol'] ) { $parameters['AuthProtocol'] = $this.connectionData['authProtocol'] }
-
-            if ( ! $isAppOnly -and $parameters['authProtocol'] -ne 'v1' -and $this.connectionData['delegatedPermissions'] ) {
-                $parameters['Permissions'] = $this.connectionData['delegatedPermissions']
-            }
-
             if ( $this.connectionData['consistencyLevel'] ) {
                 $parameters['ConsistencyLevel'] = $this.connectionData['consistencyLevel']
             }
@@ -125,10 +119,6 @@ ScriptClass LocalConnectionProfile {
         }
 
         if ( ! $parameters['tenantid'] ) {
-            if ( $parameters['AuthProtocol'] -eq 'v1' ) {
-                write-warning "A connection specifies an authProtocol property of 'v1' but does not specify a 'tenantid' property"
-            }
-
             if ( $isAppOnly ) {
                 write-warning "A connection specifies an 'authType' proproperty of 'appOnly' but does not specify a 'tenantId' property"
             }
@@ -152,7 +142,6 @@ ScriptClass LocalConnectionProfile {
             delegatedPermissions = @{ Validator = 'StringArrayValidator'; Required = $false }
             authType = @{ Validator = 'StringValidator'; Required = $false }
             accountType = @{ Validator = 'StringValidator'; Required = $false }
-            authProtocol = @{ Validator = 'StringValidator'; Required = $false }
             userAgent = @{ Validator = 'StringValidator'; Required = $false }
             appRedirectUri = @{ Validator = 'UriValidator'; Required = $false }
             confidential = @{ Validator = 'BooleanValidator'; Required = $false }
