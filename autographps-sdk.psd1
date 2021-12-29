@@ -249,7 +249,7 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS-SDK 0.29.0 Release Notes
 
-This release removes the ADAL library dependency and removes support for the AAD Graph service endpoint.
+This release removes the ADAL library dependency and removes support for the AAD Graph service endpoint. Includes an extensive documentation update so that all commands are now documented.
 
 ### New dependencies
 
@@ -261,18 +261,19 @@ None.
 * The `AuthProtocol` parameter of `Connect-GraphApi` and `New-GraphConnection` has been removed
 * If you relied on the module loading ADAL in some circumstances, this no longer occurs as this release removes the ADAL code altogether.
 * The `Get-GraphToken` command was renamed to `Get-GraphAccessToken`
+* `Set-GraphApplicationConsent` and some other commands no longer support a version parameter.
 
 ### New features
 
 * `Index` parameter added to `Get-GraphLog` to get the log entry at a specific index
 * `Get-GraphLog` now supports the parameter aliases `First` for `Newest` and `Last` for `Oldest`.
+* `Register-GraphApplication` now returns formatted output
 
 ### Fixed defects
 
 * Fixed `./build/import-devmodule.ps1` command so that if it launches a shell it does not load the PowerShell profile by default to ensure that components like posh-git, oh-my-posh, or anything else loaded in the profile does not interfere with unit tests. Added `PSProfile` option to the command to allow the profile to be loaded.
 * `Skip` parameter of `Get-GraphLog` had no effect, this has been fixed
-
-None.
+* `Set-GraphApplicationConsent` now handles errors correctly when processing objects in the pipeline.
 
 '@
 
