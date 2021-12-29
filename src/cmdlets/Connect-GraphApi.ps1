@@ -391,7 +391,7 @@ function Connect-GraphApi {
         [Switch] $Reconnect,
 
         [parameter(parametersetname='existingconnection',mandatory=$true)]
-        [parameter(parametersetname='noupdatecurrent',mandatory=$true)]
+        [parameter(parametersetname='noupdatecurrent', valuefrompipeline=$true)]
         [PSCustomObject] $Connection = $null,
 
         [parameter(parametersetname='noupdatecurrent',mandatory=$true)]
@@ -547,4 +547,4 @@ function Connect-GraphApi {
     }
 }
 
-$::.ParameterCompleter |=> RegisterParameterCompleter Connect-GraphApi Permissions (new-so PermissionParameterCompleter ([PermissionCompletionType]::DelegatedPermission))
+$::.ParameterCompleter |=> RegisterParameterCompleter Connect-GraphApi Permissions (new-so PermissionParameterCompleter DelegatedPermission)

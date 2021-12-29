@@ -2,6 +2,14 @@
 
 ## To-do items -- prioritized
 
+* Rename some consent parameters in New-GraphApplication
+* Make Set-GraphApplicationCertificate make only one request when multiple certificate paths are specified by the pipeline.
+* Make exportedcertficatepath member of new-graph*certificate use a fully qualified path
+* Add countvariable?
+* Add service principal support to *-graphapplicationcertificate commands, not just application
+* Look at using serilog for logging
+* Add API version to itemcontext?
+* Add more properties to serviceprincipal output, application
 * Add tags to get-graphapplication
 * Add startswith search to get-graphapplication
 * Make permissions ids work with the consent and application commands
@@ -463,6 +471,7 @@
 * Make ggl alias First for newest and Last for oldest
 * Rename Get-GraphToken to Get-GraphAccessToken
 * Make Register-GraphApplication use the formatting for service principal
+* Remove publisherdomain from serviceprincipal output as the property does not exist
 
 ### Postponed
 

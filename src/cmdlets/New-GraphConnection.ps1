@@ -195,7 +195,7 @@ In this example a new application is created with New-GraphApplication with perm
 .EXAMPLE
 $certFileName=OrgMonClientCertFile
 
-# Use openssl to create a cert -- this works Linux and Windows and any other platforms supported by the openssl tools
+# Use openssl to create a cert -- this works for Linux and Windows and any other platforms supported by the openssl tools
 openssl req -newkey rsa:4096 -x509 -days 365 -keyout ~/protectedcerts/$($certFileName)-pri.key -out ~/protectedcerts/$($certFileName)-pub.crt -subj '/CN=OrgMon/CN=Internal/CN=BubbleStar'
 openssl pkcs12 -export -inkey ~/protectedcerts/$($certFilename)-pri.key -in ~/protectedcerts/$($certFilename)-pub.crt -out ~/protectedcerts/$($certFilename).pfx
 

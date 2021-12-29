@@ -110,6 +110,12 @@ Describe "Poshgraph application" {
 
             Compare-Object ($manifest.VariablesToExport | sort) ($expectedVariables | sort) | Should Be $null
         }
+
+        It "Should have documentation for all commands" {
+            $missingCommands = & $psscriptroot/build/Get-DocumentationStatus.ps1 | Select-object -expandproperty CommandsMissingDocs
+
+            $missingCommands | Should BeNullOrEmpty
+        }
     }
 
     Context "When invoking the autographps-sdk application" {

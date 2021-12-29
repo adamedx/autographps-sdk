@@ -33,7 +33,7 @@ See the Get-GraphApplicationConsent command for more details on consent.
 Specifies the application identifier for the application to which consent will be granted.
 
 .PARAMETER DelegatedPermissions
-The delegated permissions to be consented to the application. The consent is configured as oauth2PermissionGrant resources documented as part of the Graph API.
+The delegated permissions to be consented to the application. The consent is configured as oauth2PermissionGrant resources documented as part of the Graph API. If the ConsentedPrincipalId parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless PrincipalIdToConsent or ConsentForAllPrincipals is specified.
 
 .PARAMETER ApplicationPermissions
 The application permissions to be consented to the application. The consent is actually configured as app role assignments described by the appRoleAssignment resource documented as part of the Graph API.
@@ -48,7 +48,7 @@ Specify AllPermissions to grant consent to all permissions configured on the app
 Specify ConsentForAllPrincipals to grant consent for the specified delegated permissions to all principals (including users) in the organization.
 
 .PARAMETER Connection
-Specify the Connection parameter to use an alternative connection to the current connection.
+Specify the Connection parameter to use as an alternative connection to the current connection.
 
 .OUTPUTS
 The command returns no output.
@@ -77,6 +77,7 @@ This example shows how to update consent for multiple applications using the pip
 
 .LINK
 Get-GraphApplicationConsent
+Remove-GraphApplicationConsent
 Get-GraphApplication
 Register-GraphApplication
 New-GraphApplication

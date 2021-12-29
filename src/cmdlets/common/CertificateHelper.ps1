@@ -88,7 +88,7 @@ ScriptClass CertificateHelper {
 
     function __SyncApplication {
         if ( $this.app ) {
-            throw 'The applicatio has already been synchronized'
+            throw 'The application has already been synchronized'
         }
 
         $commandContext = new-so CommandContext $this.connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion

@@ -48,7 +48,7 @@ Specifies which consent objects must be returned by the command based on the kin
 Specify the All parameter to return all consent objects that match the specified criteria. By default, only a predetermined number of objects controlled by AAD is returned to avoid unintentionally inefficient long-running queries.
 
 .PARAMETER Connection
-Specify the Connection parameter to use an alternative connection to the current connection.
+Specify the Connection parameter to use as an alternative connection to the current connection.
 
 .OUTPUTS
 The command returns consent objects in the organization that satisfy the specifications of the command's input parameters. If the AppId parameter is specified, the command fails if it cannot find the application.
@@ -103,6 +103,7 @@ In this example, all applications in the organization are enumerated using Get-G
 
 .LINK
 Set-GraphApplicationConsent
+Remove-GraphApplicationConsent
 Get-GraphApplication
 Register-GraphApplication
 New-GraphApplication

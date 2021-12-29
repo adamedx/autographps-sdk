@@ -16,6 +16,68 @@
 . (import-script ../graphservice/ApplicationAPI)
 . (import-script common/PermissionParameterCompleter)
 
+<#
+.SYNOPSIS
+Removes consent of delegated or app-only permissions to an Azure Active Directory (AAD) application.
+
+.DESCRIPTION
+In order for an Azure Active Directory (AAD) application identity to access resources from Microsoft Graph, permissions must be granted to the application. The grant of permissions is referred to as consent. The Remove-GraphApplicationConsent command removes the grant of specified permissions to an AAD application. Such grants can be created as part of user interactions that grant consent to permissions at sign-in or through the Graph API, including the use of commands like Set-GraphApplicationConsent, Register-GraphApplication, or New-GraphApplication.
+
+See the Get-GraphApplicationConsent command for more details on consent.
+
+When removing consent, for application permissions it is sufficient to supply the ApplicationPermission parameter to identify the permission to remove. For delegated permissions, a principal must be supplied, either explicitly using the ConsentForAllPrincipals or ConsentedPrincipalId parameter, or implicitly using the object identifier of the user invoking Remove-GraphApplicationConsent. For example, if the application has been granted both Directory.Read.All and Application.ReadWrite.All to user X, then to remove the Application.ReadWrite.All granted to X, the parameters for Remove-GraphApplicationConsent must specify Application.ReadWrite.All as a (delegated) permission through the DelegatedPermissions parameter and the ConsentedPrincipalId must be the directory object identifier for X.
+
+No error occurs if no consent grants can be found to remove that match the specified parameters.
+
+.PARAMETER AppId
+Specifies the application identifier for the application to which consent will be removed.
+
+.PARAMETER DelegatedPermissions
+Specifies the delegated permissions for which to remove consent. Note that since the consent grant for delegated permissions requires a target, you must specify either the ConsentedPrincipalId parameter or the ConsentForAllUsers parameter so that the command can determine which consent to remove. If the command is being invoked using a connection that was signed in with delegated permissions, then you may omit these parameters and the command will assume the value of the user signed in to the connection for the ConsentedPrincipalId parameter.
+
+.PARAMETER ApplicationPermissions
+Specifieds the app-only permissions for which to remove consent.
+
+.PARAMETER ConsentedPrincipalId
+Specifies the principal in the grant to remove.
+
+.PARAMETER AllPermissions
+Remove consent for all permissions.
+
+.PARAMETER ConsentForAllPrincpals
+Specify ConsentForAllPrincipals to remove a consent grant for all principals of the organization rather than a specific principal.
+
+.PARAMETER Connection
+Specify the Connection parameter to use as an alternative connection to the current connection.
+
+.OUTPUTS
+The command returns no output.
+
+.EXAMPLE
+Remove-GraphApplicationConsent -AppId a5ebc719-fee5-4eb8-963c-4f1cf24ae813 -DelegatedPermissions Files.Read -ConsentedPrincipalId 770883fe-8c35-4d44-9047-e54c2667214b
+
+In this example, the consent for the delegated permission Files.Read to principal 770883fe-8c35-4d44-9047-e54c2667214b is removed for the application with identifier a5ebc719-fee5-4eb8-963c-4f1cf24ae813
+
+.EXAMPLE
+Get-GraphApplicationConsent -AppId a5ebc719-fee5-4eb8-963c-4f1cf24ae813 -All |
+    Remove-GraphApplicationConsent
+
+This example shows how to remove all application permissions granted to an application by enumerating the permissions granted to an application using the Get-GraphApplicationConsent command and piping the output to Remove-GraphApplicationConsent which removes each consented permission emitted by Get-GraphApplicationConsent.
+
+.EXAMPLE
+Get-GraphApplicationServicePrincipal -All |
+    Remove-GraphApplicationConsent -DelegatedPermissions Directory.AccessAsUser.All
+
+In this example, the delegated permission Directory.AccessAsUser.All is removed from every application in the organization. This is accomplished by enumerating all service principals and then piping the output to Remove-GraphApplicationConsent
+
+.LINK
+Get-GraphApplicationConsent
+Set-GraphApplicationConsent
+Get-GraphApplication
+Get-GraphApplicationServicePrincipal
+Register-GraphApplication
+New-GraphApplication
+#>
 function Remove-GraphApplicationConsent {
     [cmdletbinding(positionalbinding=$false, defaultparametersetname='delegated')]
     param(
@@ -36,17 +98,15 @@ function Remove-GraphApplicationConsent {
         [string[]] $DelegatedUserPermissions,
 
         [parameter(parametersetname='delegatedallusers', mandatory=$true)]
-        [switch] $ConsentForAllUsers,
+        [switch] $ConsentForAllPrincipals,
 
         [parameter(parametersetname='delegated')]
-        $Principal,
+        $ConsentedPrincipalId,
 
         [parameter(parametersetname='allpermissions', mandatory=$true)]
         [switch] $AllPermissions,
 
-        $Connection,
-
-        $Version
+        $Connection
     )
 
     begin {
@@ -79,7 +139,7 @@ function Remove-GraphApplicationConsent {
 
         $isAppOnly = ($consentGrantType -eq 'Application') -or ( $ApplicationPermissions -and ( $ApplicationPermissions.length -gt 0 ) )
 
-        $commandContext = new-so CommandContext $Connection $Version $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+        $commandContext = new-so CommandContext $Connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
         $appAPI = new-so ApplicationAPI $commandContext.connection $commandContext.version
 
         $appSPId = if ( $consentObject ) {
@@ -101,10 +161,10 @@ function Remove-GraphApplicationConsent {
 
         $filterClauses = @($appFilter)
 
-        $grantFilter = if ( $ConsentForAllUsers.IsPresent ) {
+        $grantFilter = if ( $ConsentForAllPrincipals.IsPresent ) {
             "consentType eq 'AllPrincipals'"
-        } elseif ( $Principal ) {
-            "consentType eq 'Principal' and principalId eq '$Principal'"
+        } elseif ( $ConsentedPrincipalId ) {
+            "consentType eq 'Principal' and principalId eq '$ConsentedPrincipalId'"
         }
 
         if ( $grantFilter ) {

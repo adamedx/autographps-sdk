@@ -19,7 +19,7 @@
 
 <#
 .SYNOPSIS
-Registers an Azure Active Directory (AAD) application in the organization.
+Registers an existing Azure Active Directory (AAD) application in the organization.
 
 .DESCRIPTION
 In order for an Azure Active Directory (AAD) application identity to access resources from Microsoft Graph, it must be registered in the organization. The mere creation of an application in the organization using the Graph API does not register the application -- an application is considered registered only after a service principal resource associated with it has been created in the organization. Register-GraphApplication creates a service principal in the organization for a given application. This is useful for configuring permissions consented to the application before the first sign-in occurs for the application so that identities performing the sign-in are able to obtain the permissions they require.
@@ -34,13 +34,13 @@ Thus for multi-tenant applications, Register-GraphApplication is the only way to
 
 For more information about consent, see the Set-GraphApplicationConsent command documentation.
 
-Note that the registration peration can be undone. To unregister an application, use the Unregister-GraphApplication command.
+Note that the registration operation can be undone. To unregister an application, use the Unregister-GraphApplication command.
 
 .PARAMETER AppId
 The AppId parameter specifies the application identifier for the application to register in the organization. If the application is a single-tenant application, the application identifier must refer to an application with that identifier in the organization.
 
 .PARAMETER DelegatedPermissions
-The delegated permissions to be consented to the application.
+The delegated permissions to be consented to the application. If the ConsentedPrincipalId parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless PrincipalIdToConsent or ConsentForAllPrincipals is specified.
 
 .PARAMETER ApplicationPermissions
 The application permissions to be consented to the application.
@@ -85,6 +85,7 @@ In this example the PrincipalIdToConsent parameter is specified to Register-Grap
 Set-GraphApplicationConsent
 New-GraphApplication
 Unregister-GraphApplication
+Get-GraphApplicationServicePrincipal
 #>
 function Register-GraphApplication {
     [cmdletbinding(defaultparametersetname='simple', positionalbinding = $false)]
