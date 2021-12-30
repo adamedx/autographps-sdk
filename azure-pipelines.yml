@@ -33,7 +33,7 @@ jobs:
   - checkout: self
   - task: AzureKeyVault@2
     inputs:
-      azureSubscription: '439deb75-e36b-4569-b075-f2c2448e8a3e'
+      azureSubscription: 'Azure Free Trial(439deb75-e36b-4569-b075-f2c2448e8a3e)'
       KeyVaultName: 'CI-AutoGraphPS-SDK'
       SecretsFilter: '*'
       RunAsPreJob: false
