@@ -41,7 +41,7 @@ ScriptClass CertificateHelper {
     }
 
     function NewCertificate([string] $certDirectory, $certStoreLocation, [PSCredential] $certCredential, [bool] $noCertCredential, [bool] $updateApplication, [string] $certificateFilePath, [int] $keyLength) {
-        $targetCertCredential = __GetCertCredentialForDirectory $certDirectory $certCredential $noCertCredential
+        $targetCertCredential = __GetCertFileCredential $certDirectory $certificateFilePath $certCredential $noCertCredential
 
         if ( $updateApplication ) {
             __SyncApplication
@@ -63,10 +63,19 @@ ScriptClass CertificateHelper {
         }
     }
 
-    function __GetCertCredentialForDirectory([string] $certDirectory, [PSCredential] $certCredential, [bool] $noCertCredential) {
-        if ( $certDirectory ) {
-            if (! (test-path -pathtype container $certDirectory) ) {
-                throw [ArgumentException]::new("The specified certificate output directory '$certDirectory' is not a valid directory")
+    function __GetCertFileCredential([string] $certDirectory, [string] $certificateFilePath, [PSCredential] $certCredential, [bool] $noCertCredential) {
+        $invalidPath = $certDirectory
+
+        $targetDirectory = if ( $certDirectory ) {
+            $certDirectory
+        } elseif ( $certificateFilePath ) {
+            $invalidPath = $certificateFilePath
+            split-path -parent $certificateFilePath
+        }
+
+        if ( $targetDirectory ) {
+            if ( ! (test-path -pathtype container $targetDirectory) ) {
+                throw [ArgumentException]::new("The specified certificate output location '$invalidPath' is not a valid directory or is not contained in a valid directory")
             }
 
             if ( $certCredential ) {
