@@ -407,7 +407,7 @@ function Invoke-GraphApiRequest {
             }
 
             if ( $Search ) {
-                $queryParameters += @('$search={0}' -f $Search)
+                $queryParameters += @('$search="{0}"' -f $Search)
             }
 
             if ( $Filter ) {
