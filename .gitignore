@@ -4,6 +4,8 @@ bin/*
 test/results/*
 .psrepo/*
 .devmodule/*
+.doc/*
+.test/*
 .logs/*
 NuGet.Config
 localnuget.config

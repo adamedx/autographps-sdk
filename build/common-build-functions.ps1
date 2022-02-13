@@ -68,6 +68,14 @@ function Get-DevModuleDirectory {
     join-path (Get-SourceRootDirectory) '.devmodule'
 }
 
+function Get-GeneratedTestsDirectory {
+    join-path (Get-SourceRootDirectory) '.test'
+}
+
+function Get-GeneratedDocsDirectory {
+    join-path (Get-SourceRootDirectory) '.doc'
+}
+
 function Get-DevRepoDirectory {
     join-path (Get-SourceRootDirectory) '.psrepo'
 }
@@ -237,7 +245,25 @@ function Clean-Tools {
     }
 }
 
+function Clean-TestDirectories {
+    $generatedTestsLocation = Get-GeneratedTestsDirectory
+
+    if (test-path $generatedTestsLocation) {
+        $generatedTestsLocation | remove-item -r -force
+    }
+}
+
+function Clean-DocDirectories {
+    $generatedDocsLocation = Get-GeneratedDocsDirectory
+
+    if (test-path $generatedDocsLocation) {
+        $generatedDocsLocation | remove-item -r -force
+    }
+}
+
 function Clean-BuildDirectories {
+    Clean-TestDirectories
+
     $libPath = join-path $psscriptroot '../lib'
     if (test-path $libPath) {
         join-path $psscriptroot '../lib' | remove-item -r -force
@@ -270,6 +296,12 @@ function Clean-BuildDirectories {
 
     if (test-path $devRepoLocation) {
         $devRepoLocation | remove-item -r -force
+    }
+
+    $generatedDocsLocation = Get-GeneratedDocsDirectory
+
+    if (test-path $generatedDocsLocation) {
+        $generatedDocsLocation | remove-item -r -force
     }
 }
 

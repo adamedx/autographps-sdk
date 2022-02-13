@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2022, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +13,9 @@
 # limitations under the License.
 
 [cmdletbinding()]
-param([switch] $IncludeTools, [switch] $All, [switch] $IntegrationTestOnly )
+param([string] $ScriptPath)
 
-. "$psscriptroot/common-build-functions.ps1"
+Set-StrictMode -Version 2
 
-if ( $IntegrationTestOnly.IsPresent ) {
-    Clean-TestDirectories
-} else {
-    if ( $IncludeTools.IsPresent -or $All.IsPresent ) {
-        clean-tools
-    }
-
-    clear-TemporaryPSModuleSources
-
-    clean-builddirectories
-}
-
+. $ScriptPath
 

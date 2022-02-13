@@ -2,6 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Fix errors missing headers and other information in the log
+* Fix Remove-GraphApplicationCertificate by keyid removing other keys!!!
 * Rename some consent parameters in New-GraphApplication for consistency with other commands.
 * Make Set-GraphApplicationCertificate make only one request when multiple certificate paths are specified by the pipeline.
 * Make exportedcertficatepath member of new-graph*certificate use a fully qualified path
@@ -472,6 +474,7 @@
 * Rename Get-GraphToken to Get-GraphAccessToken
 * Make Register-GraphApplication use the formatting for service principal
 * Remove publisherdomain from serviceprincipal output as the property does not exist
+* Fix New-GraphConnection name parameter returning unnamed?!!!
 
 ### Postponed
 

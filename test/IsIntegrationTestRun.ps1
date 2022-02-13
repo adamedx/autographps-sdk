@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2022, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +13,13 @@
 # limitations under the License.
 
 [cmdletbinding()]
-param([switch] $IncludeTools, [switch] $All, [switch] $IntegrationTestOnly )
-
-. "$psscriptroot/common-build-functions.ps1"
-
-if ( $IntegrationTestOnly.IsPresent ) {
-    Clean-TestDirectories
-} else {
-    if ( $IncludeTools.IsPresent -or $All.IsPresent ) {
-        clean-tools
+param()
+if ( $__IntegrationTestRoot ) {
+    if ( ! ( test-path $__IntegrationTestRoot ) ) {
+        throw "The `$__IntegrationTestRoot variable is defined but it is set to the value '$__IntegrationTestroot' which is not a valid path"
     }
 
-    clear-TemporaryPSModuleSources
-
-    clean-builddirectories
+    $true
+} else {
+    $false
 }
-
-
