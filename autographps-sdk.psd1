@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.29.0'
+ModuleVersion = '0.30.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -247,9 +247,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.29.0 Release Notes
+## AutoGraphPS-SDK 0.30.0 Release Notes
 
-This release removes the ADAL library dependency and removes support for the AAD Graph service endpoint. Includes an extensive documentation update so that all commands are now documented.
+Add integration testing to CI pipeline and fix some code defects.
 
 ### New dependencies
 
@@ -257,25 +257,17 @@ This release removes the ADAL library dependency and removes support for the AAD
 
 ### Breaking changes
 
-* Support for the AAD Graph service endpoint (https://graph.windows.net) has been removed; the `AADGraph` parameter has been removed from all commands that supported it such as `Connect-GraphApi`, `Get-GraphResource`, and `Invoke-GraphApiRequest`. The module now only supports endpoints that support the Graph API protocol implemented by https://graph.microsoft.com and documented at https://docs.microsoft.com/en-us/graph.
-* The `AuthProtocol` parameter of `Connect-GraphApi` and `New-GraphConnection` has been removed
-* If you relied on the module loading ADAL in some circumstances, this no longer occurs as this release removes the ADAL code altogether.
-* The `Get-GraphToken` command was renamed to `Get-GraphAccessToken`
-* `Set-GraphApplicationConsent` and some other commands no longer support a version parameter.
+None.
 
 ### New features
 
-* `Index` parameter added to `Get-GraphLog` to get the log entry at a specific index
-* `Get-GraphLog` now supports the parameter aliases `First` for `Newest` and `Last` for `Oldest`.
-* `Register-GraphApplication` now returns formatted output
+None.
 
 ### Fixed defects
 
-* Fixed `./build/import-devmodule.ps1` command so that if it launches a shell it does not load the PowerShell profile by default to ensure that components like posh-git, oh-my-posh, or anything else loaded in the profile does not interfere with unit tests. Added `PSProfile` option to the command to allow the profile to be loaded.
-* `Skip` parameter of `Get-GraphLog` had no effect, this has been fixed.
-* `Set-GraphApplicationConsent` now handles errors correctly when processing objects in the pipeline.
-* The static permissions data has been updated to reflect the newest Graph API permissions in commands like Connect-GraphApi.
-* Parameter completion for permissions now tries to use the default connection if it is already connected -- previously it would always use static data rather than treating it as the fallback.
+* Fixed missing prompt for certificate credentials and failure to configure the certificate credentials when using `CertificateFilePath` or `CertificatePath` parameters of `New-GraphApplicationCertificate` and `New-GraphLocalCertificate`.
+* Fixed missing surrounding double quotes in generated URI when the `Search` parameter in `Invoke-GraphApiRequest` and `Get-GraphResource` is used to create an argument for `Search` -- seems quotes were not required for requests on `messages` (i.e. mail) but for directory objects they are required. Workaround is to add them to the search parameter value.
+* The `Name` parameter of `New-GraphConnection` was being ignored in certain cases resulting in an unnamed connection -- this has been fixed.
 
 '@
 
