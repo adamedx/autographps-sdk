@@ -150,7 +150,12 @@ $testCaseStrings = for ( $testIndex = 0; $testIndex -lt $sampleCollection.Sample
 
     $testParameterCodeString = ( $testParameterAssignments -join "`n" )
 
-    $testCodeString = $testParameterAssignments + "`n" + ( . $sample.samplegenerator )
+    $generatedTestCode = . $sample.samplegenerator
+
+    $testCodeString = @"
+    $testParameterAssignments
+    $generatedTestCode
+"@
     $sampleCodeCases += . $sample.sampleGenerator @docParameterTable
 
     . $testCaseScriptBlock $sample.Description $testCodeString
