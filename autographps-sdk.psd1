@@ -249,7 +249,7 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS-SDK 0.30.0 Release Notes
 
-Add integration testing to CI pipeline and fix some code defects.
+Add integration testing to CI pipeline, sample code documentation generation,  and fix some code defects.
 
 ### New dependencies
 
