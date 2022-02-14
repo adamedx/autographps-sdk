@@ -6,6 +6,7 @@ test/results/*
 .devmodule/*
 .doc/*
 .test/*
+.testconfig/*
 .logs/*
 NuGet.Config
 localnuget.config

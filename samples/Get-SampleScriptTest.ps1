@@ -49,28 +49,28 @@ $testScriptBlock = {
 @"
 Describe 'The samples for ''$testTitle''' -Tag SampleIntegration {
     Context 'When executing the samples' {
-        `$setupState = @{}
-
-        `$setupParams = {
-            $setupParams
-        }
-
-        `$TestContext = @{}
-
         BeforeAll {
-            . { $beforeAll } `$setupParams `$setupState `$testContext
+            `$__setupState = @{}
+
+            `$__setupParams = @{
+                $setupParams
+            }
+
+            `$__TestContext = @{}
+
+            . { $beforeAll } `$__setupParams `$__setupState `$__testContext
         }
 
         AfterAll {
-            . { $afterAll } `$setupParams `$setupState `$testContext
+            . { $afterAll } `$__setupState
         }
 
         BeforeEach {
-            . { $beforeEach } `$setupParams `$setupState `$testContext
+            . { $beforeEach } `$__setupParams `$__setupState `$__testContext
         }
 
         AfterEach {
-            . { $afterEach } `$setupParams `$setupState `$testContext
+            . { $afterEach } `$__setupState
         }
 
         $concatenatedCases
@@ -97,7 +97,7 @@ $testSetupParameterTable = @{}
 
 foreach ( $testSetupParameterName in $sampleCollection.TestSetupParams.Keys ) {
     $testSetupParameterValue = . $testParameterToCodeString $sampleCollection.TestSetupParams[$testSetupParameterName]
-    $testSetupParameterTable.Add($testSetupParameterName, $testSetupParameterEntry)
+    $testSetupParameterTable.Add($testSetupParameterName, $testSetupParameterValue)
 }
 
 $sampleCodeCases = @()
@@ -113,9 +113,15 @@ $testCaseStrings = for ( $testIndex = 0; $testIndex -lt $sampleCollection.Sample
     $generatorParameterCount = ($generatorParameters | measure-object).count
     $testParameters = $sample.TestParameters
     $docParameterTable = @{}
+    $exceptionSubstring = $sample['ExpectedExceptionSubstring']
+    $testBlock = $sample['Test']
 
     if ( $generatorParameterCount -ne $testParameters.Length ) {
         throw "Sample test '$($sample.Name) in file '$scriptFileName' at index $testIndex takes $generatorParmaeterCount parameters but only $($sample.TestParameters.Length) parameters were specifid"
+    }
+
+    $testBlockCode = if ( $testBlock ) {
+        $testBlock.ToString()
     }
 
     $testParameterTable = @{}
@@ -152,16 +158,23 @@ $testCaseStrings = for ( $testIndex = 0; $testIndex -lt $sampleCollection.Sample
 
     $generatedTestCode = . $sample.samplegenerator
 
+    $wrappedTestCode = if ( $exceptionSubstring ) {
+        "{ $generatedTestCode } | Should Throw '$exceptionSubstring'"
+    } else {
+        " `$testResult = ( $generatedTestCode )"
+    }
+
     $testCodeString = @"
     $testParameterAssignments
-    $generatedTestCode
+    $wrappedTestCode
+    $testBlockCode
 "@
     $sampleCodeCases += . $sample.sampleGenerator @docParameterTable
 
     . $testCaseScriptBlock $sample.Description $testCodeString
 }
 
-$testContent = . $testScriptBlock $scriptTitle $testCaseStrings $testSetupParameterTable $sample['BeforeAll'] $sample['Afterall'] $sample['BeforeEach'] $sample['AfterEach']
+$testContent = . $testScriptBlock $scriptTitle $testCaseStrings $testSetupParameterTable $sampleCollection['BeforeAll'] $sampleCollection['Afterall'] $sampleCollection['BeforeEach'] $sampleCollection['AfterEach']
 
 
 [PSCustomObject] @{

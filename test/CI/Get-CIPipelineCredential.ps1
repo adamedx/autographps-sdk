@@ -17,8 +17,11 @@ param(
     [string] $pfxBase64Secret
 )
 
+Set-StrictMode -Version 2
+
 if ( $pfxBase64Secret ) {
     $secretBytes = [System.Convert]::FromBase64String($pfxBase64Secret)
-    $certCollection = [System.Security.Cryptography.X509Certificates.X509Certificate2Collection]::new()
-    $certCollection.Import($secretBytes, $null, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable)
+    [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($secretBytes)
+#    $certCollection = [System.Security.Cryptography.X509Certificates.X509Certificate2Collection]::new()
+#    $certCollection.Import($secretBytes, $null, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable)
 }

@@ -9,6 +9,10 @@ trigger:
 variables:
   TEST_OUTPUT_DIRECTORY: './test/results'
   TEST_OUTPUT_FILE: pester-testresults.xml
+  TEST_SAMPLES_OUTPUT_FILE: sample-testresults.xml
+  TEST_INTEGRATION_OUTPUT_FILE: integration-testresults.xml
+  TEST_APPID: 7cb1941c-080a-406a-8d4c-0bd8b06c37c9
+  TEST_APPTENANT: cb494bd3-5606-4ab6-bc24-d8187b172b2b
 
 jobs:
 - job: BuildWithTests
@@ -117,6 +121,12 @@ jobs:
     inputs:
       targetType: inline
       script: './build/Init-DirectTestRun.ps1 -verbose; Invoke-Pester -OutputFile "$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_OUTPUT_FILE)" -OutputFormat NUnitXml'
+      pwsh: $(USE_POWERSHELL_CORE)
+  - task: powershell@2
+    displayName: 'Generate sample documents and tests'
+    inputs:
+      targetType: inline
+      script: '& ./samples/Generate-SampleTestScripts.ps1'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:

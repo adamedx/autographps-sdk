@@ -12,12 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-[cmdletbinding()]
+[cmdletbinding(positionalbinding=$false, defaultparametersetname='configfile')]
 param(
     [string] $TestRoot,
+
+    [parameter(parametersetname='configfile')]
     [string] $TestConfigPath,
+
+    [parameter(parametersetname='explicit', mandatory=$true)]
+    [string] $TestAppId,
+
+    [parameter(parametersetname='explicit', mandatory=$true)]
+    [string] $TestAppTenant,
+
+    [parameter(parametersetname='explicit', mandatory=$true)]
+    [System.Security.Cryptography.X509Certificates.X509Certificate2] $TestAppCertificate,
+
     $GraphConnectionOverride
 )
+
+Set-StrictMode -Version 2
 
 $global:__IntegrationTestInfo = $null
 
@@ -33,15 +47,29 @@ $global:__IntegrationTestRoot = if ( $TestRoot ) {
 
 $config = & $psscriptroot/Get-IntegrationTestStatus.ps1
 
+$targetTestAppId = if ( $TestAppId ) {
+    $TestAppId
+} else {
+    $config.TestAppId
+}
+
+$targetTestAppTenant = if ( $TestAppTenant ) {
+    $TestAppTenant
+} else {
+    $config.TestAppTenant
+}
+
 $targetConnection = if ( $GraphConnectionOverride ) {
     $GraphConnectionOverride
-} elseif ( $config.TestAppId -and $config.TestAppTenant ) {
-    $certPathArgument = @{}
-    if ( $config.TestAppCertPath ) {
-        $certPathArgument.Add('CertificatePath', $config.TestAppCertPath)
+} elseif ( $targetTestAppId -and $targetTestAppTenant ) {
+    $certArgument = @{}
+    if ( $TestAppCertificate ) {
+        $certArgument.Add('Certificate', $TestAppCertificate)
+    } elseif ( $config.TestAppCertPath ) {
+        $certArgument.Add('CertificatePath', $config.TestAppCertPath)
     }
 
-    New-GraphConnection -AppId $config.TestAppId -TenantId $config.TestAppTenant -NoninteractiveAppOnlyAuth -CertificatePath @certPathArgument
+    New-GraphConnection -AppId $targetTestAppId -TenantId $targetTestAppTenant -NoninteractiveAppOnlyAuth  @certArgument
 }
 
 if ( ! $targetConnection ) {
