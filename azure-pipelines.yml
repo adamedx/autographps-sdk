@@ -116,16 +116,23 @@ jobs:
       script: si env:TEST_OUTPUT_PATH "$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_OUTPUT_FILE)"; ./build/import-devmodule.ps1 -initialcommand 'Invoke-Pester -OutputFile $env:TEST_OUTPUT_PATH -OutputFormat NUnitXml' -Wait -ReuseConsole
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
+    displayName: 'Run tests directly'
+    condition: eq(variables.OS_PLATFORM, 'ubuntu') # Only needed on Linux to avoid hangs
+    inputs:
+      targetType: inline
+      script: './build/Init-DirectTestRun.ps1 -verbose; Invoke-Pester -OutputFile "$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_OUTPUT_FILE)" -OutputFormat NUnitXml'
+      pwsh: $(USE_POWERSHELL_CORE)
+  - task: powershell@2
     displayName: 'Generate sample documents and tests'
     inputs:
       targetType: inline
-      script: '& ./samples/Generate-SampleTestScripts.ps1 -verbose'
+      script: './samples/Generate-SampleTestScripts.ps1 -verbose'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
      displayName: 'Run sample code integration tests'
      inputs:
        targetType: inline
-       script: '$appCert = & ./test/CI/Get-CIPipelineCredential.ps1 $env:CI-Test-Secret; & ./test/Initialize-IntegrationTestEnvironment.ps1 -TestAppId $env:TEST_APPID -TestAppTenant $env:TEST_APPTENANT -TestAppCertificate $appCert'
+       script: '$appCert = ./test/CI/Get-CIPipelineCredential.ps1 $env:CI-Test-Secret; ./test/Initialize-IntegrationTestEnvironment.ps1 -TestAppId $env:TEST_APPID -TestAppTenant $env:TEST_APPTENANT -TestAppCertificate $appCert'
        pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:
