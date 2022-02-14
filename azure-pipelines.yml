@@ -132,7 +132,7 @@ jobs:
     displayName: 'Run sample code integration tests'
     inputs:
       targetType: inline
-      script: '$($appCert) = ./test/CI/Get-CIPipelineCredential.ps1 $($env:CI-Test-Secret); ./test/Initialize-IntegrationTestEnvironment.ps1 -TestAppId $($env:TEST_APPID) -TestAppTenant $($env:TEST_APPTENANT) -TestAppCertificate $($appCert)'
+      script: '$($appCert) = ./test/CI/Get-CIPipelineCredential.ps1 (get-item env:CI-Test-Secret).value; ./test/Initialize-IntegrationTestEnvironment.ps1 -TestAppId $($env:TEST_APPID) -TestAppTenant $($env:TEST_APPTENANT) -TestAppCertificate $($appCert)'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:
