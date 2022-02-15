@@ -133,7 +133,7 @@ jobs:
     inputs:
       targetType: inline
       script:
-        $appCert = ./test/CI/Get-CIPipelineCredential.ps1 $CI-Test-Secret; ./test/Initialize-IntegrationTestEnvironment.ps1 -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -TestAppCertificate $appCert
+        $appCert = ./test/CI/Get-CIPipelineCredential.ps1 $(AutoGraph-CI-Pipeline-Cert); ./test/Initialize-IntegrationTestEnvironment.ps1 -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -TestAppCertificate $appCert
       pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:
