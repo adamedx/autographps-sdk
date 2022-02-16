@@ -141,7 +141,7 @@ jobs:
       pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:
-      searchFolder $(TEST_OUTPUT_DIRECTORY)
+      searchFolder: $(TEST_OUTPUT_DIRECTORY)
       testResultsFormat: NUnit
       testResultsFiles:
         $(TEST_OUTPUT_FILE)
