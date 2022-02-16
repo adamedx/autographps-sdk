@@ -141,5 +141,5 @@ jobs:
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: NUnit
-      testResultsFiles: $(TEST_OUTPUT_DIRECTORY)/*.xml
+      testResultsFiles: $(TEST_OUTPUT_DIRECTORY)/**
       failTaskOnFailedTests: true
