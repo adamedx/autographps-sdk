@@ -156,7 +156,7 @@ $testCaseStrings = for ( $testIndex = 0; $testIndex -lt $sampleCollection.Sample
 
     $testParameterCodeString = ( $testParameterAssignments -join "`n" )
 
-    $generatedTestCode = . $sample.samplegenerator
+    $generatedTestCode = ( . $sample.samplegenerator ) -join "`n"
 
     $wrappedTestCode = if ( $exceptionSubstring ) {
         "{ $generatedTestCode } | Should Throw '$exceptionSubstring'"
