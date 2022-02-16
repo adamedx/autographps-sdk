@@ -137,12 +137,13 @@ jobs:
         $appCert = ./test/CI/Get-CIPipelineCredential.ps1 $(AutoGraph-CI-Pipeline-Cert); ./test/Initialize-IntegrationTestEnvironment.ps1 -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -TestAppCertificate $appCert;
         Push-Location ./.test;
         Invoke-Pester -OutputFile "../$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_SAMPLES_OUTPUT_FILE)" -OutputFormat NUnitXml;
-        get-childitem "../$($env:TEST_OUTPUT_DIRECTORY)" -r
+        get-childitem "../$($env:TEST_OUTPUT_DIRECTORY)"
       pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:
+      searchFolder $(TEST_OUTPUT_DIRECTORY)
       testResultsFormat: NUnit
       testResultsFiles:
-        $(TEST_OUTPUT_DIRECTORY)/$(TEST_OUTPUT_FILE);
-        $(TEST_OUTPUT_DIRECTORY)/$(TEST_SAMPLES_OUTPUT_FILE)
+        $(TEST_OUTPUT_FILE)
+        $(TEST_SAMPLES_OUTPUT_FILE)
       failTaskOnFailedTests: true
