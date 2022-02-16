@@ -141,7 +141,5 @@ jobs:
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: NUnit
-      testResultsFiles:
-        $(TEST_OUTPUT_DIRECTORY)/$(TEST_OUTPUT_FILE)
-        $(TEST_OUTPUT_DIRECTORY)/$(TEST_SAMPLES_OUTPUT_FILE)
+      testResultsFiles: $(TEST_OUTPUT_DIRECTORY)/$(TEST_OUTPUT_FILE)
       failTaskOnFailedTests: true
