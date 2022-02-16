@@ -143,5 +143,5 @@ jobs:
     inputs:
       searchFolder: $(TEST_OUTPUT_DIRECTORY)
       testResultsFormat: NUnit
-      testResultsFiles: *
+      testResultsFiles: */**
       failTaskOnFailedTests: true
