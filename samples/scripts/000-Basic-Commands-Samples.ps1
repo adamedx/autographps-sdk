@@ -73,7 +73,7 @@
                 param()
                 "Get-GraphResource /me"
             }
-            ExpectedExceptionSubstring = 'BadRequest'
+            ExpectedExceptionSubstring = 'Request'
         }
     )
 }
