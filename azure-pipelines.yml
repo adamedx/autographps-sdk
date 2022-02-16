@@ -143,7 +143,5 @@ jobs:
     inputs:
       searchFolder: $(TEST_OUTPUT_DIRECTORY)
       testResultsFormat: NUnit
-      testResultsFiles:
-        $(TEST_OUTPUT_FILE)
-        $(TEST_SAMPLES_OUTPUT_FILE)
+      testResultsFiles: *
       failTaskOnFailedTests: true
