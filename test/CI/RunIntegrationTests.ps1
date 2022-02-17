@@ -12,27 +12,65 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-[cmdletbinding()]
+[cmdletbinding(positionalbinding=$false)]
 param(
-    [ValidateSet('All', 'SamplesOnly', 'NonSamplesOnly')]
-    [string] $Filter = 'All',
-    [switch] $NoClean,
-    [switch] $CIPipeline
+    [parameter(position=0)]
+    [string] $TestRoot = 'test',
+
+    [string] $TestAppId,
+
+    [string] $TestAppTenant,
+
+    [string] $CIBase64TestAppCert
+
+    [HashTable] $TestParamsPassThru,
 )
 
 . "$psscriptroot/../../build/common-build-functions.ps1"
 
-$tags = if ( $Filter -eq 'SamplesOnly' ) {
-    'SampleIntegration'
-} elseif ( $Filter -eq 'NonSamplesOnly' ) {
-    'Integration'
+$baseDirectory = Get-SourceRootDirectory
+
+$targetRoot = if ( $TestRoot ) {
+    join-path $baseDirectory $TestRoot
 } else {
-    'Integration', 'SampleIntegration'
+    $baseDirectory
 }
 
-if ( ! $NoClean.IsPresent ) {
-    Clean-TestDirectories
-    & "$psscriptroot/../../samples/Generate-SampleTestScripts.ps1"
+if ( ! ( Test-Path $targetRoot ) ) {
+    throw "Specified subdirectory '$TestRoot' could not be found under '$baseDirectory' -- the path '$targetRoot' is not valid."
 }
 
-Invoke-Pester @args -Tag $tags
+$targetRootPath = (get-item $targetRoot).FullName
+
+write-verbose "Preparing to execute integration tests under directory '$targetRootPath'..."
+
+& $psscriptroot/../../build/Init-DirectTestRun.ps1
+
+$appCert = if ( $CIBase64TestAppCert ) {
+    write-verbose "CI pipeline test application credential was specified"
+    & $psscriptroot/Get-CIPipelineCredential.ps1 $CIBase64TestAppCert
+} else {
+    write-verbose "No CI pipeline credential was specified, local configuration will be used for test app credential"
+}
+
+$testParams = @{}
+
+if ( $TestAppId ) {
+    $testParams['TestAppId'] = $TestAppId
+}
+
+if ( $TestAppTenant ) {
+    $testParams['TestAppTenant'] = $TestAppTenant
+}
+
+if ( $appCert ) {
+    $testParams['TestAppCertificate'] = $appCert
+}
+
+& $psscriptroot/../Initialize-IntegrationTestEnvironment.ps1 @testParams
+
+Push-Location $targetRootPath
+
+Invoke-Pester @TestParamsPassThru
+
+Pop-Location
