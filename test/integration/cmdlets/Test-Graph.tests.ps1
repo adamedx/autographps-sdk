@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if ( ! ( & ../../IsIntegrationTestRun.ps1 ) ) {
+if ( ! ( & $psscriptroot/../../IsIntegrationTestRun.ps1 ) ) {
     return
 }
 

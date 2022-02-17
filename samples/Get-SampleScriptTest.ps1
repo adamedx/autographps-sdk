@@ -48,6 +48,9 @@ $testScriptBlock = {
     } -join "`n"
 @"
 Describe 'The samples for ''$testTitle''' -Tag SampleIntegration {
+
+    Set-StrictMode -Version 2
+
     Context 'When executing the samples' {
         BeforeAll {
             `$__setupState = @{}
