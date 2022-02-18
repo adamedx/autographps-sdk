@@ -21,9 +21,9 @@ param(
 
     [string] $TestAppTenant,
 
-    [string] $CIBase64TestAppCert
+    [string] $CIBase64TestAppCert,
 
-    [HashTable] $TestParamsPassThru,
+    [HashTable] $TestParamsPassThru
 )
 
 . "$psscriptroot/../../build/common-build-functions.ps1"
