@@ -37,7 +37,7 @@ $targetRoot = if ( $TestRoot ) {
 }
 
 if ( ! ( Test-Path $targetRoot ) ) {
-    throw "Specified subdirectory '$TestRoot' could not be found under '$baseDirectory' -- the path '$targetRoot' is not valid."
+    throw "Specified subdirectory '$targetRoot' could not be found under '$baseDirectory' -- the path '$targetRoot' is not valid."
 }
 
 $targetRootPath = (get-item $targetRoot).FullName

@@ -126,7 +126,7 @@ jobs:
     displayName: 'Run integration tests'
     inputs:
       targetType: inline
-      script: './test/CI/RunIntegrationTests.ps1 -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(Autograph-CI-Pipeline-Cert) @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_INTEGRATION_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
+      script: './test/CI/RunIntegrationTests.ps1 -TestRoot test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(Autograph-CI-Pipeline-Cert) @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_INTEGRATION_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Generate sample documents and tests'
