@@ -26,6 +26,8 @@ param(
     [HashTable] $TestParamsPassThru
 )
 
+Set-StrictMode -Version 2
+
 . "$psscriptroot/../../build/common-build-functions.ps1"
 
 $baseDirectory = Get-SourceRootDirectory
