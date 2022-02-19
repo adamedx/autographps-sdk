@@ -42,7 +42,8 @@ if ( ! ( Test-Path $targetRoot ) ) {
     throw "Specified subdirectory '$targetRoot' could not be found under '$baseDirectory' -- the path '$targetRoot' is not valid."
 }
 
-$targetRootPath = (get-item $targetRoot).FullName
+# Use -Force since dot directories like .test are "hidden" on *nix without it.
+$targetRootPath = (get-item -Force $targetRoot).FullName
 
 write-verbose "Preparing to execute integration tests under directory '$targetRootPath'..."
 
