@@ -71,8 +71,5 @@ if ( $appCert ) {
 
 & $psscriptroot/../Initialize-IntegrationTestEnvironment.ps1 @testParams
 
-Push-Location $targetRootPath
+Invoke-Pester -Script $targetRootPath @TestParamsPassThru
 
-Invoke-Pester @TestParamsPassThru
-
-Pop-Location
