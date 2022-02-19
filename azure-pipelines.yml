@@ -7,7 +7,7 @@ trigger:
   - main
 
 variables:
-  TEST_OUTPUT_DIRECTORY: './test/results'
+  TEST_OUTPUT_DIRECTORY: $(Build.Repository.LocalPath)/test/results
   TEST_OUTPUT_FILE: pester-testresults.xml
   TEST_SAMPLES_OUTPUT_FILE: sample-testresults.xml
   TEST_INTEGRATION_OUTPUT_FILE: integration-testresults.xml
@@ -126,7 +126,7 @@ jobs:
     displayName: 'Run integration tests'
     inputs:
       targetType: inline
-      script: './test/CI/RunIntegrationTests.ps1 -TestRoot test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(Autograph-CI-Pipeline-Cert) -TestParamsPassThru @{OutputFile="../$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_INTEGRATION_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
+      script: './test/CI/RunIntegrationTests.ps1 -TestRoot test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(Autograph-CI-Pipeline-Cert) -TestParamsPassThru @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_INTEGRATION_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Generate sample documents and tests'
@@ -142,8 +142,8 @@ jobs:
         ./build/Init-DirectTestRun.ps1 -verbose;
         $appCert = ./test/CI/Get-CIPipelineCredential.ps1 $(AutoGraph-CI-Pipeline-Cert); ./test/Initialize-IntegrationTestEnvironment.ps1 -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -TestAppCertificate $appCert;
         Push-Location ./.test;
-        Invoke-Pester -OutputFile "../$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_SAMPLES_OUTPUT_FILE)" -OutputFormat NUnitXml;
-        get-childitem "../$($env:TEST_OUTPUT_DIRECTORY)"
+        Invoke-Pester -OutputFile "$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_SAMPLES_OUTPUT_FILE)" -OutputFormat NUnitXml;
+        get-childitem "$($env:TEST_OUTPUT_DIRECTORY)"
       pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:
