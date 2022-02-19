@@ -64,7 +64,7 @@ if ( test-path $targetTestConfigPath ) {
     write-verbose "Skipping read of test config at path '$targetTestConfigPath' because it doesn't exist. Getting info from __IntegrationTestGraphConnection instead."
 
     if ( $graphConnection ) {
-        Connect-GraphApi -Connection $graphConnection -NoSetCurrentConnection
+        Connect-GraphApi -Connection $graphConnection -NoSetCurrentConnection | out-null
         $testAppId = $graphConnection.Identity.App.AppId
         $testAppTenant = $graphConnection.Identity.TenantDisplayId
     }
