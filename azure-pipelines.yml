@@ -138,7 +138,7 @@ jobs:
     displayName: 'Run sample code integration tests'
     inputs:
       targetType: inline
-        script: './test/CI/RunIntegrationTests.ps1 -TestRoot .test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(Autograph-CI-Pipeline-Cert) -TestParamsPassThru @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_SAMPLES_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
+      script: './test/CI/RunIntegrationTests.ps1 -TestRoot .test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(Autograph-CI-Pipeline-Cert) -TestParamsPassThru @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_SAMPLES_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:
