@@ -36,17 +36,12 @@ jobs:
   steps:
   - checkout: self
   - task: AzureKeyVault@2
+    displayName: 'Populate pipeline variables with the certificate from keyvault'
     inputs:
       azureSubscription: 'Azure Free Trial(439deb75-e36b-4569-b075-f2c2448e8a3e)'
       KeyVaultName: 'CI-AutoGraphPS-SDK'
-      SecretsFilter: '*'
+      SecretsFilter: 'Autograph-CI-Pipeline-Cert'
       RunAsPreJob: false
-  - task: powershell@2
-    displayName: 'Show that we can get a secret'
-    inputs:
-      targetType: inline
-      script: 'echo $(CI-Test-Secret) | out-null'
-      pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Show current PowerShell version information'
     inputs:

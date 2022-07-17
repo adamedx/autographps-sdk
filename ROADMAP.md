@@ -2,6 +2,7 @@
 
 ## To-do items -- prioritized
 
+* Fix missing redirecturi in connection format output
 * Fix errors missing headers and other information in the log
 * Fix Remove-GraphApplicationCertificate by keyid removing other keys!!!
 * Rename some consent parameters in New-GraphApplication for consistency with other commands.

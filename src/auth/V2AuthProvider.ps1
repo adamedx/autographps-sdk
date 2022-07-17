@@ -294,10 +294,15 @@ ScriptClass V2AuthProvider {
                 # This works around the fact that Import-Assembly does not currently look
                 # for netcoreapp2.1 libraries by default -- fortunately we can override this
                 # to get the desired version
-                $targetframeworkParameter = if ( $PSEdition -ne 'Desktop' ) {
+                $targetframeworkParameter = if ( $PSEdition -ne 'Desktop' -and $PSVersionTable.Platform -ne 'Win32NT' ) {
+                    # This ends up just being non-Windows where we use net core, see note below for reasons why
                     @{TargetFrameworkMoniker = 'netcoreapp2.1'}
                 } else {
-                    @{}
+                    # Additionally, even on Windows with PS Core we use net45 because it supports embedded web views.
+                    # Embedded web views currently require either Windows with net45 OR any platform with netcore AND
+                    # some additional desktop components, and we're not willing to include those (yet). For more
+                    # information, see https://aka.ms/msal-net-webview2.
+                    @{TargetFrameworkMoniker = 'net45'}
                 }
 
                 $libPath = join-path $this.scriptRoot ../../lib
