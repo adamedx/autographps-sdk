@@ -27,7 +27,7 @@ Author = 'Adam Edwards'
 CompanyName = 'Modulus Group'
 
 # Copyright statement for this module
-Copyright = '(c) 2021 Adam Edwards.'
+Copyright = '(c) 2022 Adam Edwards.'
 
 # Description of the functionality provided by this module
 Description = 'PowerShell SDK for Microsoft Graph automation'
@@ -262,7 +262,7 @@ None.
 
 ### New features
 
-* Interactive sign-ins on PowerShell Core now support the use of an embedded web view control just like Windows PowerShell (i.e. desktop edition). PowerShell Core always required the use of a web browser for interactive sign-ins, but this would only work if the redirect URI for the app being signed in supported 'http://localhost'. For apps that use 'https://login.microsoftonline.com/common/oauth2/nativeclient' the sign-in would fail on PowerShell Core edition, even though Windows PowerShell Desktop supported it just fine. To implement this, the net45 version of MSAL is now used by this module on PowerShell Core. See https://aka.ms/msal-net-webview2 for related information.
+None.
 
 ### Fixed defects
 
