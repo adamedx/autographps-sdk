@@ -50,7 +50,7 @@ ScriptClass ApplicationAPI {
         }
 
         # This should be additive, but methods to add to the collection
-        # don't seem to work
+        # don't seem to work.
         $keyCredentials = @()
 
         if ( $preserveExisting -and ($existingkeyCredentials | measure-object).count ) {
@@ -85,6 +85,9 @@ ScriptClass ApplicationAPI {
             'applications'
         }
 
+        # Note that we always write, even if no credentials were specified at all. So a case where a user
+        # somehow specifies no credentials to write and the object has no existing credentials will still
+        # result in a write -- optimizations to avoid this should be performed outside the function.
         Invoke-GraphApiRequest "/$targetClass/$appObjectId" -method PATCH -Body $appPatch -version $this.version -connection $this.connection -ConsistencyLevel Session | out-null
     }
 
@@ -101,7 +104,9 @@ ScriptClass ApplicationAPI {
     }
 
     function SetKeyCredentials($appObjectId, $keyCredentials, [bool] $isServicePrincipal) {
-        AddKeyCredentials $appObjectId $keyCredentials $null $false $isServicePrincipal
+        # Instruct the method to treat the credentials passed here as if they are the existing credentials,
+        # and to preserve them. This is the same as replacing them with this exact set.
+        AddKeyCredentials $appObjectId $keyCredentials $null $true $isServicePrincipal
     }
 
     function RegisterApplication($appId, $isExternal) {

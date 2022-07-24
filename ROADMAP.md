@@ -2,7 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Fix Remove-GraphApplicationCertificate by keyid removing other keys!!!
 * Rename some consent parameters in New-GraphApplication for consistency with other commands.
 * Make Set-GraphApplicationCertificate make only one request when multiple certificate paths are specified by the pipeline.
 * Make exportedcertficatepath member of new-graph*certificate use a fully qualified path
@@ -476,6 +475,7 @@
 * Fix New-GraphConnection name parameter returning unnamed?!!!
 * Fix missing redirecturi in connection format output
 * NOREPRO: Fix errors missing headers and other information in the log
+* Fix Remove-GraphApplicationCertificate by keyid removing other keys!!!
 
 ### Postponed
 
