@@ -269,6 +269,7 @@ None.
 * Fixed missing prompt for certificate credentials and failure to configure the certificate credentials when using `CertificateFilePath` or `CertificatePath` parameters of `New-GraphApplicationCertificate` and `New-GraphLocalCertificate`.
 * Fixed missing surrounding double quotes in generated URI when the `Search` parameter in `Invoke-GraphApiRequest` and `Get-GraphResource` is used to create an argument for `Search` -- seems quotes were not required for requests on `messages` (i.e. mail) but for directory objects they are required. Workaround is to add them to the search parameter value.
 * The `Name` parameter of `New-GraphConnection` was being ignored in certain cases resulting in an unnamed connection -- this has been fixed.
+* The `RedirectUri` property for a connection was not displayed in list views -- this has been fixed.
 
 '@
 

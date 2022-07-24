@@ -2,8 +2,6 @@
 
 ## To-do items -- prioritized
 
-* Fix missing redirecturi in connection format output
-* Fix errors missing headers and other information in the log
 * Fix Remove-GraphApplicationCertificate by keyid removing other keys!!!
 * Rename some consent parameters in New-GraphApplication for consistency with other commands.
 * Make Set-GraphApplicationCertificate make only one request when multiple certificate paths are specified by the pipeline.
@@ -476,6 +474,8 @@
 * Make Register-GraphApplication use the formatting for service principal
 * Remove publisherdomain from serviceprincipal output as the property does not exist
 * Fix New-GraphConnection name parameter returning unnamed?!!!
+* Fix missing redirecturi in connection format output
+* NOREPRO: Fix errors missing headers and other information in the log
 
 ### Postponed
 
