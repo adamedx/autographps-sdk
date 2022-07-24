@@ -271,6 +271,7 @@ None.
 * The `Name` parameter of `New-GraphConnection` was being ignored in certain cases resulting in an unnamed connection -- this has been fixed.
 * The `RedirectUri` property for a connection was not displayed in list views -- this has been fixed.
 * The `Remove-GraphApplicationCertificate` command was removing *all* credentials rather than just a specified credential.
+* The `New-GraphLocalCertificate` and `New-GraphApplicationCertificate` commands now output a fully qualified file system path for the `ExportedCertificatePath` property where before they would use the exact path specified by the `CertificateFilePath` parameter even if it was relative.
 
 '@
 
