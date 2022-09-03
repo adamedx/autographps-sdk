@@ -272,6 +272,7 @@ None.
 * The `RedirectUri` property for a connection was not displayed in list views -- this has been fixed.
 * The `Remove-GraphApplicationCertificate` command was removing *all* credentials rather than just a specified credential.
 * The `New-GraphLocalCertificate` and `New-GraphApplicationCertificate` commands now output a fully qualified file system path for the `ExportedCertificatePath` property where before they would use the exact path specified by the `CertificateFilePath` parameter even if it was relative.
+* Access token was being requested for every Graph request - fixed to do this only if the token is near expiration.
 
 '@
 

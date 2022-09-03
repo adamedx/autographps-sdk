@@ -476,6 +476,7 @@
 * NOREPRO: Fix errors missing headers and other information in the log
 * Fix Remove-GraphApplicationCertificate by keyid removing other keys!!!
 * Make exportedcertficatepath member of new-graph*certificate use a fully qualified path
+* Fix unnecessary token acquisitions
 
 ### Postponed
 
