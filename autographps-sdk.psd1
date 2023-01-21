@@ -66,7 +66,7 @@ PowerShellVersion = '5.1'
 FormatsToProcess = @('./src/cmdlets/common/Formats.ps1xml')
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.20.3';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
+NestedModules = @(@{ModuleName='scriptclass';ModuleVersion='0.20.2';Guid='9b0f5599-0498-459c-9a47-125787b1af19'})
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
@@ -253,7 +253,7 @@ This release removes the ADAL library dependency and removes support for the AAD
 
 ### New dependencies
 
-* ScriptClass 0.20.3
+None.
 
 ### Breaking changes
 
