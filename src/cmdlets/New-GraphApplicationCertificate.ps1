@@ -25,7 +25,7 @@ Note that it is not a requirement to use this command to create application cred
 
 New-GraphApplicationCertificate always adds the new certificate to the application's configuration; any certificates already configured for the application before invoking New-GraphApplicationCertificate remain configured even after it is invoked successfully and the new certificate is added to the application's configuration. To update an application's configuration with a new certificate and replace it, use the New-GraphLocalCertificate command followed by the Set-GraphApplicationCertificate command with the EditMode parameter set to Replace instead of using the New-GraphApplicationCertificate command.
 
-To create a new certificate for an application in the certificate store without configuring the application itself, use the New-GraphLocalCertificate command instead. If you need to configure an application certificate immediately after creating the application, consider using New-GraphApplicationCertificate with the NewCredential parameter to create the application along with its certificate using a single command.
+To create a new certificate for an application in the certificate store without configuring the application itself, use the New-GraphLocalCertificate command instead. If you need to configure an application certificate immediately after creating the application, consider using New-GraphApplication with the NewCredential parameter to create the application along with its certificate using a single command.
 
 To configure an application to use an existing certificate rather than creating a new certificate, use the Set-GraphApplicationCertificate command.
 
@@ -93,7 +93,7 @@ New-GraphApplicationCertificate -AppId e4ab44d2-98ac-4a33-a010-e8fa2ac2e330 -Cer
 This example shows how to customize the lifetime and key length of the certificate. A TimeSpan object for 180 days specified for the CertValidityTimeSpan parameter is used to override the default duration of 1 year to 6 months instead. The CertKeyLength parameter overrides the default length of 4096 bits to a length of 8192 bits.
 
 .EXAMPLE
-New-GraphApplicationCertificate -CertOutputDirectory ~/cert | Select-Object ExportedCertificatePath
+New-GraphApplicationCertificate -AppId e4ab44d2-98ac-4a33-a010-e8fa2ac2e330 -CertOutputDirectory ~/cert | Select-Object ExportedCertificatePath
 
 ExportedCertificatePath
 -----------------------
