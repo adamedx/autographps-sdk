@@ -2,7 +2,7 @@
 
 ## To-do items -- prioritized
 
-* New-GraphApplicationCertificate -NoCertCredential parameter does not work for the parameter set with -AppId and -CertOutputDirectory
+* Fix missing keyid output column in new-graphapplicationcertificate
 * Rename some consent parameters in New-GraphApplication for consistency with other commands.
 * Make Set-GraphApplicationCertificate make only one request when multiple certificate paths are specified by the pipeline.
 * Add countvariable?
@@ -478,6 +478,7 @@
 * Fix Remove-GraphApplicationCertificate by keyid removing other keys!!!
 * Make exportedcertficatepath member of new-graph*certificate use a fully qualified path
 * Fix unnecessary token acquisitions
+* New-GraphApplicationCertificate -NoCertCredential parameter does not work for the parameter set with -AppId and -CertOutputDirectory
 
 ### Postponed
 

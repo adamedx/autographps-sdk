@@ -180,6 +180,9 @@ function New-GraphApplicationCertificate {
         [parameter(parametersetname='appexportpath')]
         [parameter(parametersetname='appidexportpath')]
         [parameter(parametersetname='objectidexportpath')]
+        [parameter(parametersetname='appexport')]
+        [parameter(parametersetname='appidexport')]
+        [parameter(parametersetname='objectidexport')]
         [switch] $NoCertCredential,
 
         [switch] $AsX509Certificate,
