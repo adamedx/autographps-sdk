@@ -40,7 +40,7 @@ jobs:
     inputs:
       azureSubscription: 'Azure Free Trial(439deb75-e36b-4569-b075-f2c2448e8a3e)'
       KeyVaultName: 'CI-AutoGraphPS-SDK'
-      SecretsFilter: 'Autograph-CI-Pipeline-Cert'
+      SecretsFilter: 'AutoGraph-CI-Pipeline-Cert-Exp-2024-01-20'
       RunAsPreJob: false
   - task: powershell@2
     displayName: 'Show current PowerShell version information'
