@@ -16,11 +16,11 @@ jobs:
   strategy:
     matrix:
       PowerShellDesktop:
-        VM_IMAGE: 'windows-2019'
+        VM_IMAGE: 'windows-latest'
         OS_PLATFORM: 'windows'
         USE_POWERSHELL_CORE: false
       PowerShellCoreWindows:
-        VM_IMAGE: 'windows-2019'
+        VM_IMAGE: 'windows-latest'
         OS_PLATFORM: 'windows'
         USE_POWERSHELL_CORE: true
       PowerShellCoreUbuntu:

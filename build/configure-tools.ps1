@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2019, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,20 +24,26 @@ if ( $Force.IsPresent ) {
     Clean-Tools
 }
 
-$settings = Get-ToolsSettings
-
-$destinationPath = Get-ToolsDirectory
+$destinationPath = join-path (split-path -parent $psscriptroot) bin
 
 if ( ! ( test-path $destinationPath ) ) {
     write-verbose "Destination directory '$destinationPath' does not exist, creating it..."
     new-directory -name $destinationPath | out-null
 }
 
-$modulesPath = Get-ToolsModulesDirectory
+# Make sure we're running the latest version of powershellget
+$minimumPowerShellGetVersion = [Version]::new('2.2.5')
 
-if ( ! ( test-path $modulesPath ) ) {
-    write-verbose "Tools modules directory '$modulesPath' does not exist, creating it..."
-    new-directory -name $modulesPath | out-null
+write-verbose "Checking for required version of PowerShellGet module '$minimumPowerShellGetVersion'"
+$latestPowerShellGetVersion = (get-module -listavailable PowerShellGet | sort-object version | select-object -last 1).Version
+write-verbose "Found latest version of PowerShellGet '$latestPowerShellGetVersion'"
+
+$meetsPowerShellGetRequirement = $latestPowerShellGetVersion -and $latestPowerShellGetVersion -ge $minimumPowerShellGetVersion
+
+if ( ! $meetsPowerShellGetRequirement ) {
+    # Don't bother using Update-Module since on Windows there is a "built-in" version that can't be updated with "Update-Module". :)
+    write-verbose "Installing new version of PowerShellGet to meet minimum version requirement"
+    Install-Package -scope CurrentUser -minimumVersion $minimumPowerShellGetVersion PowerShellGet -allowclobber -force | out-null
 }
 
 if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
@@ -58,20 +64,9 @@ if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
     if ( ! $nugetPresent -or $Force.IsPresent ) {
         write-verbose "Tool configuration update required or Force was specified, updating tools..."
 
-        $nugetVersion = if ( $settings['nuget'] ) {
-            $version = $settings['nuget'].version
-            if ( ! $version ) {
-                throw "Invalid tools settings for 'nuget' -- no version was found. Correct or remove tools settings file and retry."
-            }
-            $version
-        } else {
-            write-warning "No configuration found for 'nuget' in tools settings -- using latest version as a default"
-            'latest'
-        }
-
         if ( ! ( test-path $nugetPath ) ) {
-            write-verbose "Downloading version '$nugetVersion' of nuget executable to '$nugetPath'..."
-            Invoke-WebRequest -usebasicparsing https://dist.nuget.org/win-x86-commandline/$nugetVersion/nuget.exe -outfile $nugetPath
+            write-verbose "Downloading latest nuget executable to '$nugetPath'..."
+            Invoke-WebRequest -usebasicparsing https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -outfile $nugetPath
             write-verbose "Download of nuget executable complete."
         }
 
@@ -91,10 +86,10 @@ if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
         }
     } else {
         $actionRequired = $false
-        write-verbose "Nuget configuration validated successfully, no action necessary for nuget."
+        write-verbose "Tool configuration validated successfully, no action necessary."
     }
 } else {
-    write-verbose "Not running on Windows, explicitly checking for required 'dotnet' tool for .net runtime..."
+    write-verbose "Not running on Windows PowerShell, explicitly checking for required 'dotnet' tool for .net runtime..."
 
     $dotNetToolPath = (get-command dotnet -erroraction ignore) -ne $null
 
@@ -160,9 +155,7 @@ if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
 
         # Installs runtime and SDK
         write-verbose 'Installing new .net version...'
-        write-verbose 'Executing command:'
-        write-verbose "    '$dotNetInstallerPath $versionArgument $minimumVersionString' | invoke-expression"
-        "$dotNetInstallerPath $versionArgument $minimumVersionString" | invoke-expression | write-verbose
+        (invoke-expression "$dotNetInstallerPath $versionArgument $minimumVersionString") | write-verbose
 
         $dotNetToolFinalVerification = (get-command dotnet -erroraction ignore) -ne $null
 
@@ -175,19 +168,21 @@ if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
     } else {
         $actionRequired = $false
     }
-
-    # Pester is present on the default Windows installation, but not for Linux
-    # TODO: May make sense to update to a specific version on both platforms.
-    if ( ! ( get-command invoke-pester -erroraction ignore ) ) {
-        $actionRequired = $true
-        write-verbose "Test tool 'pester' not found, installing the Pester Module..."
-        install-module -scope currentuser Pester -verbose
-    }
 }
 
-$docToolChangesRequired = Install-DocTools
 
-$actionRequired = $actionRequired -or $docToolChangesRequired
+$requiredPesterVersion = '4.8.1'
+write-verbose "Checking for required version of 'Pester' version '$requiredPesterVersion'"
+$pesterModule = import-module Pester -RequiredVersion $requiredPesterVersion -passthru -erroraction ignore
+if ( ! $pesterModule ) {
+    # Need to use skippublishercheck because on Windows there is already a signed version installed.
+    write-verbose "Test tool 'Pester' with required version '$requiredPesterVersion' not found, installing the required version of the Pester Module..."
+    install-module -scope currentuser Pester -RequiredVersion $requiredPesterVersion -AllowClobber -force -skippublishercheck -Verbose
+    import-module Pester -RequiredVersion $requiredPesterVersion | out-null
+} else {
+    write-verbose "Required version of Pester found, no update needed."
+}
+
 
 $changeDisplay = if ( $actionRequired ) {
     'Changes'
