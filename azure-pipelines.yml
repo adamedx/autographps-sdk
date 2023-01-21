@@ -87,12 +87,6 @@ jobs:
       script: './build/configure-tools.ps1; ./build/publish-moduletodev.ps1' # Creates .devmodule directory
       pwsh: false
   - task: powershell@2
-    displayName: 'Generate command reference documentation'
-    inputs:
-      targetType: inline
-      script: './build/build-documentation.ps1'
-      pwsh: $(USE_POWERSHELL_CORE)
-  - task: powershell@2
     displayName: 'Create test output directory'
     inputs:
       targetType: inline
