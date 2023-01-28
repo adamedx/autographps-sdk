@@ -2,7 +2,8 @@
 
 ## To-do items -- prioritized
 
-* Fix missing keyid output column in new-graphapplicationcertificate
+* Add global request id preference
+* Add global headers to settings, matched to uris
 * Rename some consent parameters in New-GraphApplication for consistency with other commands.
 * Make Set-GraphApplicationCertificate make only one request when multiple certificate paths are specified by the pipeline.
 * Add countvariable?
@@ -479,6 +480,7 @@
 * Make exportedcertficatepath member of new-graph*certificate use a fully qualified path
 * Fix unnecessary token acquisitions
 * New-GraphApplicationCertificate -NoCertCredential parameter does not work for the parameter set with -AppId and -CertOutputDirectory
+* Add GraphResponseObject type to any created items like application, consent output
 
 ### Postponed
 
@@ -489,7 +491,7 @@
 * Add continue feature?
 * Test Release
 * Remove enums
-
+* Fix missing keyid output column in new-graphapplicationcertificate -- maybe not worth it as it's a basic limitation of the API with unfortunate workarounds (i.e. another REST request to do a GET because the response is empty).
 
 ### Abandoned
 

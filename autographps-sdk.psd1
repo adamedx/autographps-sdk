@@ -27,7 +27,7 @@ Author = 'Adam Edwards'
 CompanyName = 'Modulus Group'
 
 # Copyright statement for this module
-Copyright = '(c) 2022 Adam Edwards.'
+Copyright = '(c) 2023 Adam Edwards.'
 
 # Description of the functionality provided by this module
 Description = 'PowerShell SDK for Microsoft Graph automation'
@@ -272,8 +272,9 @@ None.
 * The `RedirectUri` property for a connection was not displayed in list views -- this has been fixed.
 * The `Remove-GraphApplicationCertificate` command was removing *all* credentials rather than just a specified credential.
 * The `New-GraphLocalCertificate` and `New-GraphApplicationCertificate` commands now output a fully qualified file system path for the `ExportedCertificatePath` property where before they would use the exact path specified by the `CertificateFilePath` parameter even if it was relative.
+* The `New-GraphApplicationCertificate` command only supported the `NoCredential` parameter when `CertificateFilePath` was specified, but not when `CertOutputDirectory` was specified -- this is fixed.
 * Access token was being requested for every Graph request - fixed to do this only if the token is near expiration.
-
+* `GraphResponseObject` pstypename added to `Get-GraphApplication` and `New-GraphApplication` commands to support pipelines that accept `GraphResponseObject` (including commands outside this module).
 '@
 
     } # End of PSData hashtable
