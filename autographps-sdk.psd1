@@ -262,7 +262,8 @@ None.
 
 ### New features
 
-None.
+* `GraphResponseObject` pstypename added to `Get-GraphApplication` and `New-GraphApplication` commands to support pipelines that accept `GraphResponseObject` (including commands outside this module).
+* Added `Tags` parameter to `Get-GraphApplication` to search by the tags property
 
 ### Fixed defects
 
@@ -274,7 +275,6 @@ None.
 * The `New-GraphLocalCertificate` and `New-GraphApplicationCertificate` commands now output a fully qualified file system path for the `ExportedCertificatePath` property where before they would use the exact path specified by the `CertificateFilePath` parameter even if it was relative.
 * The `New-GraphApplicationCertificate` command only supported the `NoCredential` parameter when `CertificateFilePath` was specified, but not when `CertOutputDirectory` was specified -- this is fixed.
 * Access token was being requested for every Graph request - fixed to do this only if the token is near expiration.
-* `GraphResponseObject` pstypename added to `Get-GraphApplication` and `New-GraphApplication` commands to support pipelines that accept `GraphResponseObject` (including commands outside this module).
 '@
 
     } # End of PSData hashtable

@@ -31,6 +31,9 @@ Specify the ObjectId parameter to return the application in the organizaiton wit
 .PARAMETER Filter
 Specify the Filter parameter to return all applications that match the specified OData filter.
 
+.PARAMETER Tags
+Specify Tags parameter to filter for only those applications with a Tags property that contains at least one of the values specified to the Tags parameter. Tags are user-defined strings associated with the application to categorize its purpose, origin, or other important information.
+
 .PARAMETER Name
 Specify the Name parameter to return the application with the display name propert that matches this parameter exactly.
 
@@ -86,12 +89,17 @@ function Get-GraphApplication {
         [parameter(parametersetname='odatafilter', mandatory=$true)]
         $Filter,
 
+        [parameter(parametersetname='tags', mandatory=$true)]
+        [string[]] $Tags,
+
         [parameter(parametersetname='name', mandatory=$true)]
         $Name,
 
         [switch] $RawContent,
 
         [parameter(parametersetname='All')]
+        [parameter(parametersetname='Odatafilter')]
+        [parameter(parametersetname='tags')]
         [switch] $All,
 
         [PSCustomObject] $Connection = $null
@@ -101,10 +109,20 @@ function Get-GraphApplication {
         Enable-ScriptClassVerbosePreference
 
         $commandContext = new-so CommandContext $connection $null $null $null $::.ApplicationAPI.DefaultApplicationApiVersion
+
+        $targetFilter = if ( $Filter ) {
+            $Filter
+        } elseif ( $Tags ) {
+            $tagFilters = @()
+            foreach ( $tag in $Tags ) {
+                $tagFilters += "tags/any(t:t eq '$tag')"
+            }
+            $tagFilters -join ' or '
+        }
     }
 
     process {
-        $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $Filter $Name $RawContent $null $null $null $commandContext.connection $null $null $pscmdlet.pagingparameters.First $pscmdlet.pagingparameters.Skip $All.IsPresent
+        $result = $::.ApplicationHelper |=> QueryApplications $AppId $objectId $targetFilter $Name $RawContent $null $null $null $commandContext.connection $null $null $pscmdlet.pagingparameters.First $pscmdlet.pagingparameters.Skip $All.IsPresent
 
         $displayableResult = if ( $result ) {
             if ( $RawContent.IsPresent ) {

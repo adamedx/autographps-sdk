@@ -11,7 +11,6 @@
 * Look at using serilog for logging
 * Add API version to itemcontext?
 * Add more properties to serviceprincipal output, application
-* Add tags to get-graphapplication
 * Add startswith search to get-graphapplication
 * Make permissions ids work with the consent and application commands
 * Make service principal id column title serviceprincipal
@@ -481,6 +480,7 @@
 * Fix unnecessary token acquisitions
 * New-GraphApplicationCertificate -NoCertCredential parameter does not work for the parameter set with -AppId and -CertOutputDirectory
 * Add GraphResponseObject type to any created items like application, consent output
+* Add tags to get-graphapplication
 
 ### Postponed
 
