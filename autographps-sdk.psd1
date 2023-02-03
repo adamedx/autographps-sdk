@@ -249,16 +249,15 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS-SDK 0.30.0 Release Notes
 
-Add integration testing to CI pipeline, sample code documentation generation,  and fix some code defects.
+Add integration testing to CI pipeline, sample code documentation generation, and fix some code defects.
 
 ### New dependencies
 
 * ScriptClass 0.20.3
-* PowerShell Core (not Windows PowerShell) now also uses the net45 version of MSAL instead of net core to support embedded web UI controls for interactive sign-ins on PowerShell Core
 
 ### Breaking changes
 
-None.
+* Renamed the `PrincipalIdToConsent` parameter to `ConsentedPrincipalId` in the commands `New-GraphApplication`, `RegisterGraphApplication`, and `Set-GraphApplicationConsent` for consistency with other commands referencing the same concept.
 
 ### New features
 
@@ -275,6 +274,7 @@ None.
 * The `New-GraphLocalCertificate` and `New-GraphApplicationCertificate` commands now output a fully qualified file system path for the `ExportedCertificatePath` property where before they would use the exact path specified by the `CertificateFilePath` parameter even if it was relative.
 * The `New-GraphApplicationCertificate` command only supported the `NoCredential` parameter when `CertificateFilePath` was specified, but not when `CertOutputDirectory` was specified -- this is fixed.
 * Access token was being requested for every Graph request - fixed to do this only if the token is near expiration.
+
 '@
 
     } # End of PSData hashtable

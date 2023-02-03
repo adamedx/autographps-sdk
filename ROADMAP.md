@@ -2,9 +2,10 @@
 
 ## To-do items -- prioritized
 
+* Generate URIs for when connection is offline in lieu of requests
+* Fix empty sets with get-graphresource returning non-null object
 * Add global request id preference
 * Add global headers to settings, matched to uris
-* Rename some consent parameters in New-GraphApplication for consistency with other commands.
 * Make Set-GraphApplicationCertificate make only one request when multiple certificate paths are specified by the pipeline.
 * Add countvariable?
 * Add service principal support to *-graphapplicationcertificate commands, not just application
@@ -481,6 +482,7 @@
 * New-GraphApplicationCertificate -NoCertCredential parameter does not work for the parameter set with -AppId and -CertOutputDirectory
 * Add GraphResponseObject type to any created items like application, consent output
 * Add tags to get-graphapplication
+* Rename some consent parameters in New-GraphApplication for consistency with other commands.
 
 ### Postponed
 

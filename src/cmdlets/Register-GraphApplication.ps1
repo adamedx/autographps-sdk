@@ -1,4 +1,4 @@
-# Copyright 2021, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ Note that the registration operation can be undone. To unregister an application
 The AppId parameter specifies the application identifier for the application to register in the organization. If the application is a single-tenant application, the application identifier must refer to an application with that identifier in the organization.
 
 .PARAMETER DelegatedPermissions
-The delegated permissions to be consented to the application. If the ConsentedPrincipalId parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless PrincipalIdToConsent or ConsentForAllPrincipals is specified.
+The delegated permissions to be consented to the application. If the ConsentedPrincipalId parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless ConsentedPrincipalId or ConsentForAllPrincipals is specified.
 
 .PARAMETER ApplicationPermissions
 The application permissions to be consented to the application.
@@ -79,7 +79,7 @@ In this example a multi-tenant application from a different organization is regi
 .EXAMPLE
 Register-GraphApplication -AppId 5b02a9d1-061e-4df8-a293-fffb692f7988 -ImportFromOtherTenant -DelegatedPermissions Group.Read.All
 
-In this example the PrincipalIdToConsent parameter is specified to Register-GraphApplication so that when it is registered the permission specified with DelegatedPermissions parameter is granted to the principal (e.g. a user) specified by the PrincipalIdToConsent parameter.
+In this example the ConsentedPrincipalId parameter is specified to Register-GraphApplication so that when it is registered the permission specified with DelegatedPermissions parameter is granted to the principal (e.g. a user) specified by the ConsentedPrincipalId parameter.
 
 .LINK
 Set-GraphApplicationConsent

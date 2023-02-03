@@ -1,4 +1,4 @@
-# Copyright 2021, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ See the Get-GraphApplicationConsent command for more details on consent.
 Specifies the application identifier for the application to which consent will be granted.
 
 .PARAMETER DelegatedPermissions
-The delegated permissions to be consented to the application. The consent is configured as oauth2PermissionGrant resources documented as part of the Graph API. If the ConsentedPrincipalId parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless PrincipalIdToConsent or ConsentForAllPrincipals is specified.
+The delegated permissions to be consented to the application. The consent is configured as oauth2PermissionGrant resources documented as part of the Graph API. If the ConsentedPrincipalId parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless ConsentedPrincipalId or ConsentForAllPrincipals is specified.
 
 .PARAMETER ApplicationPermissions
 The application permissions to be consented to the application. The consent is actually configured as app role assignments described by the appRoleAssignment resource documented as part of the Graph API.
