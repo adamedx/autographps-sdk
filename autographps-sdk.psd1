@@ -274,6 +274,7 @@ Add integration testing to CI pipeline, sample code documentation generation, an
 * The `New-GraphLocalCertificate` and `New-GraphApplicationCertificate` commands now output a fully qualified file system path for the `ExportedCertificatePath` property where before they would use the exact path specified by the `CertificateFilePath` parameter even if it was relative.
 * The `New-GraphApplicationCertificate` command only supported the `NoCredential` parameter when `CertificateFilePath` was specified, but not when `CertOutputDirectory` was specified -- this is fixed.
 * Access token was being requested for every Graph request - fixed to do this only if the token is near expiration.
+* Empty results from `Invoke-GraphRequest` and `Get-GraphRequest` no longer return an object, now null is returned.
 
 '@
 

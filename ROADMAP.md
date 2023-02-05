@@ -2,8 +2,8 @@
 
 ## To-do items -- prioritized
 
+* Make Get-GraphResource correctly use the pipeline
 * Generate URIs for when connection is offline in lieu of requests
-* Fix empty sets with get-graphresource returning non-null object
 * Add global request id preference
 * Add global headers to settings, matched to uris
 * Make Set-GraphApplicationCertificate make only one request when multiple certificate paths are specified by the pipeline.
@@ -25,7 +25,6 @@
 * Allow remove and set consent commands to operate on native objects
 * Improve formatting of consent output
 * Add search for permissions to get-graphapplicationconsent
-* Normalize command parameters for consent across all commands
 * Change consent commands to use native graph objects instead of custom objects and normalize via type augmentation and formatting.
 * Possible need to add 'no additional permissions' setting to profiles and doc in schema
 * Remove resultvariable from ggr without impacting LASTGRAPHITEMS; actually looks like not an issue
@@ -483,6 +482,8 @@
 * Add GraphResponseObject type to any created items like application, consent output
 * Add tags to get-graphapplication
 * Rename some consent parameters in New-GraphApplication for consistency with other commands.
+* Normalize command parameters for consent across all commands
+* Fix empty sets with get-graphresource returning non-null object
 
 ### Postponed
 
@@ -494,6 +495,7 @@
 * Test Release
 * Remove enums
 * Fix missing keyid output column in new-graphapplicationcertificate -- maybe not worth it as it's a basic limitation of the API with unfortunate workarounds (i.e. another REST request to do a GET because the response is empty).
+* Should Get-GraphApplication throw when the app is not found?
 
 ### Abandoned
 

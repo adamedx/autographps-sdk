@@ -25,20 +25,19 @@ Describe "The New-GraphApplication command executing unmocked" {
             [parameter(mandatory=$true)]
             $AppObjectId
         )
-        Invoke-GraphApiRequest -Method DELETE -Uri /applications/$AppObjectId | out-null
+        Invoke-GraphApiRequest -Method DELETE -Uri /applications/$AppObjectId -erroraction stop | out-null
     }
 
     Context "When creating applications" {
         BeforeAll {
             Connect-GraphApi -Connection $global:__IntegrationTestGraphConnection | out-null
-            $organizationId = (get-graphconnection -current).identity.tenantdisplayid
             $thisTestInstanceId = New-Guid | select -expandproperty guid
 
             $appTags = $global:__IntegrationTestInfo.TestRunId, $thisTestInstanceId, '__IntegrationTest__'
         }
 
         It "should succeed when creating a new public client application" {
-            $testAppName = 'SimpleTestApp'
+            $testAppName = 'SimpleTestApp' + $thisTestInstanceId
             $newApp = New-GraphApplication -Name $testAppName -Tags $appTags
             $newApp.DisplayName | Should Be $testAppName
             { RemoveTestApp $newApp.Id } | Should Not Throw

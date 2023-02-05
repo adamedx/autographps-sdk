@@ -610,7 +610,9 @@ function Invoke-GraphApiRequest {
                     $entities = if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
                         @([PSCustomObject] $graphResponse.entities)
                     } elseif ($graphResponse.entities -is [HashTable]) {
-                        @([PSCustomObject] $graphResponse.Entities)
+                        if ( $graphResponse.HasNonEmptyValueData ) {
+                            @([PSCustomObject] $graphResponse.Entities)
+                        }
                     } else {
                         $graphResponse.Entities
                     }

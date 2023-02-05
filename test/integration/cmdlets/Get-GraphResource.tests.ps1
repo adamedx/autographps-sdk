@@ -19,17 +19,29 @@ if ( ! ( & $psscriptroot/../../IsIntegrationTestRun.ps1 ) ) {
 Describe "The Get-GraphResource command executing unmocked" {
 
     Set-StrictMode -Version 2
+    $erroractionpreference = 'stop'
 
     Context "when invoked for simple use cases" {
         BeforeAll {
-            Connect-GraphApi -Connection $global:__IntegrationTestGraphConnection | out-null
-            $organizationId = (get-graphconnection -current).identity.tenantdisplayid
+            $currentConnection = Connect-GraphApi -Connection $global:__IntegrationTestGraphConnection
+            $organizationId = $currentConnection.identity.tenantdisplayid
+            $thisApplicationId = $currentconnection.identity.app.appid
         }
 
         It "should succeed when issuing a request for the organization object" {
             $actualOrganization = Get-GraphResource /organization
             $actualOrganization.Id | Should Be $organizationId
             $actualOrganization.displayName.Length | Should BeGreaterThan 0
+        }
+
+        It "should successfully apply a filter and return the result" {
+            $currentApp = Get-GraphResource /applications -Filter "appId eq '$thisApplicationId'"
+            $currentApp.AppId | Should Be $thisApplicationId
+        }
+
+        It "should return a result collection of empty size as null" {
+            $currentApp = Get-GraphResource /applications -Filter "appId eq '$thisApplicationId'"
+            Get-GraphResource /applications/$($currentapp.Id)/federatedIdentityCredentials | Should Be $null
         }
     }
 }

@@ -19,6 +19,7 @@ if ( ! ( & $psscriptroot/../../IsIntegrationTestRun.ps1 ) ) {
 Describe "The Test-Graph command executing unmocked" {
 
     Set-StrictMode -Version 2
+    $erroractionpreference = 'Stop'
 
     Context "when invoked for simple use cases" {
 

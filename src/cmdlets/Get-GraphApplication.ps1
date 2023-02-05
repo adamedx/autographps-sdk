@@ -100,6 +100,7 @@ function Get-GraphApplication {
         [parameter(parametersetname='All')]
         [parameter(parametersetname='Odatafilter')]
         [parameter(parametersetname='tags')]
+        [parameter(parametersetname='name')]
         [switch] $All,
 
         [PSCustomObject] $Connection = $null
@@ -127,19 +128,22 @@ function Get-GraphApplication {
         $displayableResult = if ( $result ) {
             if ( $RawContent.IsPresent ) {
                 $result
-            } elseif ( $result | gm id ) {
-                $result | sort-object displayname | foreach {
+            } elseif ( $result | get-member id ) {
+                $result | foreach {
                     $::.ApplicationHelper |=> ToDisplayableObject $_
                 }
             }
         }
 
-        if ( ! $displayableResult -and ( $AppId -and $ObjectId ) ) {
-            write-error "The specified application with application identifier '$AppId' and object identifier '$ObjectId' could not be found."
+        if ( $displayableResult ) {
+            $displayableResult
+        } elseif ( $AppId ) {
+            write-error "The specified application with application identifier '$AppId' could not be found."
+        } elseif ( $ObjectId ) {
+            write-error "The specified application with object identifier '$ObjectId' could not be found."
         }
     }
 
     end {
-        $displayableResult
     }
 }
