@@ -295,7 +295,7 @@ ScriptClass V2AuthProvider {
                 # for netcoreapp2.1 libraries by default -- fortunately we can override this
                 # to get the desired version
                 $targetframeworkParameter = if ( $PSEdition -ne 'Desktop' ) {
-                    @{TargetFrameworkMoniker = 'netcoreapp2.1'}
+                    @{TargetFrameworkMoniker = 'net6.0'}
                 } else {
                     @{}
                 }

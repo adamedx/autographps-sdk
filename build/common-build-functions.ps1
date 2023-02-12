@@ -848,11 +848,11 @@ function get-temporarypackagerepository($moduleName, $moduleDependencySource)  {
     $localPackageRepositoryName
 }
 
-function get-allowedlibrarydirectoriesfromnuspec($nuspecFile) {
+function get-allowedlibrarydirectoriesfromnuspec($nuspecFile, $fileElementName = 'target') {
     write-verbose "Identifying ./lib files for module from '$nuspecFile'"
     $packageData = [xml] (get-content $nuspecFile | out-string)
     if ( $packageData.package ) {
-        $packageData.package.files.file | where target -like lib/* | select -expandproperty target | foreach {
+        $packageData.package.files.file | where { $_.target -like 'lib/*' -or $_.target -like 'lib\*' } | select -expandproperty $fileElementName | foreach {
             $_.replace("`\", '/')
         }
     } else {
@@ -897,7 +897,7 @@ function New-DotNetCoreProjFromPackagesConfig($packageConfigPath, $destinationFo
         $csprojtemplate = @'
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>{0}
   </ItemGroup>

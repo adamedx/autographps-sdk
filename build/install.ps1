@@ -67,38 +67,73 @@ function InstallDependencies($clean) {
 
     Normalize-LibraryDirectory $packagesConfigFile $packagesDestination
 
-    $allowedLibraryDirectories = get-allowedlibrarydirectoriesfromnuspec $nuspecFile
+    $librarySourcePathDirectories = get-allowedlibrarydirectoriesfromnuspec $nuspecFile src
 
-    # Remove nupkg files
-    get-childitem -r $packagesDestination -filter '*.nupkg' | remove-item -erroraction ignore
-
-    # Remove everything that is not listed as an allowed library directory in the nuspec
-    $allowedFiles = $allowedLibraryDirectories | foreach {
-        # For linux, the path case may not match the case of the directory which comes
+    # Find the library files (.dlls) in the nuspec and normalize the names
+    # to address case-sensitivity behaviors on non-Windows platforms
+    $normalizedLibrarySourceDirectoryPaths = $librarySourcePathDirectories | foreach {
+        # For linux for example, the path case may not match the case of the directory which comes
         # from metadata -- seems that nuget converts to lower case on linux, so we try
         # normal case and lower case get the actual file name from the file system via get-item
-        $allowedPathMixedCase = join-path . $_
-        $allowedPath = if ( test-path $allowedPathMixedCase ) {
-            $allowedPathMixedCase
+        $directoryPathMixedCase = join-path . $_
+        $directoryPath = if ( test-path $directoryPathMixedCase ) {
+            $directoryPathMixedCase
         } else {
-            $allowedPathMixedCase.tolower()
+            $directoryPathMixedCase.tolower()
         }
 
-        get-childitem -path $allowedPath -filter *.dll
+        get-childitem -path $directoryPath -filter *.dll
     }
 
-    $allObjects = get-childitem ./lib -r
-    $filesToRemove = $allObjects | where PSIsContainer -eq $false | where {
-        ! $allowedFiles -or $allowedFiles.FullName -notcontains $_.FullName
+    # Group the libraries by platform and place all libraries for the same platform
+    # into the same platform-specific directory. Example layout is below -- note that
+    # this does not allow for the same library to have different versions in the same
+    # platform (which is a good thing to avoid conflicting or non-deterministic
+    # versionining issues):
+    #
+    #     lib/
+    #        <platformspec1>/
+    #                        library1.dll
+    #                        library2.dll
+    #                        library3.dll
+    #        <platformspec2>
+    #                        library1.dll
+    #                        library2.dll
+    #                        library3.dll
+
+    $platforms = @{}
+    $targetFiles = @{}
+
+    foreach ( $sourceLibraryDirectory in $normalizedLibrarySourceDirectoryPaths ) {
+        # Extract the platform specification -- this assumes the path looks like
+        # <somedir>/<somedir>/.../<somedir>/lib/<platformspec>/<libraryname>.dll
+        $platform = split-path -leaf ( split-path -parent $sourceLibraryDirectory.FullName )
+
+        $platformDirectory = join-path $packagesDestination $platform
+        if ( $platforms[$platform] -ne $platformDirectory ) {
+            if ( ! ( test-path $platformDirectory ) ) {
+                new-directory $platformDirectory -force | out-null
+            }
+            $platforms[$platform] = $platformDirectory
+        }
+
+        $platformTargetFile = join-path $platformDirectory $sourceLibraryDirectory.Name
+
+        if ( ! $targetFiles[$platformTargetFile] ) {
+            if ( ! ( test-path $platformTargetFile ) ) {
+                foreach ( $sourceLibraryPath in ( get-childitem $sourceLibraryDirectory.FullName *.dll) ) {
+                    move-item $sourceLibraryPath $platformTargetFile
+                }
+            }
+            $targetFiles[$platformTargetFile] = $true
+        } else {
+            throw "The target library file '$platformTargetFile' from source directory '$($sourceLibraryDirectory.FullName)' was previously specified by another source location for the given platform spec '$platform' -- the nuspec files element may be misconfigured or the expanded nuget archive contents may be incorrect. Retrying the operation after deleting all build artifacts may resolve this failure."
+        }
     }
 
-    $filesToRemove | remove-item
-
-    $directoriesToRemove = $allObjects | where PSIsContainer -eq $true | where {
-        $children = get-childitem -r $_.fullname | where PSISContainer -eq $false
-        $null -eq $children
-    }
-    $directoriesToRemove | foreach { if ( test-path $_.fullname ) { $_ | remove-item -r -force } }
+    get-childitem $packagesDestination |
+      where name -notin $platforms.keys |
+      remove-item -r -force
 }
 
 InstallDependencies $clean
