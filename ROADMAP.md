@@ -484,6 +484,7 @@
 * Rename some consent parameters in New-GraphApplication for consistency with other commands.
 * Normalize command parameters for consent across all commands
 * Fix empty sets with get-graphresource returning non-null object
+* Remove nuget.exe and nuspec from build process, use only modern csproj and dotnet tool
 
 ### Postponed
 

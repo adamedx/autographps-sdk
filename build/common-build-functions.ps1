@@ -776,39 +776,6 @@ function get-temporarypackagerepository($moduleName, $moduleDependencySource)  {
     $localPackageRepositoryName
 }
 
-function Normalize-LibraryDirectory($packageConfigPath, $libraryRoot) {
-    if ( $PSVersionTable.PSEdition -ne 'Desktop' ) {
-        $assemblies = get-assemblydependencies $packageConfigPath
-
-        $assemblies | foreach {
-            $libraryDirectories = get-childitem $libraryRoot
-            $normalizedName = ($_.id, $_.version -join '.')
-            $normalizedPathActualCase = $libraryDirectories | where name -eq $normalizedName | select -expandproperty fullname
-
-            if ( ! $normalizedPathActualCase ) {
-                $librarySubdir = $libraryDirectories | where name -eq $_.id
-                $alternatePathActualCase = if ( $librarySubDir ) {
-                    join-path $librarySubDir.fullname $_.version
-                }
-
-                $alternatePathExists = if ( $alternatePathActualCase ) {
-                    write-verbose "Checking for alternatePath '$alternatePathActualCase'"
-                    test-path $alternatePathActualCase
-                }
-
-                if ( ! $alternatePathExists ) {
-                    throw "Unable to find directory for assembly '$($_.id)' with version '$($_.version)' at either '$normalizedPathActualCase' or '$alternatePathActualCase'"
-                }
-                $normalizedPathTargetCase = ($librarySubdir.fullname, $_.version -join '.')
-                write-verbose "Normalizing name for library identified as '$normalizedName'" -verbose
-                write-verbose "Normalizing by moving file '$alternatePathActualCase' to '$normalizedPathTargetCase'" -verbose
-
-                move-item  $alternatePathActualCase $normalizedPathTargetCase
-            }
-        }
-    }
-}
-
 function InitDirectTestRun {
     $testDir = join-path (Get-SourceRootDirectory) test/CI
     $testInitPath = join-path $testDir PesterDirectRunInit.ps1
