@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ param([switch] $clean)
 . "$psscriptroot/common-build-functions.ps1"
 
 function InstallDependencies($clean) {
-    validate-nugetpresent
-
     $appRoot = join-path $psscriptroot '..'
     $packagesDestination = join-path $appRoot lib
 
@@ -34,56 +32,25 @@ function InstallDependencies($clean) {
         psmkdir $packagesDestination | out-null
     }
 
-    $configFilePath = join-path $appRoot 'NuGet.Config'
-    $nugetConfigFileArgument = if ( Test-Path $configFilePath ) {
-        $configFileFullPath = (gi (join-path $appRoot 'NuGet.Config')).fullname
-        Write-Warning "Using test NuGet config file '$configFileFullPath'..."
-        "-configfile '$configFileFullPath'"
-    } else {
-        ''
-    }
-    $packagesConfigFile = join-path -path (join-path $psscriptroot ..) -child packages.config
+    $projectFilePath = Get-ProjectFilePath
 
-    if ( ! ( test-path $packagesConfigFile ) ) {
+    if ( ! ( test-path $projectFilePath ) ) {
         return
     }
 
-    $restoreCommand = if ( $PSVersionTable.PSEdition -eq 'Desktop' ) {
-        # Add the explicit fallback source to nuget.org because we've hit issues in the past where the required packages
-        # weren't in the local source that the CI pipeline uses, even though these are very popular packages!
-        "& nuget restore '$packagesConfigFile' $nugetConfigFileArgument -FallbackSource  https://api.nuget.org/v3/index.json -packagesDirectory '$packagesDestination' -packagesavemode nuspec"
-    } else {
-        $psCorePackagesCSProj = New-DotNetCoreProjFromPackagesConfig $packagesConfigFile $packagesDestination
-        "dotnet restore '$psCorePackagesCSProj' --packages '$packagesDestination' /verbosity:normal --no-cache"
+    $projectContent = [xml] ( get-content $projectFilePath | out-string )
+    $targetPlatforms = $projectContent.Project.PropertyGroup.TargetFrameworks -split ';'
+
+    if ( ! $targetPlatforms ) {
+        throw "No platforms found for the TargetFrameWorks element of '$projectfilePath'; at least one platform must be specified"
     }
+
+    $restoreCommand = "dotnet restore '$projectFilePath' --packages '$packagesDestination' /verbosity:normal --no-cache"
+
     write-host "Executing command: $restoreCommand"
-    iex $restoreCommand | out-host
 
-    $nuspecFile = get-childitem -path $approot -filter '*.nuspec' | select -expandproperty fullname
-
-    if ( $nuspecFile -is [object[]] ) {
-        throw "More than one nuspec file found in directory '$appRoot'"
-    }
-
-    Normalize-LibraryDirectory $packagesConfigFile $packagesDestination
-
-    $librarySourcePathDirectories = get-allowedlibrarydirectoriesfromnuspec $nuspecFile src
-
-    # Find the library files (.dlls) in the nuspec and normalize the names
-    # to address case-sensitivity behaviors on non-Windows platforms
-    $normalizedLibrarySourceDirectoryPaths = $librarySourcePathDirectories | foreach {
-        # For linux for example, the path case may not match the case of the directory which comes
-        # from metadata -- seems that nuget converts to lower case on linux, so we try
-        # normal case and lower case get the actual file name from the file system via get-item
-        $directoryPathMixedCase = join-path . $_
-        $directoryPath = if ( test-path $directoryPathMixedCase ) {
-            $directoryPathMixedCase
-        } else {
-            $directoryPathMixedCase.tolower()
-        }
-
-        get-childitem -path $directoryPath -filter *.dll
-    }
+    # This will download and install libraries and transitive dependencies under packages destination
+    Invoke-Expression $restoreCommand | out-host
 
     # Group the libraries by platform and place all libraries for the same platform
     # into the same platform-specific directory. Example layout is below -- note that
@@ -96,43 +63,34 @@ function InstallDependencies($clean) {
     #                        library1.dll
     #                        library2.dll
     #                        library3.dll
-    #        <platformspec2>
+    #        <platformspec2>/
     #                        library1.dll
     #                        library2.dll
     #                        library3.dll
 
-    $platforms = @{}
-    $targetFiles = @{}
+    foreach ( $platform in $targetPlatforms ) {
+        $platformSourceLibraries = Get-ChildItem -r $packagesDestination |
+          where name -like *.dll |
+          where { $_.Directory.Name -eq $platform }
 
-    foreach ( $sourceLibraryDirectory in $normalizedLibrarySourceDirectoryPaths ) {
-        # Extract the platform specification -- this assumes the path looks like
-        # <somedir>/<somedir>/.../<somedir>/lib/<platformspec>/<libraryname>.dll
-        $platform = split-path -leaf ( split-path -parent $sourceLibraryDirectory.FullName )
+        if ( $platformSourceLibraries ) {
+            $platformDirectory = join-path $packagesDestination $platform
 
-        $platformDirectory = join-path $packagesDestination $platform
-        if ( $platforms[$platform] -ne $platformDirectory ) {
             if ( ! ( test-path $platformDirectory ) ) {
                 new-directory $platformDirectory -force | out-null
             }
-            $platforms[$platform] = $platformDirectory
-        }
 
-        $platformTargetFile = join-path $platformDirectory $sourceLibraryDirectory.Name
-
-        if ( ! $targetFiles[$platformTargetFile] ) {
-            if ( ! ( test-path $platformTargetFile ) ) {
-                foreach ( $sourceLibraryPath in ( get-childitem $sourceLibraryDirectory.FullName *.dll) ) {
-                    move-item $sourceLibraryPath $platformTargetFile
-                }
+            foreach ( $sourceLibrary in $platformSourceLibraries ) {
+                move-item $sourceLibrary.FullName $platformDirectory
             }
-            $targetFiles[$platformTargetFile] = $true
-        } else {
-            throw "The target library file '$platformTargetFile' from source directory '$($sourceLibraryDirectory.FullName)' was previously specified by another source location for the given platform spec '$platform' -- the nuspec files element may be misconfigured or the expanded nuget archive contents may be incorrect. Retrying the operation after deleting all build artifacts may resolve this failure."
         }
     }
 
+    # Remove all of the other files under the packages destination -- these
+    # other files are either non-library artifacts# or libraries from
+    # unneeded platforms
     get-childitem $packagesDestination |
-      where name -notin $platforms.keys |
+      where name -notin $targetPlatforms |
       remove-item -r -force
 }
 
