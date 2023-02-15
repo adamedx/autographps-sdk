@@ -27,6 +27,13 @@ function InstallDependencies($clean) {
         remove-item -r -force $packagesDestination
     }
 
+    # Always create this directory since subsequent scripts
+    # rely on its presence to know that it is safe to
+    # proceed with a build because this step has been carried out.
+    if ( ! (test-path $packagesDestination) ) {
+        psmkdir $packagesDestination | out-null
+    }
+
     $projectFilePath = Get-ProjectFilePath
 
     if ( ! ( test-path $projectFilePath ) ) {
