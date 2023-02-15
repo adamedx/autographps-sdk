@@ -80,6 +80,10 @@ function Get-DevRepoDirectory {
     join-path (Get-SourceRootDirectory) '.psrepo'
 }
 
+function Get-PackageTempDirectory {
+    join-path (Get-SourceRootDirectory) 'tmplib'
+}
+
 function Get-ProjectFilePath {
     $projectFileBase = join-path (get-SourceRootDirectory) (Get-ModuleName)
     "$($projectFileBase).csproj"
@@ -254,8 +258,18 @@ function Clean-DocDirectories {
     }
 }
 
+function Clean-PackageTempDirectory {
+    $tmppkg = Get-PackageTempDirectory
+
+    if ( test-path $tmppkg ) {
+        remove-item -r -force $tmppkg
+    }
+}
+
 function Clean-BuildDirectories {
     Clean-TestDirectories
+
+    Clean-PackageTempDirectory
 
     $libPath = join-path $psscriptroot '../lib'
     if (test-path $libPath) {

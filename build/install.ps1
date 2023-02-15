@@ -20,23 +20,24 @@ param([switch] $clean)
 function InstallDependencies($clean) {
     $appRoot = join-path $psscriptroot '..'
     $packagesDestination = join-path $appRoot lib
+    $packagesTempSource = Get-PackageTempDirectory
 
     if ( $clean -and (test-path $packagesDestination) ) {
         write-host -foregroundcolor cyan "Clean install specified -- deleting '$packagesDestination'"
         remove-item -r -force $packagesDestination
     }
 
-    write-host "Installing dependencies to '$appRoot'"
-
-    if ( ! (test-path $packagesDestination) ) {
-        psmkdir $packagesDestination | out-null
-    }
-
     $projectFilePath = Get-ProjectFilePath
 
     if ( ! ( test-path $projectFilePath ) ) {
+        write-verbose "Project file '$projectFilePath' not found, skipping library dependency installation"
         return
     }
+
+    write-host "Installing dependencies to '$appRoot'"
+
+    Clean-PackageTempDirectory
+    psmkdir $packagesTempSource | out-null
 
     $projectContent = [xml] ( get-content $projectFilePath | out-string )
     $targetPlatforms = $projectContent.Project.PropertyGroup.TargetFrameworks -split ';'
@@ -45,7 +46,7 @@ function InstallDependencies($clean) {
         throw "No platforms found for the TargetFrameWorks element of '$projectfilePath'; at least one platform must be specified"
     }
 
-    $restoreCommand = "dotnet restore '$projectFilePath' --packages '$packagesDestination' /verbosity:normal --no-cache"
+    $restoreCommand = "dotnet restore '$projectFilePath' --packages '$packagesTempSource' /verbosity:normal --no-cache"
 
     write-host "Executing command: $restoreCommand"
 
@@ -68,8 +69,12 @@ function InstallDependencies($clean) {
     #                        library2.dll
     #                        library3.dll
 
+    if ( ! (test-path $packagesDestination) ) {
+        psmkdir $packagesDestination | out-null
+    }
+
     foreach ( $platform in $targetPlatforms ) {
-        $platformSourceLibraries = Get-ChildItem -r $packagesDestination |
+        $platformSourceLibraries = Get-ChildItem -r $packagesTempSource |
           where name -like *.dll |
           where { $_.Directory.Name -eq $platform }
 
@@ -86,12 +91,7 @@ function InstallDependencies($clean) {
         }
     }
 
-    # Remove all of the other files under the packages destination -- these
-    # other files are either non-library artifacts# or libraries from
-    # unneeded platforms
-    get-childitem $packagesDestination |
-      where name -notin $targetPlatforms |
-      remove-item -r -force
+    Clean-PackageTempDirectory
 }
 
 InstallDependencies $clean
