@@ -7,17 +7,17 @@
 
 ## Overview
 
-**AutoGraphPS-SDK** automates the [Microsoft Graph API](https://graph.microsoft.io/) through PowerShell. AutoGraphPS-SDK enables the development of PowerShell-based applications and automation of the Microsoft Graph REST API gateway; the PowerShell Graph exploration UX [AutoGraphPS](https://github.com/adamedx/autographps) is one such application based on the SDK. The Graph exposes a growing list of services such as
+**AutoGraphPS-SDK** automates the [Microsoft Graph API](https://graph.microsoft.io/) through PowerShell. AutoGraphPS-SDK enables the development of PowerShell-based applications and automation of the Microsoft Graph REST API gateway; the PowerShell Graph Exploration UX [AutoGraphPS](https://github.com/adamedx/autographps) is one such application based on the SDK. The Graph exposes a growing list of services such as
 
 * Azure Active Directory (AAD)
 * OneDrive
 * Exchange / Outlook
 * SharePoint
-* And many more!
+* Teams... and many more!
 
 ### System requirements
 
-On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 6.1.2 and higher are supported. MacOS has not been tested, but should work with PowerShell 6.1.2 and higher.
+On the Windows operating system, PowerShell 5.1 and higher are supported. On Linux, PowerShell 7.0 and higher are supported. MacOS has not been tested, but should work with PowerShell 7.0 and higher.
 
 ## Installation
 AutoGraphPS-SDK is available through the [PowerShell Gallery](https://www.powershellgallery.com/packages/autographps-sdk); run the following command to install the latest stable release of AutoGraphPSGraph-SDK into your user profile:
@@ -27,7 +27,7 @@ Install-Module AutoGraphPS-SDK -scope currentuser
 ```
 
 ## Usage
-Once you've installed, you can use an AutoGraphPS-SDK cmdlet like `Get-GraphResource` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
+Once you've installed, you can use an AutoGraphPS-SDK command like `Get-GraphResource` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
 
 ```powershell
 PS> Get-GraphResource me
@@ -46,9 +46,9 @@ After you've responded to the authentication prompt, you should see output that 
     businessPhones    : +1 (313) 360 3141
     displayName       : Starchild Okorafor
 
-Now you're ready to use any of AutoGraphPS-SDK's cmdlets to access and explore Microsoft Graph! Visit the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/main/docs/WALKTHROUGH.md) for detailed usage of the cmdlets.
+Now you're ready to use any of AutoGraphPS-SDK's commands to access and explore Microsoft Graph! Visit the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/main/docs/WALKTHROUGH.md) for detailed usage of the commands.
 
-### How do I use the cmdlets from the CLI?
+### Can you show some example graph commands?
 
 If you're familiar with the Microsoft Graph REST API or you've used [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer), you know that Graph is accessed via [URI's that look like the following](https://developer.microsoft.com/en-us/graph/docs/concepts/overview#popular-requests):
 
@@ -58,7 +58,7 @@ https://graph.microsoft.com/v1.0/me/people
 https://graph.microsoft.com/v1.0/users
 ```
 
-With the AutoGraphPS-SDK cmdlets, you can invoke REST methods from PowerShell and omit the common `https://graph.microsoft.com/v1.0` of the URI as follows:
+With the AutoGraphPS-SDK commands, you can invoke REST methods from PowerShell and omit the common `https://graph.microsoft.com/v1.0` of the URI as follows:
 
 ```powershell
 Get-GraphResource me/calendars
@@ -68,9 +68,9 @@ Get-GraphResource users
 
 These commands retrieve the same data as a `GET` for the full URIs given earlier. Of course, `Get-GraphResource` supports a `-AbsoluteUri` option to allow you to specify that full Uri if you so desire.
 
-As with any PowerShell cmdlet, you can use AutoGraphPS-SDK cmdlets interactively or from within simple or even highly complex PowerShell scripts and modules since the cmdlets emit and operate upon PowerShell objects.
+As with any PowerShell command, you can use AutoGraphPS-SDK commands interactively or from within simple or even highly complex PowerShell scripts and modules since the commands emit and operate upon PowerShell objects.
 
-For more detailed information on how to use AutoGraphPS-SDK cmdlets, see the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/main/docs/WALKTHROUGH.md) for the separate AutoGraphPS module, which documents a superset of cmdlets contained in this SDK in additions to those found in that module.
+For more detailed information on how to use AutoGraphPS-SDK commands, see the [WALKTHROUGH](https://github.com/adamedx/autographps/blob/main/docs/WALKTHROUGH.md) for the separate AutoGraphPS module, which documents a superset of commands contained in this SDK in additions to those found in that module.
 
 ### How do AutoGraphPS-SDK use it in my PowerShell application?
 
@@ -94,13 +94,13 @@ AutoGraphPS-SDK supports the use of a local settings configuration file at the l
 
 ## Reference
 
-The full list of cmdlets in this module is given below; note that `Invoke-GraphApiRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-GraphApi` to request additional permissions as described in the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference).
+The full list of commands in this module is given below; note that `Invoke-GraphApiRequest` may be used not just for reading from the Graph, but also for write operations. Use `Connect-GraphApi` to request additional permissions as described in the [Graph permissions documentation](https://docs.microsoft.com/en-us/graph/permissions-reference).
 
-| Cmdlet (alias)                       | Description                                                                                                                                             |
+| Command (alias)                       | Description                                                                                                                                             |
 |--------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Clear-GraphLog                       | Clear the log of REST requests to Graph made by the module's commands                                                                                   |
-| Connect-GraphApi (conga)             | Establishes authentication and authorization context used across cmdlets for the current graph                                                          |
-| Disconnect-GraphApi                  | Clears authentication and authorization context used across cmdlets for the current graph                                                               |
+| Connect-GraphApi (conga)             | Establishes authentication and authorization context used across commands for the current graph                                                          |
+| Disconnect-GraphApi                  | Clears authentication and authorization context used across commands for the current graph                                                               |
 | Find-GraphLocalCertificate           | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph                                    |
 | Format-GraphLog (fgl)                | Emits the Graph request log to the console in a manner optimized for understanding Graph and troubleshooting requests                                   |
 | Get-GraphApplication                 | Gets a list of Azure AD applications in the tenant                                                                                                      |
@@ -169,7 +169,7 @@ The Quickstart is a way to try out AutoGraphPS-SDK without installing the AutoGr
 
   `.\build\quickstart.ps1`
 
-This will download dependencies, build the AutoGraphPS-SDK module, and launch a new PowerShell console with the module imported. You can execute a AutoGraphPS-SDK cmdlet like the following in the console -- try it:
+This will download dependencies, build the AutoGraphPS-SDK module, and launch a new PowerShell console with the module imported. You can execute a AutoGraphPS-SDK command like the following in the console -- try it:
 
   `Test-Graph`
 
@@ -194,7 +194,7 @@ These commmands can also be used when testing modifications you make to AutoGrap
 
 License and authors
 -------------------
-Copyright:: Copyright (c) 2021 Adam Edwards
+Copyright:: Copyright (c) 2023 Adam Edwards
 
 License:: Apache License, Version 2.0
 
