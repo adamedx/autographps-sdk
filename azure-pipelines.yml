@@ -7,8 +7,12 @@ trigger:
   - main
 
 variables:
-  TEST_OUTPUT_DIRECTORY: './test/results'
+  TEST_OUTPUT_DIRECTORY: $(Build.Repository.LocalPath)/test/results
   TEST_OUTPUT_FILE: pester-testresults.xml
+  TEST_SAMPLES_OUTPUT_FILE: sample-testresults.xml
+  TEST_INTEGRATION_OUTPUT_FILE: integration-testresults.xml
+  TEST_APPID: 7cb1941c-080a-406a-8d4c-0bd8b06c37c9
+  TEST_APPTENANT: cb494bd3-5606-4ab6-bc24-d8187b172b2b
 
 jobs:
 - job: BuildWithTests
@@ -31,6 +35,13 @@ jobs:
     vmImage: $(VM_IMAGE)
   steps:
   - checkout: self
+  - task: AzureKeyVault@2
+    displayName: 'Populate pipeline variables with the certificate from keyvault'
+    inputs:
+      azureSubscription: 'Azure Free Trial(439deb75-e36b-4569-b075-f2c2448e8a3e)'
+      KeyVaultName: 'CI-AutoGraphPS-SDK'
+      SecretsFilter: 'AutoGraph-CI-Pipeline-Cert-Exp-2024-01-20'
+      RunAsPreJob: false
   - task: powershell@2
     displayName: 'Show current PowerShell version information'
     inputs:
@@ -106,8 +117,27 @@ jobs:
       targetType: inline
       script: './build/Init-DirectTestRun.ps1 -verbose; Invoke-Pester -OutputFile "$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_OUTPUT_FILE)" -OutputFormat NUnitXml'
       pwsh: $(USE_POWERSHELL_CORE)
+  - task: powershell@2
+    displayName: 'Run integration tests'
+    inputs:
+      targetType: inline
+      script: './test/CI/RunIntegrationTests.ps1 -TestRoot test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(AutoGraph-CI-Pipeline-Cert-Exp-2024-01-20) -TestParamsPassThru @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_INTEGRATION_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
+      pwsh: $(USE_POWERSHELL_CORE)
+  - task: powershell@2
+    displayName: 'Generate sample documents and tests'
+    inputs:
+      targetType: inline
+      script: './samples/Generate-SampleTestScripts.ps1 -verbose'
+      pwsh: $(USE_POWERSHELL_CORE)
+  - task: powershell@2
+    displayName: 'Run sample code integration tests'
+    inputs:
+      targetType: inline
+      script: './test/CI/RunIntegrationTests.ps1 -TestRoot .test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(AutoGraph-CI-Pipeline-Cert-Exp-2024-01-20) -TestParamsPassThru @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_SAMPLES_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
+      pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:
+      searchFolder: $(TEST_OUTPUT_DIRECTORY)
       testResultsFormat: NUnit
-      testResultsFiles: $(TEST_OUTPUT_DIRECTORY)/$(TEST_OUTPUT_FILE)
+      testResultsFiles: '*.xml'
       failTaskOnFailedTests: true

@@ -38,6 +38,7 @@ ScriptClass ApplicationHelper {
 
             $result = $this.appFormatter |=> DeserializedGraphObjectToDisplayableObject $object
             $result.pstypenames.insert(0, $APPLICATION_DISPLAY_TYPE)
+            $result.pstypenames.Add('GraphResponseObject') # For use with commands that accept this from the pipeline
             $result
         }
 

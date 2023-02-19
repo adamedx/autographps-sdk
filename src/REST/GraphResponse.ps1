@@ -1,4 +1,4 @@
-# Copyright 2020, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ ScriptClass GraphResponse {
     $NextLink = strict-val [Uri]
     $DeltaLink = strict-val [Uri]
     $Metadata = strict-val [HashTable] @{}
+    $HasNonEmptyValueData = strict-val [bool]
 
     function __initialize ( $restResponse ) {
         $this.RestResponse = $restResponse
@@ -28,6 +29,7 @@ ScriptClass GraphResponse {
 
         $this.Metadata = $normalizedResponse.metadata
         $this.Entities = $normalizedResponse.entities
+        $this.HasNonEmptyValueData = $normalizedResponse.hasNonEmptyValueData
 
         $this.ODataContext = $this.metadata['@odata.context']
         $this.NextLink = $this.metadata['@odata.nextLink']
@@ -43,15 +45,19 @@ ScriptClass GraphResponse {
         $responseData = NormalizePSObject $deserializedContent
 
         $valueData = $null
+        $hasNonEmptyValueData = $false
 
         $responseData.keys | foreach {
             if ( $_ -eq 'value' ) {
+                $hasNonEmptyValueData = $hasNonEmptyValueData -or ( $valueData -ne $null )
                 $valueData = $responseData[$_]
             } elseif ($_.startswith('@')) {
                 try {
                     $metadata[$_] = $responseData[$_]
                 } catch {
                 }
+            } else {
+                $hasNonEmptyValueData = $true
             }
         }
 
@@ -70,6 +76,7 @@ ScriptClass GraphResponse {
         @{
             entities=$entityData
             metadata=$metadata
+            hasNonEmptyValueData = $hasNonEmptyValueData
         }
     }
 

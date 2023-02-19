@@ -78,6 +78,7 @@ ScriptClass ConsentHelper {
 
             foreach ( $consentEntry in $consentEntries ) {
                 $consentEntry.pstypenames.insert(0, $CONSENT_DISPLAY_TYPE)
+                $consentEntry.pstypenames.Add('GraphResponseObject')
                 $consentEntry
             }
         }

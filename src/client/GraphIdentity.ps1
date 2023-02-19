@@ -93,93 +93,110 @@ ScriptClass GraphIdentity {
         $isConfidential = ($this.app |=> IsConfidential)
         write-verbose ("Is confidential client: '{0}'" -f $isConfidential)
 
-        write-verbose ("Adding scopes to request: {0}" -f ($scopes -join ';'))
+        $existingToken = if ( $this.token ) {
+            write-verbose "Current token expires on $($this.token.ExpiresOn)"
 
-        $authUri = $graphEndpoint |=> GetAuthUri $this.TenantName $this.AllowMSA
-        write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
-        write-verbose ("Using redirect uri (reply url) '{0}'" -f $this.App.RedirectUri)
+            $bufferMinutes = 5
 
-        $providerInstance = $::.AuthProvider |=> GetProviderInstance
-
-        $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.GraphResourceUri $authUri $groupId $certificatePassword
-
-        $authResult = if ( $this.token ) {
-            $providerInstance |=> AcquireRefreshedToken $authContext $this.token
-        } else {
-            if ( $this.App.AuthType -eq 'Apponly' ) {
-                $providerInstance |=> AcquireFirstAppToken $authContext
+            if ( ( $this.token.ExpiresOn - [DateTimeOffset]::now ).TotalMinutes -ge $bufferMinutes ) {
+                write-verbose "Using existing token since it is not within $bufferMinutes minutes of expiration"
+                $this.token
             } else {
-                # The latest version of posh-git seems to corrupt the state of the thread if it is imported into the PS session.
-                # This causes auth to fail with a ThreadStateException from MSAL with a message  indicating that an MTA operation
-                # is being attempted in an STA thread, and that is illegal. This occurs when MSAL is trying to show the auth web dialog
-                # and may impact device code auth as well.
+                write-verbose "Existing token is near expiration, new token will be requested"
+            }
+        }
 
-                # The good news though is that apparently with a retry MSAL will be just fine -- we can just try again on this
-                # same thread as a workaround until posh-git (or MSAL?) fixes the issue. We do this only when we encounter this specific
-                # error.
+        if ( $existingToken ) {
+            $existingToken
+        } else {
+            write-verbose ("Adding scopes to request: {0}" -f ($scopes -join ';'))
 
-                # It's not clear what additional instability is caused by posh-git here, so regardless of whether the workaround here
-                # unblocks this module's functionality, it may be wise to remove posh-git whenever strange behavior arises with any module
-                # to see if that fixes things. In general limiting posh-git to use cases where you really need it (e.g working
-                # with a source control system) is advisable to avoid non-determinism and hard to troubleshoot errors.
+            $authUri = $graphEndpoint |=> GetAuthUri $this.TenantName $this.AllowMSA
+            write-verbose ("Sending auth request to auth uri '{0}'" -f $authUri)
+            write-verbose ("Using redirect uri (reply url) '{0}'" -f $this.App.RedirectUri)
 
-                # Note that this workaround is only needed in the interactive case -- if no UX thread (e.g. a web dialog) is shown,
-                # there is no MTA / STA issue.
+            $providerInstance = $::.AuthProvider |=> GetProviderInstance
 
-                $remainingAttempts = 2
-                $interactiveTokenResult = $null
+            $authContext = $providerInstance |=> GetAuthContext $this.app $graphEndpoint.GraphResourceUri $authUri $groupId $certificatePassword
 
-                do {
-                    $interactiveTokenResult = if ( $isConfidential ) {
-                        $providerInstance |=> AcquireFirstUserTokenConfidential $authContext $scopes
-                    } else {
-                        $providerInstance |=> AcquireFirstUserToken $authContext $scopes $noBrowserUI
-                    }
+            $authResult = if ( $this.token ) {
+                $providerInstance |=> AcquireRefreshedToken $authContext $this.token
+            } else {
+                if ( $this.App.AuthType -eq 'Apponly' ) {
+                    $providerInstance |=> AcquireFirstAppToken $authContext
+                } else {
+                    # The latest version of posh-git seems to corrupt the state of the thread if it is imported into the PS session.
+                    # This causes auth to fail with a ThreadStateException from MSAL with a message  indicating that an MTA operation
+                    # is being attempted in an STA thread, and that is illegal. This occurs when MSAL is trying to show the auth web dialog
+                    # and may impact device code auth as well.
 
-                    # This is terrible -- since we're in PowerShell and async thread operations are inconvenient, we'll
-                    # just synchronously wait for the result :(. If we don't do this, we can't check the status
-                    # as it can change asynchronously
-                    $interactiveTokenResult.Result | out-null
+                    # The good news though is that apparently with a retry MSAL will be just fine -- we can just try again on this
+                    # same thread as a workaround until posh-git (or MSAL?) fixes the issue. We do this only when we encounter this specific
+                    # error.
 
-                    $isThreadException = if ( $interactiveTokenResult.Status -eq 'Faulted' ) {
-                        if ( $interactiveTokenResult | gm exception -erroraction ignore ) {
-                            ( $interactiveTokenResult.Exception -is [Exception] ) -and ( $interactiveTokenResult.Exception.InnerException -is [System.Threading.ThreadStateException] )
+                    # It's not clear what additional instability is caused by posh-git here, so regardless of whether the workaround here
+                    # unblocks this module's functionality, it may be wise to remove posh-git whenever strange behavior arises with any module
+                    # to see if that fixes things. In general limiting posh-git to use cases where you really need it (e.g working
+                    # with a source control system) is advisable to avoid non-determinism and hard to troubleshoot errors.
+
+                    # Note that this workaround is only needed in the interactive case -- if no UX thread (e.g. a web dialog) is shown,
+                    # there is no MTA / STA issue.
+
+                    $remainingAttempts = 2
+                    $interactiveTokenResult = $null
+
+                    do {
+                        $interactiveTokenResult = if ( $isConfidential ) {
+                            $providerInstance |=> AcquireFirstUserTokenConfidential $authContext $scopes
+                        } else {
+                            $providerInstance |=> AcquireFirstUserToken $authContext $scopes $noBrowserUI
                         }
-                    }
 
-                    if ( ! $isThreadException ) {
-                        $remainingAttempts = 0
-                    } elseif ( $remainingAttempts -gt 1 ) {
-                        write-verbose "Encountered thread exception accessing MSAL, a retry will be attempted"
-                    }
-                } while ( --$remainingAttempts -gt 0 )
+                        # This is terrible -- since we're in PowerShell and async thread operations are inconvenient, we'll
+                        # just synchronously wait for the result :(. If we don't do this, we can't check the status
+                        # as it can change asynchronously
+                        $interactiveTokenResult.Result | out-null
 
-                if ( $interactiveTokenResult ) {
-                    $interactiveTokenResult
+                        $isThreadException = if ( $interactiveTokenResult.Status -eq 'Faulted' ) {
+                            if ( $interactiveTokenResult | gm exception -erroraction ignore ) {
+                                ( $interactiveTokenResult.Exception -is [Exception] ) -and ( $interactiveTokenResult.Exception.InnerException -is [System.Threading.ThreadStateException] )
+                            }
+                        }
+
+                        if ( ! $isThreadException ) {
+                            $remainingAttempts = 0
+                        } elseif ( $remainingAttempts -gt 1 ) {
+                            write-verbose "Encountered thread exception accessing MSAL, a retry will be attempted"
+                        }
+                    } while ( --$remainingAttempts -gt 0 )
+
+                    if ( $interactiveTokenResult ) {
+                        $interactiveTokenResult
+                    }
                 }
             }
-        }
 
-        write-verbose ("`nToken request status: {0}" -f $authResult.Status)
+            write-verbose ("`nToken request status: {0}" -f $authResult.Status)
 
-        if ( $authResult.Status -eq 'Faulted' ) {
-            throw "Failed to acquire token for uri '$($graphEndpoint.GraphResourceUri)' for AppID '$($this.App.AppId)'`n" + $authResult.exception, $authResult.exception
-        }
-
-        $result = $authResult.Result
-
-        if ( $authResult.IsFaulted ) {
-            write-verbose $authResult.Exception
-            throw [Exception]::new(("An authentication error occurred: '{0}'. See verbose output for additional details" -f $authResult.Exception.message), $authResult.Exception)
-        }
-
-        if ( ! $this.tenantDisplayId -and ( $result | gm -erroraction ignore tenantid ) ) {
-            if ( $result.tenantid ) {
-                $this.tenantDisplayId = $result.tenantid
+            if ( $authResult.Status -eq 'Faulted' ) {
+                throw "Failed to acquire token for uri '$($graphEndpoint.GraphResourceUri)' for AppID '$($this.App.AppId)'`n" + $authResult.exception, $authResult.exception
             }
-        }
 
-        $result
+            $result = $authResult.Result
+
+            if ( $authResult.IsFaulted ) {
+                write-verbose $authResult.Exception
+                throw [Exception]::new(("An authentication error occurred: '{0}'. See verbose output for additional details" -f $authResult.Exception.message), $authResult.Exception)
+            }
+
+            if ( ! $this.tenantDisplayId -and ( $result | gm -erroraction ignore tenantid ) ) {
+                if ( $result.tenantid ) {
+                    $this.tenantDisplayId = $result.tenantid
+                }
+            }
+
+            $result
+        }
     }
 
     function GetTenantId($specifiedTenantId) {

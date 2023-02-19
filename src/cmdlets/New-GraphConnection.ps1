@@ -389,7 +389,7 @@ function New-GraphConnection {
 
         if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $appId -eq $null ) {
             write-verbose 'Simple connection specified with no custom uri or app id'
-            $::.GraphConnection |=> NewSimpleConnection $validatedCloud $specifiedScopes $false $TenantId -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel
+            $::.GraphConnection |=> NewSimpleConnection $validatedCloud $specifiedScopes $false $TenantId -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel -Name $Name
         } else {
             $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
                 write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'

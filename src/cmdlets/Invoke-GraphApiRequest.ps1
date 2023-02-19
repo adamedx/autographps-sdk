@@ -1,4 +1,4 @@
-# Copyright 2021, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -275,6 +275,7 @@ function Invoke-GraphApiRequest {
 
         [String] $Filter = $null,
 
+        [Alias('Property')]
         [String[]] $Select = $null,
 
         [String] $Search = $null,
@@ -398,16 +399,16 @@ function Invoke-GraphApiRequest {
         } else {
             $queryParameters = [string[]] @()
 
-            if ( $Select ) {
-                $queryParameters += @('$select={0}') -f ($Select -join ',')
-            }
-
             if ( $Expand ) {
                 $queryParameters += @('$expand={0}') -f ($Expand -join ',')
             }
 
+            if ( $Select ) {
+                $queryParameters += @('$select={0}') -f ($Select -join ',')
+            }
+
             if ( $Search ) {
-                $queryParameters += @('$search={0}' -f $Search)
+                $queryParameters += @('$search="{0}"' -f $Search)
             }
 
             if ( $Filter ) {
@@ -610,7 +611,9 @@ function Invoke-GraphApiRequest {
                     $entities = if ( $graphResponse.entities -is [Object[]] -and $graphResponse.entities.length -eq 1 ) {
                         @([PSCustomObject] $graphResponse.entities)
                     } elseif ($graphResponse.entities -is [HashTable]) {
-                        @([PSCustomObject] $graphResponse.Entities)
+                        if ( $graphResponse.HasNonEmptyValueData ) {
+                            @([PSCustomObject] $graphResponse.Entities)
+                        }
                     } else {
                         $graphResponse.Entities
                     }

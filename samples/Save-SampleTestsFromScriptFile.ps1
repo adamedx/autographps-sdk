@@ -1,4 +1,4 @@
-# Copyright 2019, Adam Edwards
+# Copyright 2022, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +13,16 @@
 # limitations under the License.
 
 [cmdletbinding()]
-param([switch] $IncludeTools, [switch] $All, [switch] $IntegrationTestOnly )
+param($testRoot, $testTitle, $testContent)
 
-. "$psscriptroot/common-build-functions.ps1"
+Set-StrictMode -Version 2
 
-if ( $IntegrationTestOnly.IsPresent ) {
-    Clean-TestDirectories
-} else {
-    if ( $IncludeTools.IsPresent -or $All.IsPresent ) {
-        clean-tools
-    }
+. "$psscriptroot/../build/common-build-functions.ps1"
 
-    clear-TemporaryPSModuleSources
+$testFileName = $testTitle + "-integration.tests.ps1"
+$targetTestPath = join-path $testRoot $testFileName
 
-    clean-builddirectories
-}
+write-verbose "Writing test '$testTitle' content to path '$targetTestPath'"
 
+Set-Content $targetTestPath -Value $testContent -force
 

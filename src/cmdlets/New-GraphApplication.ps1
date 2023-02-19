@@ -1,4 +1,4 @@
-# Copyright 2021, Adam Edwards
+# Copyright 2023, Adam Edwards
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ Specify AdditionalProperties to configure any documented properties of the AAD a
 Specifies the organizational scope for which the application may be used. By default, this has the value Auto, which is currently equivalent of the value SingleTenant, which means that the application may be signed-in only within its owning tenant. The value MultiTenant means that the application allows sign-in from any organization (subject to configured restrictions in place within a given organization managed by that organization's adminstrators) as well as delegated sign-ins by Microsoft Account (MSA) users.
 
 .PARAMETER DelegatedPermissions
-The delegated permissions to be configured for the application and (optionally) consented to the application. Specifying these permissions configures them as "required permissions" for the application. And as long as the NoConsent parameter is not specified, the consent is also configured using these permissions. The consent is configured as oauth2PermissionGrant resources documented as part of the Graph API. If the PrincipalIdToConsent parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless PrincipalIdToConsent or ConsentForAllPrincipals is specified. If you don't specify this parameter, then by default, the offline permission is consented for the application.
+The delegated permissions to be configured for the application and (optionally) consented to the application. Specifying these permissions configures them as "required permissions" for the application. And as long as the NoConsent parameter is not specified, the consent is also configured using these permissions. The consent is configured as oauth2PermissionGrant resources documented as part of the Graph API. If the ConsentedPrincipalId parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless ConsentedPrincipalId or ConsentForAllPrincipals is specified. If you don't specify this parameter, then by default, the offline permission is consented for the application.
 
 .PARAMETER ApplicationPermissions
 The application permissions to be consented to the application. The consent is actually configured as app role assignments described by the appRoleAssignment resource documented as part of the Graph API.
@@ -114,8 +114,8 @@ Specifies the credential used to protect the private key of the certificate if t
 .PARAMETER NoCertCredential
 If the CertOutputDirectory parameter is specified, specify the NoCertCredential parameter to specify that no credential is required on the resulting exported certificate file to access the private key of the certificate. Otherwise, if NoCertCredential is not specified, the CertCredential parameter must be specified (and if it isn't then an interactive prompt will be invoked to request the user to input a credential).
 
-.PARAMETER PrincipalIdToConsent
-Use the PrincipalIdToConsent parameter to specify a principal such as a user to which the specified delegated permissions should be granted when signed in to the application. If neither this parameter nor the AllPermissions parameter is specified, then if the command is executing using a delegated identity, that identity is granted consent for delegated permissions. If that case is modified so that the command is executing using an application-only identity, then the command will fail if neither ConsentForAllPrincipals or PrincipalIdToConsent is specified. When specifying this parameter, it must be the AAD object identifier guid of the user to which to grant consent.
+.PARAMETER ConsentedPrincipalId
+Use the ConsentedPrincipalId parameter to specify a principal such as a user to which the specified delegated permissions should be granted when signed in to the application. If this parameter is not specified, then if the command is executing using a delegated identity, that identity is granted consent for delegated permissions. If that case is modified so that the command is executing using an application-only identity, then the command will fail if neither ConsentForAllPrincipals or ConsentedPrincipalId is specified. When specifying this parameter, it must be the AAD object identifier guid of the user to which to grant consent.
 
 .PARAMETER Connection
 Specify the Connection parameter to use as an alternative connection to the current connection when communicating with the Graph API.
@@ -143,7 +143,7 @@ This example shows how a native client application created by New-GraphApplicati
 .EXAMPLE
 $graphApp = New-GraphApplication 'Shared Graph Scripting App' -Permissions Group.Read.All, Application.Read.All -ConsentForAllPrincipals
 
-This example shows how to create a native client application with specific permissions consented to all users in the organization by using the ConsentForAllPrincipals parameter. Alternatively, the PrincipalIdToConsent parameter may be used to grant consent to a specific principal rather than all principals.
+This example shows how to create a native client application with specific permissions consented to all users in the organization by using the ConsentForAllPrincipals parameter. Alternatively, the ConsentedPrincipalId parameter may be used to grant consent to a specific principal rather than all principals.
 
 .EXAMPLE
 $multiApp = New-GraphApplication 'Cross-Org test app' -Tenancy MultiTenant -DelegatedPermissions User.Read
@@ -286,15 +286,15 @@ function New-GraphApplication {
         [parameter(parametersetname='confidentialappnewcertexport')]
         [switch] $NoCertCredential,
 
-        [string] $PrincipalIdToConsent,
+        [string] $ConsentedPrincipalId,
 
         [PSCustomObject] $Connection = $null
     )
     Enable-ScriptClassVerbosePreference
 
     if ( $SkipTenantRegistration.IsPresent ) {
-        if ( $PrincipalIdToConsent -or $ConsentForAllPrincipals.IsPresent ) {
-            throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'PrincipalIdToConsent' or 'ConsentForAllPrincipals' is specified")
+        if ( $ConsentedPrincipalId -or $ConsentForAllPrincipals.IsPresent ) {
+            throw [ArgumentException]::new("'SkipTenantRegistration' may not be specified if 'ConsentedPrincipalId' or 'ConsentForAllPrincipals' is specified")
         }
     }
 
@@ -363,7 +363,7 @@ function New-GraphApplication {
     }
 
     if ( ! $SkipTenantRegistration.IsPresent ) {
-        $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $PrincipalIdToConsent $ConsentForAllPrincipals.IsPresent $DelegatedUserPermissions $ApplicationPermissions | out-null
+        $newAppRegistration |=> Register $true (! $NoConsent.IsPresent) $ConsentedPrincipalId $ConsentForAllPrincipals.IsPresent $DelegatedUserPermissions $ApplicationPermissions | out-null
     }
 
     $::.ApplicationHelper |=> ToDisplayableObject $newApp

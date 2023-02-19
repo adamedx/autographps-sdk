@@ -155,7 +155,7 @@ ScriptClass GraphApplicationCertificate {
         } else {
             $parent = split-path -parent $certificateFilePath
 
-            if ( ! ( test-path $parent ) ) {
+            if ( $parent -and ( ! ( test-path $parent ) -and ( $parent.Contains('/') -or $parent.Contains('\') ) ) ) {
                 throw "The directory that contains the specified path '$certificateFilePath' does not exist"
             }
             $certificateFilePath
@@ -171,9 +171,15 @@ ScriptClass GraphApplicationCertificate {
             $this.X509Certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx)
         }
 
-        $content | Set-Content -Encoding byte $destination
+        $byteStreamOutputParameter = if ( $PSEdition -eq 'Core' ) {
+            @{AsByteStream = [System.Management.Automation.SwitchParameter]::new($true)}
+        } else {
+            @{Encoding = 'Byte'}
+        }
 
-        $destination
+        $content | Set-Content @byteStreamOutputParameter $destination
+
+        ( Get-Item $destination ).FullName
     }
 
     function __Load([PSCredential] $certCredential) {

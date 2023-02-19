@@ -2,15 +2,16 @@
 
 ## To-do items -- prioritized
 
-* Rename some consent parameters in New-GraphApplication for consistency with other commands.
+* Make Get-GraphResource correctly use the pipeline
+* Generate URIs for when connection is offline in lieu of requests
+* Add global request id preference
+* Add global headers to settings, matched to uris
 * Make Set-GraphApplicationCertificate make only one request when multiple certificate paths are specified by the pipeline.
-* Make exportedcertficatepath member of new-graph*certificate use a fully qualified path
 * Add countvariable?
 * Add service principal support to *-graphapplicationcertificate commands, not just application
 * Look at using serilog for logging
 * Add API version to itemcontext?
 * Add more properties to serviceprincipal output, application
-* Add tags to get-graphapplication
 * Add startswith search to get-graphapplication
 * Make permissions ids work with the consent and application commands
 * Make service principal id column title serviceprincipal
@@ -24,7 +25,6 @@
 * Allow remove and set consent commands to operate on native objects
 * Improve formatting of consent output
 * Add search for permissions to get-graphapplicationconsent
-* Normalize command parameters for consent across all commands
 * Change consent commands to use native graph objects instead of custom objects and normalize via type augmentation and formatting.
 * Possible need to add 'no additional permissions' setting to profiles and doc in schema
 * Remove resultvariable from ggr without impacting LASTGRAPHITEMS; actually looks like not an issue
@@ -472,6 +472,19 @@
 * Rename Get-GraphToken to Get-GraphAccessToken
 * Make Register-GraphApplication use the formatting for service principal
 * Remove publisherdomain from serviceprincipal output as the property does not exist
+* Fix New-GraphConnection name parameter returning unnamed?!!!
+* Fix missing redirecturi in connection format output
+* NOREPRO: Fix errors missing headers and other information in the log
+* Fix Remove-GraphApplicationCertificate by keyid removing other keys!!!
+* Make exportedcertficatepath member of new-graph*certificate use a fully qualified path
+* Fix unnecessary token acquisitions
+* New-GraphApplicationCertificate -NoCertCredential parameter does not work for the parameter set with -AppId and -CertOutputDirectory
+* Add GraphResponseObject type to any created items like application, consent output
+* Add tags to get-graphapplication
+* Rename some consent parameters in New-GraphApplication for consistency with other commands.
+* Normalize command parameters for consent across all commands
+* Fix empty sets with get-graphresource returning non-null object
+* Remove nuget.exe and nuspec from build process, use only modern csproj and dotnet tool
 
 ### Postponed
 
@@ -482,7 +495,8 @@
 * Add continue feature?
 * Test Release
 * Remove enums
-
+* Fix missing keyid output column in new-graphapplicationcertificate -- maybe not worth it as it's a basic limitation of the API with unfortunate workarounds (i.e. another REST request to do a GET because the response is empty).
+* Should Get-GraphApplication throw when the app is not found?
 
 ### Abandoned
 

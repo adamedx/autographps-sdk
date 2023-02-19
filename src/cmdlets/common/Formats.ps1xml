@@ -356,7 +356,11 @@ limitations under the License.
                 <ScriptBlock>$_.identity.AllowMSA</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>ConsistencyLevel</Label>
+                <Label>RedirectUri</Label>
+                <ScriptBlock>$_.identity.app.RedirectUri</ScriptBlock>
+              </ListItem>
+              <ListItem>
+                 <Label>ConsistencyLevel</Label>
                 <ScriptBlock>if ( $_.consistencyLevel ) { $_.consistencyLevel } else { 'Auto' }</ScriptBlock>
               </ListItem>
               <ListItem>
