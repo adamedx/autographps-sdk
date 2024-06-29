@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.30.0'
+ModuleVersion = '0.31.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -247,34 +247,24 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.30.0 Release Notes
+## AutoGraphPS-SDK 0.31.0 Release Notes
 
-Add integration testing to CI pipeline, sample code documentation generation, and fix some code defects.
+Fix important code defects.
 
 ### New dependencies
 
-* ScriptClass 0.20.3
 
 ### Breaking changes
 
-* Renamed the `PrincipalIdToConsent` parameter to `ConsentedPrincipalId` in the commands `New-GraphApplication`, `RegisterGraphApplication`, and `Set-GraphApplicationConsent` for consistency with other commands referencing the same concept.
+None.
 
 ### New features
 
-* `GraphResponseObject` pstypename added to `Get-GraphApplication` and `New-GraphApplication` commands to support pipelines that accept `GraphResponseObject` (including commands outside this module).
-* Added `Tags` parameter to `Get-GraphApplication` to search by the tags property
+None.
 
 ### Fixed defects
 
-* Fixed missing prompt for certificate credentials and failure to configure the certificate credentials when using `CertificateFilePath` or `CertificatePath` parameters of `New-GraphApplicationCertificate` and `New-GraphLocalCertificate`.
-* Fixed missing surrounding double quotes in generated URI when the `Search` parameter in `Invoke-GraphApiRequest` and `Get-GraphResource` is used to create an argument for `Search` -- seems quotes were not required for requests on `messages` (i.e. mail) but for directory objects they are required. Workaround is to add them to the search parameter value.
-* The `Name` parameter of `New-GraphConnection` was being ignored in certain cases resulting in an unnamed connection -- this has been fixed.
-* The `RedirectUri` property for a connection was not displayed in list views -- this has been fixed.
-* The `Remove-GraphApplicationCertificate` command was removing *all* credentials rather than just a specified credential.
-* The `New-GraphLocalCertificate` and `New-GraphApplicationCertificate` commands now output a fully qualified file system path for the `ExportedCertificatePath` property where before they would use the exact path specified by the `CertificateFilePath` parameter even if it was relative.
-* The `New-GraphApplicationCertificate` command only supported the `NoCredential` parameter when `CertificateFilePath` was specified, but not when `CertOutputDirectory` was specified -- this is fixed.
-* Access token was being requested for every Graph request - fixed to do this only if the token is near expiration.
-* Empty results from `Invoke-GraphRequest` and `Get-GraphRequest` no longer return an object, now null is returned.
+* Fixed broken graph removal impacting downstream `Remove-Graph` command from `autographps` module.
 
 '@
 
