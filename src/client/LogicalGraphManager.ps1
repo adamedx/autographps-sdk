@@ -109,7 +109,7 @@ ScriptClass LogicalGraphManager {
             throw "Context '$name' cannot be removed because it does not exist"
         }
 
-        if ( ( ! $::.GraphContext |=> GetCurrent ).name -eq $name ) {
+        if ( ! ( $::.GraphContext |=> GetCurrent ).name -eq $name ) {
             throw "Context '$name' cannot be removed because it is the current context"
         }
 

@@ -485,6 +485,7 @@
 * Normalize command parameters for consent across all commands
 * Fix empty sets with get-graphresource returning non-null object
 * Remove nuget.exe and nuspec from build process, use only modern csproj and dotnet tool
+* Fix Remove-Graph bug in RemoveContext method of LogicalGraphManager
 
 ### Postponed
 
