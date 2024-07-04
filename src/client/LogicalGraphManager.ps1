@@ -104,16 +104,22 @@ ScriptClass LogicalGraphManager {
     }
 
     function RemoveContext($name) {
+        if ( ! $name ) {
+            throw [ArgumentException]::new('Cannot remove context because no context name was specified')
+        }
+
         $contextRecord = $this.contexts[$name]
         if ( ! $contextRecord ) {
             throw "Context '$name' cannot be removed because it does not exist"
         }
 
-        if ( ! ( $::.GraphContext |=> GetCurrent ).name -eq $name ) {
-            throw "Context '$name' cannot be removed because it is the current context"
-        }
+        $currentContext = $::.GraphContext |=> GetCurrent
 
-        $this.contexts.remove($name)
+        if ( $currentContext -and $currentContext.Name -eq $name ) {
+            write-warning "Context '$name' cannot be removed because it is the current context"
+        } else {
+            $this.contexts.remove($name)
+        }
     }
 
     function GetContext($name) {
