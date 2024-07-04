@@ -58,7 +58,7 @@ jobs:
     displayName: 'Install Pester test framework required version'
     inputs:
       targetType: inline
-      script: 'Install-Module Pester -RequiredVersion 4.8.1 -scope currentuser -force'
+      script: 'Install-Module Pester -RequiredVersion 4.8.1 -scope currentuser -force -skippublishercheck'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Get updated Pester test framework module version'
