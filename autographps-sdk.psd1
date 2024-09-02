@@ -249,7 +249,7 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS-SDK 0.31.0 Release Notes
 
-Fix important code defects, update to lateset MSAL version.
+Fix important code defects, CI pipeline updates, update to lateset MSAL version.
 
 ### New dependencies
 
