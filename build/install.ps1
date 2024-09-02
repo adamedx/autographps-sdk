@@ -81,7 +81,6 @@ function InstallDependencies($clean) {
     }
 
     foreach ( $platform in $targetPlatforms ) {
-        write-host -foregroundcolor magenta $platform
         $platformSourceLibraries = Get-ChildItem -r $packagesTempSource |
           where name -like *.dll |
           where { $_.Directory.Name -eq $platform }
@@ -100,8 +99,6 @@ function InstallDependencies($clean) {
                     continue
                 }
 
-                write-host $sourceLibrary.FullName
-                write-host -foregroundcolor blue (split-path -leaf $sourceLibrary.fullname), $platformDirectory
                 move-item $sourceLibrary.FullName $platformDirectory
             }
         }
