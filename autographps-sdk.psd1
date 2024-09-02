@@ -249,10 +249,11 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS-SDK 0.31.0 Release Notes
 
-Fix important code defects.
+Fix important code defects, CI pipeline updates, update to lateset MSAL version.
 
 ### New dependencies
 
+* Update to Microsoft.Identity.Client 4.64.0 (aka MSAL).
 
 ### Breaking changes
 
@@ -265,6 +266,7 @@ None.
 ### Fixed defects
 
 * Fixed broken graph removal impacting downstream `Remove-Graph` command from `autographps` module.
+* Add support to enforce requested naming of graphs instead of auto-generation on conflicting name.
 
 '@
 

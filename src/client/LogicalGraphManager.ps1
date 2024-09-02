@@ -24,7 +24,7 @@ ScriptClass LogicalGraphManager {
         $this.contexts = @{}
     }
 
-    function NewContext($parentContext = $null, $connection, $apiversion, $name = $null, $verifyVersion = $false) {
+    function NewContext($parentContext = $null, $connection, $apiversion, $name = $null, $verifyVersion = $false, [string] $schemaId = $null) {
         if ( ! $apiVersion -and ! $parentContext) {
             throw "An api version or parent context must be specified"
         }
@@ -83,6 +83,10 @@ ScriptClass LogicalGraphManager {
         }
 
         $contextName = if ( $this.contexts.containskey($uniqueName) ) {
+            if ( $name ) {
+                throw "The specified graph context name '$name' already exists"
+            }
+
             $secondName = "{0}_{1}" -f $uniqueName, $this.contexts.count
 
             if ( $this.contexts.containskey($secondName) ) {
@@ -96,7 +100,7 @@ ScriptClass LogicalGraphManager {
             $uniqueName
         }
 
-        $context = new-so GraphContext $graphConnection $version $contextName
+        $context = new-so GraphContext $graphConnection $version $contextName $schemaId
 
         $this.contexts.Add($contextName, [PSCustomObject]@{Context=$context})
 
@@ -104,16 +108,22 @@ ScriptClass LogicalGraphManager {
     }
 
     function RemoveContext($name) {
+        if ( ! $name ) {
+            throw [ArgumentException]::new('Cannot remove context because no context name was specified')
+        }
+
         $contextRecord = $this.contexts[$name]
         if ( ! $contextRecord ) {
             throw "Context '$name' cannot be removed because it does not exist"
         }
 
-        if ( ! ( $::.GraphContext |=> GetCurrent ).name -eq $name ) {
-            throw "Context '$name' cannot be removed because it is the current context"
-        }
+        $currentContext = $::.GraphContext |=> GetCurrent
 
-        $this.contexts.remove($name)
+        if ( $currentContext -and $currentContext.Name -eq $name ) {
+            write-warning "Context '$name' cannot be removed because it is the current context"
+        } else {
+            $this.contexts.remove($name)
+        }
     }
 
     function GetContext($name) {
