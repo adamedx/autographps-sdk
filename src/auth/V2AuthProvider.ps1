@@ -297,7 +297,10 @@ ScriptClass V2AuthProvider {
                 $targetframeworkParameter = if ( $PSEdition -ne 'Desktop' ) {
                     @{TargetFrameworkMoniker = 'net6.0'}
                 } else {
-                    @{}
+                    # And on desktop it defaults to net45, so now even for desktop we must
+                    # explicitly override with the a later version since the auth library
+                    # no longer seems to support net45. :(
+                    @{TargetFrameworkMoniker = 'net472'}
                 }
 
                 $libPath = join-path $this.scriptRoot ../../lib

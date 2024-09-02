@@ -81,6 +81,7 @@ function InstallDependencies($clean) {
     }
 
     foreach ( $platform in $targetPlatforms ) {
+        write-host -foregroundcolor magenta $platform
         $platformSourceLibraries = Get-ChildItem -r $packagesTempSource |
           where name -like *.dll |
           where { $_.Directory.Name -eq $platform }
@@ -93,6 +94,14 @@ function InstallDependencies($clean) {
             }
 
             foreach ( $sourceLibrary in $platformSourceLibraries ) {
+                # So now there are some new '/ref/' directories in .net6 and later releases that include various superfluous
+                # binaries, so we explicitly filter these out. :(
+                if ( ( split-path -leaf ( split-path -parent ( split-path -Parent $sourceLibrary.FullName ) ) ) -eq 'ref' ) {
+                    continue
+                }
+
+                write-host $sourceLibrary.FullName
+                write-host -foregroundcolor blue (split-path -leaf $sourceLibrary.fullname), $platformDirectory
                 move-item $sourceLibrary.FullName $platformDirectory
             }
         }
