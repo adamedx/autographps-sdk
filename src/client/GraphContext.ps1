@@ -23,8 +23,9 @@ ScriptClass GraphContext {
     $location = $null
     $state = $null
     $Id = $null
+    $schemaId = $null
 
-    function __initialize($connection, $apiversion, $name) {
+    function __initialize($connection, $apiversion, $name, $schemaId) {
         if ( ! $name ) {
             throw "Graph name must be specified"
         }
@@ -38,6 +39,14 @@ ScriptClass GraphContext {
         $this.version = $graphVersion
         $this.name = $name
         $this.location = $this.scriptclass |=> GetDefaultLocation
+
+        $this.schemaId = if ( $schemaId ) {
+            $schemaId
+        } elseif ( $apiversion )  {
+            $apiversion
+        } else {
+            [guid]::newguid().ToString()
+        }
     }
 
     function GetState($stateKey) {
