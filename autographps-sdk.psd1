@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.31.0'
+ModuleVersion = '0.32.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -230,7 +230,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure', 'MicrosoftGraph', 'Microsoft-Graph', 'MS-Graph', 'AAD-Graph', 'REST', 'CRUD', 'GraphAPI', 'poshgraph', 'poshgraph-sdk', 'autograph', 'PSEdition_Core', 'PSEdition_Desktop', 'Windows', 'Linux', 'MacOS')
+        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure', 'MicrosoftGraph', 'Microsoft-Graph', 'MS-Graph', 'AAD-Graph', 'Entra', 'REST', 'CRUD', 'GraphAPI', 'poshgraph', 'poshgraph-sdk', 'autograph', 'PSEdition_Core', 'PSEdition_Desktop', 'Windows', 'Linux', 'MacOS')
 
         # A URL to the license for this module.
         LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
@@ -247,13 +247,13 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.31.0 Release Notes
+## AutoGraphPS-SDK 0.32.0 Release Notes
 
-Fix important code defects, CI pipeline updates, update to lateset MSAL version.
+Branding and documentation updates related to AAD -> Entra rename.
 
 ### New dependencies
 
-* Update to Microsoft.Identity.Client 4.64.0 (aka MSAL).
+None.
 
 ### Breaking changes
 
@@ -261,12 +261,11 @@ None.
 
 ### New features
 
-None.
+* Runtime command help and other documentation is updated to reflect the rebranding of Azure Active Directory to 'Entra'.
 
 ### Fixed defects
 
-* Fixed broken graph removal impacting downstream `Remove-Graph` command from `autographps` module.
-* Add support to enforce requested naming of graphs instead of auto-generation on conflicting name.
+None.
 
 '@
 
