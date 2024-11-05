@@ -41,7 +41,7 @@ function InstallDependencies($clean) {
         return
     }
 
-    write-host -foregroundcolor magenta "Installing dependencies to '$appRoot'"
+    write-host -foregroundcolor cyan "Installing dependencies to '$appRoot'"
 
     Clean-PackageTempDirectory
     psmkdir $packagesTempSource | out-null
@@ -55,7 +55,7 @@ function InstallDependencies($clean) {
 
     $restoreCommand = "dotnet restore '$projectFilePath' --packages '$packagesTempSource' /verbosity:normal --no-cache"
 
-    write-host -foregroundcolor magenta "Executing command: $restoreCommand"
+    write-host -foregroundcolor cyan "Executing command: $restoreCommand"
 
     # This will download and install libraries and transitive dependencies under packages destination
     Invoke-Expression $restoreCommand | out-host

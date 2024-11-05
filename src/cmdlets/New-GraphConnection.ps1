@@ -64,6 +64,9 @@ By default, connections created by New-GraphConnnection will sign in using an in
 
 If no parameters are used to specify the application credentials, then on Windows, if no secret is specified, New-GraphConnection will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if New-GraphConnection cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
 
+.PARAMETER UseBroker
+By default, sign-ins for connections created by New-GraphConnection will utilize protocol sequences exchanged directly between the PowerShell process hosting the command and the Entra ID security token service (STS). When UseBroker is specified, an intermediary "broker" OS component intercepts communication between the application and the STS to provide enhanced security. This capability is only supported on newer versions of the Windows operating system. For more information on how to use this capability, see the Entra documentation for the Web Account Manager (WAM): https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/desktop-mobile/wam.
+
 .PARAMETER CertificatePath
 Specifies the path in the file system or in the PowerShell cert: drive provider of a certificate with a private key to authenticate the application to the Graph API. This parameter is only valid if the Confidential parameter is specified.
 

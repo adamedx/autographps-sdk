@@ -251,18 +251,23 @@ PrivateData = @{
         ReleaseNotes = @'
 ## AutoGraphPS-SDK 0.32.0 Release Notes
 
-Branding and documentation updates related to AAD -> Entra rename.
+Authentication broker support along with branding and documentation updates related to AAD -> Entra rename.
 
 ### New dependencies
 
-None.
+* Update to Microsoft.Identity.Client 4.66.1 (aka MSAL).
+* New optional dependency Microsoft.Identity.Client.Broker 4.66.1 for authentication broker support (Windows only)
 
 ### Breaking changes
 
-None.
+* New default app id (client id) for the module has been changed: A new application id, c98eb929-2053-4b03-b680-a5efcbd59035 is the default.
+  The earlier app id, ac70e3e2-a821-4d19-839c-b8af4515254b is no longer in use to avoid the small chance that adding broker support to its configuration could break existing users.
 
 ### New features
 
+* The `Connect-GraphApi` and `New-GraphConnection` commands expose a new `-UseBroker` parameter. This enables support for
+  [authentication broker sign-ins on Windows](https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/desktop-mobile/wam) for improved security
+  features offered by the native capabilities of the operating system and device, including limiting the use of refresh tokens to the device that acquired the original token.
 * Runtime command help and other documentation is updated to reflect the rebranding of Azure Active Directory to 'Entra'.
 
 ### Fixed defects

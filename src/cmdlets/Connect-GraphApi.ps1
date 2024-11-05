@@ -67,6 +67,9 @@ By default, connections created by Connect-GraphApi will sign in using an intera
 
 If no parameters are used to specify the application credentials, then on Windows, if no secret is specified, Connect-GraphApi will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if the command cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
 
+.PARAMETER UseBroker
+By default, sign-ins initiated by Connect-GraphApi will utilize protocol sequences exchanged directly between the PowerShell process hosting the command and the Entra ID security token service (STS). When UseBroker is specified, an intermediary "broker" OS component intercepts communication between the application and the STS to provide enhanced security. This capability is only supported on newer versions of the Windows operating system. For more information on how to use this capability, see the Entra documentation for the Web Account Manager (WAM): https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/desktop-mobile/wam.
+
 .PARAMETER ExistingPermissionsOnly
 By default, Connect-GraphApi always requests the permission User.Read at sign-in because it provides a minimal but useful amount of access to Graph API resources that help users maintain awareness of what identity they used for signing in. However the permission is not strictly necessary so to avoid the need to consent to that permission, and in particular to ensure that legacy AAD applications that support only static request and fail any sign-ins where additional permissions are requested, specify this parameter.
 
@@ -244,6 +247,11 @@ In this case, Connect-GraphApi is used to sign in to a Microsoft Account such as
 Connect-GraphApi -AppId c7de6c6e-53c7-4651-92b5-81249d569f24 -ExistingPermissionsOnly
 
 This example illustrates how to enable support for Connect-GraphApi to sign in to a legacy AAD application that does not support requests for new permissions. Such applications are no longer created by AAD APIs but in earlier iterations of AAD applications could only be configurd with static consent. Attempts to request the additional permissions for those applications will fail if any additional permissions are specified, and since Connect-GraphApi always requests User.Read permission for usability reasons on every sign-in, the Connect-GraphApi will fail with this default behavior. To work around this problem, or to avoid granting User.Read to applications used by this module, specify the ExistingPermissionsOnly property. Sign-ins to any applications that require static configuration will succeed with valid credentials, though their ability to succesfully invoke any Graph APIs accessed by subsequent commands using the connection will depend on whether the static permissions are configured to allow the access.
+
+.EXAMPLE
+Connect-GraphApi -UseBroker
+
+This example utilizes the local operating system's authentication broker support to sign in to Microsoft Graph. Unlike most sign-in flows, a web browser will not be involved. Instead, a locally implemented and secured user interface implemented by the operating system itself will provide the sign-in experience and will add additional security enhancements to safeguard the access token acquired by the sign-in and used by the connection. This capability is supported only on the Windows operating system.
 
 .EXAMPLE
 $confidentialApp = New-GraphApplication -Confidential -DelegatedUserPermissions Directory.Read.All -name AdminWorkstationApp -NewCredential
