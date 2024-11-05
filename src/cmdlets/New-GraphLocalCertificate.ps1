@@ -16,7 +16,7 @@
 
 <#
 .SYNOPSIS
-Creates a new certificate in the local certificate store for use as an Azure Active Directory (AAD) application credential (Windows platform only).
+Creates a new certificate in the local certificate store for use as an Entra ID application credential (Windows platform only).
 
 .DESCRIPTION
 Certificate credential configuration on the application object allows running application code to obtain access tokens with the application's identity. New-GraphLocalCertificate creates such a certificate in the local system's certificate store cert: drive. New-GraphLocalCertificate *does not*, however, configure the certificate on the application. A subsequent Graph API request to configure the application to use the certificate created by New-GraphLocalCertificate must be issued to allow sign-in to the application through the certificate. The Set-GraphApplicationCertificate command may be used to issue such a request to configure the application.
@@ -36,10 +36,10 @@ The application for which to create a certificate may be specified either by the
 The command allows for the certificate start and end times to be configured, as well as the key length. The current cryptographic provider for the certificates is the "Microsoft Enhanced RSA and AES Cryptographic Provider". Customization beyond the command's current support for specific certificate properties or cryptographic algorithms requires the use of an alternative tool for the use case.
 
 .PARAMETER AppId
-The AAD application identifier of the application for which to create a certificate in the certificate store
+The Entra ID application identifier of the application for which to create a certificate in the certificate store
 
 .PARAMETER ObjectId
-The AAD object identifier of the application for which to create a certificate in the certificate store
+The Entra ID object identifier of the application for which to create a certificate in the certificate store
 
 .PARAMETER ApplicationName
 Optional parameter used to add a human-friendly description of the application for which the certificate is being created.
@@ -104,7 +104,7 @@ New-GraphApplication "Dev app" -OutVariable newApp | New-GraphLocalCertificate -
 Thumbprint              : A14AA744C84E978E761884132D62C6AB8DC1E203
 AppId                   : e4ab44d2-98ac-4a33-a010-e8fa2ac2e330
 Subject                 : CN=e4ab44d2-98ac-4a33-a010-e8fa2ac2e330, CN=AutoGraphPS, CN=MicrosoftGraph
-FriendlyName            : Credential for Microsoft Graph Azure Active Directory application name='AutoGraphPS Application',
+FriendlyName            : Credential for Microsoft Graph Entra ID application name='AutoGraphPS Application',
                           appId=e4ab44d2-98ac-4a33-a010-e8fa2ac2e330, objectId=
 NotBefore               : 12/27/2021 4:10:42 PM -08:00
 NotAfter                : 12/27/2022 4:10:42 PM -08:00

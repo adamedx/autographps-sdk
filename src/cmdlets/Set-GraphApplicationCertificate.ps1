@@ -18,7 +18,7 @@
 
 <#
 .SYNOPSIS
-Sets the certificates configured for use as credentials for an Azure Active Directory (AAD) application identity.
+Sets the certificates configured for use as credentials for an Entra ID application identity.
 
 .DESCRIPTION
 Certificate credential configuration on the application object allows running application code to obtain access tokens with the application's identity. Set-GraphApplicationCertificate configures the set of certificates used as credentials for the application. Runtime code with access to the private key associated with a certificate configured for the application will be able to authenticate as the application.
@@ -34,7 +34,7 @@ There are four ways to specify the certificates to configure for the application
 By default, Set-GraphApplicationCertificate will attempt to add the specified certificates to the application configuration; certificates that are already configured for the application will still be configured after Set-GraphApplicationCertificate completes the add operation. The EditMode parameter may be specified to override this behavior so that the set of certificates for the application is overwritten by the set specified to the command. When EditMode is specified as 'Replace', any certificates that are configured for the application before Set-GraphApplicationCertificate is invoked will no longer be configured after the command completes unless those certificates were specified as parameters to the command.
 
 .PARAMETER AppId
-The AAD application identifier of the application for which to configure certificates.
+The Entra ID application identifier of the application for which to configure certificates.
 
 .PARAMETER AppObjectId
 The object identifier of the application for which to configure certificates.
@@ -67,17 +67,17 @@ Specify the Connection parameter to use as an alternative connection to the curr
 The command produces no output.
 
 .EXAMPLE
-Set-GraphApplicationCertificate -AppId e4ab44d2-98ac-4a33-a010-e8fa2ac2e330 -Thumbprint D152B20A07EFD6E5973AFAD1631069CAADDF0297
+Set-GraphApplicationCertificate -AppId e4ab44d2-98ac-4a33-a010-e8fa2ac2e330 -Thumbprint D152B20A07EFD6E5973AFAD1631069CACDDF0297
 
 This example demonstrates how to specify the certificate to configure using the Thumbprint parameter of Set-GraphApplicationCertificate.
 
 .EXAMPLE
-Set-GraphApplicationCertificate -AppId e4ab44d2-98ac-4a33-a010-e8fa2ac2e330 -Thumbprint D152B20A07EFD6E5973AFAD1631069CAADDF0297, F8FFD55CDC95F8BDBAAEB87916C3301348F8D43B -EditMode Replace
+Set-GraphApplicationCertificate -AppId e4ab44d2-98ac-4a33-a010-e8fa2ac2e330 -Thumbprint D152B20A07EFD6E5973AFAD1631069CACDDF0297, F8FFD55CDC95F8BDBAAEB87916C3301348F8D43B -EditMode Replace
 
 This example demonstrates how multiple certificates may be configured using a single command invocation. Here multiple certificates in the local certificate store are specified by suppling their values as an array to the Thumbprint parameter. The Set-GraphApplicationCertificate command will configure those certificates using a single Graph API request -- since the EditMode parameter is set to Replace, only those certificates specified to the command will remain configured after it is finished. The command also supports the default EditMode of Add in those where multiple certificates are specified.
 
 .EXAMPLE
-Set-GraphApplicationCertificate -AppId e4ab44d2-98ac-4a33-a010-e8fa2ac2e330 -CertificatePath Cert:\LocalMachine\My\A152B20A07EFD6E5973AFA91631069CAADDF0298
+Set-GraphApplicationCertificate -AppId e4ab44d2-98ac-4a33-a010-e8fa2ac2e330 -CertificatePath Cert:\LocalMachine\My\A152B20A07EFD6E5973AFA91631069CACDDF0298
 
 Here the certificate to configure additively on the application is specified by path using a certificate store 'cert:' path, rather than thumbprint.
 

@@ -19,14 +19,14 @@
 
 <#
 .SYNOPSIS
-Registers an existing Azure Active Directory (AAD) application in the organization.
+Registers an existing Entra ID application in the organization.
 
 .DESCRIPTION
-In order for an Azure Active Directory (AAD) application identity to access resources from Microsoft Graph, it must be registered in the organization. The mere creation of an application in the organization using the Graph API does not register the application -- an application is considered registered only after a service principal resource associated with it has been created in the organization. Register-GraphApplication creates a service principal in the organization for a given application. This is useful for configuring permissions consented to the application before the first sign-in occurs for the application so that identities performing the sign-in are able to obtain the permissions they require.
+In order for an Entra ID application identity to access resources from Microsoft Graph, it must be registered in the organization. The mere creation of an application in the organization using the Graph API does not register the application -- an application is considered registered only after a service principal resource associated with it has been created in the organization. Register-GraphApplication creates a service principal in the organization for a given application. This is useful for configuring permissions consented to the application before the first sign-in occurs for the application so that identities performing the sign-in are able to obtain the permissions they require.
 
 By default, a service principal is automatically provisioned in the organization the first time a successful sign-in occurs to the application. However the identity performing the sign-in may not be authorized to grant consent to required applications. If there is no service principal created before the first sign-in then there are no permissions consented to the application in the organization. This means that unless the identity performing the sign-in is authorized to grant permissions requested during the sign-in, the sign-in may fail. To ensure that an identity may obtain the correct permissions, an authorized user such as an administrator can create the service principal before a sign-in has occurred using Register-GraphApplication. The use of Register-GraphApplication also includes the ability to specify permissions that should be granted. Alternatively, Register-GraphApplication can be used to simply create the service principal without any granted permissions, and then the Set-GraphApplicationConsent command can be subsequently invoked to configure permission grants.
 
-Note that the functionality of Register-GraphApplication is present in the New-GraphApplication, which creates an AAD application in the organization AND by default registers a service principal for it in the organization; New-GraphApplication can also configure permissions grants just like Register-GraphApplication.
+Note that the functionality of Register-GraphApplication is present in the New-GraphApplication, which creates an Entra ID application in the organization AND by default registers a service principal for it in the organization; New-GraphApplication can also configure permissions grants just like Register-GraphApplication.
 
 New-GraphApplication's ability to both create an application and register its service principal is limited to use cases where the application resides in only one organization. Multi-tenant applications are applications that allow sign-in from any organization, not just the organization in which the application was created. For such applications, a service principal must be created in all organizations where sign-in is to occur, and New-GraphApplication can only create service principals within the organization in which the new application is being created.
 
@@ -58,7 +58,7 @@ Specify the AllPermissions parameter to register all permissions configured for 
 Specifies that for delegated permissions specified by the DelegatedPermissions parameter the command should grant the delegated permissions to all principals. If this is not specified and the ConsentedPrincipalId parameter is not specified, then if the signed-in identity invoking the command is a user, the delegated permissions are granted to the signed-in user.
 
 .PARAMETER ConsentedPrincipalId
-Use the ConsentedPrincipalId specify the AAD object identifier of a user to whom the permissions specified with the DelegatedPermissions parameter must be consented.
+Use the ConsentedPrincipalId specify the Entra ID object identifier of a user to whom the permissions specified with the DelegatedPermissions parameter must be consented.
 
 .PARAMETER Connection
 Specify the Connection parameter to use an alternative connection to the current connection.

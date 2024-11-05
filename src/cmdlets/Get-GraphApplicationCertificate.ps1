@@ -16,19 +16,19 @@
 
 <#
 .SYNOPSIS
-Gets the certificates configured for use as credentials for an Azure Active Directory (AAD) application identity.
+Gets the certificates configured for use as credentials for an Entra ID application identity.
 
 .DESCRIPTION
 Certificate credential configuration on the application object allows running application code to obtain access tokens with the application's identity. Get-GraphApplicationCertificate retrieves the set of certificates configured as credentials for the application. Runtime code with access to the private key associated with a certificate configured for the application will be able to authenticate as the application.
 
-The command supports specifying the application for which to retrieve certificates using either the application's application identifier through the AppId parameter or its AAD object identifier using the AppObjectId parameter.
+The command supports specifying the application for which to retrieve certificates using either the application's application identifier through the AppId parameter or its Entra ID object identifier using the AppObjectId parameter.
 
 By default, all certificates configured for the specified application are returned. The KeyId or Thumbprint parameters may be specified to return only a specific certificate that satisfies either of those criteria.
 
 The output of Get-GraphApplicationCertificate contains details about public properties of the certificate including its thumbprint, subject name, friendly name, and validity window dates and can be useful in certificate management activities such as enumerating certificate nearing expiration, or finding certificates with a particular subject name or thumbprint. The results of Get-GraphApplicationCertificate may be piped to other commands that can perform further analysis or write operations such as removal of the certificate from the application configuration.
 
 .PARAMETER AppId
-The AAD application identifier of the application for which to retrieve certificates.
+The Entra ID application identifier of the application for which to retrieve certificates.
 
 .PARAMETER AppObjectId
 The object identifier of the application for which to retrieve certificates.

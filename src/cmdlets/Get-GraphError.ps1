@@ -54,7 +54,7 @@ The Get-GraphError command was invoked after the following Graph command failed:
 
     Invoke-GraphApiRequest -Method POST groups -Body @{mailNickName='datasec';displayName='Data Security Team';mailEnabled=$false}
 
-Invoke-GraphApiRequest was invoked to POST to the 'groups' relative URI of https://graph.microsoft.com/v1.0 with a Body parameter that specifies the mailNickName, displayName, and boolean securityEnabled properties of an Azure Active Directory group. According to intent, the command should create a new group resource, but received a 'BadRequest' status code of 400 from Graph and returned an error instead.
+Invoke-GraphApiRequest was invoked to POST to the 'groups' relative URI of https://graph.microsoft.com/v1.0 with a Body parameter that specifies the mailNickName, displayName, and boolean securityEnabled properties of an Entra ID group. According to intent, the command should create a new group resource, but received a 'BadRequest' status code of 400 from Graph and returned an error instead.
 
 By executing the Get-GraphError command after the failed command, the operator is able to see additional information beyond the status code and the line number on which the error occurred. The ErrorResponse property often has detailed information about the error, and in this case it contains an error message "A value is required for property 'securityEnabled' of resource 'Group'". This guides the operator to retry the command by specifying that 'securityEnabled' property after consulting with the documentation for the group resource which confirms that this property must be specified when creating a group.
 

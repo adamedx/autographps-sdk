@@ -16,7 +16,7 @@
 
 <#
 .SYNOPSIS
-Creates a new certificate in the local certificate store and configures an Azure Active Directory (AAD) application to use the certificate as a credential (Windows platform only).
+Creates a new certificate in the local certificate store and configures an Entra ID application to use the certificate as a credential (Windows platform only).
 
 .DESCRIPTION
 Certificate credential configuration on the application object allows running application code to obtain access tokens with the application's identity. New-GraphApplicationCertificate creates such a certificate in the local system's certificate store cert: drive and configures an application to use it using the Graph API.
@@ -38,7 +38,7 @@ The application to configure may be specified either by the application object's
 See the documentation for the New-GraphLocalCertificate command for more information on the properties and cryptographic algorithms supported by the New-GraphApplicationCertificate command.
 
 .PARAMETER AppId
-The AAD application identifier of the application for which to create a certificate in the certificate store and configure the application to use that certificate as a credential
+The Entra ID application identifier of the application for which to create a certificate in the certificate store and configure the application to use that certificate as a credential
 
 .PARAMETER CertValidityTimeSpan
 The duration of the certificate's validity -- this is added to the CertValidityStart parameter's value to compute the expiration date / time of the certificate. If this is not specified, the duration is 365 days.
@@ -50,7 +50,7 @@ The date and time at which the certificate starts to be valid. If this is not sp
 The length of the certificate's private key. If this is not specified, the default is 4096 bits.
 
 .PARAMETER ObjectId
-The AAD object identifier of the application for which to create a certificate in the certificate store and configure the application to use that certificate as a credential
+The Entra ID object identifier of the application for which to create a certificate in the certificate store and configure the application to use that certificate as a credential
 
 .PARAMETER CertStoreLocation
 Specifies the location in the certificate store in which to lookup certificates specified by the Thumbprint parameter. By default, this location is 'cert:/currentuser/my'. The CertStoreLocation parameter only applies on the Windows platform because the certificate store is currently implemented only for Windows.
@@ -109,7 +109,7 @@ New-GraphApplication "Dev app" -OutVariable newApp -SuppressCredentialWarning | 
 Thumbprint              : A14AA744C84E978E761884132D62C6AB8DC1E203
 AppId                   : e4ab44d2-98ac-4a33-a010-e8fa2ac2e330
 Subject                 : CN=e4ab44d2-98ac-4a33-a010-e8fa2ac2e330, CN=AutoGraphPS, CN=MicrosoftGraph
-FriendlyName            : Credential for Microsoft Graph Azure Active Directory application name='AutoGraphPS Application',
+FriendlyName            : Credential for Microsoft Graph Entra ID application name='AutoGraphPS Application',
                           appId=e4ab44d2-98ac-4a33-a010-e8fa2ac2e330, objectId=
 NotBefore               : 12/27/2021 4:10:42 PM -08:00
 NotAfter                : 12/27/2022 4:10:42 PM -08:00
