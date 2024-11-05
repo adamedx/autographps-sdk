@@ -14,7 +14,8 @@
 
 ScriptClass Application {
     static {
-        const DefaultAppId (strict-val [Guid] 'ac70e3e2-a821-4d19-839c-b8af4515254b')
+        # Historically this was 'ac70e3e2-a821-4d19-839c-b8af4515254b' but this application has been de-commissioned
+        const DefaultAppId (strict-val [Guid] 'c98eb929-2053-4b03-b680-a5efcbd59035')
         const DefaultRedirectUri 'http://localhost' # Need to use localhost, otherwise web browser sign-in for MSAL on PS Core is not supported
 
         # Note that $PSVersionTable.Platform does not exist for Desktop edition

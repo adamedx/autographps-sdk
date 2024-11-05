@@ -315,6 +315,8 @@ function Connect-GraphApi {
         [parameter(parametersetname='autocert')]
         [Switch] $NoninteractiveAppOnlyAuth,
 
+        [Switch] $UseBroker,
+
         [Switch] $ExistingPermissionsOnly,
 
         [string] $TenantId,

@@ -287,6 +287,8 @@ function New-GraphConnection {
         [parameter(parametersetname='customendpoint')]
         [Switch] $NoninteractiveAppOnlyAuth,
 
+        [Switch] $UseBroker,
+
         [String] $TenantId = $null,
 
         [parameter(parametersetname='certpath', mandatory=$true)]
@@ -364,6 +366,17 @@ function New-GraphConnection {
             ([GraphCloud]::Public)
         }
 
+        if ( $UseBroker.IsPresent ) {
+            if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
+                throw [ArgumentException]::new("The UseBroker parameter may not be specified when NoninteractiveAppOnlyAuth")
+            }
+
+            $currentOS = [System.Environment]::OSVersion.Platform
+            if ( $currentOS -ne 'Win32NT' ) {
+                throw [System.NotSupportedException]::new("The UseBroker authentication broker option was specified, but the current OS platform '$currentOS' does not support brokers. This capability is supported only on the Windows OS platform")
+            }
+        }
+
         $specifiedScopes = if ( $Permissions ) {
             if ( $Secret.IsPresent -or $Certificate -or $CertificatePath ) {
                 throw 'Permissions may not be specified at runtime for app-only authentication since they originate from the static application configuration'
@@ -389,7 +402,7 @@ function New-GraphConnection {
 
         if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $appId -eq $null ) {
             write-verbose 'Simple connection specified with no custom uri or app id'
-            $::.GraphConnection |=> NewSimpleConnection $validatedCloud $specifiedScopes $false $TenantId -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel -Name $Name
+            $::.GraphConnection |=> NewSimpleConnection $validatedCloud $specifiedScopes $false $TenantId -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel -Name $Name -useBroker $UseBroker.IsPresent
         } else {
             $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
                 write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
@@ -433,7 +446,7 @@ function New-GraphConnection {
 
             $app = new-so GraphApplication $targetAppId $AppRedirectUri $appSecret $NoninteractiveAppOnlyAuth.IsPresent
             $identity = new-so GraphIdentity $app $graphEndpoint $adjustedTenantId $allowMSA
-            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent $Name $ConsistencyLevel
+            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent $Name $ConsistencyLevel $UseBroker.IsPresent
         }
     }
 }
