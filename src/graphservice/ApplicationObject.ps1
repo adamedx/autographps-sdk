@@ -24,6 +24,7 @@ ScriptClass ApplicationObject {
     $AppAPI = $null
     $isConfidential = $false
     $Description = $null
+    $redirectUrisSpecified = $false
 
     static {
         const CommonNativeClientRedirectUri 'https://login.microsoftonline.com/common/oauth2/nativeclient'
@@ -31,6 +32,12 @@ ScriptClass ApplicationObject {
 
     function __initialize($appAPI, $displayName, $infoUrl, $tags, $tenancy, $aadAccountsOnly, $appOnlyPermissions, $delegatedPermissions, $isConfidential, $redirectUris, [HashTable] $additionalProperties) {
         $this.AppAPI = $appAPI
+
+        # Be careful using comparison operators with $null: '$redirectUris -ne $null' doesn't return a boolean, it returns LHS! :(
+        # To work around, use '$null -eq $redirectUris', or just use [object]::equals() :)
+        # This error is also identified by the PSScriptAnalyzer tool.
+        # See https://learn.microsoft.com/en-us/powershell/utility-modules/psscriptanalyzer/rules/possibleincorrectcomparisonwithnull?view=ps-modules
+        $this.redirectUrisSpecified = ! [object]::equals($redirectUris, $null)
 
         $appParameters = @{
             displayName = $displayName
@@ -50,7 +57,6 @@ ScriptClass ApplicationObject {
             }
         }
 
-
         if ( ! $isConfidential ) {
             __SetPublicApp $newApp $redirectUris
         } else {
@@ -62,16 +68,18 @@ ScriptClass ApplicationObject {
 
     function CreateNewApp {
         if ( $this.objectId ) {
-            Throw "Application '$($this.Application.displayName)' is already registered with appId '$($this.AppId)' and objectId '$($this.ObjectId)'"
+            throw "Application '$($this.Application.displayName)' is already registered with appId '$($this.AppId)' and objectId '$($this.ObjectId)'"
         }
 
         $appObject = [PSCustomObject] $this.ApplicationObject
         $newApp = $this.AppAPI |=> CreateApp $appObject
 
-        $this.ObjectId = $newApp.id
-        $this.AppId = $newApp.appId
+        $updatedApp = $this.AppAPI |=> UpdateApplicationSelfReferencingState $newApp ( ! $this.redirectUrisSpecified )
 
-        $newApp
+        $this.ObjectId = $updatedApp.id
+        $this.AppId = $updatedApp.appId
+
+        $updatedApp
     }
 
     function Register($skipRequiredResourcePermissions, $ConsentRequired, $userIdToConsent, $consentAllUsers, $scopes, $roles) {
@@ -86,10 +94,14 @@ ScriptClass ApplicationObject {
 
     function __SetPublicApp($app, $redirectUris) {
         $this.isConfidential = $false
-        $publicClientRedirectUris = if ( $redirectUris -ne $null ) {
-            $redirectUris
+        $publicClientRedirectUris = $null
+
+        # A weird thing -- did you know that '$null -eq ( if ($true) { @() } )' is true? So
+        # we can't just assign to the result of an if when we want @() to stay @(). :(
+        if ( $null -ne $redirectUris ) {
+            $publicClientRedirectUris = $redirectUris
         } else {
-            $this.scriptclass.CommonNativeClientRedirectUri, $::.Application.DefaultRedirectUri
+            $publicClientRedirectUris = $this.scriptclass.CommonNativeClientRedirectUri, $::.Application.DefaultRedirectUri
         }
 
         $publicClient = [PSCustomObject] @{
@@ -97,7 +109,6 @@ ScriptClass ApplicationObject {
         }
 
         $app.Add('publicClient', $publicClient)
-        $app.Add('isFallbackPublicClient', $true)
     }
 
     function __SetConfidentialApp($app, $redirectUris) {
