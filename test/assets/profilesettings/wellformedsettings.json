@@ -42,7 +42,8 @@
                 "name": "Operator",
                 "endpoint": "WilyProxy",
                 "appId": "d8dcae77-ddc1-406e-9784-c73cbb305862",
-                "tenantId":  "c166bed2-181c-4696-9a42-1e8385f11f67"
+                "tenantId":  "c166bed2-181c-4696-9a42-1e8385f11f67",
+                "useBroker": true
             },
             {
                 "name": "Developer",

@@ -49,7 +49,7 @@ As described above, New-GraphApplication performs four different functions: appl
 The display name of the application -- this name will be shown to users when they sign in to the application and also to administrators approving consent for the application.
 
 .PARAMETER RedirectUris
-The OAuth2 redirect URIs that the application supports, also known as reply url's. By default, for native client applications the URI http://localhost will be configured if this parameter is not specified.
+The OAuth2 redirect URIs that the application supports, also known as reply url's. By default, for native client applications the URI http://localhost and as well as an app-specific redirect for a local authentication broker will be configured if this parameter is not specified. To ensure no redirect URIs are configured, specify an empty array, i.e. @()
 
 .PARAMETER InfoUrl
 An informational URL that is associated with the application. This URL could refer to the application's documentation or public web site for instance. It may be presented as part of sign-in and / or consent user experiences.

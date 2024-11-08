@@ -74,6 +74,7 @@ ScriptClass LocalConnectionProfile {
             if ( $this.connectionData['userAgent'] ) { $parameters['UserAgent'] = $this.connectionData['userAgent'] }
             if ( $this.connectionData['appId'] ) { $parameters['AppId'] = $this.connectionData['appId'] }
             if ( $this.connectionData['appRedirectUri'] ) { $parameters['appRedirectUri'] = $this.connectionData['appRedirectUri'] }
+            if ( $this.connectionData['useBroker'] ) { $parameters['UseBroker'] = $this.connectionData['useBroker'] }
             $isConfidential = $this.connectionData['confidential'] -ne $null -or $this.connectionData['authType'] -eq 'appOnly'
 
             if ( $isConfidential ) {
@@ -144,6 +145,7 @@ ScriptClass LocalConnectionProfile {
             accountType = @{ Validator = 'StringValidator'; Required = $false }
             userAgent = @{ Validator = 'StringValidator'; Required = $false }
             appRedirectUri = @{ Validator = 'UriValidator'; Required = $false }
+            useBroker = @{ Validator = 'BooleanValidator'; Required = $false }
             confidential = @{ Validator = 'BooleanValidator'; Required = $false }
             tenantId = @{ Validator = 'TenantValidator'; Required = $false }
             certificatePath = @{ Validator = 'CertificatePathValidator'; Required = $false }

@@ -360,6 +360,10 @@ limitations under the License.
                 <ScriptBlock>$_.identity.app.RedirectUri</ScriptBlock>
               </ListItem>
               <ListItem>
+                <Label>UseBroker</Label>
+                <PropertyName>UseBroker</PropertyName>
+              </ListItem>
+              <ListItem>
                  <Label>ConsistencyLevel</Label>
                 <ScriptBlock>if ( $_.consistencyLevel ) { $_.consistencyLevel } else { 'Auto' }</ScriptBlock>
               </ListItem>

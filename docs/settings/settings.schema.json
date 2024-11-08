@@ -1,6 +1,6 @@
 {
     "$id": "https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/settings.schema.json",
-    "$schema": "https://json-schema.org/draft/2019-09/schema#",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
     "title": "AutoGraph Settings Profile Schema",
     "definitions": {
         "RootSettings": {
@@ -140,6 +140,10 @@
                 "userAgent": {
                     "description": "The HTTP protocol user agent field to be used when this application makes requests. When not specified in settings, the user agent is the one specified using command parameters and if not specified is then a standard default user agent of the application. This property can be used to customize the user agent for application telemetry or other purposes.",
                     "type": "string"
+                },
+                "useBroker": {
+                    "description": "By default, sign-ins initiated by Connect-GraphApi will utilize protocol sequences exchanged directly between the PowerShell process hosting the command and the Entra ID security token service (STS). When UseBroker is specified, an intermediary 'broker' OS component intercepts communication between the application and the STS to provide enhanced security. This capability is currently only supported on newer versions of the Windows operating system. For more information on how to use this capability, see the Entra documentation for the Web Account Manager (WAM): https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/desktop-mobile/wam.",
+                    "type": "boolean"
                 }
             }
         },
