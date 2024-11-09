@@ -6,7 +6,7 @@
 
 ## Data collection
 
-In the course of usage of the tool, **AutoGraphPS-SDK** sends data you specify, including personal identifiers, to Microsoft's [Azure Active Directory](https://azure.microsoft.com/en-us/services/active-directory/) and [Microsoft Graph API](https://graph.microsoft.io) services. **AutoGraphPS-SDK** does not send your personal data to any other services.
+In the course of usage of the tool, **AutoGraphPS-SDK** sends data you specify, including personal identifiers, to Microsoft's [Entra ID](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id) and [Microsoft Graph API](https://graph.microsoft.io) services. **AutoGraphPS-SDK** does not send your personal data to any other services.
 
 ## Microsoft Graph and data flows
 

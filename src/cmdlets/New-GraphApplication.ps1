@@ -20,10 +20,10 @@
 
 <#
 .SYNOPSIS
-Creates a new Azure Active Directory (AAD) application in the organization.
+Creates a new Entra ID application in the organization.
 
 .DESCRIPTION
-To access Graph API resources (or even other APIs), an Azure Active Directory (AAD) application identity is required. The New-GraphApplication command creates an AAD application identity ("application" or "app"). The application is "homed" or owned by the AAD organization ("tenant") in which it is created, and its usage can be scoped to access resources within just that organization or for any organization (and even Microsoft Account resources such as Graph API resources not associated with any organization).
+To access Graph API resources (or even other APIs), an Entra ID application identity is required. The New-GraphApplication command creates an Entra ID application identity ("application" or "app"). The application is "homed" or owned by the Entra ID organization ("tenant") in which it is created, and its usage can be scoped to access resources within just that organization or for any organization (and even Microsoft Account resources such as Graph API resources not associated with any organization).
 
 In addition to creating the identity, New-GraphApplication can also perform the following configuration operations for the newly created application:
 * Configuraiton of application credentials: for "confidential client" applications that require a secret, the New-GraphApplication command can create a credential which will then be configured for use as the application's secret.
@@ -36,9 +36,9 @@ By default, New-GraphApplication creates native client applications. This can be
 
 Note that delegated sign-in, i.e. sign-in with a user identity delegated to the application, can be performed with either native or confidential applications, but for application-only sign-in a confidential application is required.
 
-AAD applications created by New-GraphApplication may be used for any purpose; the command may also be used to provision a custom application identity for use with this module via the Connect-GraphApi and New-GraphConnection commands and profile settings. For more details on how to use custom AAD applications include those created by New-GraphApplication with this module, see the documentation for the Connect-GraphApi and New-GraphConnection commands.
+Entra ID applications created by New-GraphApplication may be used for any purpose; the command may also be used to provision a custom application identity for use with this module via the Connect-GraphApi and New-GraphConnection commands and profile settings. For more details on how to use custom Entra ID applications include those created by New-GraphApplication with this module, see the documentation for the Connect-GraphApi and New-GraphConnection commands.
 
-Note that AAD applications have many properties -- the New-GraphApplication command allows configuration of these properties. For details on application properties, see the Graph API documentation for the application resource at https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/application.
+Note that Entra ID applications have many properties -- the New-GraphApplication command allows configuration of these properties. For details on application properties, see the Graph API documentation for the application resource at https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/application.
 
 Note that New-GraphApplication's ability to both create an application and register its service principal is limited to use cases where the application resides in only one organization. Multi-organization ("multi-tenant") applications are applications that allow sign-in from any organization, not just the organization in which the application was created. For such applications, a service principal must be created in all organizations where sign-in is to occur, and New-GraphApplication can only create service principals within the organization in which the new application is being created. For more information about multi-organization scenarios, see the Register-GraphApplication documentation.
 
@@ -49,7 +49,7 @@ As described above, New-GraphApplication performs four different functions: appl
 The display name of the application -- this name will be shown to users when they sign in to the application and also to administrators approving consent for the application.
 
 .PARAMETER RedirectUris
-The OAuth2 redirect URIs that the application supports, also known as reply url's. By default, for native client applications the URI http://localhost will be configured if this parameter is not specified.
+The OAuth2 redirect URIs that the application supports, also known as reply URL's. By default, for native client (aka public client) applications the URI http://localhost as well as an app-specific redirect for a local authentication broker will be configured if this parameter is not specified. To ensure no redirect URIs are configured, specify an empty array, i.e. @(). You can use the IncludeBrokerRedirectUri parameter with this parameter so that this command automatically adds the correct application-specific local authentication broker redirect URI in addition to the URIs specified with the RedirectUris parameter.
 
 .PARAMETER InfoUrl
 An informational URL that is associated with the application. This URL could refer to the application's documentation or public web site for instance. It may be presented as part of sign-in and / or consent user experiences.
@@ -58,28 +58,31 @@ An informational URL that is associated with the application. This URL could ref
 User-defined strings associated with the application to categorize its purpose, origin, or other important information. This can be useful when searching for applications by some category for instance.
 
 .PARAMETER AdditionalProperties
-Specify AdditionalProperties to configure any documented properties of the AAD application resource. This can be specified as a hash table or object. The documentation of these properties can be found here: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/application.
+Specify AdditionalProperties to configure any documented properties of the Entra ID application resource. This can be specified as a hash table or object. The documentation of these properties can be found here: https://developer.microsoft.com/en-us/graph/docs/api-reference/v1.0/resources/application.
 
 .PARAMETER Tenancy
 Specifies the organizational scope for which the application may be used. By default, this has the value Auto, which is currently equivalent of the value SingleTenant, which means that the application may be signed-in only within its owning tenant. The value MultiTenant means that the application allows sign-in from any organization (subject to configured restrictions in place within a given organization managed by that organization's adminstrators) as well as delegated sign-ins by Microsoft Account (MSA) users.
 
 .PARAMETER DelegatedPermissions
-The delegated permissions to be configured for the application and (optionally) consented to the application. Specifying these permissions configures them as "required permissions" for the application. And as long as the NoConsent parameter is not specified, the consent is also configured using these permissions. The consent is configured as oauth2PermissionGrant resources documented as part of the Graph API. If the ConsentedPrincipalId parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless ConsentedPrincipalId or ConsentForAllPrincipals is specified. If you don't specify this parameter, then by default, the offline permission is consented for the application.
+The delegated permissions to be configured for the application and (optionally) consented to the application. Specifying these permissions configures them as "required permissions" for the application. And as long as the NoConsent parameter is not specified, the consent is also configured using these permissions. The consent is configured as oauth2PermissionGrant resources documented as part of the Graph API. If the ConsentedPrincipalId parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless ConsentedPrincipalId or ConsentForAllPrincipals is specified. If you do not specify this parameter, then by default, the offline permission is consented for the application.
 
 .PARAMETER ApplicationPermissions
 The application permissions to be consented to the application. The consent is actually configured as app role assignments described by the appRoleAssignment resource documented as part of the Graph API.
 
 .PARAMETER Confidential
-Specify this parameter if AAD application requires a client secret in order to successfully authenticate to the Graph API. Specifying this parameter does not configure the secret -- secret configuration only occurs with this command if the NewCredential parameter is specified.
+Specify this parameter if Entra ID application requires a client secret in order to successfully authenticate to the Graph API. Specifying this parameter does not configure the secret -- secret configuration only occurs with this command if the NewCredential parameter is specified.
 
 .PARAMETER AllowMSAAccounts
-Specifies that delegated sign-ins to this application by Microsoft Account (MSA) users are allowed. By default such sign-ins are not allowed and only users that are part of an AAD organization may sign-in -- specifying this parameter overrides that behavior and allows MSA users to sign-in to the application. Note that when this parameter is specified, AAD users from any organization are also allowed to sign in to the application (subject to restrictions in those organizations).
+Specifies that delegated sign-ins to this application by Microsoft Account (MSA) users are allowed. By default such sign-ins are not allowed and only users that are part of an Entra ID organization may sign-in -- specifying this parameter overrides that behavior and allows MSA users to sign-in to the application. Note that when this parameter is specified, Entra ID users from any organization are also allowed to sign in to the application (subject to restrictions in those organizations).
 
 .PARAMETER NewCredential
-The NewCredential parameter may be specified if Confidential is specified. Specifying this parameter causes the command to create a certificate credential for the application and configure the application to use it for sign-in. The parameter is supported only on Windows since it requires the Windows certificate store (see the documentation for the Connect-GraphApi command for examples of how to create certificate credentials on non-Windows systems for use with this module's AAD applicaiton or any AAD application). Other parameters for this command allow customization of the certificate created by this command. Additionally, commands such as Set-GraphApplicationCertificate and New-GraphApplicationCertificate may also be used to configure create and / or configure application certificates.
+The NewCredential parameter may be specified if Confidential is specified. Specifying this parameter causes the command to create a certificate credential for the application and configure the application to use it for sign-in. The parameter is supported only on Windows since it requires the Windows certificate store (see the documentation for the Connect-GraphApi command for examples of how to create certificate credentials on non-Windows systems for use with this module's Entra ID applicaiton or any Entra ID application). Other parameters for this command allow customization of the certificate created by this command. Additionally, commands such as Set-GraphApplicationCertificate and New-GraphApplicationCertificate may also be used to configure create and / or configure application certificates.
 
 .PARAMETER SuppressCredentialWarning
 If this parameter is not specified and Confidential is specified, the command generates a warning to communicate the fact that the created application does not have a secret configured and thus sign-in cannot occur after the command completes without additional configuration such as through commands like New-GraphApplicationCertificate or Set-GraphApplicationCertificate. Specify this parameter to suppress the warning when it is expected.
+
+.PARAMETER IncludeBrokerRedirectUri
+Specify this parameter to add the application-specific local authentication broker redirect URI in addition to any URIs specified by the RedirectUris parameter. Note that this parameter is only applicable to native / public client applications, i.e. it has no effect if the Confidential or NonInteractiveAppOnly parameters are specified since authentication broker capability is not offered for those authentication protocols. For more information about the IncludeBrokerRedirectUri parameter refer to the RedirectUris parameter documentation.
 
 .PARAMETER ConsentForAllPrincpals
 Specify ConsentForAllPrincipals to grant consent for the permissions specified by the DelegatedPermissions parameter to all principals (including users) in the organization.
@@ -115,7 +118,7 @@ Specifies the credential used to protect the private key of the certificate if t
 If the CertOutputDirectory parameter is specified, specify the NoCertCredential parameter to specify that no credential is required on the resulting exported certificate file to access the private key of the certificate. Otherwise, if NoCertCredential is not specified, the CertCredential parameter must be specified (and if it isn't then an interactive prompt will be invoked to request the user to input a credential).
 
 .PARAMETER ConsentedPrincipalId
-Use the ConsentedPrincipalId parameter to specify a principal such as a user to which the specified delegated permissions should be granted when signed in to the application. If this parameter is not specified, then if the command is executing using a delegated identity, that identity is granted consent for delegated permissions. If that case is modified so that the command is executing using an application-only identity, then the command will fail if neither ConsentForAllPrincipals or ConsentedPrincipalId is specified. When specifying this parameter, it must be the AAD object identifier guid of the user to which to grant consent.
+Use the ConsentedPrincipalId parameter to specify a principal such as a user to which the specified delegated permissions should be granted when signed in to the application. If this parameter is not specified, then if the command is executing using a delegated identity, that identity is granted consent for delegated permissions. If that case is modified so that the command is executing using an application-only identity, then the command will fail if neither ConsentForAllPrincipals or ConsentedPrincipalId is specified. When specifying this parameter, it must be the Entra ID object identifier guid of the user to which to grant consent.
 
 .PARAMETER Connection
 Specify the Connection parameter to use as an alternative connection to the current connection when communicating with the Graph API.
@@ -127,7 +130,18 @@ AppId         DisplayName      CreatedDateTime        Id            PublisherDom
 -----         -----------      ---------------        --            ---------------
 54dfa095-0... 'Custom Graph... 12/28/2021 10:18:09 PM 25650e01-4... kuumba.org
 
-The simplest case of application creation requires only the name parameter to be specified to the command. The created application is a public client application which means it can be signed-in on any device running any application code. By default, it is configured only with the permission 'offline', so it has no permission to make requests to the Graph API -- application code will need to request additional permissions at runtime or other commands such as Set-GraphApplicationConsent will need to be executed to configure consent. This application created by this command is valid only in the organization in which it was created. The application's redirect URL is configured as 'http://localhost' since the RedirectUris parameter was not specified.
+                                                                                                                                                                                                                                                                                                                              The simplest case of application creation requires only the name parameter to be specified to the command. The created application is a public client application which means it can be signed-in on any device running any application code. By default, it is configured only with the permission 'offline', so it has no permission to make requests to the Graph API -- application code will need to request additional permissions at runtime or other commands such as Set-GraphApplicationConsent will need to be executed to configure consent. This application created by this command is valid only in the organization in which it was created. The application's redirect URL is configured as 'http://localhost' since the RedirectUris parameter was not specified.
+
+.EXAMPLE
+New-GraphApplication 'Test Graph Scripting Application' |
+  Select-Object AppId, DisplayName, -ExpandProperty RedirectUris
+
+redirectUris : {https://login.microsoftonline.com/common/oauth2/nativeclient, http://localhost,
+               ms-appx-web://Microsoft.AAD.BrokerPlugin/3b8a69bf-156f-43ae-8bb7-9c9328474e9b}
+appId        : 3b8a69bf-156f-43ae-8bb7-9c9328474e9b
+displayName  : Test Graph Scripting Application
+
+This example is similar to the previous case, but also demonstrates that New-GraphApplication configures particular default redirect URIs by default for native / public applications, including the application specific authentication broker redirect URI.
 
 .EXAMPLE
 $scriptApp = New-GraphApplication 'Custom Graph Scripting Application'
@@ -178,7 +192,7 @@ Get-GraphResource /groups -count -Connection $syncConnection -ConsistencyLevel E
 
 52
 
-This demonstrates how to create an application for use in app-only scenarios where no user signs in. To create such an application with New-GraphApplication, simply specify the Confidential parameter. In this case, the NewCredential parameter is included to create the credential for the application in the certificate store (a credential of some sort is a requirement for application-only sign-in) and permissions are assigned to it using the ApplicationPermissions parameter since application permissions cannot be requested at runtime. To demonstrate the usage of such an application, a non-interactive Graph API connection is created with New-GraphConnection by specifying the new application's application identifier and adding the NoninteractiveAppOnlyAuth parameter to request a non-interactive sign-in when a subsequent sign-in occurs. The connection is then used by Get-GraphResource to get a count of AAD groups returned by the '/groups' API -- Get-GraphResource implicitly signs in using the credential created by New-GraphApplication (it looks like up in the local certificate store). I
+This demonstrates how to create an application for use in app-only scenarios where no user signs in. To create such an application with New-GraphApplication, simply specify the Confidential parameter. In this case, the NewCredential parameter is included to create the credential for the application in the certificate store (a credential of some sort is a requirement for application-only sign-in) and permissions are assigned to it using the ApplicationPermissions parameter since application permissions cannot be requested at runtime. To demonstrate the usage of such an application, a non-interactive Graph API connection is created with New-GraphConnection by specifying the new application's application identifier and adding the NoninteractiveAppOnlyAuth parameter to request a non-interactive sign-in when a subsequent sign-in occurs. The connection is then used by Get-GraphResource to get a count of Entra ID groups returned by the '/groups' API -- Get-GraphResource implicitly signs in using the credential created by New-GraphApplication (it looks like up in the local certificate store). I
 t returns the count of 52 groups.
 
 .EXAMPLE
@@ -206,8 +220,29 @@ PermissionType ServicePrincipalId                   Permission     GrantedTo
 -------------- ------------------                   ----------     ---------
 Application    ad29424b-d716-48fe-8555-6985e07a821b Group.Read.All ad29424b-d716-48fe-8555-6985e07a821b
 
-This example demonstrates that the functionality beyond application creation that is present in New-GraphApplication may be skipped and instead accomplished with other commands. In this example, New-GraphApplication for a confidential client application is invoked without creating a credential since NewCredential is not specified when Confidential was specified. Tenant registration and consent are skipped since the SkipTenantRegistration parameter was specified. This output is then piped to New-GraphApplicationCertificate, which creates the credential for the application, and that output, which contains an application identifier, is piped to Register-GraphApplication, which register the specified application identifier but does not set permissions. Finally, that output itself, which also contains an application identifier, is piped to Set-GraphApplicationConsent, which configures the application permissions. Since OutVariable was specified for New-GraphApplication, we can use the variable it created ($confidentialApp) to retrieve the current application configuration using Get-GraphApplicationConsent, which shows that not only does the application exist, but it is registered and has the permissions configured by the last command. This shows that New-GraphApplication combines the core functinonlity of four different commands into one command to enable simple, quick creation of AAD applications.
+This example demonstrates that the functionality beyond application creation that is present in New-GraphApplication may be skipped and instead accomplished with other commands. In this example, New-GraphApplication for a confidential client application is invoked without creating a credential since NewCredential is not specified when Confidential was specified. Tenant registration and consent are skipped since the SkipTenantRegistration parameter was specified. This output is then piped to New-GraphApplicationCertificate, which creates the credential for the application, and that output, which contains an application identifier, is piped to Register-GraphApplication, which register the specified application identifier but does not set permissions. Finally, that output itself, which also contains an application identifier, is piped to Set-GraphApplicationConsent, which configures the application permissions. Since OutVariable was specified for New-GraphApplication, we can use the variable it created ($confidentialApp) to retrieve the current application configuration using Get-GraphApplicationConsent, which shows that not only does the application exist, but it is registered and has the permissions configured by the last command. This shows that New-GraphApplication combines the core functinonlity of four different commands into one command to enable simple, quick creation of Entra ID applications.
 
+.EXAMPLE
+New-GraphApplication 'Linux Local Test App' -RedirectUris 'https://localhost', 'http://localhost' |
+  Select-Object -ExpandProperty PublicClient AppId, DisplayName |
+  Format-List
+
+redirectUris : {https://localhost, 'http://localhost'}
+appId        : ed1f31f4-7cc1-495a-af99-a038c4fb88f9
+displayName  : Linux Local Test App
+
+This example shows how specific redirect URIs may be specified through the RedirectUris parameter, overriding the default URIs that the command configures when this parameter is not specified. As noted in the documentation, specifying an empty array, e.g. @(), allows for the redirectURIs property to be empty, though such a configuration means a public client sign-in will not be possible with the application.
+
+.EXAMPLE
+New-GraphApplication 'Windows Local Test App' -RedirectUris 'https://localhost' -IncludeBrokerRedirectUri |
+  Select-Object AppId, DisplayName -ExpandProperty PublicClient |
+  Format-List
+
+redirectUris : {https://localhost, ms-appx-web://Microsoft.AAD.BrokerPlugin/da7149c1-9f8c-4d8c-ae02-e6aaa72dfcf8}
+appId        : da7149c1-9f8c-4d8c-ae02-e6aaa72dfcf8
+displayName  : Windows Local Test App
+
+In this example a new public client application is provisioned with the custom redirect URI 'https://localhost' via the RedirectUri parameter. To also support the authentication broker, the -IncludeBrokerRedirectUri parameter was also specified; this generates the required authentication broker redirect URI, 'ms-appx-web://Microsoft.AAD.BrokerPlugin/da7149c1-9f8c-4d8c-ae02-e6aaa72dfcf8'. Use of the IncludeBrokerRedirectUri is not strictly necessary since the application's redirect URI's can be modified after this command creates the application by issuing subsequent Microsoft Graph API requests, but this saves the effort of understanding the correct format for that URI and issuing the additional commands to modify the redirect URI's without removing the originally configured URIs as well.
 
 .LINK
 Get-GraphApplication
@@ -252,6 +287,8 @@ function New-GraphApplication {
 
         [parameter(parametersetname='confidentialapp')]
         [switch] $SuppressCredentialWarning,
+
+        [switch] $IncludeBrokerRedirectUri,
 
         [switch] $ConsentForAllPrincipals,
 
@@ -326,7 +363,7 @@ function New-GraphApplication {
         }
     }
 
-    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy ( ! $AllowMSAAccounts.IsPresent ) $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris $propertyTable
+    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy ( ! $AllowMSAAccounts.IsPresent ) $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris $propertyTable $IncludeBrokerRedirectUri.IsPresent
 
     $newApp = $newAppRegistration |=> CreateNewApp
 

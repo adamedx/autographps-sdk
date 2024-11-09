@@ -19,7 +19,7 @@
 # access API's that require the role and scope id's.
 #
 # TODO: Make the generation of this file part of the build process. It requires
-# credentials for an AAD organization though, so the process may need to be
+# credentials for an Entra ID organization though, so the process may need to be
 # optional.
 #
 # You can use the following command to make generate the content of this file -- it retrieves

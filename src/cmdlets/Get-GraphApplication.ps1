@@ -17,10 +17,10 @@
 
 <#
 .SYNOPSIS
-Gets Azure Active Directory (AAD) application resources from the Graph API.
+Gets Entra ID application resources from the Graph API.
 
 .DESCRIPTION
-An Azure Active Directory (AAD) application object is required for software to be able to request an access token to access resources protected by AAD. The Get-GraphApplication returns all such AAD applications in the organizaiton accessible to the command's identity based on input specified to the command.
+An Entra ID application object is required for software to be able to request an access token to access resources protected by Entra ID. The Get-GraphApplication returns all such Entra ID applications in the organizaiton accessible to the command's identity based on input specified to the command.
 
 .PARAMETER AppId
 Specify the AppId parameter to return the application in the organization with the specified application identifier.

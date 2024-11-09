@@ -19,10 +19,10 @@
 
 <#
 .SYNOPSIS
-Gets the Graph API objects that configure the consent of Microsoft Graph permissions to Azure Active Directory (AAD) applications.
+Gets the Graph API objects that configure the consent of Microsoft Graph permissions to Entra ID applications.
 
 .DESCRIPTION
-In order for an Azure Active Directory (AAD) application identity to access resources from Microsoft Graph, permissions must be granted to the application. The grant of permissions is referred to as consent. The Get-GraphApplicationConsent command gets the permissions that were consented to an application and in what circumstances the consent is granted:
+In order for an Entra ID application identity to access resources from Microsoft Graph, permissions must be granted to the application. The grant of permissions is referred to as consent. The Get-GraphApplicationConsent command gets the permissions that were consented to an application and in what circumstances the consent is granted:
 
     * Application permissions may be consented directly to the application in the form of app-role assignments. In this scenario, the application is authenticated solely with its own identity and no associated user, and upon authentication is granted these application permissions.
     * Delegated permissions may be consented to the application. Delegated consent occurs when the application identity is authenticated as part of a user sign-in; in this case, the authenticated identity includes the user's identity and the granted permissions are based on permissions granted for that user to the application. Some permissions may be granted to the application by the user to the application, and the process of the user granting those permissions may occur as part of an user interface interaction with the user at sign-in, or the user may grant the permissions prior to sign-in using another application to configure the consent. Administrators may also grant consent to an application for all users in the organization or to specific users using either configuration tools / applications or user experiences invoked when the administrator signs in to the application. Most permissions may only be granted by an administrator; users that would like to delegate permissions for an application to obtain that permission when the user signs in must coordinate with the administrator so that the administrator can grant the consent or deny the request if it is not appropriate.
@@ -39,13 +39,13 @@ Specifies that for delegated permissions the command should return only consent 
 Specify the RawContent parameter to emit the consent objects as JSON rather than objects.
 
 .PARAMETER ConsentedPrincipalId
-Use the ConsentedPrincipalId parameter to return only the consent objects that specify that the permission should be granted to that permission. The parameter must be the AAD object identifier of a user, group, application, service principal, or any principal for which permissions may be granted. Note that if
+Use the ConsentedPrincipalId parameter to return only the consent objects that specify that the permission should be granted to that permission. The parameter must be the Entra ID object identifier of a user, group, application, service principal, or any principal for which permissions may be granted. Note that if
 
 .PARAMETER PermissionType
 Specifies which consent objects must be returned by the command based on the kind of consented permission. By default the value is 'Any', which returns consent grants for any type of permission. Specify 'Delegated' to return consent objects only for consent to delegated permissions, and 'AppOnly' to return only consent to application permissions.
 
 .PARAMETER All
-Specify the All parameter to return all consent objects that match the specified criteria. By default, only a predetermined number of objects controlled by AAD is returned to avoid unintentionally inefficient long-running queries.
+Specify the All parameter to return all consent objects that match the specified criteria. By default, only a predetermined number of objects controlled by Entra ID is returned to avoid unintentionally inefficient long-running queries.
 
 .PARAMETER Connection
 Specify the Connection parameter to use as an alternative connection to the current connection.

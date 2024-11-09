@@ -9,7 +9,7 @@
 
 **AutoGraphPS-SDK** automates the [Microsoft Graph API](https://graph.microsoft.io/) through PowerShell. AutoGraphPS-SDK enables the development of PowerShell-based applications and automation of the Microsoft Graph REST API gateway; the PowerShell Graph Exploration UX [AutoGraphPS](https://github.com/adamedx/autographps) is one such application based on the SDK. The Graph exposes a growing list of services such as
 
-* Azure Active Directory (AAD)
+* Entra ID (formerly Azure Active Directory)
 * OneDrive
 * Exchange / Outlook
 * SharePoint
@@ -27,7 +27,7 @@ Install-Module AutoGraphPS-SDK -scope currentuser
 ```
 
 ## Usage
-Once you've installed, you can use an AutoGraphPS-SDK command like `Get-GraphResource` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Azure Active Directory (AAD) account](https://docs.microsoft.com/en-us/azure/active-directory/active-directory-whatis):
+Once you've installed, you can use an AutoGraphPS-SDK command like `Get-GraphResource` below to test out your installation. You'll need to authenticate using a [Microsoft Account](https://account.microsoft.com/account) or an [Entra ID account](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id):
 
 ```powershell
 PS> Get-GraphResource me
@@ -103,7 +103,7 @@ The full list of commands in this module is given below; note that `Invoke-Graph
 | Disconnect-GraphApi                  | Clears authentication and authorization context used across commands for the current graph                                                               |
 | Find-GraphLocalCertificate           | Gets a list of local certificates created by AutoGraphPS-SDK to for app-only or confidential delegated auth to Graph                                    |
 | Format-GraphLog (fgl)                | Emits the Graph request log to the console in a manner optimized for understanding Graph and troubleshooting requests                                   |
-| Get-GraphApplication                 | Gets a list of Azure AD applications in the tenant                                                                                                      |
+| Get-GraphApplication                 | Gets a list of Entra ID applications in the tenant                                                                                                      |
 | Get-GraphApplicationCertificate      | Gets the certificates with public keys configured on the application                                                                                    |
 | Get-GraphApplicationConsent          | Gets the list of the tenant's consent grants (entries granting an app access to capabilities of users)                                                  |
 | Get-GraphApplicationServicePrincipal | Gets the service principal for the application in the tenant                                                                                            |
@@ -116,20 +116,20 @@ The full list of commands in this module is given below; note that `Invoke-Graph
 | Get-GraphProfile                     | Gets the list of profiles defined in the [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md) -- these profiles may be enabled by the `Select-GraphProfileSettings` command. |
 | Get-GraphAccessToken                       | Gets an access token for the Graph -- helpful in using other tools such as [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) |
 | Invoke-GraphApiRequest               | Executes a REST method (e.g. `GET`, `PUT`, `POST`, `DELETE`, etc.) for a Graph Uri                                                                      |
-| New-GraphApplication                 | Creates an Azure AD application configured to authenticate to Microsoft Graph                                                                           |
+| New-GraphApplication                 | Creates an Entra ID application configured to authenticate to Microsoft Graph                                                                           |
 | New-GraphApplicationCertificate      | Creates a new certificate in the local certificate store and configures its public key on an application                                                |
 | New-GraphConnection                  | Creates an authenticated connection using advanced identity customizations for accessing a Graph                                                        |
 | New-GraphLocalCertificate            | Creates a certificate in the local certificate store for use in authenticating as an application                                                        |
-| Register-GraphApplication            | Creates a registration in the tenant for an existing Azure AD application                                                                               |
-| Remove-GraphApplication              | Deletes an Azure AD application                                                                                                                         |
+| Register-GraphApplication            | Creates a registration in the tenant for an existing Entra ID application                                                                               |
+| Remove-GraphApplication              | Deletes an Entra ID application                                                                                                                         |
 | Remove-GraphApplicationCertificate   | Removes a public key from the application for a certificate allowed to authenticate as that application                                                 |
-| Remove-GraphApplicationConsent       | Removes consent grants for an Azure AD application                                                                                                      |
+| Remove-GraphApplicationConsent       | Removes consent grants for an Entra ID application                                                                                                      |
 | Remove-GraphConnection               | Removes a named graph connection                                                                                                                        |
 | Remove-GraphResource                 | Makes generic ``DELETE`` requests to a specified Graph URI to delete resources                                                                          |
 | Select-GraphConnection (scon)              | Sets the named connection used by default for commands in the current Graph                                                                       |
 | Select-GraphProfile                  | Enables the behaviors mandated by the setting values of the specified profile. Profiles are defined by the user's [settings file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/README.md). |
 | Set-GraphApplicationCertificate      | Given the specified certificate or certificate path sets the application's certificates                                             |
-| SetGraphApplicationConsent           | Sets a consent grant for an Azure AD application                                                                                                        |
+| SetGraphApplicationConsent           | Sets a consent grant for an Entra ID application                                                                                                        |
 | Set-GraphConnectionStatus            | Configures `Offline` mode for use with local-only commands or re-enables `Online`               mode for accessing the Graph service                    |
 | Set-GraphLogOption                   | Sets the configuration options for logging of requests to Graph including options that control the detail level of the data logged                      |
 | Test-Graph                           | Retrieves unauthenticated diagnostic information from instances of your Graph endpoint                                                                  |
@@ -194,7 +194,7 @@ These commmands can also be used when testing modifications you make to AutoGrap
 
 License and authors
 -------------------
-Copyright:: Copyright (c) 2023 Adam Edwards
+Copyright:: Copyright (c) 2024 Adam Edwards
 
 License:: Apache License, Version 2.0
 

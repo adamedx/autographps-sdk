@@ -59,7 +59,8 @@
 
             {
                 "name":  "Production",
-                "appId":  "0c6b73a2-8bc0-4f6f-867e-f199d2e3f892"
+                "appId":  "0c6b73a2-8bc0-4f6f-867e-f199d2e3f892",
+                "useBroker": true
             },
 
             {

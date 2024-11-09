@@ -26,7 +26,7 @@
 Establishes a communication channel to the Graph API and sets it as the default channel for subsequent commands that issue Graph API requests.
 
 .DESCRIPTION
-Connect-GraphApi performs an Azure Active Directory sign-in to obtain access to the Graph API. If the sign-in is successful, the resulting connection object which encapsulates the Graph API service endpoint as well as the access token may be used to implicitly or explicitly by commands that access the Graph API such as Get-GraphResource and Invoke-GraphAPIRequest.
+Connect-GraphApi performs an Entra ID sign-in to obtain access to the Graph API. If the sign-in is successful, the resulting connection object which encapsulates the Graph API service endpoint as well as the access token may be used to implicitly or explicitly by commands that access the Graph API such as Get-GraphResource and Invoke-GraphAPIRequest.
 
 For the most common interactive cases, the Connect-GraphApi command is sufficient for enabling access to the Graph API; the New-GraphConnection enables more advanced connection management and automation scenarios.
 
@@ -48,16 +48,16 @@ Connect-GraphApi's capabilities can be decomposed into three key areas:
 
 By default, Connect-GraphApi signs in to a specific 'AutoGraphPS' multi-tenant application with identifier ac70e3e2-a821-4d19-839c-b8af4515254b that is registered as a native public client application. When using ConnectGraphApi or New-GraphConnection, you can specify the AppId parameter to provide an application identifier of your choice to override the default application.
 
-When you specify your own AAD application's identifier for the AppId parameter, Connect-GraphApi supports the use of client secrets in order to sign in with an AAD application identity that requires a pre-configured client secret (as opposed to one that only requires the current credentials of a user). For such applications, you must supply Connect-GraphApi with the client secret in order to sign in. The parameters used to do so are the same as those for New-GraphConnection -- consult the New-GraphConnection documentation for additional guidance on options for supplying the client secret credentials.
+When you specify your own Entra ID application's identifier for the AppId parameter, Connect-GraphApi supports the use of client secrets in order to sign in with an Entra ID application identity that requires a pre-configured client secret (as opposed to one that only requires the current credentials of a user). For such applications, you must supply Connect-GraphApi with the client secret in order to sign in. The parameters used to do so are the same as those for New-GraphConnection -- consult the New-GraphConnection documentation for additional guidance on options for supplying the client secret credentials.
 
 .PARAMETER ConnectionName
 Specifies the unique friendly name of a connection created by the New-GraphConnection command or through profile settings. The connection with that name is signed-in and then set to be the current connection. This is similar to specifying the named connection's connection object as the Connection parameter, which signs in a connection specified by its object rather than its friendly name. Note that the parameter is the first positional parameter, so the parameter name itself is optional as in this example.
 
 .PARAMETER Permissions
-Specifies that the connection created by Connect-GraphApi requires certain delegated permissions when it is used to sign-in interactively for accesss to the Graph API. By default when this parameter is not specified, commands that request access will not ask for permissions beyond those that have already been delegated to the connection's AAD application identity for the user who signs in. If these permissions are not sufficient for successful access to the particular APIs you intend to access using this module's commands through this connection, specify the Permissions parameter to request the additional required permissions at sign-in.
+Specifies that the connection created by Connect-GraphApi requires certain delegated permissions when it is used to sign-in interactively for accesss to the Graph API. By default when this parameter is not specified, commands that request access will not ask for permissions beyond those that have already been delegated to the connection's Entra ID application identity for the user who signs in. If these permissions are not sufficient for successful access to the particular APIs you intend to access using this module's commands through this connection, specify the Permissions parameter to request the additional required permissions at sign-in.
 
 .PARAMETER AppId
-The AAD application identifier to be used by the connection. If the AppId parameter is not specified, the application identifier specified in the connection settings of the current Graph profile is used. If no such profile configuration setting exists, the default identifier for the "AutoGraphPS" application will be used that supports only delegated authentication.
+The Entra ID application identifier to be used by the connection. If the AppId parameter is not specified, the application identifier specified in the connection settings of the current Graph profile is used. If no such profile configuration setting exists, the default identifier for the "AutoGraphPS" application will be used that supports only delegated authentication.
 
 .PARAMETER TenantId
 The organization (tenant) identifier of the organization to be accessed by the connection. The identifier can be specified using either the tenant's domain name (e.g. funkadelic.org) or it's unique identifier guid. This parameter is only required for application-only sign-in, but may be optionally specified for delegated sign-in to ensure that when using a multi-tenant application limit sign-in to the specified tenant. Otherwise, the tenant for sign-in will be determined as part of the user's interaction with the token endpoint.
@@ -67,8 +67,11 @@ By default, connections created by Connect-GraphApi will sign in using an intera
 
 If no parameters are used to specify the application credentials, then on Windows, if no secret is specified, Connect-GraphApi will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if the command cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
 
+.PARAMETER UseBroker
+By default, sign-ins initiated by Connect-GraphApi will utilize protocol sequences exchanged directly between the PowerShell process hosting the command and the Entra ID security token service (STS). When UseBroker is specified, an intermediary "broker" OS component intercepts communication between the application and the STS to provide enhanced security. This capability is only supported on newer versions of the Windows operating system. For more information on how to use this capability, see the Entra documentation for the Web Account Manager (WAM): https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/desktop-mobile/wam.
+
 .PARAMETER ExistingPermissionsOnly
-By default, Connect-GraphApi always requests the permission User.Read at sign-in because it provides a minimal but useful amount of access to Graph API resources that help users maintain awareness of what identity they used for signing in. However the permission is not strictly necessary so to avoid the need to consent to that permission, and in particular to ensure that legacy AAD applications that support only static request and fail any sign-ins where additional permissions are requested, specify this parameter.
+By default, Connect-GraphApi always requests the permission User.Read at sign-in because it provides a minimal but useful amount of access to Graph API resources that help users maintain awareness of what identity they used for signing in. However the permission is not strictly necessary so to avoid the need to consent to that permission, and in particular to ensure that legacy Entra ID applications that support only static request and fail any sign-ins where additional permissions are requested, specify this parameter.
 
 .PARAMETER CertificatePath
 Specifies the path in the file system or in the PowerShell cert: drive provider of a certificate with a private key to authenticate the application to the Graph API. This parameter is only valid if the Confidential parameter is specified.
@@ -77,7 +80,7 @@ Specifies the path in the file system or in the PowerShell cert: drive provider 
 Specifies a .NET X509Certificate2 certificate object that contains a private key to authenticate the application to the Graph API. Such an object may be obtained by using Get-Item on an item in the PowerShell cert: drive or from other software or commands that expose certificates using this structure. This parameter is only valid if the Confidential parameter is specified.
 
 .PARAMETER Confidential
-Specify this parameter if the connection's AAD application requires a client secret in order to successfully authenticate to the Graph API. When this parameter is specified, the actual client secret is specified using other parameters. If no parameters are used to specify the secret, then on Windows, if no secret is specified, Connect-GraphApi will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if Connect-GraphApi cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
+Specify this parameter if the connection's Entra ID application requires a client secret in order to successfully authenticate to the Graph API. When this parameter is specified, the actual client secret is specified using other parameters. If no parameters are used to specify the secret, then on Windows, if no secret is specified, Connect-GraphApi will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if Connect-GraphApi cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
 
 .PARAMETER Secret
 Specify this when the Confidential parameter is specified and the secret to be used is a symmetric key rather than a certificate. Symmetric keys are more difficult to secure than certificates and should not be used in production environments.
@@ -104,7 +107,7 @@ Specifies the sign-in (login) endpoint. If this is not specified and the Cloud p
 Specifies the Graph API OAuth2 protocol resource for which to request access. If this is not specified and the Cloud parameter is not specified, the default is https://graph.microsoft.com.
 
 .PARAMETER AccountType
-Specifies what kind of account to use when signing in to the application for Graph API access. This can be AzureADOnly, in which case the connection will only support signing in to an AAD organization. If it is 'AzureADAndPersonalMicrosoftAccount', then the connection may be used to sign in to either an AAD organization or a personal Microsoft Account such as an outlook.com account. The default setting is 'Auto', which is the same as 'AzureADAndPersonalMicrosoftAccount' when the default AutoGraphPS application is used; otherwise it is AzureADOnly.
+Specifies what kind of account to use when signing in to the application for Graph API access. This can be AzureADOnly, in which case the connection will only support signing in to an Entra ID organization. If it is 'AzureADAndPersonalMicrosoftAccount', then the connection may be used to sign in to either an Entra ID organization or a personal Microsoft Account such as an outlook.com account. The default setting is 'Auto', which is the same as 'AzureADAndPersonalMicrosoftAccount' when the default AutoGraphPS application is used; otherwise it is AzureADOnly.
 
 .PARAMETER ConsistencyLevel
 Specify this parameter so that Graph API requests made using this connection use specific consistency semantics for APIs that support them. The Graph API supports Session and Eventual semantics, and those names may be specified for this parameter to achieve their behaviors. Currently the Graph API defaults to Session semantics, but some Graph APIs support the Eventual consistency which provides advanced query capabilities not present with Session semantics.
@@ -119,7 +122,7 @@ For more information about the advanced queries capable using the Eventual consi
 Specifies the HTTP 'User-Agent' request header value to use for every request to the Graph API. By default, the module uses its own specific user agent string for this header on every request. To override that default value, specify a new value using the UserAgent parameter.
 
 .PARAMETER NoProfile
-By default, connections created by Connect-GraphApi inherit properties such as the AAD application identifier, redirect URI's, and several other settings from the profile configuration settings if any are present. To remove any influence of profile settings for any connections created by this command, specify the NoProfile parameter. Alternatively, the AUTOGRAPH_BYPASS_SETTINGS environment variable may be set to globally disable profile settings before the module is loaded.
+By default, connections created by Connect-GraphApi inherit properties such as the Entra ID application identifier, redirect URI's, and several other settings from the profile configuration settings if any are present. To remove any influence of profile settings for any connections created by this command, specify the NoProfile parameter. Alternatively, the AUTOGRAPH_BYPASS_SETTINGS environment variable may be set to globally disable profile settings before the module is loaded.
 
 .PARAMETER Reconnect
 Invokes a sign-in for the current connecton even if the connection has already signed in. This is useful in case consent has been granted out-of-band since a new sign-in will result in a new access token with any additionally consented permissions.
@@ -157,7 +160,7 @@ From              receivedDateTime     subject
 ----              ----------------     -------
 news@defender.org 2021-10-06T05:27:00Z Support local journalism!
 
-In this example, Connect-GraphApi creates a new connection that explicitly requests the Mail.ReadWrite connection at sign-in so that subsequent commands can successfully issue requests that require that permission. After the succesful sign-in, Get-GraphResource is used to obtain mail messages and display the most recent one, an operation that requires the Mail.ReadWrite permission that was requested through Connect-GraphApi in order to succeed. Note that any additional sign-ins using Connect-GraphApi do not need to specify the Mail.ReadWrite permission as AAD records permission consent grants and honors the consent in all future sign-ins until the consent is revoked by the user by administrators. There is no harm in requesting the permission even if it has already been consented, so as a best practice if an isolated script or sequence of commands includes an invocation of Connect-GraphApi the Permissions parameter should be used to explicitly request any permissions required for the script's subsequent commands that access the Graph API.
+In this example, Connect-GraphApi creates a new connection that explicitly requests the Mail.ReadWrite connection at sign-in so that subsequent commands can successfully issue requests that require that permission. After the succesful sign-in, Get-GraphResource is used to obtain mail messages and display the most recent one, an operation that requires the Mail.ReadWrite permission that was requested through Connect-GraphApi in order to succeed. Note that any additional sign-ins using Connect-GraphApi do not need to specify the Mail.ReadWrite permission as Entra ID records permission consent grants and honors the consent in all future sign-ins until the consent is revoked by the user by administrators. There is no harm in requesting the permission even if it has already been consented, so as a best practice if an isolated script or sequence of commands includes an invocation of Connect-GraphApi the Permissions parameter should be used to explicitly request any permissions required for the script's subsequent commands that access the Graph API.
 
 .EXAMPLE
 New-GraphConnection -Name MailConnection -Permissions Mail.ReadWrite -AppId c2711e92-9f7b-4553-b2df-5ce15ac613e4
@@ -243,7 +246,12 @@ In this case, Connect-GraphApi is used to sign in to a Microsoft Account such as
 .EXAMPLE
 Connect-GraphApi -AppId c7de6c6e-53c7-4651-92b5-81249d569f24 -ExistingPermissionsOnly
 
-This example illustrates how to enable support for Connect-GraphApi to sign in to a legacy AAD application that does not support requests for new permissions. Such applications are no longer created by AAD APIs but in earlier iterations of AAD applications could only be configurd with static consent. Attempts to request the additional permissions for those applications will fail if any additional permissions are specified, and since Connect-GraphApi always requests User.Read permission for usability reasons on every sign-in, the Connect-GraphApi will fail with this default behavior. To work around this problem, or to avoid granting User.Read to applications used by this module, specify the ExistingPermissionsOnly property. Sign-ins to any applications that require static configuration will succeed with valid credentials, though their ability to succesfully invoke any Graph APIs accessed by subsequent commands using the connection will depend on whether the static permissions are configured to allow the access.
+This example illustrates how to enable support for Connect-GraphApi to sign in to a legacy Entra ID application that does not support requests for new permissions. Such applications are no longer created by Entra ID APIs but in earlier iterations of Entra ID applications could only be configurd with static consent. Attempts to request the additional permissions for those applications will fail if any additional permissions are specified, and since Connect-GraphApi always requests User.Read permission for usability reasons on every sign-in, the Connect-GraphApi will fail with this default behavior. To work around this problem, or to avoid granting User.Read to applications used by this module, specify the ExistingPermissionsOnly property. Sign-ins to any applications that require static configuration will succeed with valid credentials, though their ability to succesfully invoke any Graph APIs accessed by subsequent commands using the connection will depend on whether the static permissions are configured to allow the access.
+
+.EXAMPLE
+Connect-GraphApi -UseBroker
+
+This example utilizes the local operating system's authentication broker support to sign in to Microsoft Graph. Unlike most sign-in flows, a web browser will not be involved. Instead, a locally implemented and secured user interface implemented by the operating system itself will provide the sign-in experience and will add additional security enhancements to safeguard the access token acquired by the sign-in and used by the connection. This capability is supported only on the Windows operating system.
 
 .EXAMPLE
 $confidentialApp = New-GraphApplication -Confidential -DelegatedUserPermissions Directory.Read.All -name AdminWorkstationApp -NewCredential
@@ -314,6 +322,8 @@ function Connect-GraphApi {
         [parameter(parametersetname='certpath')]
         [parameter(parametersetname='autocert')]
         [Switch] $NoninteractiveAppOnlyAuth,
+
+        [Switch] $UseBroker,
 
         [Switch] $ExistingPermissionsOnly,
 
@@ -404,6 +414,20 @@ function Connect-GraphApi {
     )
 
     begin {
+        if ( $UseBroker.IsPresent ) {
+            if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
+                throw [ArgumentException]::new("The UseBroker parameter may not be specified when NoninteractiveAppOnlyAuth is specified because brokers are for interactive auth only.")
+            }
+
+            if ( $Confidential.IsPresent ) {
+                throw [ArgumentException]::new("The UseBroker parameter may not be specified when the Confidential parameter is specified because confidential connections do not support brokers.")
+            }
+
+            $currentOS = [System.Environment]::OSVersion.Platform
+            if ( $currentOS -ne 'Win32NT' ) {
+                throw [System.NotSupportedException]::new("The UseBroker authentication broker option was specified, but the current OS platform '$currentOS' does not support brokers. This capability is supported only on the Windows OS platform")
+            }
+        }
     }
 
     process {
@@ -516,6 +540,8 @@ function Connect-GraphApi {
                     @{}
                 }
 
+                $hasBrokerInProfile = $conditionalArguments['UseBroker'] -and $conditionalArguments['UseBroker'].IsPresent
+
                 # Configure parameters compatible with forwarding to the underlying command
                 $PSBoundParameters.keys | where { $_ -notin @(
                                                       'CertCredential'
@@ -527,10 +553,25 @@ function Connect-GraphApi {
                                                       'NoProfile'
                                                       'PromptForCertCredential'
                                                       'Reconnect'
+                                                      'Broker'
                                                   ) } | foreach {
-                    $conditionalArguments[$_] = $PSBoundParameters[$_]
-                    $conditionalArguments['Permissions'] = $normalizedPermissions
-                }
+                                                      $conditionalArguments[$_] = $PSBoundParameters[$_]
+                                                  }
+
+                $conditionalArguments['Permissions'] = $normalizedPermissions
+
+                # Address issues where an incompatible setting can
+                # be inherited from the current profile's connection and must be removed to
+                # prevent exceptions when creating the connection
+                if ( $hasBrokerInProfile -and
+                     ( ( $conditionalArguments['Confidential'] -and $conditionalArguments['Confidential'].IsPresent ) -or
+                       ( $conditionalArguments['NoninteractiveAppOnly'] -and $conditionalArguments['NoninteractiveAppOnly'].IsPresent ) ) ) {
+                           # The incompatible parameter values specified explicitly to this command must override / suppress
+                           # any specified in the default profile's connection, so remove it. In this case, the broker
+                           # option was not specified to this command, but came from the profile, and conflicts with
+                           # one of the settings specified to the command.
+                           $conditionalArguments.Remove('UseBroker')
+                       }
 
                 try {
                     new-graphconnection @conditionalArguments -erroraction stop

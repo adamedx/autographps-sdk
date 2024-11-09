@@ -21,7 +21,7 @@
 Gets service principal objects for the organization.
 
 .DESCRIPTION
-Every AAD application that that can be used to access resources in an AAD organization has one associated service principal object in the directory. The Get-GraphApplicationServicePrincipal can be used to obtain the service principal objects for AAD applications. The command's parameters determine whether the service principal for a specific application is retrieved or whether multiple service principals are retrieved.
+Every Entra ID application that that can be used to access resources in an Entra ID organization has one associated service principal object in the directory. The Get-GraphApplicationServicePrincipal can be used to obtain the service principal objects for Entra ID applications. The command's parameters determine whether the service principal for a specific application is retrieved or whether multiple service principals are retrieved.
 
 Get-GraphApplicationServicePrincipal supports common paging parameters including First and Skip for managing variable size result sets.
 
@@ -38,7 +38,7 @@ The AppId parameter specifies the application identifier of the application for 
 An OData filter that can be used to return multiple service principals based on arbitrary properties of service principal objects such as their displayName, tags, or replyUrls properties.
 
 .PARAMETER Descending
-By default, when the Filter parameter is used, service principals are returned in sorted order according to their id property (the AAD object id). Specify the Descending parameter to reverse the order. This is useful when the command returns multiple results and you are using the paging parameters First and Skip.
+By default, when the Filter parameter is used, service principals are returned in sorted order according to their id property (the Entra ID object id). Specify the Descending parameter to reverse the order. This is useful when the command returns multiple results and you are using the paging parameters First and Skip.
 
 .PARAMETER Select
 By default, Get-GraphApplicationServicePrincipal returns service principal objects with a large set of properties. To reduce the amount of data transferred from the Graph API to only the necessary properties, specify the Select parameter with the names of the properties to be returned; the returned objects will be limited to just those properties. If there are some properties that are not returned by default, those properties may be specified so that they are returned by the command.
@@ -50,7 +50,7 @@ Use the Expand parameter to include objects related to the service principal as 
 By default, a maximum limit of service principal objects will be returned when the Filter parameter is specified; the paging parameters First and Skip must be used with additional command invocations to make repeated requests for sequential subsets of the query results. To obtain all service principal objects with a single invocatio of Get-GraphApplicationServicePrincipal, specify the All parameter.
 
 .PARAMETER ConsistencyLevel
-Specifies the AAD consistency level applied for queries when the Filter parameter is specified. See the documentation for Get-GraphResource for details of the ConsistencyLevel parameter.
+Specifies the Entra ID consistency level applied for queries when the Filter parameter is specified. See the documentation for Get-GraphResource for details of the ConsistencyLevel parameter.
 
 .PARAMETER Connection
 Specifies the connection to use to access the Graph API as an alternative to the current connection. The connection encapsulates the identity used to access the Graph API. See the Get-GraphResource command documentation for more information on the Connection parameter.

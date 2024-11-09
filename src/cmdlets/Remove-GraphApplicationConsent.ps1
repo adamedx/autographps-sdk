@@ -18,10 +18,10 @@
 
 <#
 .SYNOPSIS
-Removes consent of delegated or app-only permissions to an Azure Active Directory (AAD) application.
+Removes consent of delegated or app-only permissions to an Entra ID application.
 
 .DESCRIPTION
-In order for an Azure Active Directory (AAD) application identity to access resources from Microsoft Graph, permissions must be granted to the application. The grant of permissions is referred to as consent. The Remove-GraphApplicationConsent command removes the grant of specified permissions to an AAD application. Such grants can be created as part of user interactions that grant consent to permissions at sign-in or through the Graph API, including the use of commands like Set-GraphApplicationConsent, Register-GraphApplication, or New-GraphApplication.
+In order for an Entra ID application identity to access resources from Microsoft Graph, permissions must be granted to the application. The grant of permissions is referred to as consent. The Remove-GraphApplicationConsent command removes the grant of specified permissions to an Entra ID application. Such grants can be created as part of user interactions that grant consent to permissions at sign-in or through the Graph API, including the use of commands like Set-GraphApplicationConsent, Register-GraphApplication, or New-GraphApplication.
 
 See the Get-GraphApplicationConsent command for more details on consent.
 

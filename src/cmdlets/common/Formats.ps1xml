@@ -360,6 +360,10 @@ limitations under the License.
                 <ScriptBlock>$_.identity.app.RedirectUri</ScriptBlock>
               </ListItem>
               <ListItem>
+                <Label>UseBroker</Label>
+                <PropertyName>UseBroker</PropertyName>
+              </ListItem>
+              <ListItem>
                  <Label>ConsistencyLevel</Label>
                 <ScriptBlock>if ( $_.consistencyLevel ) { $_.consistencyLevel } else { 'Auto' }</ScriptBlock>
               </ListItem>
@@ -602,6 +606,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
+                <Label>CreatedDateTime</Label>
                 <ScriptBlock>$_.createdDateTime.ToString('G')</ScriptBlock>
               </ListItem>
               <ListItem>
@@ -750,6 +755,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
+                <Label>CreatedDateTime</Label>
                 <ScriptBlock>$::.GraphFormatter.ToStandardTimeString($_.createdDateTime)</ScriptBlock>
               </ListItem>
               <ListItem>

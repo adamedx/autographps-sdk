@@ -31,8 +31,9 @@ ScriptClass GraphConnection {
     $UserAgent = $null
     $Name = $null
     $ConsistencyLevel = $null
+    $UseBroker = $false
 
-    function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes, $noBrowserUI = $false, $userAgent = $null, [string] $name, [string] $consistencyLevel = 'Auto' ) {
+    function __initialize([PSCustomObject] $graphEndpoint, [PSCustomObject] $Identity, [Object[]]$Scopes, $noBrowserUI = $false, $userAgent = $null, [string] $name, [string] $consistencyLevel = 'Auto', [bool] $useBroker = $false ) {
         $this.Id = new-guid
         $this.GraphEndpoint = $graphEndpoint
         $this.Identity = $Identity
@@ -40,6 +41,7 @@ ScriptClass GraphConnection {
         $this.Status = [GraphConnectionStatus]::Online
         $this.UserAgent = $userAgent
         $this.Name = $name
+        $this.useBroker = $useBroker
 
         $isRemotePSSession = (get-variable PSSenderInfo -erroraction ignore) -ne $null
         write-verbose ("Browser supported: {0}, NoBrowserUISpecified {1}, IsRemotePSSession: {2}" -f $::.Application.SupportsBrowserSignin, $noBrowserUI, $isRemotePSSession)
@@ -66,7 +68,7 @@ ScriptClass GraphConnection {
         write-verbose ( 'Request to connect connection id {0}' -f $this.id )
         if ( ($this.Status -eq [GraphConnectionStatus]::Online) -and (! $this.connected) ) {
             if ($this.Identity) {
-                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id $certificatePassword
+                $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id $certificatePassword $this.useBroker
             }
             $this.connected = $true
         }
@@ -85,7 +87,7 @@ ScriptClass GraphConnection {
             }
 
             # Trust the library's token cache to get a new token if necessary
-            $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id $certificatePassword
+            $this.Identity |=> Authenticate $this.Scopes $this.NoBrowserUI $this.id $certificatePassword $this.useBroker
             $this.connected = $true
         }
 
@@ -138,14 +140,14 @@ ScriptClass GraphConnection {
             }
         }
 
-        function NewSimpleConnection([string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $userAgent = $null, $allowMSA = $true, $name, [string] $consistencyLevel ) {
+        function NewSimpleConnection([string] $cloud = 'Public', [String[]] $ScopeNames, $anonymous = $false, $tenantName = $null, $userAgent = $null, $allowMSA = $true, $name, [string] $consistencyLevel, [bool] $useBroker = $false ) {
             $endpoint = new-so GraphEndpoint $cloud $null $null $null
             $app = new-so GraphApplication $::.Application.DefaultAppId
             $identity = if ( ! $anonymous ) {
                 new-so GraphIdentity $app $endpoint $tenantName $allowMSA
             }
 
-            new-so GraphConnection $endpoint $identity $ScopeNames $false $userAgent $name $consistencyLevel
+            new-so GraphConnection $endpoint $identity $ScopeNames $false $userAgent $name $consistencyLevel $useBroker
         }
 
         # TODO: This is not currently used, was originally a way to wrap the connection object into something user-friendly.

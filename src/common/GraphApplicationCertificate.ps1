@@ -85,7 +85,7 @@ ScriptClass GraphApplicationCertificate {
         function __GetAppCertificateFriendlyName($appId, $name, $objectId) {
             $nameComponent = __GetAppCertificateDisplayNameComponent $name
             $objectIdComponent = __GetAppCertificateObjectIdComponent $objectId
-            "Credential for Microsoft Graph Azure Active Directory application $nameComponent, appId=$appId, $objectIdComponent"
+            "Credential for Microsoft Graph Entra ID application $nameComponent, appId=$appId, $objectIdComponent"
         }
     }
 

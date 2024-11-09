@@ -1,6 +1,6 @@
 {
     "$id": "https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/settings.schema.json",
-    "$schema": "https://json-schema.org/draft/2019-09/schema#",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
     "title": "AutoGraph Settings Profile Schema",
     "definitions": {
         "RootSettings": {
@@ -80,7 +80,7 @@
             "description": "The settings required to issue requests to a Graph service",
             "properties": {
                 "accountType": {
-                    "description": "The type of account that can sign in to use this connection. The value 'AzureADOnly' means that sign-in to this application requires and Azure Active Directory (AAD) organization principal such as an AAD user or application -- when this value is specified, a Microsoft Account (MSA) may not be used for sign-in. The 'AzureADAndPersonalMicrosoftAccount' value means that both AAD principals and MSA accounts may be used to sign-in. By default, the value is 'Auto', which is the same as 'AzureADOnly' unless the application's default AAD application ID is used to sign-in. If that default application ID is overridden using the commands for connecting to the Graph API or through settings via the 'appId' property, then by default MSA signin-in will be disallowed because of the 'Auto' value. This can be overridden by setting this property explicitly to 'AzureADAndPersonalMicrosoftAccount' or by specifying the equivalent value to the commands used to create and establish connections to Graph.",
+                    "description": "The type of account that can sign in to use this connection. The value 'AzureADOnly' means that sign-in to this application requires and Entra ID organization principal such as an Entra ID user or application -- when this value is specified, a Microsoft Account (MSA) may not be used for sign-in. The 'AzureADAndPersonalMicrosoftAccount' value means that both Entra ID principals and MSA accounts may be used to sign-in. By default, the value is 'Auto', which is the same as 'AzureADOnly' unless the application's default Entra ID application ID is used to sign-in. If that default application ID is overridden using the commands for connecting to the Graph API or through settings via the 'appId' property, then by default MSA signin-in will be disallowed because of the 'Auto' value. This can be overridden by setting this property explicitly to 'AzureADAndPersonalMicrosoftAccount' or by specifying the equivalent value to the commands used to create and establish connections to Graph.",
                     "enum": [
                         "Auto",
                         "AzureADOnly",
@@ -89,7 +89,7 @@
                     "type": "string"
                 },
                 "appId": {
-                    "description": "Specifies the identifier of the Azure Active Directory (AAD) application identity used to sign-in to the Graph API to gain authorized access when no explicit application ID is specified to a connection-related command. By default, this application uses its own mulit-tenant application. To use a different application, particularly in order to use a single-tenant application for your specific organization, you may specify this setting.",
+                    "description": "Specifies the identifier of the Entra ID application identity used to sign-in to the Graph API to gain authorized access when no explicit application ID is specified to a connection-related command. By default, this application uses its own mulit-tenant application. To use a different application, particularly in order to use a single-tenant application for your specific organization, you may specify this setting.",
                     "type": "string"
                 },
                 "appRedirectUri": {
@@ -140,6 +140,10 @@
                 "userAgent": {
                     "description": "The HTTP protocol user agent field to be used when this application makes requests. When not specified in settings, the user agent is the one specified using command parameters and if not specified is then a standard default user agent of the application. This property can be used to customize the user agent for application telemetry or other purposes.",
                     "type": "string"
+                },
+                "useBroker": {
+                    "description": "By default, sign-ins initiated by Connect-GraphApi will utilize protocol sequences exchanged directly between the PowerShell process hosting the command and the Entra ID security token service (STS). When UseBroker is specified, an intermediary 'broker' OS component intercepts communication between the application and the STS to provide enhanced security. This capability is currently only supported on newer versions of the Windows operating system. For more information on how to use this capability, see the Entra documentation for the Web Account Manager (WAM): https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/desktop-mobile/wam.",
+                    "type": "boolean"
                 }
             }
         },

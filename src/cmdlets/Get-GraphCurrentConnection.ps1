@@ -35,7 +35,7 @@ By default, Get-GraphCurrentConnection returns information about the current Gra
 .OUTPUTS
 A PSCustomObject that contains the following fields:
 
-* AppId: The Azure Active Directory AppId of the Graph. By default, this is the AppId of the AutoGraphPS application as registered with Azure.
+* AppId: The Entra ID AppId of the Graph. By default, this is the AppId of the AutoGraphPS application as registered with Azure.
 * Endpoint: The URI endpoint of the Microsoft Graph service instance, e.g.https://graph.microsoft.com
 * User: If the user has signed in, this is the user principal name of the user, i.e. user@domain.com
 * Status: The value Online or Offline, which can be set with Set-GraphConnectionStatus

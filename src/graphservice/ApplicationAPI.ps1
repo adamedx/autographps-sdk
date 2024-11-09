@@ -115,26 +115,7 @@ ScriptClass ApplicationAPI {
             # For user experience reasons, when the user believes they are registering an app from their own tenant,
             # we explicitly check for this. We only skip this check if they specify that they are OK with registering
             # an application owned by another tenant.
-            write-verbose "Looking for existing application '$appId' in this tenant"
-            $existingApp = $null
-            $retryCount = 3
-            $waitTime = 5
-
-            # The directory does not guarantee read after write, and this method is often invoked after an app is created.
-            # If we need to find the app, it's possible that a newly created app is not accessible by read operations
-            # for some amount of time, so add a reasonable retry just in case.
-            do {
-                $existingApp = GetApplicationByAppId $appId
-                if ( ! $existingApp ) {
-                    start-sleep $waitTime
-                }
-                $waitTime += 10
-            } while ( ! $existingApp -and --$retryCount )
-
-            if ( ! $existingApp ) {
-                throw "An application with AppId '$AppId' could not be found in this tenant -- the application may have just been created but not fully replicated or it may be from a different tenant."
-            }
-            write-verbose "Found existing application '$appId' in this tenant"
+            WaitForNewApplication $null $appId $true | out-null
         }
 
         write-verbose "Looking for existing service principal for application '$appId' in this tenant"
@@ -149,6 +130,79 @@ ScriptClass ApplicationAPI {
 
         write-verbose "Registered application '$appId' with service principal '$($newSP.id)'"
         $newSP
+    }
+
+    function UpdateApplicationSelfReferencingState($app, [bool] $addBrokerRedirectUri = $false) {
+        # So there is some information about the application that is not known before it is created,
+        # namely the appid (clientid). Any state of the application that refers to that identifier
+        # must therefore be configured after the creation request. One example is the broker redirect URI,
+        # which contains the appid. This method updates any such state.
+        $updatedApp = if ( $addbrokerRedirectUri ) {
+            $brokerRedirectUri = "ms-appx-web://Microsoft.AAD.BrokerPlugin/$($app.appId)"
+            $newRedirectUris = , $brokerRedirectUri
+            $currentRedirectUris = $app.publicClient.redirectUris
+
+            if ( $currentRedirectUris ) {
+                $newRedirectUris = $currentRedirectUris += $brokerRedirectUri
+            }
+
+            # Make sure the application exists before trying to update it, and also get a copy that we can modify:
+            $currentApplication = WaitForNewApplication $app.Id
+
+            if ( $currentApplication ) {
+                $newPublicClientProperty = $currentApplication.publicClient
+
+                $newPublicClientProperty.redirectUris = $newRedirectUris
+
+                $publicClientPatch = [PSCustomObject] @{
+                    publicClient = $newPublicClientProperty
+                }
+
+                try {
+                    Invoke-GraphApiRequest "/applications/$($app.Id)" -method PATCH -Body $publicClientPatch -version $this.version -connection $this.connection -ConsistencyLevel Session | out-null
+                } catch {
+                    write-warning "Unable to add authentication broker redirectUri; the application may not support authentication broker sign-ins."
+                }
+
+                $currentApplication
+            }
+        }
+
+        if ( $updatedApp ) {
+            $updatedApp
+        } else {
+            $app
+        }
+    }
+
+    function WaitForNewApplication($objectId, $appId, [bool] $failIfNotFound = $false) {
+        write-verbose "Looking for existing application '$appId' in this organization"
+        $existingApp = $null
+        $retryCount = 3
+        $waitTime = 5
+
+        # The directory does not guarantee read after write, and this method is often invoked after an app is created.
+        # If we need to find the app, it's possible that a newly created app is not accessible by read operations
+        # for some amount of time, so add a reasonable retry just in case.
+        do {
+            $existingApp = GetApplicationByObjectIdOrAppId $objectId $appId $false SilentlyContinue
+            if ( ! $existingApp ) {
+                start-sleep $waitTime
+            }
+            $waitTime += 10
+        } while ( ! $existingApp -and --$retryCount )
+
+        if ( ! $existingApp ) {
+            if ( $failIfNotFound ) {
+                throw "An application with AppId '$AppId' could not be found in this tenant -- the application may have just been created but not fully replicated or it may be from a different organization."
+            } else {
+                write-warning "The newly created application '$appId' could not be found; please wait for additional replication and retry the search."
+            }
+        } else {
+            write-verbose "Found existing application '$appId' in this organization."
+        }
+
+        $existingApp
     }
 
     function NewAppServicePrincipal($appId) {

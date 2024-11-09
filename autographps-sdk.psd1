@@ -12,7 +12,7 @@
 RootModule = 'autographps-sdk.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.31.0'
+ModuleVersion = '0.32.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -137,7 +137,9 @@ CmdletsToExport = @()
         '.\src\formats.ps1'
         '.\src\graph-sdk.ps1'
         '.\src\auth\AuthProvider.ps1'
+        '.\src\auth\CompiledConsoleAPI.ps1'
         '.\src\auth\CompiledDeviceCodeAuthenticator.ps1'
+        '.\src\auth\ConsoleAPI.ps1'
         '.\src\auth\DeviceCodeAuthenticator.ps1'
         '.\src\auth\V2AuthProvider.ps1'
         '.\src\client\Application.ps1'
@@ -230,7 +232,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure', 'MicrosoftGraph', 'Microsoft-Graph', 'MS-Graph', 'AAD-Graph', 'REST', 'CRUD', 'GraphAPI', 'poshgraph', 'poshgraph-sdk', 'autograph', 'PSEdition_Core', 'PSEdition_Desktop', 'Windows', 'Linux', 'MacOS')
+        Tags = @('MSGraph', 'Graph', 'AADGraph', 'Azure', 'MicrosoftGraph', 'Microsoft-Graph', 'MS-Graph', 'AAD-Graph', 'Entra', 'REST', 'CRUD', 'GraphAPI', 'poshgraph', 'poshgraph-sdk', 'autograph', 'PSEdition_Core', 'PSEdition_Desktop', 'Windows', 'Linux', 'MacOS')
 
         # A URL to the license for this module.
         LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
@@ -247,26 +249,31 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
-## AutoGraphPS-SDK 0.31.0 Release Notes
+## AutoGraphPS-SDK 0.32.0 Release Notes
 
-Fix important code defects, CI pipeline updates, update to lateset MSAL version.
+Authentication broker support along with branding and documentation updates related to AAD -> Entra rename.
 
 ### New dependencies
 
-* Update to Microsoft.Identity.Client 4.64.0 (aka MSAL).
+* Update to Microsoft.Identity.Client 4.66.1 (aka MSAL).
+* New optional dependency Microsoft.Identity.Client.Broker 4.66.1 for authentication broker support (Windows only)
 
 ### Breaking changes
 
-None.
+* New default app id (client id) for the module has been changed: A new application id, c98eb929-2053-4b03-b680-a5efcbd59035 is the default.
+  The earlier app id, ac70e3e2-a821-4d19-839c-b8af4515254b is no longer in use to avoid the small chance that adding broker support to its configuration could break existing users.
 
 ### New features
 
-None.
+* The `Connect-GraphApi` and `New-GraphConnection` commands expose a new `-UseBroker` parameter. This enables support for [authentication broker sign-ins on Windows](https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/desktop-mobile/wam) for improved security features offered by the native capabilities of the operating system and device, including limiting the use of refresh tokens to the device that acquired the original token.
+* The UseBroker parameter of the new commands is also supported as an attribute of the connection settings -- see the schema documentation at [Settings Schema definition file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/settings.schema.json).
+* Runtime command help and other documentation is updated to reflect the rebranding of Azure Active Directory to 'Entra'.
 
 ### Fixed defects
 
-* Fixed broken graph removal impacting downstream `Remove-Graph` command from `autographps` module.
-* Add support to enforce requested naming of graphs instead of auto-generation on conflicting name.
+* Fixed garbled property name for CreatedDateTime property in application and service principal list views.
+* The schema documentation file itself used an invalid schema URI -- without the fix for this, schema-aware tools such as vscode would not be able to validate or apply schema information to files that conformed to the schema.
+None.
 
 '@
 

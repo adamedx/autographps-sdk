@@ -19,10 +19,10 @@
 
 <#
 .SYNOPSIS
-Consents delegated or app-only permissions to an Azure Active Directory (AAD) application.
+Consents delegated or app-only permissions to an Entra ID application.
 
 .DESCRIPTION
-In order for an Azure Active Directory (AAD) application identity to access resources from Microsoft Graph, permissions must be granted to the application. The grant of permissions is referred to as consent. The Set-GraphApplicationConsent command grants consent to an application for app-only or delegated permissions:
+In order for an Entra ID application identity to access resources from Microsoft Graph, permissions must be granted to the application. The grant of permissions is referred to as consent. The Set-GraphApplicationConsent command grants consent to an application for app-only or delegated permissions:
 
     * Application permissions may be consented directly to the application in the form of app-role assignments.
     * Delegated permissions may be consented to specific principals or to all principals in the organization
@@ -39,7 +39,7 @@ The delegated permissions to be consented to the application. The consent is con
 The application permissions to be consented to the application. The consent is actually configured as app role assignments described by the appRoleAssignment resource documented as part of the Graph API.
 
 .PARAMETER ConsentedPrincipalId
-Use the ConsentedPrincipalId parameter to specify a principal such as a user to which the specified delegated permissions should be granted when signed in to the application. If neither this parameter nor the AllPermissions parameter is specified, then if the command is executing using a delegated identity, that identity is granted consent for delegated permissions. If that case is modified so that the command is executing using an application-only identity, then the command will fail if neither AllPermisions or ConsentedPrincipalId is specified. When specifying this parameter, it must be the AAD object identifier guid of the user to which to grant consent.
+Use the ConsentedPrincipalId parameter to specify a principal such as a user to which the specified delegated permissions should be granted when signed in to the application. If neither this parameter nor the AllPermissions parameter is specified, then if the command is executing using a delegated identity, that identity is granted consent for delegated permissions. If that case is modified so that the command is executing using an application-only identity, then the command will fail if neither AllPermisions or ConsentedPrincipalId is specified. When specifying this parameter, it must be the Entra ID object identifier guid of the user to which to grant consent.
 
 .PARAMETER AllPermissions
 Specify AllPermissions to grant consent to all permissions configured on the application as required permissions.

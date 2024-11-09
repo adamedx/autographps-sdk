@@ -22,10 +22,10 @@
 
 <#
 .SYNOPSIS
-Creates a Graph GraphConnection object that controls where, with what Azure Active Directory identity, and with what behaviors commands issue Graph API requests.
+Creates a Graph GraphConnection object that controls where, with what Entra ID identity, and with what behaviors commands issue Graph API requests.
 
 .DESCRIPTION
-New-GraphConnection creates a GraphConnection object that encapsulates the Graph API endpoints used to make requests, as well as characteristics of the Azure Active Directory (AAD) application identity used to issue requests against the API. The resulting object may also contain information about request behaviors such as eventual consistency which can enable advanced queries at the expense of certain semantic tradeoffs. You can use this command to specify an alternative identity and endpoints in place of those specified by the "current" connection that commands used by default. The current connection itself can be updated to a connection returned by New-GraphConnection, and many commands include a 'Connection' parameter that may be used to issue API requests using the alternative connection without changing the current connection.
+New-GraphConnection creates a GraphConnection object that encapsulates the Graph API endpoints used to make requests, as well as characteristics of the Entra ID application identity used to issue requests against the API. The resulting object may also contain information about request behaviors such as eventual consistency which can enable advanced queries at the expense of certain semantic tradeoffs. You can use this command to specify an alternative identity and endpoints in place of those specified by the "current" connection that commands used by default. The current connection itself can be updated to a connection returned by New-GraphConnection, and many commands include a 'Connection' parameter that may be used to issue API requests using the alternative connection without changing the current connection.
 
 With the exception of the ConsistencyLevel parameter, the functionality of New-GraphConnection is not influenced by profile settings.
 
@@ -37,13 +37,13 @@ There are three ways to create connections (which may then be used to access the
 * New-GraphConnection: This command creates new connections, including named connections (see further discussion in this documentation), but does not perform a sign-in. This can be used in an ad-hoc way when you need to use multiple connections for your PowerShell session for instance without having to sign in each time you switch back and forth.
 * Profile settings: The profile settings file that is processed at startup can create named connections just like New-GraphConnection -- this is useful for removing the need to manually create the reusable named connections. For details on the format and usage of the settings file, see the documentation at https://github.com/adamedx/autographps-sdk/tree/main/docs/settings.
 
-As mentioned above, New-GraphConnection creates a new object and returns it as output, and has no side effects, i.e. it does not perform any authentication / sign-in operations or change local state such as the current connection. This makes it useful for automating the management of connections and providing a way to maintain multiple credentials with different levels of access to the Graph API, different AAD organizations, or even issue requests to Graph API endpoints from more than one cloud.
+As mentioned above, New-GraphConnection creates a new object and returns it as output, and has no side effects, i.e. it does not perform any authentication / sign-in operations or change local state such as the current connection. This makes it useful for automating the management of connections and providing a way to maintain multiple credentials with different levels of access to the Graph API, different Entra ID organizations, or even issue requests to Graph API endpoints from more than one cloud.
 
 To sign in to a connection created by New-GraphConnection so that it may be used to access the Graph API, issue the Connect-GraphApi command to invoke an explicit sign-in, or specify the connection as a parameter to a command that provides a Connection parameter; such commands will implictly perform the sign-in if the supplied connection is not already signed-in.
 
 By default, this module uses a connection that signs in with a specific 'AutoGraphPS' multi-tenant application with identifier ac70e3e2-a821-4d19-839c-b8af4515254b that is registered as a native public client application -- it requires only your user credentials for sign-in, no application secret is required or accepted. When using New-GraphConnection, you can specify the AppId parameter to provide an application identifier of your choice to override the default application.
 
-When you specify your own AAD application's identifier for the AppId parameter, New-GraphConnection supports the use of client secrets in order to sign in with an AAD application identity that requires a pre-configured client secret (as opposed to one that only requires the current credentials of a user). For such applications, you must supply New-GraphConnection with the client secret in order to sign in; New-GraphConnection provides the following mechanisms to allow you to do that -- these mechanisms and parameters are also applicable to the Connect-GraphApi command:
+When you specify your own Entra ID application's identifier for the AppId parameter, New-GraphConnection supports the use of client secrets in order to sign in with an Entra ID application identity that requires a pre-configured client secret (as opposed to one that only requires the current credentials of a user). For such applications, you must supply New-GraphConnection with the client secret in order to sign in; New-GraphConnection provides the following mechanisms to allow you to do that -- these mechanisms and parameters are also applicable to the Connect-GraphApi command:
 
     * You MUST supply a client secret whenever you specify the Confidential or NoninteractiveAppOnlyAuth parameters
     * On Windows only, if the required secret for the application specified by the AppId parameter is a certificate created by the New-GraphApplication, New-GraphCertificate, or New-GraphLocalCertificate commands and that certificate is present in the Windows certificate store, New-GraphConnection will automatically find the certificate for you -- you do not need to specify any additional parameters for New-GraphConnection to bind to the certificate you need to authenticate as the application. For more information about the certificate lookup functionality, see the documentation for Find-GraphLocalCertificate.
@@ -51,10 +51,10 @@ When you specify your own AAD application's identifier for the AppId parameter, 
     * Instead of using a certificate, a symmetric key may be specified as the application credential. Use the Secret and Password parameters to specify a symmetric key as a [System.Security.SecureString] object. For example, the Get-Credential command allows you to interactively supply a symmetric key in the form of a password and returns an object that can render a [SecureString] object. You may also use other PowerShell commands and scripts or other system software to securely retrieve the symmetric key as a [SecureString]. Note that symmetric keys are much less robust as a security mechanism than certificates, so your use of them should be limited to non-production environments for testing or other scenarios where a disclosure of the key is not critical.
 
 .PARAMETER Permissions
-Specifies that the connection created by New-GraphConnection requires certain delegated permissions when it is used to sign-in interactively for accesss to the Graph API. By default when this parameter is not specified, commands that request access will not ask for permissions beyond those that have already been delegated to the connection's AAD application identity for the user who signs in. If these permissions are not sufficient for successful access to the particular APIs you intend to access using this module's commands through this connection, specify the Permissions parameter to request the additional required permissions at sign-in.
+Specifies that the connection created by New-GraphConnection requires certain delegated permissions when it is used to sign-in interactively for accesss to the Graph API. By default when this parameter is not specified, commands that request access will not ask for permissions beyond those that have already been delegated to the connection's Entra ID application identity for the user who signs in. If these permissions are not sufficient for successful access to the particular APIs you intend to access using this module's commands through this connection, specify the Permissions parameter to request the additional required permissions at sign-in.
 
 .PARAMETER AppId
-The AAD application identifier to be used by the connection. If the AppId parameter is not specified, the default identifier for the "AutoGraphPS" application will be used that supports only delegated authentication.
+The Entra ID application identifier to be used by the connection. If the AppId parameter is not specified, the default identifier for the "AutoGraphPS" application will be used that supports only delegated authentication.
 
 .PARAMETER TenantId
 The organization (tenant) identifier of the organization to be accessed by the connection. The identifier can be specified using either the tenant's domain name (e.g. funkadelic.org) or it's unique identifier guid. This parameter is only required for application-only sign-in, but may be optionally specified for delegated sign-in to ensure that when using a multi-tenant application limit sign-in to the specified tenant. Otherwise, the tenant for sign-in will be determined as part of the user's interaction with the token endpoint.
@@ -64,6 +64,9 @@ By default, connections created by New-GraphConnnection will sign in using an in
 
 If no parameters are used to specify the application credentials, then on Windows, if no secret is specified, New-GraphConnection will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if New-GraphConnection cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
 
+.PARAMETER UseBroker
+By default, sign-ins for connections created by New-GraphConnection will utilize protocol sequences exchanged directly between the PowerShell process hosting the command and the Entra ID security token service (STS). When UseBroker is specified, an intermediary "broker" OS component intercepts communication between the application and the STS to provide enhanced security. This capability is only supported on newer versions of the Windows operating system. For more information on how to use this capability, see the Entra documentation for the Web Account Manager (WAM): https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/desktop-mobile/wam.
+
 .PARAMETER CertificatePath
 Specifies the path in the file system or in the PowerShell cert: drive provider of a certificate with a private key to authenticate the application to the Graph API. This parameter is only valid if the Confidential parameter is specified.
 
@@ -71,7 +74,7 @@ Specifies the path in the file system or in the PowerShell cert: drive provider 
 Specifies a .NET X509Certificate2 certificate object that contains a private key to authenticate the application to the Graph API. Such an object may be obtained by using Get-Item on an item in the PowerShell cert: drive or from other software or commands that expose certificates using this structure. This parameter is only valid if the Confidential parameter is specified.
 
 .PARAMETER Confidential
-Specify this parameter if the connection's AAD application requires a client secret in order to successfully authenticate to the Graph API. When this parameter is specified, the actual client secret is specified using other parameters. If no parameters are used to specify the secret, then on Windows, if no secret is specified, New-GraphConnection will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if New-GraphConnection cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
+Specify this parameter if the connection's Entra ID application requires a client secret in order to successfully authenticate to the Graph API. When this parameter is specified, the actual client secret is specified using other parameters. If no parameters are used to specify the secret, then on Windows, if no secret is specified, New-GraphConnection will search the certificate store for a certificate that can be used as the credential. If you're not running this command on Windows, or if New-GraphConnection cannot find a certificate for the appplication or if more than one certificate is found to be a possible match, you must specify the credentials using one of the certificate or secret parameters of this command.
 
 .PARAMETER Secret
 Specify this when the Confidential parameter is specified and the secret to be used is a symmetric key rather than a certificate. Symmetric keys are more difficult to secure than certificates and should not be used in production environments.
@@ -98,7 +101,7 @@ Specifies the sign-in (login) endpoint. If this is not specified and the Cloud p
 Specifies the Graph API OAuth2 protocol resource for which to request access. If this is not specified and the Cloud parameter is not specified, the default is https://graph.microsoft.com.
 
 .PARAMETER AccountType
-Specifies what kind of account to use when signing in to the application for Graph API access. This can be AzureADOnly, in which case the connection will only support signing in to an AAD organization. If it is 'AzureADAndPersonalMicrosoftAccount', then the connection may be used to sign in to either an AAD organization or a personal Microsoft Account such as an outlook.com account. The default setting is 'Auto', which is the same as 'AzureADAndPersonalMicrosoftAccount' when the default AutoGraphPS application is used; otherwise it is AzureADOnly.
+Specifies what kind of account to use when signing in to the application for Graph API access. This can be AzureADOnly, in which case the connection will only support signing in to an Entra ID organization. If it is 'AzureADAndPersonalMicrosoftAccount', then the connection may be used to sign in to either an Entra ID organization or a personal Microsoft Account such as an outlook.com account. The default setting is 'Auto', which is the same as 'AzureADAndPersonalMicrosoftAccount' when the default AutoGraphPS application is used; otherwise it is AzureADOnly.
 
 .PARAMETER Name
 Specifies the unique friendly name to use for this connection. By default, the GraphConnection object returned by New-GraphConnection has a unique guid identifier but no friendly name. By specifing a name, the connection may also be specified using the name to commands such as Connect-GraphApi or Get-GraphConnection, and the connection will also show up in a list of named connections that makes it easy to maintain a set of useful connections that may be used as needed within the PowerShell session. A named connection can be removed from the list of named connections using the Remove-GraphConnection API.
@@ -118,7 +121,7 @@ Specifies the HTTP 'User-Agent' request header value to use for every request to
 .NOTES
 The parameters of New-GraphConnection can be grouped into the following categories:
 
-    * Authorization: New-GraphConnection's parameters allow you to target a specific AAD organization using a particular AAD application with specific permissions (e.g. read permissions for AAD and write permissions for e-mail).
+    * Authorization: New-GraphConnection's parameters allow you to target a specific Entra ID organization using a particular Entra ID application with specific permissions (e.g. read permissions for Entra ID and write permissions for e-mail).
     * Client credentials: You can specify parameters that control where to find any secrets that may be required to authenticate the application, incuding certificates in some locally accessible confidential store or a symmetric key.
     * Request routing: Graph API requests must be issued against some REST API URI -- typically this is https://graph.microsoft.com for public cloud organizations. But there are other Graph API endpoints such as that for the Azure China Cloud, and for testing purposes you may even want to specify a URI that you control as a "proxy" for validating or logging Graph API requests. Requests for access tokens must also be directed to a REST URI that is trusted by the Graph API endpoint as a token issuer, so such token acquisition endpoints may be specified as part of request routing.
     * Request behavior: Behaviors include whether to specify a preference to the API for "eventual" vs. "session" consistency along with an override for the user agent header that should be used in every request, and whether to enable management of the connection through a human readable "Name" property.
@@ -142,7 +145,7 @@ Endpoint         : https://graph.microsoft.com/
 Endpoint         : https://graph.microsoft.com/
 AuthEndpoint     : https://login.microsoftonline.com/
 
-Invoke New-GraphConnection with no parameters to create a new connection with default properties. Here the connection is assigned to a variable so the connection can be used as a parameter to subsequent commands, and it is also output to the console for visual inspection. These default properties include GraphEndpointUri and AuthEndpointURi properties that target the Azure public cloud Graph API service instance and the use of user delegated authentication at sign-in which requires the user to sign in. The Id property is a read-only value assigned automatically by New-GraphConnection and used by the moduel's internal connection management. The Connected property is true when a successful sign-in has occurred for the connection and it can then be used to make requests to Graph. The AllowMSA output indicates that the Connection allows sign-in using a Microsoft Account, and not just an AAD account. In general, many of the property names for the Connection object correspond to parameter names for New-GraphConnection, so consulting the parameter documentation of the command provides information about the default values for these properties.
+Invoke New-GraphConnection with no parameters to create a new connection with default properties. Here the connection is assigned to a variable so the connection can be used as a parameter to subsequent commands, and it is also output to the console for visual inspection. These default properties include GraphEndpointUri and AuthEndpointURi properties that target the Azure public cloud Graph API service instance and the use of user delegated authentication at sign-in which requires the user to sign in. The Id property is a read-only value assigned automatically by New-GraphConnection and used by the moduel's internal connection management. The Connected property is true when a successful sign-in has occurred for the connection and it can then be used to make requests to Graph. The AllowMSA output indicates that the Connection allows sign-in using a Microsoft Account, and not just an Entra ID account. In general, many of the property names for the Connection object correspond to parameter names for New-GraphConnection, so consulting the parameter documentation of the command provides information about the default values for these properties.
 
 .EXAMPLE
 $mailConnection = New-GraphConnection -Permissions Mail.ReadWrite -AppId c2711e92-9f7b-4553-b2df-5ce15ac613e4
@@ -153,11 +156,11 @@ From              receivedDateTime     subject
 ----              ----------------     -------
 news@defender.org 2021-10-06T05:27:00Z Support local journalism!
 
-In this example, New-GraphConnection is used to create a connection for accessing email by specifying a dedicated AAD application through the AppId parameter as well as requesting permisions for mail access via the Permissions parameter. The output of the command is then assigned to the $mailConneciton variable. The connection variable is then specified as the Connection parameter for Get-GraphResource, which uses that connection instead of the module's current connection to make a Graph API request to read mail messages. While the invocation of Get-GraphResource will trigger an interactive sign-in when the profile specifies a delegated sign-in (the module's default behavior), any subsequent command invocations for which the variable is specified through the Connection parameter will require no interaction. This manner of using New-GraphConnection and the common Connection parameter makes it easy to maintain a "default".
+In this example, New-GraphConnection is used to create a connection for accessing email by specifying a dedicated Entra ID application through the AppId parameter as well as requesting permisions for mail access via the Permissions parameter. The output of the command is then assigned to the $mailConneciton variable. The connection variable is then specified as the Connection parameter for Get-GraphResource, which uses that connection instead of the module's current connection to make a Graph API request to read mail messages. While the invocation of Get-GraphResource will trigger an interactive sign-in when the profile specifies a delegated sign-in (the module's default behavior), any subsequent command invocations for which the variable is specified through the Connection parameter will require no interaction. This manner of using New-GraphConnection and the common Connection parameter makes it easy to maintain a "default".
 
-Note that it is not at all necessary to use a different AAD application when new permissions are required, but it can be useful if you have a desired to limit the permissions consented to the default application used with the module or in cases where AAD policies actually enforce such restrictions by denying ability to consent additional permissions to the default application.
+Note that it is not at all necessary to use a different Entra ID application when new permissions are required, but it can be useful if you have a desired to limit the permissions consented to the default application used with the module or in cases where Entra ID policies actually enforce such restrictions by denying ability to consent additional permissions to the default application.
 
-Finally, the Permissions parameter only needs to be specified if the application does not already have consent for the permission. If you've signed using the application in the past and granted the permission, AAD remembers the grant and you do not need to request it again for that application unless you or an administrators revokes the permission.
+Finally, the Permissions parameter only needs to be specified if the application does not already have consent for the permission. If you've signed using the application in the past and granted the permission, Entra ID remembers the grant and you do not need to request it again for that application unless you or an administrators revokes the permission.
 
 .EXAMPLE
 New-GraphConnection -Name MailConnection -Permissions Mail.ReadWrite -AppId c2711e92-9f7b-4553-b2df-5ce15ac613e4
@@ -287,6 +290,8 @@ function New-GraphConnection {
         [parameter(parametersetname='customendpoint')]
         [Switch] $NoninteractiveAppOnlyAuth,
 
+        [Switch] $UseBroker,
+
         [String] $TenantId = $null,
 
         [parameter(parametersetname='certpath', mandatory=$true)]
@@ -364,6 +369,21 @@ function New-GraphConnection {
             ([GraphCloud]::Public)
         }
 
+        if ( $UseBroker.IsPresent ) {
+            if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
+                throw [ArgumentException]::new("The UseBroker parameter may not be specified when NoninteractiveAppOnlyAuth is specified because brokers are for interactive auth only.")
+            }
+
+            if ( $Confidential.IsPresent ) {
+                throw [ArgumentException]::new("The UseBroker parameter may not be specified when the Confidential parameter is specified because confidential connections do not support brokers.")
+            }
+
+            $currentOS = [System.Environment]::OSVersion.Platform
+            if ( $currentOS -ne 'Win32NT' ) {
+                throw [System.NotSupportedException]::new("The UseBroker authentication broker option was specified, but the current OS platform '$currentOS' does not support brokers. This capability is supported only on the Windows OS platform.")
+            }
+        }
+
         $specifiedScopes = if ( $Permissions ) {
             if ( $Secret.IsPresent -or $Certificate -or $CertificatePath ) {
                 throw 'Permissions may not be specified at runtime for app-only authentication since they originate from the static application configuration'
@@ -389,7 +409,7 @@ function New-GraphConnection {
 
         if ( $GraphEndpointUri -eq $null -and $AuthenticationEndpointUri -eq $null -and $appId -eq $null ) {
             write-verbose 'Simple connection specified with no custom uri or app id'
-            $::.GraphConnection |=> NewSimpleConnection $validatedCloud $specifiedScopes $false $TenantId -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel -Name $Name
+            $::.GraphConnection |=> NewSimpleConnection $validatedCloud $specifiedScopes $false $TenantId -useragent $UserAgent -allowMSA $allowMSA -ConsistencyLevel $ConsistencyLevel -Name $Name -useBroker $UseBroker.IsPresent
         } else {
             $graphEndpoint = if ( $GraphEndpointUri -eq $null ) {
                 write-verbose 'Custom endpoint data required, no graph endpoint URI was specified, using URI based on cloud'
@@ -419,21 +439,27 @@ function New-GraphConnection {
                     $appCertificate
                 }
 
-                if ( ! $TenantId ) {
+                if ( ! $TenantId -and $NoninteractiveAppOnly.IsPresent ) {
                     write-verbose "No tenant id was specified and app is non-interactive, attempting to get tenant id from current token"
                     $inferredTenantId = ('GraphContext' |::> GetConnection).Identity |=> GetTenantId
 
                     if ( ! $inferredTenantId ) {
-                        throw [ArgumentException]::new("No tenant was specified for app-only auth, and a tenant could not be inferred from the current token -- specify a tenant id with the -TenantId parameter and retry the command.")
+                        if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
+                            throw [ArgumentException]::new("No tenant was specified for app-only auth, and a tenant could not be inferred from the current token -- specify a tenant id with the 'TenantId' parameter and retry the command.")
+                        }
                     }
 
                     $adjustedTenantId = $inferredTenantId
+                }
+
+                if ( ! $adjustedTenantId ) {
+                    $adjustedTenantId = 'UnspecifiedTenant'
                 }
             }
 
             $app = new-so GraphApplication $targetAppId $AppRedirectUri $appSecret $NoninteractiveAppOnlyAuth.IsPresent
             $identity = new-so GraphIdentity $app $graphEndpoint $adjustedTenantId $allowMSA
-            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent $Name $ConsistencyLevel
+            new-so GraphConnection $graphEndpoint $identity $specifiedScopes $NoBrowserSigninUI.IsPresent $userAgent $Name $ConsistencyLevel $UseBroker.IsPresent
         }
     }
 }

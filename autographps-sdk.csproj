@@ -3,9 +3,11 @@
     <TargetFrameworks>net472;net6.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.64.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.66.1" />
+    <PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.66.1" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.64.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.66.1" />
+    <PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.66.1" />
   </ItemGroup>
 </Project>

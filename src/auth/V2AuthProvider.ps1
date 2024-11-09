@@ -13,6 +13,7 @@
 # limitations under the License.
 
 . (import-script DeviceCodeAuthenticator)
+. (import-script ConsoleAPI)
 
 ScriptClass V2AuthProvider {
     # TODO: Consider removing this store of app contexts, and making auth context
@@ -32,34 +33,53 @@ ScriptClass V2AuthProvider {
     # we can look up the right authcontext for a connection. A better approach may be
     # to simply make the auth context part of the connection itself rather than part of
     # a store maintained here.
-    function GetAuthContext($app, $authUri, $groupId, [securestring] $certificatePassword) {
+    function GetAuthContext($app, $authUri, $groupId, [securestring] $certificatePassword, [bool] $useBroker = $false) {
         $isConfidential = $app |=> IsConfidential
         write-verbose "Searching for app context for appid '$($app.AppId)' and uri '$authUri' -- confidential:$isConfidential, groupid '$groupId'"
         $existingApp = $this |=> __GetAppContext $isConfidential $app.AppId $authUri $groupId
         if ( $existingApp ) {
             write-verbose ("Found existing app context with hashcode {0}" -f $existingApp.GetHashCode())
             $existingApp
-        } elseif ( $isConfidential ) {
-            write-verbose "Confidential app context not found -- will create new context"
-            $confidentialAppBuilder = [Microsoft.Identity.Client.ConfidentialClientApplicationBuilder]::Create($app.appid).WithAuthority($authUri).WithRedirectUri($app.RedirectUri)
-            $secretCredential = ($app.secret |=> GetSecretData $certificatePassword)
+        } else {
+            $targetAppBuilder = if ( $isConfidential ) {
+                write-verbose "Confidential app context not found -- will create new context"
+                $confidentialAppBuilder = [Microsoft.Identity.Client.ConfidentialClientApplicationBuilder]::Create($app.appid).WithAuthority($authUri).WithRedirectUri($app.RedirectUri)
+                $secretCredential = ($app.secret |=> GetSecretData $certificatePassword)
 
-            $confidentialApp = if ( $app.secret.type -eq [SecretType]::Certificate ) {
-                $confidentialAppBuilder.WithCertificate($secretCredential).Build()
+                $confidentialApp = if ( $app.secret.type -eq [SecretType]::Certificate ) {
+                    $confidentialAppBuilder.WithCertificate($secretCredential)
+                } else {
+                    $confidentialAppBuilder.WithClientSecret($secretCredential)
+                }
+
+                $confidentialApp
             } else {
-                $confidentialAppBuilder.WithClientSecret($secretCredential).Build()
+                write-verbose "Public app context not found -- will create new context"
+                $publicApp = [Microsoft.Identity.Client.PublicClientApplicationBuilder]::Create($App.AppId).WithAuthority($authUri, $true).WithRedirectUri($app.RedirectUri)
+
+                # The broker is supported only on the PublicClientApplication type
+                if ( $useBroker ) {
+                    $currentOS = [System.Environment]::OSVersion.Platform
+                    if ( $currentOS -ne 'Win32NT' ) {
+                        throw [System.NotSupportedException]::new("The authentication broker option was specified, but the current OS platform '$currentOS' does not support brokers. This capability is supported only on the Windows OS platform")
+                    }
+
+                    # Reiterating: currently the extension builder method below is only supported on the PublicClientApplication
+                    $withParentWindow = $publicApp.WithParentActivityOrWindow( ($::.ConsoleAPI |=> GetConsoleWindow ) )
+
+                    $brokerOptions = [Microsoft.Identity.Client.BrokerOptions]::new([Microsoft.Identity.Client.BrokerOptions+OperatingSystems]::Windows)
+                    $brokerOptions.Title = 'AutoGraphPS PowerShell'
+                    [Microsoft.Identity.Client.Broker.BrokerExtension]::WithBroker($withParentWindow, $brokerOptions)
+                } else {
+                    $publicApp
+                }
             }
 
-            $this |=> __AddAppContext $true $app.AppId $authUri $confidentialApp $groupId
+            $newApp = $targetAppBuilder.Build()
 
-            $confidentialApp
-        } else {
-            write-verbose "Public app context not found -- will create new context"
-            $publicApp = [Microsoft.Identity.Client.PublicClientApplicationBuilder]::Create($App.AppId).WithAuthority($authUri, $true).WithRedirectUri($app.RedirectUri).Build()
+            $this |=> __AddAppContext $isConfidential $app.AppId $authUri $newApp $groupId
 
-            $this |=> __AddAppContext $false $app.AppId $authUri $publicApp $groupId
-
-            $publicApp
+            $newApp
         }
     }
 
@@ -306,6 +326,18 @@ ScriptClass V2AuthProvider {
                 $libPath = join-path $this.scriptRoot ../../lib
                 Import-Assembly Microsoft.Identity.Client -AssemblyRoot $libPath @targetFrameworkParameter | out-null
                 $this.__AuthLibraryLoaded = $true
+
+                # An additional library is required to support authentication broker functionality -- it is supported
+                # only on Windows, so is considered optional -- try to load it on that platform.
+                $currentOS = [System.Environment]::OSVersion.Platform
+                if ( $currentOS -eq 'Win32NT' ) {
+                    try {
+                        $authBrokerLibrary = 'Microsoft.Identity.Client.Broker'
+                        Import-Assembly $authBrokerLibrary -AssemblyRoot $libPath @targetFrameworkParameter | out-null
+                    } catch {
+                        write-warning "Unable to load authentication broker library '$authBrokerLibrary' from search path $libPath; sign-in will not be able to use the broker functionality."
+                    }
+                }
             }
         }
     }

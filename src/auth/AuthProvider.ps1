@@ -21,12 +21,12 @@ ScriptClass AuthProvider {
         $this.provider = new-so V2AuthProvider
     }
 
-    function GetAuthContext($app, $graphEndpointUri, $authUri, $groupId, $certificatePassword) {
-        write-verbose ( 'Auth context requested for auth uri {0}, resource uri {1} appid {2}, groupid {3}' -f $authUri, $graphEndpointUri, $app.appid, $groupId )
+    function GetAuthContext($app, $graphEndpointUri, $authUri, $groupId, $certificatePassword, [bool] $useBroker = $false) {
+        write-verbose ( 'Auth context requested for auth uri {0}, resource uri {1} appid {2}, groupid {3}, useBroker {4}' -f $authUri, $graphEndpointUri, $app.appid, $groupId, $useBroker )
         $result = [PSCustomObject]@{
             App = $app
             GraphEndpointUri = $graphEndpointUri
-            ProtocolContext = $this.provider |=> GetAuthContext $app $authUri $groupId $certificatePassword
+            ProtocolContext = $this.provider |=> GetAuthContext $app $authUri $groupId $certificatePassword $useBroker
             GroupId = $groupId
         }
 
