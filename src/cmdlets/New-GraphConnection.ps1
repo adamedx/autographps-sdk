@@ -380,7 +380,7 @@ function New-GraphConnection {
 
             $currentOS = [System.Environment]::OSVersion.Platform
             if ( $currentOS -ne 'Win32NT' ) {
-                throw [System.NotSupportedException]::new("The UseBroker authentication broker option was specified, but the current OS platform '$currentOS' does not support brokers. This capability is supported only on the Windows OS platform")
+                throw [System.NotSupportedException]::new("The UseBroker authentication broker option was specified, but the current OS platform '$currentOS' does not support brokers. This capability is supported only on the Windows OS platform.")
             }
         }
 
