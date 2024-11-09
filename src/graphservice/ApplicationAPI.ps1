@@ -138,14 +138,12 @@ ScriptClass ApplicationAPI {
         # must therefore be configured after the creation request. One example is the broker redirect URI,
         # which contains the appid. This method updates any such state.
         $updatedApp = if ( $addbrokerRedirectUri ) {
+            $brokerRedirectUri = "ms-appx-web://Microsoft.AAD.BrokerPlugin/$($app.appId)"
+            $newRedirectUris = , $brokerRedirectUri
             $currentRedirectUris = $app.publicClient.redirectUris
 
-            $brokerRedirectUri = "ms-appx-web://Microsoft.AAD.BrokerPlugin/$($app.appId)"
-
-            $newRedirectUris = if ( $currentRedirectUris ) {
-                $currentRedirectUris + $brokerRedirectUri
-            } else {
-                , $brokerRedirectUri
+            if ( $currentRedirectUris ) {
+                $newRedirectUris = $currentRedirectUris += $brokerRedirectUri
             }
 
             # Make sure the application exists before trying to update it, and also get a copy that we can modify:

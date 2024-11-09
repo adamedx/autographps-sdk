@@ -606,6 +606,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
+                <Label>CreatedDateTime</Label>
                 <ScriptBlock>$_.createdDateTime.ToString('G')</ScriptBlock>
               </ListItem>
               <ListItem>
@@ -754,6 +755,7 @@ limitations under the License.
                 <ScriptBlock>$::.ColorString.ToStandardColorString($_.DisplayName, 'Emphasis2', $null, $null, $null)</ScriptBlock>
               </ListItem>
               <ListItem>
+                <Label>CreatedDateTime</Label>
                 <ScriptBlock>$::.GraphFormatter.ToStandardTimeString($_.createdDateTime)</ScriptBlock>
               </ListItem>
               <ListItem>

@@ -49,7 +49,7 @@ As described above, New-GraphApplication performs four different functions: appl
 The display name of the application -- this name will be shown to users when they sign in to the application and also to administrators approving consent for the application.
 
 .PARAMETER RedirectUris
-The OAuth2 redirect URIs that the application supports, also known as reply url's. By default, for native client applications the URI http://localhost and as well as an app-specific redirect for a local authentication broker will be configured if this parameter is not specified. To ensure no redirect URIs are configured, specify an empty array, i.e. @()
+The OAuth2 redirect URIs that the application supports, also known as reply URL's. By default, for native client (aka public client) applications the URI http://localhost as well as an app-specific redirect for a local authentication broker will be configured if this parameter is not specified. To ensure no redirect URIs are configured, specify an empty array, i.e. @(). You can use the IncludeBrokerRedirectUri parameter with this parameter so that this command automatically adds the correct application-specific local authentication broker redirect URI in addition to the URIs specified with the RedirectUris parameter.
 
 .PARAMETER InfoUrl
 An informational URL that is associated with the application. This URL could refer to the application's documentation or public web site for instance. It may be presented as part of sign-in and / or consent user experiences.
@@ -64,7 +64,7 @@ Specify AdditionalProperties to configure any documented properties of the Entra
 Specifies the organizational scope for which the application may be used. By default, this has the value Auto, which is currently equivalent of the value SingleTenant, which means that the application may be signed-in only within its owning tenant. The value MultiTenant means that the application allows sign-in from any organization (subject to configured restrictions in place within a given organization managed by that organization's adminstrators) as well as delegated sign-ins by Microsoft Account (MSA) users.
 
 .PARAMETER DelegatedPermissions
-The delegated permissions to be configured for the application and (optionally) consented to the application. Specifying these permissions configures them as "required permissions" for the application. And as long as the NoConsent parameter is not specified, the consent is also configured using these permissions. The consent is configured as oauth2PermissionGrant resources documented as part of the Graph API. If the ConsentedPrincipalId parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless ConsentedPrincipalId or ConsentForAllPrincipals is specified. If you don't specify this parameter, then by default, the offline permission is consented for the application.
+The delegated permissions to be configured for the application and (optionally) consented to the application. Specifying these permissions configures them as "required permissions" for the application. And as long as the NoConsent parameter is not specified, the consent is also configured using these permissions. The consent is configured as oauth2PermissionGrant resources documented as part of the Graph API. If the ConsentedPrincipalId parameter is not specified then the the permissions are automatically consented to the user associated with the Graph connection in use by the command. If the command is executing with app-only context, i.e. with no signed in user, then the command will fail unless ConsentedPrincipalId or ConsentForAllPrincipals is specified. If you do not specify this parameter, then by default, the offline permission is consented for the application.
 
 .PARAMETER ApplicationPermissions
 The application permissions to be consented to the application. The consent is actually configured as app role assignments described by the appRoleAssignment resource documented as part of the Graph API.
@@ -80,6 +80,9 @@ The NewCredential parameter may be specified if Confidential is specified. Speci
 
 .PARAMETER SuppressCredentialWarning
 If this parameter is not specified and Confidential is specified, the command generates a warning to communicate the fact that the created application does not have a secret configured and thus sign-in cannot occur after the command completes without additional configuration such as through commands like New-GraphApplicationCertificate or Set-GraphApplicationCertificate. Specify this parameter to suppress the warning when it is expected.
+
+.PARAMETER IncludeBrokerRedirectUri
+Specify this parameter to add the application-specific local authentication broker redirect URI in addition to any URIs specified by the RedirectUris parameter. Note that this parameter is only applicable to native / public client applications, i.e. it has no effect if the Confidential or NonInteractiveAppOnly parameters are specified since authentication broker capability is not offered for those authentication protocols. For more information about the IncludeBrokerRedirectUri parameter refer to the RedirectUris parameter documentation.
 
 .PARAMETER ConsentForAllPrincpals
 Specify ConsentForAllPrincipals to grant consent for the permissions specified by the DelegatedPermissions parameter to all principals (including users) in the organization.
@@ -127,7 +130,18 @@ AppId         DisplayName      CreatedDateTime        Id            PublisherDom
 -----         -----------      ---------------        --            ---------------
 54dfa095-0... 'Custom Graph... 12/28/2021 10:18:09 PM 25650e01-4... kuumba.org
 
-The simplest case of application creation requires only the name parameter to be specified to the command. The created application is a public client application which means it can be signed-in on any device running any application code. By default, it is configured only with the permission 'offline', so it has no permission to make requests to the Graph API -- application code will need to request additional permissions at runtime or other commands such as Set-GraphApplicationConsent will need to be executed to configure consent. This application created by this command is valid only in the organization in which it was created. The application's redirect URL is configured as 'http://localhost' since the RedirectUris parameter was not specified.
+                                                                                                                                                                                                                                                                                                                              The simplest case of application creation requires only the name parameter to be specified to the command. The created application is a public client application which means it can be signed-in on any device running any application code. By default, it is configured only with the permission 'offline', so it has no permission to make requests to the Graph API -- application code will need to request additional permissions at runtime or other commands such as Set-GraphApplicationConsent will need to be executed to configure consent. This application created by this command is valid only in the organization in which it was created. The application's redirect URL is configured as 'http://localhost' since the RedirectUris parameter was not specified.
+
+.EXAMPLE
+New-GraphApplication 'Test Graph Scripting Application' |
+  Select-Object AppId, DisplayName, -ExpandProperty RedirectUris
+
+redirectUris : {https://login.microsoftonline.com/common/oauth2/nativeclient, http://localhost,
+               ms-appx-web://Microsoft.AAD.BrokerPlugin/3b8a69bf-156f-43ae-8bb7-9c9328474e9b}
+appId        : 3b8a69bf-156f-43ae-8bb7-9c9328474e9b
+displayName  : Test Graph Scripting Application
+
+This example is similar to the previous case, but also demonstrates that New-GraphApplication configures particular default redirect URIs by default for native / public applications, including the application specific authentication broker redirect URI.
 
 .EXAMPLE
 $scriptApp = New-GraphApplication 'Custom Graph Scripting Application'
@@ -208,6 +222,27 @@ Application    ad29424b-d716-48fe-8555-6985e07a821b Group.Read.All ad29424b-d716
 
 This example demonstrates that the functionality beyond application creation that is present in New-GraphApplication may be skipped and instead accomplished with other commands. In this example, New-GraphApplication for a confidential client application is invoked without creating a credential since NewCredential is not specified when Confidential was specified. Tenant registration and consent are skipped since the SkipTenantRegistration parameter was specified. This output is then piped to New-GraphApplicationCertificate, which creates the credential for the application, and that output, which contains an application identifier, is piped to Register-GraphApplication, which register the specified application identifier but does not set permissions. Finally, that output itself, which also contains an application identifier, is piped to Set-GraphApplicationConsent, which configures the application permissions. Since OutVariable was specified for New-GraphApplication, we can use the variable it created ($confidentialApp) to retrieve the current application configuration using Get-GraphApplicationConsent, which shows that not only does the application exist, but it is registered and has the permissions configured by the last command. This shows that New-GraphApplication combines the core functinonlity of four different commands into one command to enable simple, quick creation of Entra ID applications.
 
+.EXAMPLE
+New-GraphApplication 'Linux Local Test App' -RedirectUris 'https://localhost', 'http://localhost' |
+  Select-Object -ExpandProperty PublicClient AppId, DisplayName |
+  Format-List
+
+redirectUris : {https://localhost, 'http://localhost'}
+appId        : ed1f31f4-7cc1-495a-af99-a038c4fb88f9
+displayName  : Linux Local Test App
+
+This example shows how specific redirect URIs may be specified through the RedirectUris parameter, overriding the default URIs that the command configures when this parameter is not specified. As noted in the documentation, specifying an empty array, e.g. @(), allows for the redirectURIs property to be empty, though such a configuration means a public client sign-in will not be possible with the application.
+
+.EXAMPLE
+New-GraphApplication 'Windows Local Test App' -RedirectUris 'https://localhost' -IncludeBrokerRedirectUri |
+  Select-Object AppId, DisplayName -ExpandProperty PublicClient |
+  Format-List
+
+redirectUris : {https://localhost, ms-appx-web://Microsoft.AAD.BrokerPlugin/da7149c1-9f8c-4d8c-ae02-e6aaa72dfcf8}
+appId        : da7149c1-9f8c-4d8c-ae02-e6aaa72dfcf8
+displayName  : Windows Local Test App
+
+In this example a new public client application is provisioned with the custom redirect URI 'https://localhost' via the RedirectUri parameter. To also support the authentication broker, the -IncludeBrokerRedirectUri parameter was also specified; this generates the required authentication broker redirect URI, 'ms-appx-web://Microsoft.AAD.BrokerPlugin/da7149c1-9f8c-4d8c-ae02-e6aaa72dfcf8'. Use of the IncludeBrokerRedirectUri is not strictly necessary since the application's redirect URI's can be modified after this command creates the application by issuing subsequent Microsoft Graph API requests, but this saves the effort of understanding the correct format for that URI and issuing the additional commands to modify the redirect URI's without removing the originally configured URIs as well.
 
 .LINK
 Get-GraphApplication
@@ -252,6 +287,8 @@ function New-GraphApplication {
 
         [parameter(parametersetname='confidentialapp')]
         [switch] $SuppressCredentialWarning,
+
+        [switch] $IncludeBrokerRedirectUri,
 
         [switch] $ConsentForAllPrincipals,
 
@@ -326,7 +363,7 @@ function New-GraphApplication {
         }
     }
 
-    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy ( ! $AllowMSAAccounts.IsPresent ) $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris $propertyTable
+    $newAppRegistration = new-so ApplicationObject $appAPI $Name $InfoUrl $Tags $computedTenancy ( ! $AllowMSAAccounts.IsPresent ) $appOnlyPermissions $delegatedPermissions $Confidential.IsPresent $RedirectUris $propertyTable $IncludeBrokerRedirectUri.IsPresent
 
     $newApp = $newAppRegistration |=> CreateNewApp
 

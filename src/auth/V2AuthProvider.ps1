@@ -57,25 +57,25 @@ ScriptClass V2AuthProvider {
                 write-verbose "Public app context not found -- will create new context"
                 $publicApp = [Microsoft.Identity.Client.PublicClientApplicationBuilder]::Create($App.AppId).WithAuthority($authUri, $true).WithRedirectUri($app.RedirectUri)
 
-                $publicApp
-            }
+                # The broker is supported only on the PublicClientApplication type
+                if ( $useBroker ) {
+                    $currentOS = [System.Environment]::OSVersion.Platform
+                    if ( $currentOS -ne 'Win32NT' ) {
+                        throw [System.NotSupportedException]::new("The authentication broker option was specified, but the current OS platform '$currentOS' does not support brokers. This capability is supported only on the Windows OS platform")
+                    }
 
-            $newAppBuilder = if ( $useBroker ) {
-                $currentOS = [System.Environment]::OSVersion.Platform
-                if ( $currentOS -ne 'Win32NT' ) {
-                    throw [System.NotSupportedException]::new("The authentication broker option was specified, but the current OS platform '$currentOS' does not support brokers. This capability is supported only on the Windows OS platform")
+                    # Reiterating: currently the extension builder method below is only supported on the PublicClientApplication
+                    $withParentWindow = $publicApp.WithParentActivityOrWindow( ($::.ConsoleAPI |=> GetConsoleWindow ) )
+
+                    $brokerOptions = [Microsoft.Identity.Client.BrokerOptions]::new([Microsoft.Identity.Client.BrokerOptions+OperatingSystems]::Windows)
+                    $brokerOptions.Title = 'AutoGraphPS PowerShell'
+                    [Microsoft.Identity.Client.Broker.BrokerExtension]::WithBroker($withParentWindow, $brokerOptions)
+                } else {
+                    $publicApp
                 }
-
-                $withParentWindow = $targetAppBuilder.WithParentActivityOrWindow( ($::.ConsoleAPI |=> GetConsoleWindow ) )
-
-                $brokerOptions = [Microsoft.Identity.Client.BrokerOptions]::new([Microsoft.Identity.Client.BrokerOptions+OperatingSystems]::Windows)
-                $brokerOptions.Title = 'AutoGraphPS PowerShell'
-                [Microsoft.Identity.Client.Broker.BrokerExtension]::WithBroker($withParentWindow, $brokerOptions)
-            } else {
-                $targetAppBuilder
             }
 
-            $newApp = $newAppBuilder.Build()
+            $newApp = $targetAppBuilder.Build()
 
             $this |=> __AddAppContext $isConfidential $app.AppId $authUri $newApp $groupId
 

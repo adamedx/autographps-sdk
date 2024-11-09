@@ -371,7 +371,11 @@ function New-GraphConnection {
 
         if ( $UseBroker.IsPresent ) {
             if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
-                throw [ArgumentException]::new("The UseBroker parameter may not be specified when NoninteractiveAppOnlyAuth")
+                throw [ArgumentException]::new("The UseBroker parameter may not be specified when NoninteractiveAppOnlyAuth is specified because brokers are for interactive auth only.")
+            }
+
+            if ( $Confidential.IsPresent ) {
+                throw [ArgumentException]::new("The UseBroker parameter may not be specified when the Confidential parameter is specified because confidential connections do not support brokers.")
             }
 
             $currentOS = [System.Environment]::OSVersion.Platform
@@ -435,15 +439,21 @@ function New-GraphConnection {
                     $appCertificate
                 }
 
-                if ( ! $TenantId ) {
+                if ( ! $TenantId -and $NoninteractiveAppOnly.IsPresent ) {
                     write-verbose "No tenant id was specified and app is non-interactive, attempting to get tenant id from current token"
                     $inferredTenantId = ('GraphContext' |::> GetConnection).Identity |=> GetTenantId
 
                     if ( ! $inferredTenantId ) {
-                        throw [ArgumentException]::new("No tenant was specified for app-only auth, and a tenant could not be inferred from the current token -- specify a tenant id with the -TenantId parameter and retry the command.")
+                        if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
+                            throw [ArgumentException]::new("No tenant was specified for app-only auth, and a tenant could not be inferred from the current token -- specify a tenant id with the 'TenantId' parameter and retry the command.")
+                        }
                     }
 
                     $adjustedTenantId = $inferredTenantId
+                }
+
+                if ( ! $adjustedTenantId ) {
+                    $adjustedTenantId = 'UnspecifiedTenant'
                 }
             }
 

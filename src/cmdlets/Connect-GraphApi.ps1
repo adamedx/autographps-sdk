@@ -414,6 +414,20 @@ function Connect-GraphApi {
     )
 
     begin {
+        if ( $UseBroker.IsPresent ) {
+            if ( $NoninteractiveAppOnlyAuth.IsPresent ) {
+                throw [ArgumentException]::new("The UseBroker parameter may not be specified when NoninteractiveAppOnlyAuth is specified because brokers are for interactive auth only.")
+            }
+
+            if ( $Confidential.IsPresent ) {
+                throw [ArgumentException]::new("The UseBroker parameter may not be specified when the Confidential parameter is specified because confidential connections do not support brokers.")
+            }
+
+            $currentOS = [System.Environment]::OSVersion.Platform
+            if ( $currentOS -ne 'Win32NT' ) {
+                throw [System.NotSupportedException]::new("The UseBroker authentication broker option was specified, but the current OS platform '$currentOS' does not support brokers. This capability is supported only on the Windows OS platform")
+            }
+        }
     }
 
     process {
@@ -526,6 +540,8 @@ function Connect-GraphApi {
                     @{}
                 }
 
+                $hasBrokerInProfile = $conditionalArguments['UseBroker'] -and $conditionalArguments['UseBroker'].IsPresent
+
                 # Configure parameters compatible with forwarding to the underlying command
                 $PSBoundParameters.keys | where { $_ -notin @(
                                                       'CertCredential'
@@ -537,10 +553,25 @@ function Connect-GraphApi {
                                                       'NoProfile'
                                                       'PromptForCertCredential'
                                                       'Reconnect'
+                                                      'Broker'
                                                   ) } | foreach {
-                    $conditionalArguments[$_] = $PSBoundParameters[$_]
-                    $conditionalArguments['Permissions'] = $normalizedPermissions
-                }
+                                                      $conditionalArguments[$_] = $PSBoundParameters[$_]
+                                                  }
+
+                $conditionalArguments['Permissions'] = $normalizedPermissions
+
+                # Address issues where an incompatible setting can
+                # be inherited from the current profile's connection and must be removed to
+                # prevent exceptions when creating the connection
+                if ( $hasBrokerInProfile -and
+                     ( ( $conditionalArguments['Confidential'] -and $conditionalArguments['Confidential'].IsPresent ) -or
+                       ( $conditionalArguments['NoninteractiveAppOnly'] -and $conditionalArguments['NoninteractiveAppOnly'].IsPresent ) ) ) {
+                           # The incompatible parameter values specified explicitly to this command must override / suppress
+                           # any specified in the default profile's connection, so remove it. In this case, the broker
+                           # option was not specified to this command, but came from the profile, and conflicts with
+                           # one of the settings specified to the command.
+                           $conditionalArguments.Remove('UseBroker')
+                       }
 
                 try {
                     new-graphconnection @conditionalArguments -erroraction stop

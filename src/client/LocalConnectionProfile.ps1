@@ -74,8 +74,8 @@ ScriptClass LocalConnectionProfile {
             if ( $this.connectionData['userAgent'] ) { $parameters['UserAgent'] = $this.connectionData['userAgent'] }
             if ( $this.connectionData['appId'] ) { $parameters['AppId'] = $this.connectionData['appId'] }
             if ( $this.connectionData['appRedirectUri'] ) { $parameters['appRedirectUri'] = $this.connectionData['appRedirectUri'] }
-            if ( $this.connectionData['useBroker'] ) { $parameters['UseBroker'] = $this.connectionData['useBroker'] }
-            $isConfidential = $this.connectionData['confidential'] -ne $null -or $this.connectionData['authType'] -eq 'appOnly'
+
+            $isConfidential = $null -ne $this.connectionData['confidential'] -or $this.connectionData['authType'] -eq 'appOnly'
 
             if ( $isConfidential ) {
                 $parameters['Confidential'] = $enabledParameter
@@ -86,6 +86,16 @@ ScriptClass LocalConnectionProfile {
 
                 if ( $this.connectionData['certificatePath'] ) {
                     $parameters['certificatePath'] = $this.connectionData['certificatePath']
+                }
+            }
+
+            # Make sure the broker setting isn't specified with settings
+            # for which the broker cannot be used
+            if ( $null -ne $this.connectionData['useBroker'] ) {
+                if ( ! $this.connectionData['useBroker'] -or ! $isConfidential -and ! $parameters['NoninteractiveAppOnlyAuth'] ) {
+                    $parameters['UseBroker'] = [System.Management.Automation.SwitchParameter]::new($this.connectionData['useBroker'])
+                } else {
+                    write-warning 'The useBroker option was specified was enabled when the Confidential or NoninteractiveAppOnly option was enabled -- the useBroker option will be ignored.'
                 }
             }
 
