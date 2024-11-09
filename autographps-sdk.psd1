@@ -265,13 +265,14 @@ Authentication broker support along with branding and documentation updates rela
 
 ### New features
 
-* The `Connect-GraphApi` and `New-GraphConnection` commands expose a new `-UseBroker` parameter. This enables support for
-  [authentication broker sign-ins on Windows](https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/desktop-mobile/wam) for improved security
-  features offered by the native capabilities of the operating system and device, including limiting the use of refresh tokens to the device that acquired the original token.
+* The `Connect-GraphApi` and `New-GraphConnection` commands expose a new `-UseBroker` parameter. This enables support for [authentication broker sign-ins on Windows](https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/desktop-mobile/wam) for improved security features offered by the native capabilities of the operating system and device, including limiting the use of refresh tokens to the device that acquired the original token.
+* The UseBroker parameter of the new commands is also supported as an attribute of the connection settings -- see the schema documentation at [Settings Schema definition file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/settings.schema.json).
 * Runtime command help and other documentation is updated to reflect the rebranding of Azure Active Directory to 'Entra'.
 
 ### Fixed defects
 
+* Fixed garbled property name for CreatedDateTime property in application and service principal list views.
+* The schema documentation file itself used an invalid schema URI -- without the fix for this, schema-aware tools such as vscode would not be able to validate or apply schema information to files that conformed to the schema.
 None.
 
 '@
