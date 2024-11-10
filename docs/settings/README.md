@@ -38,7 +38,7 @@ The settings file is arranged into four sections:
 
 ### Settings reference
 
-The [Settings Schema definition file](https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/settings.schema.json) describes the semantics of all of the settings.
+The [Settings Schema definition file](https://raw.githubusercontent.com/adamedx/autographps-sdk/refs/heads/main/docs/settings/settings.schema.json) describes the semantics of all of the settings.
 
 A [sample](sample-settings.json) settings file may also prove instructive.
 

@@ -204,7 +204,7 @@ Describe "The Test-GraphSettings command" {
                 $settingsInfo.EndpointNames ) | Should BeExactly $null
 
             # Validate the detailed settings
-            $settingsInfo.settings.'$schema' | Should Be 'https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/settings.schema.json'
+            $settingsInfo.settings.'$schema' | Should Be 'https://raw.githubusercontent.com/adamedx/autographps-sdk/refs/heads/main/docs/settings/settings.schema.json'
 
             # Profiles
             $settingsInfo.settings.profiles.defaults.logLevel | Should Be Full

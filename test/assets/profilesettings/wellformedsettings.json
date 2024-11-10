@@ -1,5 +1,5 @@
 {
-    "$schema": "https://github.com/adamedx/autographps-sdk/blob/main/docs/settings/settings.schema.json",
+    "$schema": "https://raw.githubusercontent.com/adamedx/autographps-sdk/refs/heads/main/docs/settings/settings.schema.json",
     "defaultProfile":  "WilyCORP",
 
     "profiles":  {
