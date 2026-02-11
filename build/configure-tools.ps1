@@ -62,7 +62,7 @@ if ( ! $dotNetToolPath ) {
 
 $hasValidVersion = $false
 $dotNetToolPathUpdated = (get-command dotnet -erroraction ignore) -ne $null
-$minimumVersionString = '2.2.300'
+$minimumVersionString = '10.0.101'
 
 if ( $dotNetToolPathUpdated ) {
     write-verbose 'Found dotnet tool, will check version'
