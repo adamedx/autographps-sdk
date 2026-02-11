@@ -40,7 +40,7 @@ jobs:
     inputs:
       azureSubscription: 'Azure Free Trial(439deb75-e36b-4569-b075-f2c2448e8a3e)'
       KeyVaultName: 'CI-AutoGraphPS-SDK'
-      SecretsFilter: 'CI-AutoGraph-App-Certificate2'
+      SecretsFilter: 'CI-AutoGraphPS-App-Certificate2'
       RunAsPreJob: false
   - task: powershell@2
     displayName: 'Show current PowerShell version information'
@@ -121,7 +121,7 @@ jobs:
     displayName: 'Run integration tests'
     inputs:
       targetType: inline
-      script: './test/CI/RunIntegrationTests.ps1 -TestRoot test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(CI-AutoGraph-App-Certificate) -TestParamsPassThru @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_INTEGRATION_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
+      script: './test/CI/RunIntegrationTests.ps1 -TestRoot test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(CI-AutoGraphPS-App-Certificate2) -TestParamsPassThru @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_INTEGRATION_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: powershell@2
     displayName: 'Generate sample documents and tests'
@@ -133,7 +133,7 @@ jobs:
     displayName: 'Run sample code integration tests'
     inputs:
       targetType: inline
-      script: './test/CI/RunIntegrationTests.ps1 -TestRoot .test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(CI-AutoGraph-App-Certificate) -TestParamsPassThru @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_SAMPLES_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
+      script: './test/CI/RunIntegrationTests.ps1 -TestRoot .test -TestAppId $(TEST_APPID) -TestAppTenant $(TEST_APPTENANT) -CIBase64TestAppCert $(CI-AutoGraphPS-App-Certificate2) -TestParamsPassThru @{OutputFile="$($env:TEST_OUTPUT_DIRECTORY)/$($env:TEST_SAMPLES_OUTPUT_FILE)";OutputFormat="NUnitXml"} -verbose'
       pwsh: $(USE_POWERSHELL_CORE)
   - task: PublishTestResults@2
     inputs:
